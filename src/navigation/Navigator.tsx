@@ -34,6 +34,10 @@ import ReviewFormScreen from "screens/dashboardScreens/ReviewFormScreen/ReviewFo
 import SearchAnimationScreen from "screens/dashboardScreens/SearchAnimationScreen/SearchAnimationScreen"
 import ViewAddressScreen from "screens/dashboardScreens/ViewAddressScreen/ViewAddressScreen"
 import QuestionFlowScreen from "screens/dashboardScreens/QuestionFlowScreen/QuestionFlowScreen"
+import QuestionStepScreen from "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen"
+import FiltersScreen from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
+import AllQuestionsScreen from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
+import TapplyAIScreen from "screens/dashboardScreens/TapplyAIScreen/TapplyAIScreen"
 import { useTypedSelector } from "store"
 import { setCurrentScreen } from "store/auth/slice"
 
@@ -72,7 +76,7 @@ const Navigator = () => {
   return (
     <Stack.Navigator
       initialRouteName={initialRouteName}
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false, gestureEnabled: false }}
     >
       <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
       <Stack.Screen name="AuthWelcomeScreen" component={AuthWelcomeScreen} />
@@ -103,6 +107,7 @@ const Navigator = () => {
       <Stack.Screen name="AboutAppScreen" component={AboutAppScreen} />
       <Stack.Screen name="ArchivedMessagesScreen" component={ArchivedMessagesScreen} />
       <Stack.Screen name="MessagesDetailsScreen" component={MessagesDetailsScreen} />
+      <Stack.Screen name="TapplyAIScreen" component={TapplyAIScreen} />
       <Stack.Screen name="CategoriesScreen" component={CategoriesScreen} />
       <Stack.Screen name="SubCategoriesScreen" component={SubCategoriesScreen} />
       <Stack.Screen name="SearchAnimationScreen" component={SearchAnimationScreen} />
@@ -117,6 +122,33 @@ const Navigator = () => {
         }}
       />
       */}
+      <Stack.Screen
+        name="QuestionStepScreen"
+        component={QuestionStepScreen}
+        options={{
+          presentation: "modal",
+          headerShown: false,
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="AllQuestionsScreen"
+        component={AllQuestionsScreen}
+        options={{
+          presentation: "modal",
+          headerShown: false,
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="FiltersScreen"
+        component={FiltersScreen}
+        options={{
+          presentation: "modal",
+          headerShown: false,
+          gestureEnabled: true,
+        }}
+      />
       <Stack.Screen name="ServiceRequestDetailsScreen" component={ServiceRequestDetailsScreen} />
       <Stack.Screen name="RequestSummaryScreen" component={RequestSummaryScreen} />
       <Stack.Screen name="RequestSuccessScreen" component={RequestSuccessScreen} />

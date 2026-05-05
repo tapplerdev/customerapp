@@ -252,7 +252,7 @@ export const api = createApi({
         `/chats/${chatId}/messages?page=${page}&perPage=${perPage}`,
     }),
 
-    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[] }>({
+    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[]; location?: { latitude: number; longitude: number } }>({
       query: ({ chatId, ...body }) => ({
         url: `/chats/${chatId}/messages`,
         method: "POST",

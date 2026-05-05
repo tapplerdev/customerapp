@@ -20,9 +20,11 @@ import colors from "@tappler/shared/src/styles/colors"
 import ProCard from "./components/ProCard"
 import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
-import QuestionBottomSheet from "components/QuestionBottomSheet/QuestionBottomSheet"
+// import QuestionBottomSheet from "components/QuestionBottomSheet/QuestionBottomSheet"
+import { questionFlowEventBus } from "events/questionFlowEventBus"
 import AllQuestionsModal from "components/AllQuestionsModal/AllQuestionsModal"
-import FiltersModal, { FilterValues } from "components/FiltersModal/FiltersModal"
+// import FiltersModal from "components/FiltersModal/FiltersModal"
+import { FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import SearchLocationModal from "components/SearchLocationModal/SearchLocationModal"
 import AddressSelectionModal from "components/AddressSelectionModal"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
@@ -70,7 +72,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [currentFilters, setCurrentFilters] = useState<FilterValues>({})
 
   // Question flow state
-  const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService)
+  // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
+  const hasLaunchedQuestions = useRef(false)
   const [isAllQuestionsVisible, setAllQuestionsVisible] = useState(false)
   const [currentPlaceOfService, setCurrentPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
   const [allAnswers, setAllAnswers] = useState<QuestionAnswerType[]>([])
@@ -131,6 +134,20 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     getPros({ categoryId, placeOfService: initialPlaceOfService, customerAddress }, true)
   }, [categoryId])
 
+  // Launch native question flow on first mount (replaces gorhom QuestionBottomSheet)
+  useEffect(() => {
+    if (!initialPlaceOfService && !hasLaunchedQuestions.current && customerQuestions.length > 0) {
+      hasLaunchedQuestions.current = true
+      navigation.push("QuestionStepScreen", {
+        categoryId,
+        categoryName,
+        serviceId,
+        placeOfServiceOptions,
+        customerQuestions,
+      })
+    }
+  }, [customerQuestions.length])
+
   // Shared refetch logic — merges question filters + pro-level filters
   const doRefetch = useCallback(
     (opts: {
@@ -177,6 +194,27 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     [doRefetch]
   )
 
+  // Listen for question flow results (emitted by QuestionStepScreen)
+  useEffect(() => {
+    const handler = (result: {
+      placeOfService?: string
+      filterOptionIds: number[]
+      dataAnswers: QuestionAnswerType[]
+      allAnswers: QuestionAnswerType[]
+      filtersChanged: boolean
+    }) => {
+      setCurrentPlaceOfService(result.placeOfService)
+      setDataAnswers(result.dataAnswers)
+      setAllAnswers(result.allAnswers)
+      refetchWithFilters(result)
+    }
+
+    questionFlowEventBus.on("questions:done", handler)
+    return () => {
+      questionFlowEventBus.off("questions:done", handler)
+    }
+  }, [refetchWithFilters])
+
   // Handle step-by-step sheet dismiss
   const handleSheetDismiss = useCallback(
     (result: {
@@ -204,7 +242,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       allAnswers: QuestionAnswerType[]
       filtersChanged: boolean
     }) => {
-      setAllQuestionsVisible(false)
       setCurrentPlaceOfService(result.placeOfService)
       setDataAnswers(result.dataAnswers)
       setAllAnswers(result.allAnswers)
@@ -216,7 +253,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Handle pro-level filters dismiss
   const handleFiltersDismiss = useCallback(
     (filters: FilterValues) => {
-      setFiltersVisible(false)
       setCurrentFilters(filters)
       doRefetch({ filters })
     },
@@ -327,11 +363,23 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const pros = data?.data || []
 
   const handleContinue = () => {
-    // Resolve pro names now while we have the data
+    // Resolve pro data now while we have it
     const proNames = selectedPros.map((id) => {
       const pro = pros.find((p) => p.id === id)
       return pro?.businessName || pro?.registeredName || `#${id}`
     }).join(", ")
+
+    const prosInfo = selectedPros.map((id) => {
+      const pro = pros.find((p) => p.id === id)
+      return {
+        id,
+        name: pro?.businessName || pro?.registeredName || `#${id}`,
+        photo: pro?.profilePhoto150 || pro?.profilePhoto,
+        rating: pro?.reviewScore?.overallScore,
+        reviewsCount: pro?.reviewScore?.reviewsCount,
+        proType: (pro?.proType || "individual") as "individual" | "company",
+      }
+    })
 
     // Always go to ServiceRequestDetailsScreen — it handles both
     // unanswered questions AND the mandatory date/time step
@@ -341,6 +389,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       serviceId,
       selectedProIds: selectedPros,
       selectedProNames: proNames,
+      selectedProsInfo: prosInfo,
       address,
       placeOfService: currentPlaceOfService,
       answeredQuestions: dataAnswers,
@@ -395,7 +444,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           </DmText>
         </DmView>
         <DmView
-          onPress={() => setFiltersVisible(true)}
+          onPress={() => navigation.navigate("FiltersScreen", {
+            currentPlaceOfService,
+            initialFilters: currentFilters,
+            onApply: handleFiltersDismiss,
+          })}
           className="w-[32] h-[32] items-center justify-center"
           hitSlop={HIT_SLOP_DEFAULT}
         >
@@ -405,11 +458,18 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       <DmView className="h-[0.7] bg-grey19" />
 
       {/* Job details banner + matches heading */}
-      <DmView className="px-[16] pt-[10] pb-[6] bg-white">
+      <DmView className="px-[16] pt-[14] pb-[8] bg-white">
         {totalQuestions > 0 && (
           <DmView
-            onPress={() => setAllQuestionsVisible(true)}
-            className="flex-row items-center mb-[8]"
+            onPress={() => navigation.navigate("AllQuestionsScreen", {
+              categoryName,
+              placeOfServiceOptions,
+              customerQuestions,
+              initialAnswers: allAnswers,
+              initialPlaceOfService: currentPlaceOfService,
+              onApply: handleAllQuestionsDismiss,
+            })}
+            className="flex-row items-center mb-[12]"
           >
             <JobDetailsIcon width={18} height={18} color={colors.red} />
             <DmText className="text-13 leading-[16px] font-custom600 text-red ml-[6]">
@@ -418,7 +478,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         )}
         {pros.length > 0 && (
-          <DmText className="text-17 leading-[22px] font-custom700 text-black">
+          <DmText className="text-19 leading-[24px] font-custom700 text-black">
             {pros.length} {t("matches_based_on_answers")}
           </DmText>
         )}
@@ -475,7 +535,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         </Animated.View>
       )}
 
-      {/* Question bottom sheet (gorhom BottomSheetModal — portals to root) */}
+      {/* Question bottom sheet — replaced with native QuestionStepScreen (formSheet)
       <QuestionBottomSheet
         isVisible={isSheetVisible}
         serviceName={categoryName}
@@ -483,7 +543,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         customerQuestions={customerQuestions}
         onDismiss={handleSheetDismiss}
       />
+      */}
 
+      {/* AllQuestionsModal — replaced with native AllQuestionsScreen (modal)
       <AllQuestionsModal
         isVisible={isAllQuestionsVisible}
         categoryName={categoryName}
@@ -493,13 +555,16 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         initialPlaceOfService={currentPlaceOfService}
         onDismiss={handleAllQuestionsDismiss}
       />
+      */}
 
+      {/* FiltersModal — replaced with native FiltersScreen (modal)
       <FiltersModal
         isVisible={isFiltersVisible}
         currentPlaceOfService={currentPlaceOfService}
         initialFilters={currentFilters}
         onDismiss={handleFiltersDismiss}
       />
+      */}
 
       <SearchLocationModal
         isVisible={isSearchModalVisible}

@@ -4,7 +4,7 @@ import Animated, { FadeIn } from "react-native-reanimated"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
 import { RootStackParamList } from "navigation/types"
@@ -30,8 +30,15 @@ const MessagesScreen: React.FC = () => {
   const [searchText, setSearchText] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { data, isLoading } = useGetChatsQuery(undefined, { skip: !isAuth })
+  const { data, isLoading, refetch } = useGetChatsQuery(undefined, { skip: !isAuth })
   const [archiveChat] = useArchiveChatMutation()
+
+  // Refetch chat list when tab is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuth) refetch()
+    }, [isAuth, refetch])
+  )
 
   const handleSearchChange = useCallback((text: string) => {
     setSearchText(text)

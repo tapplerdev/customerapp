@@ -44,6 +44,11 @@ export type ServiceQuestionType = {
   order: number
 }
 
+export type ServiceCategoryDateType = {
+  id: number
+  type: string
+}
+
 export type ServiceCategoryType = {
   id: number
   nameEn: string
@@ -53,6 +58,7 @@ export type ServiceCategoryType = {
   placeOfService?: string[]
   customerQuestions?: ServiceQuestionType[]
   proQuestions?: ServiceQuestionType[]
+  dateTypes?: ServiceCategoryDateType[]
 }
 
 export type ServiceType = {

@@ -62,7 +62,10 @@ const HomeScreen: React.FC = () => {
     <Animated.View entering={FadeIn.duration(300)} style={{ flex: 1 }}>
       <SafeAreaView edges={["top"]} className="flex-1 bg-white">
         <HomeHeader />
-        <SearchBar onFilterPress={() => navigation.navigate("CategoriesScreen")} />
+        <SearchBar
+          onPress={() => navigation.navigate("TapplyAIScreen")}
+          onFilterPress={() => navigation.navigate("CategoriesScreen")}
+        />
         <DmView className="h-[12]" />
 
         {!sections || sections.length === 0 ? (

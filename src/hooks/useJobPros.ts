@@ -13,8 +13,7 @@ const useJobPros = (pros: JobProType[] | undefined) => {
   const otherPros = useMemo(() =>
     pros?.filter((p) =>
       p.selectionStatus === "opportunity" ||
-      (p.selectionStatus === "offer" && !!p.proOpportunityOfferSentAt && !p.opportunityAcceptedAt) ||
-      p.selectionStatus === "customerRejected"
+      (p.selectionStatus === "offer" && !!p.proOpportunityOfferSentAt && !p.opportunityAcceptedAt)
     ) || [],
   [pros])
 

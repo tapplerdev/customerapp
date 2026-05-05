@@ -26,7 +26,10 @@ const TalabatiScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { isAuth } = useTypedSelector((store) => store.auth)
 
-  const { data, isLoading, refetch, isFetching } = useGetCustomerJobsQuery(undefined, { skip: !isAuth })
+  const { data, isLoading, refetch, isFetching } = useGetCustomerJobsQuery(undefined, {
+    skip: !isAuth,
+    pollingInterval: 30000, // Poll every 30s for new pro responses
+  })
 
   const jobs = data?.data || []
 

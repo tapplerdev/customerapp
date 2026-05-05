@@ -9,6 +9,7 @@ import OffersSection from "components/OffersSection/OffersSection"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 
+import ChatBubbleIcon from "assets/icons/chat-bubble.svg"
 import IndividualIcon from "assets/icons/individual.svg"
 import BusinessIcon from "assets/icons/business.svg"
 import MailIcon from "assets/icons/mail.svg"
@@ -176,17 +177,10 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
       {/* Opportunity notes bubble with triangle pointer */}
       {showOpportunityNotes && !!opportunityNotes && (
-        <DmView className="mt-[10]">
-          {/* Triangle pointer */}
-          <DmView className="ml-[20]" style={styles.triangleOuter} />
-          <DmView style={styles.triangleInnerWrap}>
-            <DmView className="ml-[21]" style={styles.triangleInner} />
-          </DmView>
-          <DmView
-            className="px-[14] py-[10] rounded-12"
-            style={styles.notesBubble}
-          >
-            <DmText className="text-12 leading-[18px] font-custom400 text-black">
+        <DmView className="mt-[4]" style={{ position: "relative" }}>
+          <ChatBubbleIcon width="100%" height={undefined} style={{ aspectRatio: 340.5 / 63.727 }} preserveAspectRatio="none" />
+          <DmView className="absolute left-0 right-0 top-[12] bottom-0 px-[18] justify-center">
+            <DmText className="text-12 leading-[18px] font-custom400 text-black" numberOfLines={2}>
               {opportunityNotes}
             </DmText>
           </DmView>

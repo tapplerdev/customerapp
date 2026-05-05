@@ -5,6 +5,7 @@ export type QuestionFlowResult = {
   placeOfService?: string
   filterOptionIds: number[]
   dataAnswers: QuestionAnswerType[]
+  allAnswers: QuestionAnswerType[]
   filtersChanged: boolean
 }
 

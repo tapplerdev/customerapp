@@ -8,11 +8,20 @@ import HomeScreen from "screens/dashboardScreens/HomeScreen/HomeScreen"
 import TalabatiScreen from "screens/dashboardScreens/TalabatiScreen/TalabatiScreen"
 import MessagesScreen from "screens/dashboardScreens/MessagesScreen/MessagesScreen"
 import AccountScreen from "screens/dashboardScreens/AccountScreen/AccountScreen"
+import { useGetChatsQuery } from "services/api"
+import { useTypedSelector } from "store"
+import useChatPrefetch from "hooks/useChatPrefetch"
 
 const Tab = createBottomTabNavigator()
 
 const HomeTabs: React.FC = () => {
   const { t } = useTranslation()
+  const { isAuth } = useTypedSelector((store) => store.auth)
+
+  // Prefetch chat list at tab level — always warm
+  const { data: chatsData } = useGetChatsQuery(undefined, { skip: !isAuth })
+  const activeChats = chatsData?.data?.filter((c) => c.chat.status === "active") || []
+  useChatPrefetch(activeChats)
 
   return (
     <Tab.Navigator

@@ -1,18 +1,28 @@
 import React, { useCallback, useRef, useState } from "react"
 import {
+  ActivityIndicator,
   FlatList,
   I18nManager,
   Image as RNImage,
-  KeyboardAvoidingView,
+  Keyboard,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   TextInput,
 } from "react-native"
+// Using RN's built-in KeyboardAvoidingView (react-native-keyboard-controller not installed in customer app yet)
+import { KeyboardAvoidingView } from "react-native"
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import FastImage from "react-native-fast-image"
-import { useLazyGetCustomerJobDetailsQuery, useLazyGetProProfileQuery, useSendMessageMutation } from "services/api"
+import { pick, types } from "react-native-document-picker"
+import {
+  useLazyGetCustomerJobDetailsQuery,
+  useLazyGetProProfileQuery,
+  useSendMessageMutation,
+} from "services/api"
 
 import { RootStackScreenProps } from "navigation/types"
 import useChatContext from "hooks/useChatContext"
@@ -20,6 +30,8 @@ import useMessagePagination from "hooks/useMessagePagination"
 import useMessageGroups, { FlatItem } from "hooks/useMessageGroups"
 import useAttachments from "hooks/useAttachments"
 import MessageComponent from "components/MessageComponent/MessageComponent"
+import { ChatMessageType } from "types/chat"
+import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendIcon from "assets/icons/send.svg"
@@ -30,6 +42,7 @@ import CameraIcon from "assets/icons/camera-icon.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
 import LocationIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
+import ChevronDownIcon from "assets/icons/chevron-down.svg"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 
@@ -49,19 +62,32 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     maxCount: 4,
     chatId: context.chatId,
     onMessageSent: pagination.addOptimisticMessage,
+    onMessageReplaced: pagination.replaceOptimisticMessage,
   })
 
   const [messageText, setMessageText] = useState("")
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [showScrollDown, setShowScrollDown] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const attachmentSheetRef = useRef<BottomSheet>(null)
+  const flatListRef = useRef<FlatList>(null)
   const [sendMessage] = useSendMessageMutation()
   const [getProProfile] = useLazyGetProProfileQuery()
   const [getJobDetails] = useLazyGetCustomerJobDetailsQuery()
 
   const canSend = messageText.trim().length > 0 || attachments.pending.length > 0
 
-  const handleOpenAttachmentSheet = () => {
-    attachmentSheetRef.current?.expand()
+  // Preload recent photos on mount so they're ready when sheet opens
+  React.useEffect(() => {
     attachments.loadRecentPhotos()
+  }, [])
+
+  // ── Attachment handlers ──
+  const handleOpenAttachmentSheet = () => {
+    Keyboard.dismiss()
+    setTimeout(() => {
+      attachmentSheetRef.current?.expand()
+    }, 100)
   }
 
   const handleCameraPress = () => {
@@ -74,6 +100,32 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     attachments.addFromGallery()
   }
 
+  const handleUploadFile = async () => {
+    attachmentSheetRef.current?.close()
+    try {
+      const [result] = await pick({
+        mode: "open",
+        type: [types.pdf, types.images, types.doc, types.docx],
+      })
+      if (result) {
+        attachments.add({
+          path: result.uri,
+          mime: result.type || "application/octet-stream",
+          filename: result.name || "file",
+        })
+      }
+    } catch (e: any) {
+      if (e?.code !== "DOCUMENT_PICKER_CANCELED") {
+        console.log("Document pick error:", e)
+      }
+    }
+  }
+
+  const handleLocationPress = () => {
+    attachmentSheetRef.current?.close()
+    navigation.navigate("PickAddressScreen" as any)
+  }
+
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
@@ -81,26 +133,89 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     []
   )
 
+  // ── Send handler ──
   const handleSend = useCallback(async () => {
     const text = messageText.trim()
     if (!text && attachments.pending.length === 0) return
 
+    setSendError(null)
     setMessageText("")
 
     if (attachments.pending.length > 0) {
       try {
         await attachments.sendWithAttachments(text)
-      } catch {}
+      } catch (e: any) {
+        setMessageText(text)
+        setSendError(e?.message || t("failed_to_send"))
+      }
     } else {
       try {
         const newMsg = await sendMessage({ chatId: context.chatId, text }).unwrap()
         pagination.addOptimisticMessage(newMsg)
-      } catch {
+      } catch (e: any) {
         setMessageText(text)
+        setSendError(e?.message || t("failed_to_send"))
       }
     }
-  }, [messageText, attachments, context.chatId, sendMessage, pagination])
+  }, [messageText, attachments, context.chatId, sendMessage, pagination, t])
 
+  // ── Scroll handlers ──
+  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setShowScrollDown(e.nativeEvent.contentOffset.y > 300)
+  }, [])
+
+  const scrollToBottom = useCallback(() => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true })
+  }, [])
+
+  const handleLoadMore = useCallback(() => {
+    if (pagination.hasMore && !isLoadingMore) {
+      setIsLoadingMore(true)
+      pagination.loadMore()
+      setTimeout(() => setIsLoadingMore(false), 1000)
+    }
+  }, [pagination.hasMore, pagination.loadMore, isLoadingMore])
+
+  // ── Location sending ──
+  const sendLocation = useCallback(async (coords: { lat: number; lon: number }) => {
+    const optimisticId = -Date.now()
+    const optimisticMsg: ChatMessageType = {
+      id: optimisticId,
+      ownerType: "customer",
+      createdAt: new Date().toISOString(),
+      location: { id: 0, latitude: coords.lat, longitude: coords.lon },
+    }
+
+    pagination.addOptimisticMessage(optimisticMsg)
+
+    try {
+      const realMsg = await sendMessage({
+        chatId: context.chatId,
+        location: { latitude: coords.lat, longitude: coords.lon },
+      }).unwrap()
+
+      pagination.replaceOptimisticMessage(optimisticId, realMsg)
+    } catch (e: any) {
+      // Remove optimistic on failure
+      pagination.replaceOptimisticMessage(optimisticId, { ...optimisticMsg, id: -999999 })
+      setSendError(e?.message || t("failed_to_send"))
+    }
+  }, [context.chatId, sendMessage, pagination, t])
+
+  // Listen for address picked from PickAddressScreen
+  React.useEffect(() => {
+    const handler = (data: any) => {
+      if (data?.coords) {
+        sendLocation(data.coords)
+      }
+    }
+    addressEventBus.on("address:pick", handler)
+    return () => {
+      addressEventBus.off("address:pick", handler)
+    }
+  }, [sendLocation])
+
+  // ── Render items ──
   const renderItem = ({ item }: { item: FlatItem }) => {
     if (item.type === "date") {
       return (
@@ -119,6 +234,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         isLastInGroup={item.isLastInGroup}
         showReadReceipt={item.showReadReceipt}
         readByName={context.proName}
+        isUploading={attachments.isMessageUploading(item.message.id)}
       />
     )
   }
@@ -126,8 +242,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
       <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* Header */}
         <DmView className="bg-white">
@@ -149,7 +265,9 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                     proId: context.pro.id,
                     serviceCategoryId: context.serviceCategoryId || 0,
                   })
-                } catch {}
+                } catch (e) {
+                  console.log("Failed to load pro profile:", e)
+                }
               }}
             >
               {context.pro?.profilePhoto150 || context.pro?.profilePhoto ? (
@@ -213,7 +331,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             </DmView>
           )}
 
-          {/* Action bar — only show for job-linked chats */}
+          {/* Action bar */}
           {context.hasJob && (
             <DmView className="px-[16] pt-[8] pb-[10] flex-row justify-around items-center border-b-0.5 border-grey4">
               <DmView className="flex-row items-center">
@@ -235,7 +353,9 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                   try {
                     await getJobDetails(context.jobId, true).unwrap()
                     navigation.navigate("RequestDetailsScreen", { jobId: context.jobId })
-                  } catch {}
+                  } catch (e) {
+                    console.log("Failed to load job details:", e)
+                  }
                 }}
               >
                 <DetailsIcon width={20} height={24} />
@@ -250,6 +370,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         {/* Messages list */}
         <DmView className="flex-1" style={styles.relative}>
           <FlatList
+            ref={flatListRef}
             data={groups.flatData}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
@@ -260,14 +381,24 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 ? { flex: 1, justifyContent: "center" }
                 : { paddingBottom: 10 }
             }
-            onEndReached={pagination.loadMore}
+            onEndReached={handleLoadMore}
             onEndReachedThreshold={0.3}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            keyboardDismissMode="interactive"
+            removeClippedSubviews
+            windowSize={10}
+            maxToRenderPerBatch={10}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <DmView className="py-[16] items-center">
+                  <ActivityIndicator size="small" color={colors.red} />
+                </DmView>
+              ) : null
+            }
             ListEmptyComponent={
               <DmView className="items-center px-[30]">
-                <DmView
-                  className="px-[20] py-[16] rounded-12"
-                  style={styles.emptyBg}
-                >
+                <DmView className="px-[20] py-[16] rounded-12" style={styles.emptyBg}>
                   <DmText
                     className="text-13 font-custom400 text-grey3 text-center leading-[20px]"
                     style={styles.italic}
@@ -278,7 +409,27 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               </DmView>
             }
           />
+
+          {/* Scroll-to-bottom FAB */}
+          {showScrollDown && (
+            <DmView
+              onPress={scrollToBottom}
+              className="absolute bottom-[16] right-[16] w-[36] h-[36] rounded-full bg-white items-center justify-center"
+              style={styles.scrollFab}
+            >
+              <ChevronDownIcon width={16} height={16} color={colors.black} />
+            </DmView>
+          )}
         </DmView>
+
+        {/* Error banner */}
+        {sendError && (
+          <DmView className="bg-red px-[16] py-[8]" onPress={() => setSendError(null)}>
+            <DmText className="text-12 font-custom500 text-white text-center">
+              {sendError} — {t("tap_to_dismiss")}
+            </DmText>
+          </DmView>
+        )}
 
         {/* Input bar */}
         <DmView
@@ -294,9 +445,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               <DmView className="absolute bg-grey2" style={styles.plusVertical} />
             </DmView>
 
-            <DmView
-              style={[styles.inputContainer, { borderColor: colors.grey4 }]}
-            >
+            <DmView style={[styles.inputContainer, { borderColor: colors.grey4 }]}>
               <TextInput
                 value={messageText}
                 onChangeText={setMessageText}
@@ -307,7 +456,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 style={[styles.textInput, { textAlign: isAr ? "right" : "left" }]}
               />
               <DmView
-                onPress={handleSend}
+                onPress={canSend ? handleSend : undefined}
                 style={{
                   opacity: canSend ? 1 : 0.3,
                   marginLeft: 8,
@@ -338,7 +487,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                   </DmView>
                   <DmView
                     className="absolute"
-                    style={styles.pendingClose}
+                    style={[styles.pendingClose, I18nManager.isRTL ? { left: 5, right: undefined } : undefined]}
                     onPress={() => attachments.remove(index)}
                   >
                     <DmView className="w-[18] h-[18] rounded-full border-1 border-grey2 bg-white items-center justify-center">
@@ -400,18 +549,30 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                     <CameraIcon width={24} height={20} />
                   </DmView>
                 }
-                renderItem={({ item }) => (
-                  <DmView
-                    onPress={context.isJobInactive ? undefined : () => attachments.selectRecentPhoto(item.uri)}
-                    className="mr-[6] rounded-6 overflow-hidden"
-                    style={styles.photoStripItem}
-                  >
-                    <RNImage
-                      source={{ uri: item.uri }}
-                      style={styles.photoStripImage}
-                    />
-                  </DmView>
-                )}
+                renderItem={({ item }) => {
+                  const isSelected = attachments.isPhotoSelected(item.uri)
+                  const selIndex = attachments.getPhotoSelectionIndex(item.uri)
+                  const atMax = attachments.pending.length >= 4 && !isSelected
+
+                  return (
+                    <DmView
+                      onPress={context.isJobInactive || atMax ? undefined : () => attachments.toggleRecentPhoto(item.uri)}
+                      className="mr-[6] rounded-6 overflow-hidden"
+                      style={[styles.photoStripItem, atMax && !isSelected ? { opacity: 0.4 } : undefined]}
+                    >
+                      <RNImage source={{ uri: item.uri }} style={styles.photoStripImage} />
+                      {isSelected && (
+                        <DmView
+                          className="absolute top-[4] right-[4] w-[22] h-[22] rounded-full bg-red items-center justify-center"
+                        >
+                          <DmText className="text-10 font-custom700 text-white">
+                            {selIndex + 1}
+                          </DmText>
+                        </DmView>
+                      )}
+                    </DmView>
+                  )
+                }}
               />
             </DmView>
 
@@ -420,7 +581,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             {/* Upload file option */}
             <DmView
               className="flex-row items-center px-[18] py-[14]"
-              onPress={context.isJobInactive ? undefined : () => attachmentSheetRef.current?.close()}
+              onPress={context.isJobInactive ? undefined : handleUploadFile}
             >
               <DocumentIcon fill={colors.red} width={18} height={20} />
               <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
@@ -433,7 +594,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             {/* Location option */}
             <DmView
               className="flex-row items-center px-[18] py-[14]"
-              onPress={context.isJobInactive ? undefined : () => attachmentSheetRef.current?.close()}
+              onPress={context.isJobInactive ? undefined : handleLocationPress}
             >
               <LocationIcon width={18} height={20} />
               <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
@@ -443,6 +604,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           </DmView>
         </BottomSheetView>
       </BottomSheet>
+
     </SafeAreaView>
   )
 }

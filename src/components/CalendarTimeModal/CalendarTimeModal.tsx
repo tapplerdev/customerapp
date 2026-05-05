@@ -21,15 +21,25 @@ interface Props {
   isVisible: boolean
   onClose: () => void
   onConfirm: (date: string, timeSlot?: { start: string; end: string }, dateType?: string) => void
+  hideSpecialOptions?: boolean
 }
 
-const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm }) => {
+const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm, hideSpecialOptions }) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
 
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null)
   const [specialOption, setSpecialOption] = useState<"any_time" | "asap" | null>(null)
+
+  // Reset state when modal opens
+  React.useEffect(() => {
+    if (isVisible) {
+      setSelectedDate("")
+      setSelectedSlotIndex(null)
+      setSpecialOption(null)
+    }
+  }, [isVisible])
 
   const today = new Date().toISOString().split("T")[0]
 
@@ -140,36 +150,38 @@ const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm }) =
             </DmView>
 
             {/* Special options */}
-            <DmView className="mt-[16] gap-[8]">
-              <DmView
-                className={`px-[14] py-[12] rounded-8 border-1 ${
-                  specialOption === "any_time" ? "border-red bg-red/10" : "border-grey1"
-                }`}
-                onPress={() => handleSpecialOption("any_time")}
-              >
-                <DmText
-                  className={`text-13 font-custom500 ${
-                    specialOption === "any_time" ? "text-red" : "text-black"
+            {!hideSpecialOptions && (
+              <DmView className="mt-[16] gap-[8]">
+                <DmView
+                  className={`px-[14] py-[12] rounded-8 border-1 ${
+                    specialOption === "any_time" ? "border-red bg-red/10" : "border-grey1"
                   }`}
+                  onPress={() => handleSpecialOption("any_time")}
                 >
-                  {t("any_time")}
-                </DmText>
-              </DmView>
-              <DmView
-                className={`px-[14] py-[12] rounded-8 border-1 ${
-                  specialOption === "asap" ? "border-red bg-red/10" : "border-grey1"
-                }`}
-                onPress={() => handleSpecialOption("asap")}
-              >
-                <DmText
-                  className={`text-13 font-custom500 ${
-                    specialOption === "asap" ? "text-red" : "text-black"
+                  <DmText
+                    className={`text-13 font-custom500 ${
+                      specialOption === "any_time" ? "text-red" : "text-black"
+                    }`}
+                  >
+                    {t("any_time")}
+                  </DmText>
+                </DmView>
+                <DmView
+                  className={`px-[14] py-[12] rounded-8 border-1 ${
+                    specialOption === "asap" ? "border-red bg-red/10" : "border-grey1"
                   }`}
+                  onPress={() => handleSpecialOption("asap")}
                 >
-                  {t("as_soon_as_possible")}
-                </DmText>
+                  <DmText
+                    className={`text-13 font-custom500 ${
+                      specialOption === "asap" ? "text-red" : "text-black"
+                    }`}
+                  >
+                    {t("as_soon_as_possible")}
+                  </DmText>
+                </DmView>
               </DmView>
-            </DmView>
+            )}
           </DmView>
 
           {/* Confirm button */}

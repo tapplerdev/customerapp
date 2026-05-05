@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react"
-import { Animated, I18nManager, ScrollView, StyleSheet, Switch } from "react-native"
+import React, { useState } from "react"
+import { ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -21,28 +21,35 @@ type DateTypeOption = "notDecided" | "hours48" | "week" | "furtherOut" | "specif
 type Props = RootStackScreenProps<"ServiceRequestDetailsScreen">
 
 const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { categoryId, categoryName, serviceId, selectedProIds, selectedProNames, address, placeOfService, answeredQuestions } = route.params
+  const {
+    categoryId, categoryName, serviceId, selectedProIds,
+    selectedProNames, selectedProsInfo, address, placeOfService,
+    answeredQuestions, initialAnsweredIds, stepIndex = 0,
+  } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
 
   // Fetch service to get questions
   const { data: service, isLoading } = useGetServiceByIdQuery(serviceId)
-
-  // Find the category's customer questions
   const category = service?.categories?.find((c) => c.id === categoryId)
   const customerQuestions = category?.customerQuestions || []
 
-  // Filter out questions already answered in the bottom sheet
-  const answeredIds = new Set((answeredQuestions || []).map((a) => a.questionId))
-  const unansweredQuestions = customerQuestions.filter((q) => !answeredIds.has(q.id))
+  // Use initial answered IDs (from ProsListingScreen) to determine the fixed question list
+  // This stays stable across pushes — we don't re-filter as new answers accumulate
+  const fixedAnsweredIds = new Set(
+    initialAnsweredIds || (answeredQuestions || []).map((a) => a.questionId)
+  )
+  const unansweredQuestions = customerQuestions.filter((q) => !fixedAnsweredIds.has(q.id))
 
-  // Steps: unanswered questions + 1 date step at the end
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const totalSteps = unansweredQuestions.length + 1 // +1 for date step
-  const isDateStep = currentIndex === unansweredQuestions.length
+  // Only show date step if category has dateTypes configured
+  const hasDateTypes = (category?.dateTypes?.length || 0) > 0
+  const totalSteps = unansweredQuestions.length + (hasDateTypes ? 1 : 0)
+  const isDateStep = hasDateTypes && stepIndex >= unansweredQuestions.length
+  const currentQuestion = !isDateStep ? unansweredQuestions[stepIndex] : undefined
+  const progress = totalSteps > 0 ? (stepIndex + 1) / totalSteps : 1
 
-  // Question answers state
+  // Local answer for this step
   const [questionsAnswers, setQuestionsAnswers] = useState<QuestionAnswerType[]>(
     () => answeredQuestions || []
   )
@@ -51,33 +58,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   const [selectedDateOption, setSelectedDateOption] = useState<DateTypeOption | undefined>()
   const [selectedDate, setSelectedDate] = useState<string | undefined>()
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | undefined>()
-  const [flexibleSchedule, setFlexibleSchedule] = useState(true)
   const [isCalendarVisible, setCalendarVisible] = useState(false)
-
-  // Animation refs
-  const opacityAnim = useRef(new Animated.Value(1)).current
-  const slideAnim = useRef(new Animated.Value(0)).current
-  const slideDirection = isAr ? -1 : 1
-
-  const currentQuestion = !isDateStep ? unansweredQuestions[currentIndex] : undefined
-  const progress = totalSteps > 0 ? (currentIndex + 1) / totalSteps : 1
-
-  const animateTransition = (direction: "next" | "back", callback: () => void) => {
-    const exitSlide = direction === "next" ? -30 * slideDirection : 30 * slideDirection
-    const enterSlide = direction === "next" ? 30 * slideDirection : -30 * slideDirection
-
-    Animated.parallel([
-      Animated.timing(opacityAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: exitSlide, duration: 150, useNativeDriver: true }),
-    ]).start(() => {
-      callback()
-      slideAnim.setValue(enterSlide)
-      Animated.parallel([
-        Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
-        Animated.timing(slideAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-      ]).start()
-    })
-  }
 
   const handleChangeAnswer = (newAnswer: QuestionAnswerType) => {
     setQuestionsAnswers((prev) => {
@@ -91,7 +72,6 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
     })
   }
 
-  // Map UI option to backend dateType
   const getBackendDateType = () => {
     if (!selectedDateOption) return undefined
     if (selectedDateOption === "notDecided") return "notDecided"
@@ -101,50 +81,51 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
     return undefined
   }
 
+  // Shared nav params for pushing next step
+  const sharedParams = {
+    categoryId, categoryName, serviceId, selectedProIds,
+    selectedProNames, selectedProsInfo, address, placeOfService,
+  }
+
+  // Compute once on first mount: the IDs that were answered before we started
+  const stableInitialIds = initialAnsweredIds || (answeredQuestions || []).map((a) => a.questionId)
+
   const handleNext = () => {
-    if (currentIndex < totalSteps - 1) {
-      animateTransition("next", () => setCurrentIndex((prev) => prev + 1))
+    if (stepIndex < totalSteps - 1) {
+      // Push the same screen with next stepIndex — native stack transition
+      navigation.push("ServiceRequestDetailsScreen", {
+        ...sharedParams,
+        answeredQuestions: questionsAnswers,
+        initialAnsweredIds: stableInitialIds,
+        stepIndex: stepIndex + 1,
+      })
     } else {
       // Last step (date) — navigate to summary
       navigation.navigate("RequestSummaryScreen", {
-        categoryId,
-        categoryName,
-        serviceId,
-        selectedProIds,
-        selectedProNames,
-        address,
-        placeOfService,
+        ...sharedParams,
         questionsAnswers,
         dateType: getBackendDateType(),
         selectedDate,
         selectedTimeSlot,
-        flexibleSchedule,
       })
     }
   }
 
   const handleBack = () => {
-    if (currentIndex > 0) {
-      animateTransition("back", () => setCurrentIndex((prev) => prev - 1))
-    } else {
-      navigation.goBack()
-    }
+    navigation.goBack()
   }
 
   const handleClose = () => {
-    navigation.goBack()
+    // Pop all the way back to ProsListingScreen
+    navigation.popToTop()
   }
 
   const handleSelectDateOption = (option: DateTypeOption) => {
     setSelectedDateOption(option)
-
-    // Reset date/time when switching options
     if (option !== "furtherOut" && option !== "specificDates") {
       setSelectedDate(undefined)
       setSelectedTimeSlot(undefined)
     }
-
-    // Open calendar for date-specific options
     if (option === "furtherOut" || option === "specificDates") {
       setCalendarVisible(true)
     }
@@ -160,9 +141,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
 
   // Check if current step is answered
   const isCurrentAnswered = (() => {
-    if (isDateStep) {
-      return !!selectedDateOption
-    }
+    if (isDateStep) return !!selectedDateOption
     if (!currentQuestion) return true
     const answer = questionsAnswers.find((a) => a.questionId === currentQuestion.id)
     if (!answer) return false
@@ -174,20 +153,24 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
     return false
   })()
 
-  const dateOptions: { key: DateTypeOption; label: string }[] = [
-    { key: "notDecided", label: t("havent_decided_yet") },
-    { key: "hours48", label: t("within_48_hours") },
-    { key: "week", label: t("within_a_week") },
-    { key: "furtherOut", label: t("further_out") },
-    { key: "specificDates", label: t("specific_dates") },
+  // Filter date options based on what the category supports
+  const allowedBackendTypes = new Set(category?.dateTypes?.map((d) => d.type) || [])
+
+  const allDateOptions: { key: DateTypeOption; label: string; backendType: string }[] = [
+    { key: "notDecided", label: t("havent_decided_yet"), backendType: "notDecided" },
+    { key: "hours48", label: t("within_48_hours"), backendType: "hours48" },
+    { key: "week", label: t("within_a_week"), backendType: "week" },
+    { key: "furtherOut", label: t("further_out"), backendType: "date" },
+    { key: "specificDates", label: t("specific_dates"), backendType: "date" },
   ]
+
+  const dateOptions = allDateOptions.filter((opt) => allowedBackendTypes.has(opt.backendType))
 
   const renderDateStep = () => (
     <DmView className="px-[14]">
       <DmText className="text-22 leading-[28px] font-custom700 mb-[24]">
         {t("when_do_you_need_job")}
       </DmText>
-
       {dateOptions.map((option) => (
         <DmView key={option.key}>
           <DmChecbox
@@ -198,7 +181,6 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
             onPress={() => handleSelectDateOption(option.key)}
             isChecked={selectedDateOption === option.key}
           />
-          {/* Show selected date below the option */}
           {selectedDateOption === option.key && selectedDate && (
             <DmView className="ml-[36] mb-[8]">
               <DmText
@@ -211,24 +193,20 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
           )}
         </DmView>
       ))}
-
-      {/* Flexible schedule toggle */}
-      <DmView className="flex-row items-center mt-[24] pt-[16] border-t-0.5 border-t-grey5">
-        <DmText className="flex-1 text-13 leading-[18px] font-custom400 mr-[12]">
-          {t("flexible_schedule_toggle")}
-        </DmText>
-        <Switch
-          value={flexibleSchedule}
-          onValueChange={setFlexibleSchedule}
-          trackColor={{ false: colors.grey5, true: colors.blue }}
-          thumbColor="white"
-        />
-      </DmView>
     </DmView>
   )
 
   if (isLoading) {
     return <LoadingOverlay />
+  }
+
+  // Edge case: no steps at all (no unanswered questions + no dateTypes)
+  if (totalSteps === 0) {
+    navigation.navigate("RequestSummaryScreen", {
+      ...sharedParams,
+      questionsAnswers,
+    })
+    return null
   }
 
   return (
@@ -267,26 +245,24 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         />
       </DmView>
 
-      {/* Animated content — one step at a time */}
-      <Animated.View style={{ flex: 1, opacity: opacityAnim, transform: [{ translateX: slideAnim }] }}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 28, paddingBottom: 20 }}
-          bounces={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {isDateStep ? renderDateStep() : (
-            currentQuestion && (
-              <QuestionComponent
-                key={currentQuestion.id}
-                item={currentQuestion}
-                onChangeAnswer={handleChangeAnswer}
-                answers={questionsAnswers}
-              />
-            )
-          )}
-        </ScrollView>
-      </Animated.View>
+      {/* Question or date step content */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 28, paddingBottom: 20, flexGrow: 1 }}
+        bounces={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {isDateStep ? renderDateStep() : (
+          currentQuestion && (
+            <QuestionComponent
+              key={currentQuestion.id}
+              item={currentQuestion}
+              onChangeAnswer={handleChangeAnswer}
+              answers={questionsAnswers}
+            />
+          )
+        )}
+      </ScrollView>
 
       {/* Bottom button */}
       <DmView
@@ -294,7 +270,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         style={[styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
       >
         <ActionBtn
-          title={currentIndex === totalSteps - 1 ? t("continue") : t("next")}
+          title={stepIndex === totalSteps - 1 ? t("continue") : t("next")}
           onPress={handleNext}
           disable={!isCurrentAnswered}
           className="h-[52] rounded-10"
@@ -302,11 +278,12 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         />
       </DmView>
 
-      {/* Calendar modal for date selection */}
+      {/* Calendar modal */}
       <CalendarTimeModal
         isVisible={isCalendarVisible}
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleCalendarConfirm}
+        hideSpecialOptions
       />
     </SafeAreaView>
   )

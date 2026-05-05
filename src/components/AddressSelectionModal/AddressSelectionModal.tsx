@@ -161,7 +161,7 @@ const AddressSelectionModal: React.FC<Props> = ({
 
           {/* New Location */}
           <DmView
-            className="px-[18] py-[12] flex-row items-center justify-between"
+            className="px-[18] py-[18] flex-row items-center justify-between"
             onPress={onSelectNewLocation}
           >
             <DmView className="flex-1">

@@ -6,6 +6,15 @@ import { AddressInfo } from "@tappler/shared/src/types"
 
 export type { AddressInfo }
 
+export type SelectedProInfo = {
+  id: number
+  name: string
+  photo?: string
+  rating?: number
+  reviewsCount?: number
+  proType: "individual" | "company"
+}
+
 export type RootStackParamList = {
   WelcomeScreen: undefined
   AuthWelcomeScreen: undefined
@@ -13,6 +22,7 @@ export type RootStackParamList = {
   SignInEmailScreen: undefined
   GuestLocationScreen: undefined
   PickAddressScreen: undefined
+  TapplyAIScreen: undefined
   HomeTabs: { screen?: string } | undefined
   AccountDetailsScreen: undefined
   MyInformationScreen: undefined
@@ -64,15 +74,56 @@ export type RootStackParamList = {
     address: AddressInfo
     placeOfServiceOptions: string[]
   }
+  AllQuestionsScreen: {
+    categoryName: string
+    placeOfServiceOptions: string[]
+    customerQuestions: import("types/cms").ServiceQuestionType[]
+    initialAnswers: import("types/job").QuestionAnswerType[]
+    initialPlaceOfService?: string
+    onApply: (result: {
+      placeOfService?: string
+      filterOptionIds: number[]
+      dataAnswers: import("types/job").QuestionAnswerType[]
+      allAnswers: import("types/job").QuestionAnswerType[]
+      filtersChanged: boolean
+    }) => void
+  }
+  FiltersScreen: {
+    currentPlaceOfService?: string
+    initialFilters?: {
+      proType?: string
+      distanceKm?: number
+      minRating?: number
+      maxResponseTimeHours?: number
+      creditCardPayment?: boolean
+    }
+    onApply: (filters: {
+      proType?: string
+      distanceKm?: number
+      minRating?: number
+      maxResponseTimeHours?: number
+      creditCardPayment?: boolean
+    }) => void
+  }
+  QuestionStepScreen: {
+    categoryId: number
+    categoryName: string
+    serviceId: number
+    placeOfServiceOptions: string[]
+    customerQuestions: import("types/cms").ServiceQuestionType[]
+  }
   ServiceRequestDetailsScreen: {
     categoryId: number
     categoryName: string
     serviceId: number
     selectedProIds: number[]
     selectedProNames: string
+    selectedProsInfo: SelectedProInfo[]
     address: AddressInfo
     placeOfService?: string
     answeredQuestions?: QuestionAnswerType[]
+    initialAnsweredIds?: number[]
+    stepIndex?: number
   }
   RequestSummaryScreen: {
     categoryId: number
@@ -80,13 +131,13 @@ export type RootStackParamList = {
     serviceId: number
     selectedProIds: number[]
     selectedProNames: string
+    selectedProsInfo: SelectedProInfo[]
     address: AddressInfo
     placeOfService?: string
     questionsAnswers: QuestionAnswerType[]
     dateType?: string
     selectedDate?: string
     selectedTimeSlot?: { start: string; end: string }
-    flexibleSchedule?: boolean
     notes?: string
   }
   ReviewProSelectionScreen: {

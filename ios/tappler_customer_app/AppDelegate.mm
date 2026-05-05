@@ -2,11 +2,13 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <GoogleMaps/GoogleMaps.h>
+#import <Firebase.h>
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [FIRApp configure];
   [GMSServices provideAPIKey:@"AIzaSyDFrq76g50cFzocliIqTMl2jynZ8AjA034"];
   self.moduleName = @"tappler_customer_app";
   // You can add your custom initial props in the dictionary below.
@@ -24,8 +26,11 @@
 - (NSURL *)getBundleURL
 {
 #if DEBUG
-  // Customer app uses Metro on port 8082 (pro app uses default 8081)
-  return [NSURL URLWithString:@"http://localhost:8082/index.bundle?platform=ios&dev=true&minify=false"];
+  // Use port 8082 to avoid conflict with proapp on 8081
+  NSURL *defaultURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  NSURLComponents *components = [NSURLComponents componentsWithURL:defaultURL resolvingAgainstBaseURL:NO];
+  components.port = @8082;
+  return components.URL;
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif

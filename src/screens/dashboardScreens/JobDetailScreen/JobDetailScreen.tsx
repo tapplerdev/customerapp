@@ -145,26 +145,27 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     setTimeout(() => showBanner("pro_moved"), 400)
   }, [localJob?.id, respondToOpportunity, showBanner])
 
-  const handleRejectOpportunity = useCallback(async (jobPro: JobProType) => {
-    try {
-      await respondToOpportunity({
-        jobId: localJob?.id,
-        proId: jobPro.proId,
-        selectionStatus: "customerRejected",
-      }).unwrap()
-      // Update local state
-      setLocalJob((prev) => ({
-        ...prev,
-        pros: prev.pros?.map((p) =>
-          p.proId === jobPro.proId
-            ? { ...p, selectionStatus: "customerRejected" as const }
-            : p
-        ),
-      }))
-    } catch (error) {
+  const handleRejectOpportunity = useCallback((jobPro: JobProType) => {
+    // Fire API but don't await — animate immediately
+    respondToOpportunity({
+      jobId: localJob?.id,
+      proId: jobPro.proId,
+      selectionStatus: "customerRejected",
+    }).unwrap().catch(() => {
       setErrorModalVisible(true)
-    }
-  }, [localJob?.id, respondToOpportunity, t])
+    })
+
+    // Animate card removal + remaining cards move up
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    setLocalJob((prev) => ({
+      ...prev,
+      pros: prev.pros?.map((p) =>
+        p.proId === jobPro.proId
+          ? { ...p, selectionStatus: "customerRejected" as const }
+          : p
+      ),
+    }))
+  }, [localJob?.id, respondToOpportunity])
 
   const handleOpenChat = async (jobPro: JobProType) => {
     if (!jobPro.pro) return
