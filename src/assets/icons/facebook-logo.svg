@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="19.99" viewBox="0 0 20 19.99">
+  <g id="Facebook" transform="translate(0 0)">
+    <path id="back" d="M0,9.995A10,10,0,1,1,10,19.99,10,10,0,0,1,0,9.995Z" transform="translate(0 0)"/>
+    <path id="Shape" d="M5.117,12.907V6.453H7.394l.3-2.224H5.117l0-1.113c0-.58.07-.891,1.135-.891H7.68V0H5.4C2.667,0,1.7,1.079,1.7,2.893V4.229H0V6.453H1.7v6.454Z" transform="translate(6.152 3.542)" fill="#fff"/>
+  </g>
+</svg>

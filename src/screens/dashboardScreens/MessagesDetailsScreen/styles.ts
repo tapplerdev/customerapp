@@ -1,0 +1,83 @@
+import { StyleSheet } from "react-native"
+
+export default StyleSheet.create({
+  textCenter: { textAlign: "center" },
+  offerWidth: { width: "70%" },
+  egpMargin: { marginTop: 4 },
+  relative: { position: "relative" },
+  emptyBg: { backgroundColor: "#F5F5F5" },
+  italic: { fontStyle: "italic" },
+  plusHorizontal: { width: 14, height: 1.5 },
+  plusVertical: { height: 14, width: 1.5 },
+  inputContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: 41,
+    maxHeight: 120,
+    backgroundColor: "white",
+    borderWidth: 0.5,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 19,
+    maxHeight: 100,
+    paddingTop: 0,
+    paddingBottom: 0,
+    textAlignVertical: "center",
+  },
+  photoStripItem: {
+    width: 64,
+    height: 64,
+  },
+  photoStripImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 6,
+  },
+  pendingWrapper: {
+    width: 70,
+    height: 70,
+    marginRight: 5,
+  },
+  pendingThumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    overflow: "hidden",
+    marginTop: 5,
+  },
+  pendingImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+  },
+  pendingClose: {
+    top: 0,
+    right: 5,
+  },
+  headerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  inputBarShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  sheetHandle: {
+    backgroundColor: "#D1D1D6",
+    width: 40,
+  },
+  sheetBackground: {
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+})

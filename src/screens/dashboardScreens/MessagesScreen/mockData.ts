@@ -1,0 +1,188 @@
+import { ChatPreviewType, ChatMessageType } from "types/chat"
+
+export const MOCK_CHATS: ChatPreviewType[] = [
+  {
+    chat: {
+      id: 1,
+      status: "active",
+      proId: 101,
+      customerId: 1,
+      pro: { id: 101, firstName: "محمد", lastName: "عبد السلام" },
+      serviceCategoryId: 1,
+      serviceCategory: { id: 1, nameEn: "Plumbing", nameAr: "سباكة" },
+      jobId: 1001,
+    },
+    notReadMessages: 2,
+    lastMessage: {
+      id: 501,
+      text: "طيب تمام انا هبعت لحضرتك السعر دلوقتي علي التطبيق وعملك كمان الخصم ١٥٪",
+      ownerType: "pro",
+      createdAt: new Date().toISOString(),
+      proId: 101,
+    },
+  },
+  {
+    chat: {
+      id: 2,
+      status: "active",
+      proId: 102,
+      customerId: 1,
+      pro: { id: 102, firstName: "أحمد", lastName: "حسن" },
+      serviceCategoryId: 2,
+      serviceCategory: { id: 2, nameEn: "Electrical", nameAr: "كهرباء" },
+      jobId: 1002,
+    },
+    notReadMessages: 0,
+    lastMessage: {
+      id: 502,
+      text: "تمام شكرا جدا",
+      ownerType: "customer",
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      readAt: new Date(Date.now() - 86000000).toISOString(),
+      customerId: 1,
+    },
+  },
+  {
+    chat: {
+      id: 3,
+      status: "active",
+      proId: 103,
+      customerId: 1,
+      pro: { id: 103, firstName: "سارة", lastName: "محمود" },
+      serviceCategoryId: 3,
+      serviceCategory: { id: 3, nameEn: "Cleaning", nameAr: "تنظيف" },
+      jobId: 1003,
+    },
+    notReadMessages: 1,
+    lastMessage: {
+      id: 503,
+      text: "هل ممكن نحدد ميعاد بكرة الصبح؟",
+      ownerType: "pro",
+      createdAt: new Date(Date.now() - 172800000).toISOString(),
+      proId: 103,
+    },
+  },
+  {
+    chat: {
+      id: 4,
+      status: "active",
+      proId: 104,
+      customerId: 1,
+      pro: { id: 104, firstName: "خالد", lastName: "إبراهيم" },
+      serviceCategoryId: 4,
+      serviceCategory: { id: 4, nameEn: "Painting", nameAr: "دهانات" },
+      jobId: 1004,
+    },
+    notReadMessages: 0,
+    lastMessage: {
+      id: 504,
+      text: "الشغل خلص الحمد لله",
+      ownerType: "pro",
+      createdAt: new Date(Date.now() - 604800000).toISOString(),
+      proId: 104,
+    },
+  },
+  {
+    chat: {
+      id: 5,
+      status: "active",
+      proId: 105,
+      customerId: 1,
+      pro: { id: 105, firstName: "يوسف", lastName: "علي" },
+      serviceCategoryId: 5,
+      serviceCategory: { id: 5, nameEn: "AC Maintenance", nameAr: "صيانة تكييفات" },
+      jobId: 1005,
+    },
+    notReadMessages: 3,
+    lastMessage: {
+      id: 505,
+      text: "ممكن تبعتلي صورة للتكييف؟",
+      ownerType: "pro",
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      proId: 105,
+    },
+  },
+]
+
+export const MOCK_ARCHIVED_CHATS: ChatPreviewType[] = [
+  {
+    chat: {
+      id: 6,
+      status: "archived",
+      proId: 106,
+      customerId: 1,
+      pro: { id: 106, firstName: "عمر", lastName: "فاروق" },
+      serviceCategoryId: 6,
+      serviceCategory: { id: 6, nameEn: "Carpentry", nameAr: "نجارة" },
+      jobId: 1006,
+    },
+    notReadMessages: 0,
+    lastMessage: {
+      id: 506,
+      text: "شكرا ليك",
+      ownerType: "customer",
+      createdAt: new Date(Date.now() - 2592000000).toISOString(),
+      readAt: new Date(Date.now() - 2591000000).toISOString(),
+      customerId: 1,
+    },
+  },
+  {
+    chat: {
+      id: 7,
+      status: "archived",
+      proId: 107,
+      customerId: 1,
+      pro: { id: 107, firstName: "مصطفى", lastName: "كمال" },
+      serviceCategoryId: 7,
+      serviceCategory: { id: 7, nameEn: "Moving", nameAr: "نقل عفش" },
+      jobId: 1007,
+    },
+    notReadMessages: 0,
+    lastMessage: {
+      id: 507,
+      text: "تم النقل بنجاح",
+      ownerType: "pro",
+      createdAt: new Date(Date.now() - 5184000000).toISOString(),
+      proId: 107,
+    },
+  },
+]
+
+export const MOCK_MESSAGES: ChatMessageType[] = [
+  {
+    id: 1,
+    text: "شكرا لاختيارك لي وان شاء الله اكون عند حسن ظنك بس ممكن تقولي اسم المكان ايه؟ انا ...",
+    ownerType: "pro",
+    createdAt: "2021-06-06T08:10:00.000Z",
+    proId: 101,
+  },
+  {
+    id: 2,
+    text: "وزارة الاسكان اللي في التجمع",
+    ownerType: "customer",
+    createdAt: "2021-06-06T10:00:00.000Z",
+    readAt: "2021-06-06T10:05:00.000Z",
+    customerId: 1,
+  },
+  {
+    id: 3,
+    text: "طيب تمام انا هبعت لحضرتك السعر دلوقتي علي التطبيق وعملك كمان الخصم ١٥٪",
+    ownerType: "pro",
+    createdAt: new Date().toISOString().replace(/T.*/, "T08:10:00.000Z"),
+    proId: 101,
+  },
+  {
+    id: 4,
+    text: "اوك تمام شكرا",
+    ownerType: "customer",
+    createdAt: new Date().toISOString().replace(/T.*/, "T10:00:00.000Z"),
+    readAt: new Date().toISOString().replace(/T.*/, "T10:05:00.000Z"),
+    customerId: 1,
+  },
+  {
+    id: 5,
+    text: "You received a new offer",
+    ownerType: "system",
+    createdAt: new Date().toISOString().replace(/T.*/, "T10:10:00.000Z"),
+  },
+]

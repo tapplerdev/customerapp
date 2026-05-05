@@ -1,0 +1,5 @@
+<svg id="Page-1" xmlns="http://www.w3.org/2000/svg" width="32" height="28" viewBox="0 0 32 28">
+  <g id="Icon-Set-Filled" transform="translate(-258 -467)">
+    <path id="camera" d="M286,471h-3l-1-2c-.589-1.163-.9-2-2-2H268c-1.1,0-1.47.954-2,2l-1,2h-3a4,4,0,0,0-4,4v16a4,4,0,0,0,4,4h24a4,4,0,0,0,4-4V475A4,4,0,0,0,286,471Zm-12,20a8,8,0,1,1,8-8A8,8,0,0,1,274,491Zm0-14a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z" fill="#c00" fill-rule="evenodd"/>
+  </g>
+</svg>
