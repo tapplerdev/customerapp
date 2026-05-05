@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talabati — Job Status & Rendering</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; padding: 40px 20px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  h2 { font-size: 18px; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+  h3 { font-size: 15px; margin: 24px 0 10px; }
+  p, li { font-size: 14px; line-height: 1.6; color: #333; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 32px; }
+
+  /* Lifecycle diagram */
+  .lifecycle { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 20px 0 30px; }
+  .node { padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; text-align: center; }
+  .node.active { background: #e6f9ed; border: 2px solid #00BC3A; color: #00BC3A; }
+  .node.completed { background: #e6f9ed; border: 2px solid #00BC3A; color: #00BC3A; }
+  .node.cancelled { background: #fde8e8; border: 2px solid #CC0000; color: #CC0000; }
+  .node.ended { background: #f0f0f0; border: 2px solid #707070; color: #707070; }
+  .node.tappler { background: #f0f0f0; border: 2px solid #707070; color: #707070; }
+  .arrow { color: #999; font-size: 20px; }
+  .branches { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .branch-label { font-size: 11px; color: #888; margin-top: 4px; text-align: center; }
+
+  /* Status table */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #2a2a2a; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #e8e8e8; }
+  tr:hover td { background: #fafafa; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.green { background: #00BC3A; }
+  .dot.red { background: #CC0000; }
+  .dot.grey { background: #707070; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-family: 'SF Mono', Monaco, monospace; }
+
+  /* Card mockup */
+  .card-mock { background: white; border-radius: 12px; padding: 16px; margin: 16px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.08); max-width: 380px; }
+  .card-mock .title { font-size: 15px; font-weight: 700; }
+  .card-mock .row { font-size: 12px; color: #333; margin-top: 4px; }
+  .card-mock .status-text { font-weight: 500; }
+  .card-mock .posted-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .offers-badge { background: #EBEBEB; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; }
+  .offers-count { background: #CC0000; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+  .review-btn { display: inline-flex; align-items: center; border: 0.75px solid #000; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .review-btn .label { padding: 5px 10px; background: rgba(255,235,235,0.7); font-size: 11px; font-weight: 600; }
+  .review-btn .star { padding: 5px 8px; color: #CC0000; }
+  .separator { height: 0.5px; background: #e0e0e0; margin-top: 14px; }
+
+  /* Expiry table */
+  .expiry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .expiry-item { background: white; padding: 10px 14px; border-radius: 8px; border: 1px solid #e8e8e8; }
+  .expiry-item .type { font-size: 12px; font-weight: 600; color: #555; }
+  .expiry-item .time { font-size: 13px; color: #CC0000; font-weight: 600; margin-top: 2px; }
+
+  /* Selection status */
+  .sel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .sel-item { background: white; padding: 10px 14px; border-radius: 8px; border-left: 3px solid #ccc; }
+  .sel-item .name { font-weight: 600; font-size: 13px; }
+  .sel-item .desc { font-size: 12px; color: #666; margin-top: 2px; }
+  .sel-item.selected { border-left-color: #2196F3; }
+  .sel-item.opportunity { border-left-color: #FF9800; }
+  .sel-item.offer { border-left-color: #00BC3A; }
+  .sel-item.rejected { border-left-color: #CC0000; }
+
+  .note { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px; padding: 10px 14px; font-size: 13px; margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<h1>Talabati Screen</h1>
+<p class="subtitle">Job status lifecycle, rendering logic, and what each status means.</p>
+
+<!-- LIFECYCLE -->
+<h2>Job Lifecycle</h2>
+
+<div class="lifecycle">
+  <div class="node active">active</div>
+  <div class="arrow">&darr;</div>
+  <div class="branches">
+    <div>
+      <div class="node cancelled">cancelled</div>
+      <div class="branch-label">Customer cancels</div>
+    </div>
+    <div>
+      <div class="node ended">ended</div>
+      <div class="branch-label">Cron auto-expires</div>
+    </div>
+    <div>
+      <div class="node completed">completed</div>
+      <div class="branch-label">Review with<br>proCompletedJob=true</div>
+    </div>
+    <div>
+      <div class="node tappler">cancelledByTappler</div>
+      <div class="branch-label">Admin cancels<br>after job report</div>
+    </div>
+  </div>
+</div>
+
+<table>
+  <tr><th>Status</th><th>Shows as</th><th>Triggered by</th><th>What happened</th></tr>
+  <tr>
+    <td><span class="dot green"></span><code>active</code></td>
+    <td style="color:#00BC3A;font-weight:600">Active</td>
+    <td>System</td>
+    <td>Job created, waiting for pros to respond</td>
+  </tr>
+  <tr>
+    <td><span class="dot red"></span><code>cancelled</code></td>
+    <td style="color:#CC0000;font-weight:600">Cancelled</td>
+    <td>Customer</td>
+    <td>Customer cancelled the request (with reasons)</td>
+  </tr>
+  <tr>
+    <td><span class="dot grey"></span><code>ended</code></td>
+    <td style="color:#707070;font-weight:600">Expired</td>
+    <td>Cron job</td>
+    <td>No activity within the time window, auto-expired</td>
+  </tr>
+  <tr>
+    <td><span class="dot green"></span><code>completed</code></td>
+    <td style="color:#00BC3A;font-weight:600">Completed</td>
+    <td>Review system</td>
+    <td>Customer reviewed and confirmed the pro completed the job</td>
+  </tr>
+  <tr>
+    <td><span class="dot grey"></span><code>cancelledByTappler</code></td>
+    <td style="color:#707070;font-weight:600">Expired</td>
+    <td>Admin</td>
+    <td>Pro reported the job (fake/invalid), admin processed it</td>
+  </tr>
+</table>
+
+<!-- AUTO EXPIRY -->
+<h2>Auto-Expiry Timing</h2>
+<p>A cron runs every minute. Active jobs expire based on their <code>dateType</code>:</p>
+
+<div class="expiry-grid">
+  <div class="expiry-item"><div class="type">No date (urgent)</div><div class="time">2 hours</div></div>
+  <div class="expiry-item"><div class="type">ASAP</div><div class="time">24 hours</div></div>
+  <div class="expiry-item"><div class="type">48 hours</div><div class="time">48 hours</div></div>
+  <div class="expiry-item"><div class="type">Not decided / Week</div><div class="time">7 days</div></div>
+  <div class="expiry-item" style="grid-column: span 2;"><div class="type">Specific date+time</div><div class="time">After the latest timeslot passes</div></div>
+</div>
+
+<!-- PRO SELECTION -->
+<h2>Pro Selection Statuses</h2>
+<p>Each pro on a job has a <code>selectionStatus</code>:</p>
+
+<div class="sel-grid">
+  <div class="sel-item selected"><div class="name">selected</div><div class="desc">Customer picked this pro</div></div>
+  <div class="sel-item opportunity"><div class="name">opportunity</div><div class="desc">Pro found the job themselves</div></div>
+  <div class="sel-item offer"><div class="name">offer</div><div class="desc">Pro sent an offer/quote</div></div>
+  <div class="sel-item rejected"><div class="name">proRejected</div><div class="desc">Pro declined the request</div></div>
+  <div class="sel-item rejected"><div class="name">customerRejected</div><div class="desc">Customer passed on this pro</div></div>
+</div>
+
+<!-- CARD RENDERING -->
+<h2>Card Rendering</h2>
+<p>Each job card can show three independent elements:</p>
+
+<h3>Example: Expired job with 1 offer + pending review</h3>
+<div class="card-mock">
+  <div class="title">psst mid</div>
+  <div class="row">Status: <span class="status-text" style="color:#707070">Expired</span></div>
+  <div class="row">Area: Cairo</div>
+  <div class="posted-row">
+    <span class="row">Posted: 22 April 2026 9:46PM</span>
+    <span class="offers-badge">Offers <span class="offers-count">1</span></span>
+  </div>
+  <div class="review-btn"><span class="label">Leave Review</span><span class="star">&#9734;</span></div>
+  <div class="separator"></div>
+</div>
+
+<h3>What shows when</h3>
+<table>
+  <tr><th>Element</th><th>Condition</th></tr>
+  <tr>
+    <td><strong>Status</strong></td>
+    <td>Always. Shows real backend status, never overridden.</td>
+  </tr>
+  <tr>
+    <td><strong>Offers badge</strong></td>
+    <td>When there are opportunity pros whose offers haven't been accepted.<br><code>selectionStatus = "opportunity"</code> or <code>"offer" + proOpportunityOfferSentAt + !opportunityAcceptedAt</code></td>
+  </tr>
+  <tr>
+    <td><strong>Leave Review</strong></td>
+    <td>When any pro has <code>selectionStatus = "offer"</code> and <code>review = null</code></td>
+  </tr>
+</table>
+
+<div class="note">
+  All three are independent. An expired job can show Offers + Leave Review simultaneously. Status never changes based on offers or reviews pending &mdash; it always reflects the backend value.
+</div>
+
+<!-- COMPLETED TRANSITION -->
+<h2>How a Job Becomes "Completed"</h2>
+<p>Only one path:</p>
+<ul>
+  <li>Customer taps <strong>Leave Review</strong></li>
+  <li>Fills out the review form</li>
+  <li>Selects <strong>"Yes"</strong> for "Did this Pro complete the job?"</li>
+  <li>Submits &rarr; <code>POST /reviews</code> with <code>proCompletedJob: true</code></li>
+  <li>Backend listener sets <code>job.status = "completed"</code></li>
+</ul>
+<p style="margin-top:8px">If the customer selects <strong>"No"</strong>, the job status stays unchanged.</p>
+
+</body>
+</html>
