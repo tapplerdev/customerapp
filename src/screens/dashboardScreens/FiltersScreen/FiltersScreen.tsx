@@ -10,7 +10,6 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
 import CloseIcon from "assets/icons/close.svg"
-import RentangleChecBoxCheckedIcon from "@tappler/shared/src/assets/icons/rentangle-checkbox-checked.svg"
 
 export type FilterValues = {
   proType?: string
@@ -67,19 +66,16 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     <DmView
       key={label}
       onPress={onPress}
-      className={`flex-row items-center px-[14] py-[8] rounded-full mr-[8] border ${
-        isSelected ? "bg-red border-red" : "bg-white border-grey5"
-      }`}
+      className="px-[18] py-[12] rounded-10 mr-[10]"
+      style={{
+        backgroundColor: isSelected ? "#F5F5F5" : colors.white,
+        borderWidth: isSelected ? 1.5 : 1,
+        borderColor: isSelected ? colors.black : "#E0E0E0",
+      }}
     >
-      {isSelected && (
-        <DmView className="mr-[6]">
-          <RentangleChecBoxCheckedIcon width={16} height={16} />
-        </DmView>
-      )}
       <DmText
-        className={`text-13 leading-[16px] font-custom500 ${
-          isSelected ? "text-white" : "text-black"
-        }`}
+        className={`text-14 leading-[18px] ${isSelected ? "font-custom700" : "font-custom400"}`}
+        style={{ color: isSelected ? colors.black : colors.grey }}
       >
         {label}
       </DmText>
@@ -103,18 +99,20 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           </DmView>
           <DmView className="flex-row items-center">
-            <DmText className="text-14 leading-[18px] font-custom600 text-black">
+            <DmText className="text-17 leading-[21px] font-custom700 text-black">
               {t("filters")}
             </DmText>
             {activeCount > 0 && (
-              <DmView className="ml-[6] w-[20] h-[20] rounded-full bg-red items-center justify-center">
-                <DmText className="text-10 font-custom600 text-white">{activeCount}</DmText>
+              <DmView className="ml-[8] w-[22] h-[22] rounded-full bg-black items-center justify-center">
+                <DmText className="text-11 font-custom700" style={{ color: colors.white }}>
+                  {activeCount}
+                </DmText>
               </DmView>
             )}
           </DmView>
           <DmView className="flex-1 items-end">
             <DmView onPress={handleResetAll} hitSlop={HIT_SLOP_DEFAULT}>
-              <DmText className="text-13 leading-[16px] font-custom600 text-red">
+              <DmText className="text-15 leading-[19px] font-custom600 text-red">
                 {t("reset_all")}
               </DmText>
             </DmView>
@@ -132,7 +130,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {/* Pro Type */}
         <DmView className="px-[24] mb-[24]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[12]">
+          <DmText className="text-18 leading-[23px] font-custom700 text-black mb-[12]">
             {t("pro_type")}
           </DmText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -151,7 +149,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Distance */}
         <DmView className="px-[24] mb-[24]" style={!isPhysical ? { opacity: 0.4 } : undefined}>
           <DmView className="flex-row items-center justify-between mb-[12]">
-            <DmText className="text-15 leading-[19px] font-custom700 text-black">
+            <DmText className="text-18 leading-[23px] font-custom700 text-black">
               {t("distance_km")}
             </DmText>
             {isPhysical ? (
@@ -180,7 +178,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Minimum Rating */}
         <DmView className="px-[24] mb-[24]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[12]">
+          <DmText className="text-18 leading-[23px] font-custom700 text-black mb-[12]">
             {t("minimum_rating")}
           </DmText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -201,7 +199,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Response Time */}
         <DmView className="px-[24] mb-[24]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[12]">
+          <DmText className="text-18 leading-[23px] font-custom700 text-black mb-[12]">
             {t("response_time")}
           </DmText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -222,7 +220,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Payment Method */}
         <DmView className="px-[24] mb-[24]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[12]">
+          <DmText className="text-18 leading-[23px] font-custom700 text-black mb-[12]">
             {t("payment_method")}
           </DmText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>

@@ -23,7 +23,6 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 // import QuestionBottomSheet from "components/QuestionBottomSheet/QuestionBottomSheet"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 import AllQuestionsModal from "components/AllQuestionsModal/AllQuestionsModal"
-// import FiltersModal from "components/FiltersModal/FiltersModal"
 import { FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import SearchLocationModal from "components/SearchLocationModal/SearchLocationModal"
 import AddressSelectionModal from "components/AddressSelectionModal"
@@ -68,12 +67,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [isAddressModalVisible, setAddressModalVisible] = useState(false)
 
   // Filters state
-  const [isFiltersVisible, setFiltersVisible] = useState(false)
   const [currentFilters, setCurrentFilters] = useState<FilterValues>({})
 
   // Question flow state
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
   const hasLaunchedQuestions = useRef(false)
+  const relaunchQuestions = useRef(false)
   const [isAllQuestionsVisible, setAllQuestionsVisible] = useState(false)
   const [currentPlaceOfService, setCurrentPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
   const [allAnswers, setAllAnswers] = useState<QuestionAnswerType[]>([])
@@ -134,19 +133,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     getPros({ categoryId, placeOfService: initialPlaceOfService, customerAddress }, true)
   }, [categoryId])
 
-  // Launch native question flow on first mount (replaces gorhom QuestionBottomSheet)
+  // Launch native question flow on first mount + whenever the service changes
+  // (replaces gorhom QuestionBottomSheet)
   useEffect(() => {
-    if (!initialPlaceOfService && !hasLaunchedQuestions.current && customerQuestions.length > 0) {
-      hasLaunchedQuestions.current = true
-      navigation.push("QuestionStepScreen", {
-        categoryId,
-        categoryName,
-        serviceId,
-        placeOfServiceOptions,
-        customerQuestions,
-      })
-    }
-  }, [customerQuestions.length])
+    const firstLaunch = !hasLaunchedQuestions.current && !initialPlaceOfService
+    if (!firstLaunch && !relaunchQuestions.current) return
+    if (customerQuestions.length === 0) return // wait for the (new) service's questions to load
+    hasLaunchedQuestions.current = true
+    relaunchQuestions.current = false
+    navigation.push("QuestionStepScreen", {
+      categoryId,
+      categoryName,
+      serviceId,
+      placeOfServiceOptions,
+      customerQuestions,
+    })
+  }, [customerQuestions.length, serviceId])
 
   // Shared refetch logic — merges question filters + pro-level filters
   const doRefetch = useCallback(
@@ -215,24 +217,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [refetchWithFilters])
 
-  // Handle step-by-step sheet dismiss
-  const handleSheetDismiss = useCallback(
-    (result: {
-      placeOfService?: string
-      filterOptionIds: number[]
-      dataAnswers: QuestionAnswerType[]
-      allAnswers: QuestionAnswerType[]
-      filtersChanged: boolean
-    }) => {
-      setSheetVisible(false)
-      setCurrentPlaceOfService(result.placeOfService)
-      setDataAnswers(result.dataAnswers)
-      setAllAnswers(result.allAnswers)
-      refetchWithFilters(result)
-    },
-    [refetchWithFilters]
-  )
-
   // Handle all-questions modal dismiss
   const handleAllQuestionsDismiss = useCallback(
     (result: {
@@ -272,7 +256,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setCurrentPlaceOfService(undefined)
       setCurrentFilters({})
       setSelectedPros([])
-      setSheetVisible(true)
+      relaunchQuestions.current = true // re-launch the native question flow once the new service's data loads
       // Prefetch service data + fetch pros
       setIsRefetching(true)
       getServiceData(newServiceId)
@@ -535,15 +519,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         </Animated.View>
       )}
 
-      {/* Question bottom sheet — replaced with native QuestionStepScreen (formSheet)
-      <QuestionBottomSheet
-        isVisible={isSheetVisible}
-        serviceName={categoryName}
-        placeOfServiceOptions={placeOfServiceOptions}
-        customerQuestions={customerQuestions}
-        onDismiss={handleSheetDismiss}
-      />
-      */}
+      {/* Question flow is now a native screen (QuestionStepScreen, formSheet) — launched via
+          navigation.push and resolved via questionFlowEventBus, replacing the gorhom QuestionBottomSheet */}
 
       {/* AllQuestionsModal — replaced with native AllQuestionsScreen (modal)
       <AllQuestionsModal
@@ -554,15 +531,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         initialAnswers={allAnswers}
         initialPlaceOfService={currentPlaceOfService}
         onDismiss={handleAllQuestionsDismiss}
-      />
-      */}
-
-      {/* FiltersModal — replaced with native FiltersScreen (modal)
-      <FiltersModal
-        isVisible={isFiltersVisible}
-        currentPlaceOfService={currentPlaceOfService}
-        initialFilters={currentFilters}
-        onDismiss={handleFiltersDismiss}
       />
       */}
 
