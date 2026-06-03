@@ -91,6 +91,8 @@ export type RootStackParamList = {
   }
   FiltersScreen: {
     currentPlaceOfService?: string
+    refinementFilters?: import("types/cms").ServiceQuestionType[]
+    initialRefinementOptionIds?: number[]
     initialFilters?: {
       proType?: string
       distanceKm?: number
@@ -104,6 +106,7 @@ export type RootStackParamList = {
       minRating?: number
       maxResponseTimeHours?: number
       creditCardPayment?: boolean
+      refinementFilterOptionIds: number[]
     }) => void
   }
   QuestionStepScreen: {

@@ -37,6 +37,7 @@ export type ServiceQuestionType = {
   textAr?: string
   options?: QuestionOptionType[]
   isFilter: boolean
+  tier?: "primary" | "refinement"
   layoutQuestionStyle?: QuestionLayoutStyleType
   dateType?: "date" | "dateRange"
   timeType?: "time" | "timeRange"

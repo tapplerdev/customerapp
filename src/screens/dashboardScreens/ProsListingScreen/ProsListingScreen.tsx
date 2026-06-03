@@ -69,6 +69,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Filters state
   const [currentFilters, setCurrentFilters] = useState<FilterValues>({})
+  // Service filter option ids: primary (from the upfront flow) + refinement (from the filters modal)
+  const [questionFilterOptionIds, setQuestionFilterOptionIds] = useState<number[]>([])
+  const [refinementFilterOptionIds, setRefinementFilterOptionIds] = useState<number[]>([])
 
   // Question flow state
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
@@ -87,10 +90,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Compute answered count for the banner
   const allCustomerQuestions = customerQuestions.filter((q) => q.assignee === "customer")
-  const totalQuestions = allCustomerQuestions.length + (placeOfServiceOptions.length > 1 ? 1 : 0)
+  const refinementFilters = allCustomerQuestions.filter((q) => q.isFilter && q.tier === "refinement")
+  // Refinement filters live in the Filters modal, not the upfront flow, so exclude them from the banner count
+  const upfrontQuestions = allCustomerQuestions.filter((q) => !(q.isFilter && q.tier === "refinement"))
+  const totalQuestions = upfrontQuestions.length + (placeOfServiceOptions.length > 1 ? 1 : 0)
   const answeredCount = useMemo(() => {
     let count = currentPlaceOfService ? 1 : 0
-    allCustomerQuestions.forEach((q) => {
+    upfrontQuestions.forEach((q) => {
       const ans = allAnswers.find((a) => a.questionId === q.id)
       if (!ans) return
       if (q.type === "shortAnswer" || q.type === "paragraph") { if (ans.answer) count++ }
@@ -99,7 +105,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       else if (q.type === "dateTime") { if (ans.date || ans.startDate) count++ }
     })
     return count
-  }, [allAnswers, allCustomerQuestions, currentPlaceOfService])
+  }, [allAnswers, upfrontQuestions, currentPlaceOfService])
 
   // Continue button slide animation
   const hasSelection = selectedPros.length > 0
@@ -166,7 +172,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const doRefetch = useCallback(
     (opts: {
       pos?: string
-      filterOptionIds?: number[]
+      questionFilterOptionIds?: number[]
+      refinementFilterOptionIds?: number[]
       filters?: FilterValues
     }) => {
       const placeOfService = opts.pos ?? currentPlaceOfService
@@ -178,6 +185,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           : undefined
 
       const f = opts.filters ?? currentFilters
+      const mergedFilterOptionIds = [
+        ...(opts.questionFilterOptionIds ?? questionFilterOptionIds),
+        ...(opts.refinementFilterOptionIds ?? refinementFilterOptionIds),
+      ]
 
       setIsRefetching(true)
       getPros(
@@ -185,7 +196,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           categoryId,
           placeOfService,
           customerAddress,
-          filterOptionsIds: opts.filterOptionIds?.length ? opts.filterOptionIds : undefined,
+          filterOptionsIds: mergedFilterOptionIds.length ? mergedFilterOptionIds : undefined,
           proType: f.proType,
           distanceKm: f.distanceKm,
           minRating: f.minRating,
@@ -197,13 +208,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [categoryId, address, getPros, currentPlaceOfService, currentFilters]
+    [categoryId, address, getPros, currentPlaceOfService, currentFilters, questionFilterOptionIds, refinementFilterOptionIds]
   )
 
   const refetchWithFilters = useCallback(
     (result: { placeOfService?: string; filterOptionIds: number[]; filtersChanged: boolean }) => {
       if (!result.filtersChanged) return
-      doRefetch({ pos: result.placeOfService, filterOptionIds: result.filterOptionIds })
+      doRefetch({ pos: result.placeOfService, questionFilterOptionIds: result.filterOptionIds })
     },
     [doRefetch]
   )
@@ -220,6 +231,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setCurrentPlaceOfService(result.placeOfService)
       setDataAnswers(result.dataAnswers)
       setAllAnswers(result.allAnswers)
+      setQuestionFilterOptionIds(result.filterOptionIds)
       refetchWithFilters(result)
     }
 
@@ -241,6 +253,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setCurrentPlaceOfService(result.placeOfService)
       setDataAnswers(result.dataAnswers)
       setAllAnswers(result.allAnswers)
+      setQuestionFilterOptionIds(result.filterOptionIds)
       refetchWithFilters(result)
     },
     [refetchWithFilters]
@@ -248,9 +261,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle pro-level filters dismiss
   const handleFiltersDismiss = useCallback(
-    (filters: FilterValues) => {
-      setCurrentFilters(filters)
-      doRefetch({ filters })
+    (filters: FilterValues & { refinementFilterOptionIds: number[] }) => {
+      const { refinementFilterOptionIds: refinementIds, ...rest } = filters
+      setCurrentFilters(rest)
+      setRefinementFilterOptionIds(refinementIds)
+      doRefetch({ filters: rest, refinementFilterOptionIds: refinementIds })
     },
     [doRefetch]
   )
@@ -267,6 +282,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setDataAnswers([])
       setCurrentPlaceOfService(undefined)
       setCurrentFilters({})
+      setQuestionFilterOptionIds([])
+      setRefinementFilterOptionIds([])
       setSelectedPros([])
       relaunchQuestions.current = true // re-launch the native question flow once the new service's data loads
       // Prefetch service data + fetch pros
@@ -472,6 +489,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           onPress={() => navigation.navigate("FiltersScreen", {
             currentPlaceOfService,
             initialFilters: currentFilters,
+            refinementFilters,
+            initialRefinementOptionIds: refinementFilterOptionIds,
             onApply: handleFiltersDismiss,
           })}
           className="w-[32] h-[32] items-center justify-center"

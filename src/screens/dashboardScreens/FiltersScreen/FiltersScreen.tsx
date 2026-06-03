@@ -22,10 +22,12 @@ export type FilterValues = {
 type Props = RootStackScreenProps<"FiltersScreen">
 
 const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { currentPlaceOfService, initialFilters, onApply } = route.params
+  const { currentPlaceOfService, initialFilters, refinementFilters, initialRefinementOptionIds, onApply } = route.params
   const insets = useSafeAreaInsets()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
 
+  const [refinementOptionIds, setRefinementOptionIds] = useState<number[]>(initialRefinementOptionIds ?? [])
   const [proType, setProType] = useState<string | undefined>(initialFilters?.proType)
   const [distanceKm, setDistanceKm] = useState(initialFilters?.distanceKm ?? 50)
   const [distanceInput, setDistanceInput] = useState(String(initialFilters?.distanceKm ?? 50))
@@ -49,13 +51,20 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     currentPlaceOfService === "delivery" ||
     currentPlaceOfService === "fixedLocations"
 
-  const collectFilters = useCallback((): FilterValues => ({
+  const toggleRefinementOption = (optionId: number) => {
+    setRefinementOptionIds((prev) =>
+      prev.includes(optionId) ? prev.filter((id) => id !== optionId) : [...prev, optionId]
+    )
+  }
+
+  const collectFilters = useCallback(() => ({
     proType,
     distanceKm: distanceKm < 50 ? distanceKm : undefined,
     minRating,
     maxResponseTimeHours,
     creditCardPayment: creditCardPayment || undefined,
-  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment])
+    refinementFilterOptionIds: refinementOptionIds,
+  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, refinementOptionIds])
 
   const handleShowResults = () => {
     onApply(collectFilters())
@@ -67,6 +76,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   const handleResetAll = () => {
+    setRefinementOptionIds([])
     setProType(undefined)
     setDistanceKm(50)
     setMinRating(undefined)
@@ -74,9 +84,9 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     setCreditCardPayment(false)
   }
 
-  const renderChip = (label: string, isSelected: boolean, onPress: () => void) => (
+  const renderChip = (label: string, isSelected: boolean, onPress: () => void, key: string | number = label) => (
     <DmView
-      key={label}
+      key={key}
       onPress={onPress}
       className="px-[13] py-[7] rounded-5 mr-[8]"
       style={{
@@ -94,7 +104,9 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     </DmView>
   )
 
-  const activeCount = [proType, distanceKm < 50 ? distanceKm : undefined, minRating, maxResponseTimeHours, creditCardPayment].filter(Boolean).length
+  const activeCount =
+    [proType, distanceKm < 50 ? distanceKm : undefined, minRating, maxResponseTimeHours, creditCardPayment].filter(Boolean).length +
+    refinementOptionIds.length
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={[]}>
@@ -140,6 +152,30 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
         bounces={false}
       >
+        {/* Service-specific refinement filters */}
+        {refinementFilters?.map((question) => (
+          <React.Fragment key={question.id}>
+            <DmView className="px-[20] mb-[18]">
+              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+                {isAr && question.textAr ? question.textAr : question.text}
+              </DmText>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {question.options
+                  ?.filter((o) => !!o.serviceCategoryFilterOptionId)
+                  .map((o) =>
+                    renderChip(
+                      isAr && o.labelAr ? o.labelAr : o.label,
+                      refinementOptionIds.includes(o.serviceCategoryFilterOptionId!),
+                      () => toggleRefinementOption(o.serviceCategoryFilterOptionId!),
+                      o.serviceCategoryFilterOptionId!
+                    )
+                  )}
+              </ScrollView>
+            </DmView>
+            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+          </React.Fragment>
+        ))}
+
         {/* Pro Type */}
         <DmView className="px-[20] mb-[18]">
           <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">

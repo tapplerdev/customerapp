@@ -225,7 +225,7 @@ const QuestionStepScreen: React.FC<Props> = ({ route, navigation }) => {
       .filter((q) => q.assignee === "customer")
       .sort((a, b) => a.order - b.order)
 
-    const filterQuestions = customerOnly.filter((q) => q.isFilter)
+    const filterQuestions = customerOnly.filter((q) => q.isFilter && q.tier !== "refinement")
     const dataQuestions = customerOnly.filter((q) => !q.isFilter)
 
     filterQuestions.forEach((q) => result.push({ type: "question", question: q }))
