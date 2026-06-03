@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { ScrollView, StyleSheet, TextInput } from "react-native"
 import Slider from "@react-native-community/slider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
+import { QuestionOptionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -57,14 +58,57 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     )
   }
 
+  // Lookup of every refinement option by its filter-option id
+  const optionsById = useMemo(() => {
+    const map = new Map<number, QuestionOptionType>()
+    refinementFilters?.forEach((q) =>
+      q.options?.forEach((o) => {
+        if (o.serviceCategoryFilterOptionId) map.set(o.serviceCategoryFilterOptionId, o)
+      })
+    )
+    return map
+  }, [refinementFilters])
+
+  // Drop selections whose parent (and parent's parent…) isn't also selected — keeps hierarchy consistent
+  const effectiveSelectedIds = useMemo(() => {
+    const current = new Set(refinementOptionIds)
+    let changed = true
+    while (changed) {
+      changed = false
+      current.forEach((id) => {
+        const parentKey = optionsById.get(id)?.parentFilterOptionKey
+        if (!parentKey) return
+        const parentSelected = [...current].some((sid) => optionsById.get(sid)?.filterOptionKey === parentKey)
+        if (!parentSelected) {
+          current.delete(id)
+          changed = true
+        }
+      })
+    }
+    return current
+  }, [refinementOptionIds, optionsById])
+
+  const selectedKeys = useMemo(() => {
+    const keys = new Set<string>()
+    effectiveSelectedIds.forEach((id) => {
+      const key = optionsById.get(id)?.filterOptionKey
+      if (key) keys.add(key)
+    })
+    return keys
+  }, [effectiveSelectedIds, optionsById])
+
+  // A child option only shows once its parent is selected
+  const isOptionVisible = (o: QuestionOptionType) =>
+    !o.parentFilterOptionKey || selectedKeys.has(o.parentFilterOptionKey)
+
   const collectFilters = useCallback(() => ({
     proType,
     distanceKm: distanceKm < 50 ? distanceKm : undefined,
     minRating,
     maxResponseTimeHours,
     creditCardPayment: creditCardPayment || undefined,
-    refinementFilterOptionIds: refinementOptionIds,
-  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, refinementOptionIds])
+    refinementFilterOptionIds: [...effectiveSelectedIds],
+  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, effectiveSelectedIds])
 
   const handleShowResults = () => {
     onApply(collectFilters())
@@ -106,7 +150,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const activeCount =
     [proType, distanceKm < 50 ? distanceKm : undefined, minRating, maxResponseTimeHours, creditCardPayment].filter(Boolean).length +
-    refinementOptionIds.length
+    effectiveSelectedIds.size
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={[]}>
@@ -152,29 +196,33 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
         bounces={false}
       >
-        {/* Service-specific refinement filters */}
-        {refinementFilters?.map((question) => (
-          <React.Fragment key={question.id}>
-            <DmView className="px-[20] mb-[18]">
-              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
-                {isAr && question.textAr ? question.textAr : question.text}
-              </DmText>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {question.options
-                  ?.filter((o) => !!o.serviceCategoryFilterOptionId)
-                  .map((o) =>
+        {/* Service-specific refinement filters (child groups appear once their parent is selected) */}
+        {refinementFilters?.map((question) => {
+          const visibleOptions = question.options?.filter(
+            (o) => !!o.serviceCategoryFilterOptionId && isOptionVisible(o)
+          )
+          if (!visibleOptions?.length) return null
+          return (
+            <React.Fragment key={question.id}>
+              <DmView className="px-[20] mb-[18]">
+                <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+                  {isAr && question.textAr ? question.textAr : question.text}
+                </DmText>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {visibleOptions.map((o) =>
                     renderChip(
                       isAr && o.labelAr ? o.labelAr : o.label,
-                      refinementOptionIds.includes(o.serviceCategoryFilterOptionId!),
+                      effectiveSelectedIds.has(o.serviceCategoryFilterOptionId!),
                       () => toggleRefinementOption(o.serviceCategoryFilterOptionId!),
                       o.serviceCategoryFilterOptionId!
                     )
                   )}
-              </ScrollView>
-            </DmView>
-            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
-          </React.Fragment>
-        ))}
+                </ScrollView>
+              </DmView>
+              <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+            </React.Fragment>
+          )
+        })}
 
         {/* Pro Type */}
         <DmView className="px-[20] mb-[18]">

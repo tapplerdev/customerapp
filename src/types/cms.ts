@@ -15,6 +15,8 @@ export type QuestionOptionType = {
   icon?: string
   iconStorageKey?: string
   serviceCategoryFilterOptionId?: number
+  filterOptionKey?: string
+  parentFilterOptionKey?: string
 }
 
 export type QuestionStyleType =
