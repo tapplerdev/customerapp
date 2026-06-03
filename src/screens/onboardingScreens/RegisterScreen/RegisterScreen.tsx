@@ -29,7 +29,8 @@ interface FormValues {
   gender: "male" | "female"
 }
 
-const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
+  const returnTo = (route.params as any)?.returnTo
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const dispatch = useDispatch()
@@ -74,7 +75,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   const handleGoLogin = () => {
-    navigation.navigate("SignInEmailScreen")
+    navigation.navigate("SignInEmailScreen" as any, returnTo ? { returnTo: true } : undefined)
   }
 
   const onSubmit = async () => {
@@ -101,10 +102,15 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       dispatch(setTokens({ token: authRes.token, refreshToken: authRes.refreshToken }))
       await getCustomerMe().unwrap()
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "HomeTabs" }],
-      })
+      if (returnTo) {
+        // Came from auth gate — go back to preserve the job flow
+        navigation.goBack()
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "HomeTabs" }],
+        })
+      }
     } catch (error: any) {
       const validationErrors = error?.data?.validationErrors
       if (validationErrors) {

@@ -22,6 +22,7 @@ export type RootStackParamList = {
   SignInEmailScreen: undefined
   GuestLocationScreen: undefined
   PickAddressScreen: undefined
+  AuthGateScreen: undefined
   TapplyAIScreen: undefined
   HomeTabs: { screen?: string } | undefined
   AccountDetailsScreen: undefined

@@ -9,6 +9,7 @@ import moment from "moment"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps, SelectedProInfo } from "navigation/types"
 import { useCreateJobMutation, useGetServiceByIdQuery } from "services/api"
+import { useTypedSelector } from "store"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import ErrorModal from "components/ErrorModal"
@@ -58,6 +59,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const customerQuestions = category?.customerQuestions || []
 
+  const { isAuth } = useTypedSelector((store) => store.auth)
   const [isLoading, setLoading] = useState(false)
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -72,6 +74,18 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   const handleSubmit = async () => {
+    console.log('[RequestSummary] handleSubmit called')
+    console.log('[RequestSummary] isAuth:', isAuth)
+    console.log('[RequestSummary] token:', useTypedSelector ? 'exists' : 'none')
+
+    if (!isAuth) {
+      console.log('[RequestSummary] Not auth — navigating to AuthGateScreen')
+      navigation.navigate("AuthGateScreen")
+      return
+    }
+
+    console.log('[RequestSummary] Auth check passed, building payload...')
+
     try {
       setLoading(true)
       const jobPayload: CreateJobRequest = {

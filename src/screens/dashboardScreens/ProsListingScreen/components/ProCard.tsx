@@ -32,6 +32,27 @@ function formatResponseTime(hours: number): string {
   return `Responds in about ${days} ${days === 1 ? "day" : "days"}`
 }
 
+// Rough per-item height estimate for FlashList's `overrideItemLayout`. Mirrors the
+// conditional sections rendered below so the list's scroll math matches reality.
+// Not exact — FlashList still measures the real height after render; this just
+// keeps the pre-render estimate close per card instead of a flat average.
+export function estimateProCardHeight(pro: ProType): number {
+  const subscriptions: any[] = pro.serviceCategories?.[0]?.subscriptions || []
+  const trustDocs = (pro.documents || []).filter(
+    (d) => d.type === "trust" && d.status === "approved"
+  )
+  const hasMotivational = subscriptions.some((s: any) => s.product?.subType === "motivational")
+  const hasPromo = !!subscriptions.find((s: any) => s.product?.subType === "promoLine")?.promoStickerMessage
+
+  let h = 190 // base: 85px photo + card padding + Chat/Select buttons + outer margin
+  if (pro.responseTimeHours != null) h += 18
+  if (pro.informationAbout) h += 30
+  if (trustDocs.length > 0) h += 50
+  if (hasMotivational) h += 42
+  if (hasPromo) h += 52
+  return h
+}
+
 interface Props {
   pro: ProType
   isSelected: boolean
@@ -59,6 +80,7 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
   const reviewsCount = pro.reviewScore?.reviewsCount || 0
 
   const subscriptions = pro.serviceCategories?.[0]?.subscriptions || []
+  const hasMotivational = subscriptions.some((s: any) => s.product?.subType === "motivational")
 
   const trustDocs = pro.documents?.filter(
     (d) => d.type === "trust" && d.status === "approved"
@@ -186,13 +208,15 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
         </DmView>
       )}
 
-      {/* OFFERS banner */}
-      <DmView className="mt-[16]">
-        <OffersSection
-          subscriptions={subscriptions}
-          compact
-        />
-      </DmView>
+      {/* OFFERS banner — only when there are motivational offers (else no empty gap) */}
+      {hasMotivational && (
+        <DmView className="mt-[16]">
+          <OffersSection
+            subscriptions={subscriptions}
+            compact
+          />
+        </DmView>
+      )}
 
       {/* Promo line */}
       {subscriptions.find((s: any) => s.product?.subType === "promoLine")?.promoStickerMessage && (

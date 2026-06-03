@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, View } from "react-native"
+import { Animated, View, ViewToken } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -10,14 +10,14 @@ import {
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
-import { useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyGetServiceByIdQuery } from "services/api"
-import { useTypedSelector } from "store"
+import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyGetServiceByIdQuery } from "services/api"
+import { store, useTypedSelector } from "store"
 import { ProType } from "types/pro"
 import { QuestionAnswerType } from "types/job"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
-import ProCard from "./components/ProCard"
+import ProCard, { estimateProCardHeight } from "./components/ProCard"
 import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 // import QuestionBottomSheet from "components/QuestionBottomSheet/QuestionBottomSheet"
@@ -55,6 +55,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [getPros, { data, isLoading, isError }] = useLazyGetProsForCategoryQuery()
   const [getProProfile] = useLazyGetProProfileQuery()
   const [getServiceData] = useLazyGetServiceByIdQuery()
+  const prefetchProfile = api.usePrefetch("getProProfile")
 
   const { canStart, start } = useTourGuideController()
 
@@ -149,6 +150,17 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       customerQuestions,
     })
   }, [customerQuestions.length, serviceId])
+
+  // Strategy C: prefetch the first N pro profiles once the list loads, so tapping
+  // a card opens ProProfileScreen instantly from cache. `ifOlderThan` skips re-fetch
+  // if already warm, so this is cheap even if the effect re-runs.
+  useEffect(() => {
+    const list = data?.data
+    if (!list?.length) return
+    list.slice(0, 10).forEach((p) => {
+      prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+    })
+  }, [data?.data, categoryId, prefetchProfile])
 
   // Shared refetch logic — merges question filters + pro-level filters
   const doRefetch = useCallback(
@@ -332,11 +344,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   }, [])
 
   const handlePressProfile = useCallback(async (pro: ProType) => {
+    const arg = { proId: pro.id, serviceCategoryId: categoryId }
+    const goToProfile = () =>
+      navigation.navigate("ProProfileScreen", { proId: pro.id, serviceCategoryId: categoryId, serviceCategories: pro.serviceCategories })
+
+    // Already prefetched (strategy C) → open instantly, no overlay, no delay
+    const cached = api.endpoints.getProProfile.select(arg)(store.getState()).data
+    if (cached) {
+      goToProfile()
+      return
+    }
+
+    // Cold cache → fetch with overlay, then navigate as soon as it resolves
     setIsProfileLoading(true)
     try {
-      await getProProfile({ proId: pro.id, serviceCategoryId: categoryId }, true).unwrap()
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      navigation.navigate("ProProfileScreen", { proId: pro.id, serviceCategoryId: categoryId, serviceCategories: pro.serviceCategories })
+      await getProProfile(arg, true).unwrap()
+      goToProfile()
     } catch (e) {
       setErrorModalVisible(true)
     } finally {
@@ -379,6 +402,24 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       answeredQuestions: dataAnswers,
     })
   }
+
+  // Strategy B: prefetch profiles of pros as they scroll into view, so they're
+  // instant too. FlashList captures onViewableItemsChanged once and disallows
+  // changing it, so the handler is a stable ref that calls the latest prefetch
+  // logic (kept current via the effect below, so categoryId never goes stale).
+  const prefetchVisibleRef = useRef<(items: ProType[]) => void>(() => {})
+  useEffect(() => {
+    prefetchVisibleRef.current = (items) =>
+      items.forEach((p) =>
+        prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+      )
+  }, [prefetchProfile, categoryId])
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    prefetchVisibleRef.current(viewableItems.map((v) => v.item).filter(Boolean) as ProType[])
+  }).current
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 200 }).current
 
   const renderItem = useCallback(
     ({ item, index }: { item: ProType; index: number }) => {
@@ -489,8 +530,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           keyExtractor={(item) => String(item.id)}
           extraData={selectedPros}
           estimatedItemSize={250}
+          overrideItemLayout={(layout, pro) => {
+            layout.size = estimateProCardHeight(pro)
+          }}
           contentContainerStyle={{ paddingTop: 12, paddingBottom: 90 }}
           showsVerticalScrollIndicator={false}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
         />
       )}
 
@@ -556,6 +602,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           navigation.navigate("MySavedAddressesScreen", { selectionMode: true })
         }}
       />
+
 
       {/* Refetching overlay — over existing results */}
       {isRefetching && (

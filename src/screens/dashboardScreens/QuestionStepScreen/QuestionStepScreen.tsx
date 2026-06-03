@@ -16,6 +16,15 @@ import { questionFlowEventBus } from "events/questionFlowEventBus"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
 
+// Maps place-of-service values to their i18n label keys (same as AllQuestionsScreen)
+const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
+  proToCustomer: "at_my_location",
+  customerToPro: "at_pro_location",
+  remoteOrOnline: "online_remote",
+  delivery: "delivery_service",
+  fixedLocations: "at_fixed_location",
+}
+
 // ── Types for the nested stack ──
 type StepItem =
   | { type: "placeOfService" }
@@ -107,7 +116,7 @@ const QuestionStepInner: React.FC<{ route: any; navigation: any }> = ({ route, n
   const renderPlaceOfServiceStep = () => (
     <DmView className="px-[14]">
       <DmText className="text-22 leading-[28px] font-custom700 mb-[24]">
-        {t("where_do_you_need_service")}
+        {t("how_do_you_want_service")}
       </DmText>
       {ctx.placeOfServiceOptions.map((place) => (
         <DmChecbox
@@ -115,7 +124,7 @@ const QuestionStepInner: React.FC<{ route: any; navigation: any }> = ({ route, n
           className="py-[14]"
           textClassName="flex-1 text-14 leading-[18px] font-custom400"
           variant="circle"
-          title={t(place)}
+          title={t(PLACE_OF_SERVICE_LABELS[place] || place)}
           onPress={() => ctx.setSelectedPlaceOfService(place)}
           isChecked={ctx.selectedPlaceOfService === place}
         />

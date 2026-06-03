@@ -38,6 +38,7 @@ import QuestionStepScreen from "screens/dashboardScreens/QuestionStepScreen/Ques
 import FiltersScreen from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import AllQuestionsScreen from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
 import TapplyAIScreen from "screens/dashboardScreens/TapplyAIScreen/TapplyAIScreen"
+import AuthGateScreen from "screens/dashboardScreens/AuthGateScreen/AuthGateScreen"
 import { useTypedSelector } from "store"
 import { setCurrentScreen } from "store/auth/slice"
 
@@ -108,6 +109,18 @@ const Navigator = () => {
       <Stack.Screen name="ArchivedMessagesScreen" component={ArchivedMessagesScreen} />
       <Stack.Screen name="MessagesDetailsScreen" component={MessagesDetailsScreen} />
       <Stack.Screen name="TapplyAIScreen" component={TapplyAIScreen} />
+      <Stack.Screen
+        name="AuthGateScreen"
+        component={AuthGateScreen}
+        options={{
+          presentation: "formSheet",
+          headerShown: false,
+          gestureEnabled: true,
+          sheetAllowedDetents: [0.7],
+          sheetGrabberVisible: false,
+          sheetCornerRadius: 20,
+        }}
+      />
       <Stack.Screen name="CategoriesScreen" component={CategoriesScreen} />
       <Stack.Screen name="SubCategoriesScreen" component={SubCategoriesScreen} />
       <Stack.Screen name="SearchAnimationScreen" component={SearchAnimationScreen} />

@@ -36,7 +36,7 @@ const AddressSelectionModal: React.FC<Props> = ({
   const insets = useSafeAreaInsets()
   const { t } = useTranslation()
   const { guestLocation, isAuth } = useTypedSelector((store) => store.auth)
-  const { data: customerData } = useGetCustomerMeQuery()
+  const { data: customerData } = useGetCustomerMeQuery(undefined, { skip: !isAuth })
   const sheetRef = useRef<BottomSheet>(null)
 
   const lastUsedAddress = guestLocation?.address

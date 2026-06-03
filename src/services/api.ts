@@ -40,20 +40,35 @@ const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, apiBase, extraOptions) => {
+  const url = typeof args === "string" ? args : args.url
+  console.log(`[API] ${typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"} ${API_URL}${url}`)
+
   const result = await baseQuery(args, apiBase, extraOptions)
+
+  if (result?.error) {
+    console.log(`[API] ❌ Error:`, result.error.status, JSON.stringify(result.error.data || result.error).substring(0, 200))
+  } else {
+    const dataPreview = JSON.stringify(result.data).substring(0, 100)
+    console.log(`[API] ✅ Success: ${dataPreview}...`)
+  }
 
   if (result?.error?.status !== 401) {
     return result
   }
 
+  console.log(`[API] 🔒 Got 401 for ${url}`)
+
   const state = apiBase.getState() as RootState
-  const { refreshToken, isAuth } = state.auth
+  const { refreshToken, isAuth, token } = state.auth
+
+  console.log(`[API] 🔒 Auth state: isAuth=${isAuth}, hasToken=${!!token}, hasRefreshToken=${!!refreshToken}`)
 
   if (!refreshToken || !isAuth) {
-    apiBase.dispatch(logout())
-    apiBase.dispatch(api.util.resetApiState())
+    console.log(`[API] 🔒 No refresh token or not auth — returning 401 silently`)
     return result
   }
+
+  console.log(`[API] 🔒 Attempting token refresh...`)
 
   try {
     // If another request is already refreshing, wait for it
@@ -73,6 +88,7 @@ const baseQueryWithReauth: BaseQueryFn<
 
     if (refreshResult.data) {
       const data = refreshResult.data as { token: string; refreshToken: string }
+      console.log(`[API] 🔒 Token refresh SUCCESS — retrying original request`)
       apiBase.dispatch(setTokens({ token: data.token, refreshToken: data.refreshToken }))
 
       isRefreshing = false
@@ -81,13 +97,15 @@ const baseQueryWithReauth: BaseQueryFn<
       // Retry original request with new token
       return await baseQuery(args, apiBase, extraOptions)
     } else {
+      console.log(`[API] 🔒 Token refresh FAILED:`, JSON.stringify(refreshResult.error?.data || refreshResult.error).substring(0, 200))
       isRefreshing = false
       refreshPromise = null
       apiBase.dispatch(logout())
       apiBase.dispatch(api.util.resetApiState())
       return result
     }
-  } catch {
+  } catch (e: any) {
+    console.log(`[API] 🔒 Token refresh EXCEPTION:`, e?.message || e)
     isRefreshing = false
     refreshPromise = null
     apiBase.dispatch(logout())

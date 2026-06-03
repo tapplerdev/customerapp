@@ -21,19 +21,24 @@ const navigationTheme = {
   },
 }
 
-const isAuthPersisted = (() => {
+// Show splash on cold start if user will land on HomeScreen (auth or guest with location)
+const shouldShowSplash = (() => {
   try {
     const raw = storage.getString("persist:tappler_customer_app-root-storage")
     if (!raw) return false
     const parsed = JSON.parse(raw)
     const auth = typeof parsed?.auth === "string" ? JSON.parse(parsed.auth) : parsed?.auth
-    return !!auth?.isAuth
+    // Authenticated user — will land on HomeScreen
+    if (auth?.isAuth) return true
+    // Guest with saved location — will also land on HomeScreen
+    if (auth?.guestLocation) return true
+    return false
   } catch { return false }
 })()
 
 function App(): JSX.Element {
   const [navReady, setNavReady] = useState(false)
-  const [splashDone, setSplashDone] = useState(!isAuthPersisted)
+  const [splashDone, setSplashDone] = useState(!shouldShowSplash)
 
   const handleNavReady = useCallback(() => setNavReady(true), [])
   const handleSplashFinish = useCallback(() => setSplashDone(true), [])
