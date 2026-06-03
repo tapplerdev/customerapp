@@ -157,6 +157,7 @@ export const api = createApi({
         placeOfService?: string
         customerAddress?: { latitude: number; longitude: number }
         filterOptionsIds?: number[]
+        filterRanges?: { filterId: number; min?: number; max?: number }[]
         proType?: string
         distanceKm?: number
         minRating?: number
@@ -164,7 +165,7 @@ export const api = createApi({
         creditCardPayment?: boolean
       }
     >({
-      query: ({ categoryId, placeOfService, customerAddress, filterOptionsIds, proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment }) => {
+      query: ({ categoryId, placeOfService, customerAddress, filterOptionsIds, filterRanges, proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment }) => {
         const params = new URLSearchParams()
         if (placeOfService) {
           params.append("placeOfService", placeOfService)
@@ -176,6 +177,11 @@ export const api = createApi({
         }
         if (filterOptionsIds?.length) {
           filterOptionsIds.forEach((id) => params.append("filterOptionsIds[]", String(id)))
+        }
+        if (filterRanges?.length) {
+          filterRanges.forEach(({ filterId, min, max }) =>
+            params.append("filterRanges[]", `${filterId}:${min ?? ""}:${max ?? ""}`)
+          )
         }
         if (proType) params.append("proType", proType)
         if (minRating) params.append("minRating", String(minRating))

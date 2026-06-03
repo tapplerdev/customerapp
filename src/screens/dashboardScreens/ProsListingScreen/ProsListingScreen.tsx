@@ -72,6 +72,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Service filter option ids: primary (from the upfront flow) + refinement (from the filters modal)
   const [questionFilterOptionIds, setQuestionFilterOptionIds] = useState<number[]>([])
   const [refinementFilterOptionIds, setRefinementFilterOptionIds] = useState<number[]>([])
+  const [rangeFilters, setRangeFilters] = useState<{ filterId: number; min?: number; max?: number }[]>([])
 
   // Question flow state
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
@@ -174,6 +175,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       pos?: string
       questionFilterOptionIds?: number[]
       refinementFilterOptionIds?: number[]
+      ranges?: { filterId: number; min?: number; max?: number }[]
       filters?: FilterValues
     }) => {
       const placeOfService = opts.pos ?? currentPlaceOfService
@@ -197,6 +199,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           placeOfService,
           customerAddress,
           filterOptionsIds: mergedFilterOptionIds.length ? mergedFilterOptionIds : undefined,
+          filterRanges: opts.ranges ?? rangeFilters,
           proType: f.proType,
           distanceKm: f.distanceKm,
           minRating: f.minRating,
@@ -208,7 +211,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [categoryId, address, getPros, currentPlaceOfService, currentFilters, questionFilterOptionIds, refinementFilterOptionIds]
+    [categoryId, address, getPros, currentPlaceOfService, currentFilters, questionFilterOptionIds, refinementFilterOptionIds, rangeFilters]
   )
 
   const refetchWithFilters = useCallback(
@@ -261,11 +264,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle pro-level filters dismiss
   const handleFiltersDismiss = useCallback(
-    (filters: FilterValues & { refinementFilterOptionIds: number[] }) => {
-      const { refinementFilterOptionIds: refinementIds, ...rest } = filters
+    (filters: FilterValues & { refinementFilterOptionIds: number[]; ranges: { filterId: number; min?: number; max?: number }[] }) => {
+      const { refinementFilterOptionIds: refinementIds, ranges, ...rest } = filters
       setCurrentFilters(rest)
       setRefinementFilterOptionIds(refinementIds)
-      doRefetch({ filters: rest, refinementFilterOptionIds: refinementIds })
+      setRangeFilters(ranges)
+      doRefetch({ filters: rest, refinementFilterOptionIds: refinementIds, ranges })
     },
     [doRefetch]
   )
@@ -284,6 +288,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setCurrentFilters({})
       setQuestionFilterOptionIds([])
       setRefinementFilterOptionIds([])
+      setRangeFilters([])
       setSelectedPros([])
       relaunchQuestions.current = true // re-launch the native question flow once the new service's data loads
       // Prefetch service data + fetch pros
@@ -491,6 +496,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             initialFilters: currentFilters,
             refinementFilters,
             initialRefinementOptionIds: refinementFilterOptionIds,
+            initialRanges: rangeFilters,
             onApply: handleFiltersDismiss,
           })}
           className="w-[32] h-[32] items-center justify-center"

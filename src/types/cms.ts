@@ -40,6 +40,12 @@ export type ServiceQuestionType = {
   options?: QuestionOptionType[]
   isFilter: boolean
   tier?: "primary" | "refinement"
+  filter?: {
+    id: number
+    valueType?: "discrete" | "range"
+    minValue?: number
+    maxValue?: number
+  }
   layoutQuestionStyle?: QuestionLayoutStyleType
   dateType?: "date" | "dateRange"
   timeType?: "time" | "timeRange"

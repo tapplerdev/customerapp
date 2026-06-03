@@ -23,12 +23,15 @@ export type FilterValues = {
 type Props = RootStackScreenProps<"FiltersScreen">
 
 const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { currentPlaceOfService, initialFilters, refinementFilters, initialRefinementOptionIds, onApply } = route.params
+  const { currentPlaceOfService, initialFilters, refinementFilters, initialRefinementOptionIds, initialRanges, onApply } = route.params
   const insets = useSafeAreaInsets()
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
   const [refinementOptionIds, setRefinementOptionIds] = useState<number[]>(initialRefinementOptionIds ?? [])
+  const [rangeValues, setRangeValues] = useState<Record<number, { min?: number; max?: number }>>(() =>
+    Object.fromEntries((initialRanges ?? []).map((r) => [r.filterId, { min: r.min, max: r.max }]))
+  )
   const [proType, setProType] = useState<string | undefined>(initialFilters?.proType)
   const [distanceKm, setDistanceKm] = useState(initialFilters?.distanceKm ?? 50)
   const [distanceInput, setDistanceInput] = useState(String(initialFilters?.distanceKm ?? 50))
@@ -101,6 +104,18 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
   const isOptionVisible = (o: QuestionOptionType) =>
     !o.parentFilterOptionKey || selectedKeys.has(o.parentFilterOptionKey)
 
+  const setRangeBound = (filterId: number, bound: "min" | "max", text: string) => {
+    const n = parseInt(text, 10)
+    setRangeValues((prev) => ({
+      ...prev,
+      [filterId]: { ...prev[filterId], [bound]: isNaN(n) ? undefined : n },
+    }))
+  }
+
+  const activeRanges = Object.entries(rangeValues)
+    .map(([filterId, v]) => ({ filterId: Number(filterId), min: v.min, max: v.max }))
+    .filter((r) => r.min != null || r.max != null)
+
   const collectFilters = useCallback(() => ({
     proType,
     distanceKm: distanceKm < 50 ? distanceKm : undefined,
@@ -108,7 +123,8 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     maxResponseTimeHours,
     creditCardPayment: creditCardPayment || undefined,
     refinementFilterOptionIds: [...effectiveSelectedIds],
-  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, effectiveSelectedIds])
+    ranges: activeRanges,
+  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, effectiveSelectedIds, activeRanges])
 
   const handleShowResults = () => {
     onApply(collectFilters())
@@ -121,6 +137,7 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleResetAll = () => {
     setRefinementOptionIds([])
+    setRangeValues({})
     setProType(undefined)
     setDistanceKm(50)
     setMinRating(undefined)
@@ -150,7 +167,8 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const activeCount =
     [proType, distanceKm < 50 ? distanceKm : undefined, minRating, maxResponseTimeHours, creditCardPayment].filter(Boolean).length +
-    effectiveSelectedIds.size
+    effectiveSelectedIds.size +
+    activeRanges.length
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={[]}>
@@ -198,6 +216,51 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {/* Service-specific refinement filters (child groups appear once their parent is selected) */}
         {refinementFilters?.map((question) => {
+          // Range filters render From/To inputs instead of chips
+          if (question.filter?.valueType === "range") {
+            const filterId = question.filter.id
+            const range = rangeValues[filterId] ?? {}
+            return (
+              <React.Fragment key={question.id}>
+                <DmView className="px-[20] mb-[18]">
+                  <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+                    {isAr && question.textAr ? question.textAr : question.text}
+                  </DmText>
+                  <DmView className="flex-row items-center">
+                    <DmView
+                      className="flex-1 px-[14]"
+                      style={{ borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }}
+                    >
+                      <TextInput
+                        value={range.min != null ? String(range.min) : ""}
+                        onChangeText={(text) => setRangeBound(filterId, "min", text)}
+                        placeholder={question.filter.minValue != null ? String(question.filter.minValue) : ""}
+                        keyboardType="number-pad"
+                        maxLength={7}
+                        style={{ paddingVertical: 9, fontSize: 13, color: colors.black }}
+                      />
+                    </DmView>
+                    <DmText className="mx-[10] text-13 text-grey3">–</DmText>
+                    <DmView
+                      className="flex-1 px-[14]"
+                      style={{ borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }}
+                    >
+                      <TextInput
+                        value={range.max != null ? String(range.max) : ""}
+                        onChangeText={(text) => setRangeBound(filterId, "max", text)}
+                        placeholder={question.filter.maxValue != null ? String(question.filter.maxValue) : ""}
+                        keyboardType="number-pad"
+                        maxLength={7}
+                        style={{ paddingVertical: 9, fontSize: 13, color: colors.black }}
+                      />
+                    </DmView>
+                  </DmView>
+                </DmView>
+                <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+              </React.Fragment>
+            )
+          }
+
           const visibleOptions = question.options?.filter(
             (o) => !!o.serviceCategoryFilterOptionId && isOptionVisible(o)
           )
