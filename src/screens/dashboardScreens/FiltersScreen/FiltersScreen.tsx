@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
-import { QuestionOptionType } from "types/cms"
+import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -55,10 +55,20 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     currentPlaceOfService === "delivery" ||
     currentPlaceOfService === "fixedLocations"
 
-  const toggleRefinementOption = (optionId: number) => {
-    setRefinementOptionIds((prev) =>
-      prev.includes(optionId) ? prev.filter((id) => id !== optionId) : [...prev, optionId]
-    )
+  const toggleRefinementOption = (optionId: number, question: ServiceQuestionType) => {
+    setRefinementOptionIds((prev) => {
+      if (prev.includes(optionId)) {
+        return prev.filter((id) => id !== optionId)
+      }
+      // Single-select filters (oneChoice) replace any other pick within the same question
+      if (question.type === "oneChoice") {
+        const siblingIds = (question.options ?? [])
+          .map((o) => o.serviceCategoryFilterOptionId)
+          .filter((id): id is number => id != null)
+        return [...prev.filter((id) => !siblingIds.includes(id)), optionId]
+      }
+      return [...prev, optionId]
+    })
   }
 
   // Lookup of every refinement option by its filter-option id
@@ -145,17 +155,28 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
     setCreditCardPayment(false)
   }
 
-  const renderChip = (label: string, isSelected: boolean, onPress: () => void, key: string | number = label) => (
+  const renderChip = (
+    label: string,
+    isSelected: boolean,
+    onPress: () => void,
+    key: string | number = label,
+    withCheck = false
+  ) => (
     <DmView
       key={key}
       onPress={onPress}
-      className="px-[13] py-[7] rounded-5 mr-[8]"
+      className="px-[13] py-[7] rounded-5 mr-[8] flex-row items-center"
       style={{
         backgroundColor: isSelected ? "#F5F5F5" : colors.white,
         borderWidth: isSelected ? 1.5 : 1,
         borderColor: isSelected ? colors.black : "#E0E0E0",
       }}
     >
+      {withCheck && isSelected && (
+        <DmText className="text-12 leading-[15px] font-custom700 mr-[5]" style={{ color: colors.black }}>
+          ✓
+        </DmText>
+      )}
       <DmText
         className={`text-12 leading-[15px] ${isSelected ? "font-custom700" : "font-custom400"}`}
         style={{ color: isSelected ? colors.black : colors.grey }}
@@ -276,8 +297,9 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
                     renderChip(
                       isAr && o.labelAr ? o.labelAr : o.label,
                       effectiveSelectedIds.has(o.serviceCategoryFilterOptionId!),
-                      () => toggleRefinementOption(o.serviceCategoryFilterOptionId!),
-                      o.serviceCategoryFilterOptionId!
+                      () => toggleRefinementOption(o.serviceCategoryFilterOptionId!, question),
+                      o.serviceCategoryFilterOptionId!,
+                      question.type === "multipleChoice"
                     )
                   )}
                 </ScrollView>
