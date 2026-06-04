@@ -92,6 +92,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Compute answered count for the banner
   const allCustomerQuestions = customerQuestions.filter((q) => q.assignee === "customer")
   const refinementFilters = allCustomerQuestions.filter((q) => q.isFilter && q.tier === "refinement")
+  // Primary (asked-upfront) filter picks — passed to the modal as locked cascade parents
+  const upfrontSelections = allCustomerQuestions
+    .filter((q) => q.isFilter && q.tier !== "refinement")
+    .map((q) => ({
+      questionText: q.text,
+      questionTextAr: q.textAr,
+      options: (q.options ?? [])
+        .filter(
+          (o) =>
+            !!o.serviceCategoryFilterOptionId &&
+            !!o.filterOptionKey &&
+            questionFilterOptionIds.includes(o.serviceCategoryFilterOptionId)
+        )
+        .map((o) => ({ key: o.filterOptionKey!, label: o.label, labelAr: o.labelAr })),
+    }))
+    .filter((s) => s.options.length > 0)
   // Refinement filters live in the Filters modal, not the upfront flow, so exclude them from the banner count
   const upfrontQuestions = allCustomerQuestions.filter((q) => !(q.isFilter && q.tier === "refinement"))
   const totalQuestions = upfrontQuestions.length + (placeOfServiceOptions.length > 1 ? 1 : 0)
@@ -497,6 +513,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             refinementFilters,
             initialRefinementOptionIds: refinementFilterOptionIds,
             initialRanges: rangeFilters,
+            upfrontSelections,
             onApply: handleFiltersDismiss,
           })}
           className="w-[32] h-[32] items-center justify-center"

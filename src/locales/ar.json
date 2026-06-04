@@ -381,6 +381,7 @@
   "filters": "فلاتر",
   "see_matches": "عرض النتائج",
   "reset_all": "إعادة تعيين الكل",
+  "chosen_earlier": "تم اختياره مسبقًا",
   "job_details_added": "{{answered}} من {{total}} تفاصيل مضافة",
   "answer_questions_for_better_matches": "أجب على الأسئلة للعثور على نتائج أفضل",
   "matches_based_on_answers": "نتائج بناءً على إجاباتك",

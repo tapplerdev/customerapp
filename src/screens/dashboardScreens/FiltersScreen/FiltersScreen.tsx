@@ -23,10 +23,16 @@ export type FilterValues = {
 type Props = RootStackScreenProps<"FiltersScreen">
 
 const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { currentPlaceOfService, initialFilters, refinementFilters, initialRefinementOptionIds, initialRanges, onApply } = route.params
+  const { currentPlaceOfService, initialFilters, refinementFilters, initialRefinementOptionIds, initialRanges, upfrontSelections, onApply } = route.params
   const insets = useSafeAreaInsets()
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
+
+  // Filters answered upfront (e.g. Make) act as locked cascade parents for the modal's children (e.g. Model)
+  const upfrontKeys = useMemo(
+    () => new Set((upfrontSelections ?? []).flatMap((s) => s.options.map((o) => o.key))),
+    [upfrontSelections]
+  )
 
   const [refinementOptionIds, setRefinementOptionIds] = useState<number[]>(initialRefinementOptionIds ?? [])
   const [rangeValues, setRangeValues] = useState<Record<number, { min?: number; max?: number }>>(() =>
@@ -91,7 +97,9 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
       current.forEach((id) => {
         const parentKey = optionsById.get(id)?.parentFilterOptionKey
         if (!parentKey) return
-        const parentSelected = [...current].some((sid) => optionsById.get(sid)?.filterOptionKey === parentKey)
+        const parentSelected =
+          upfrontKeys.has(parentKey) ||
+          [...current].some((sid) => optionsById.get(sid)?.filterOptionKey === parentKey)
         if (!parentSelected) {
           current.delete(id)
           changed = true
@@ -99,16 +107,16 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
       })
     }
     return current
-  }, [refinementOptionIds, optionsById])
+  }, [refinementOptionIds, optionsById, upfrontKeys])
 
   const selectedKeys = useMemo(() => {
-    const keys = new Set<string>()
+    const keys = new Set<string>(upfrontKeys)
     effectiveSelectedIds.forEach((id) => {
       const key = optionsById.get(id)?.filterOptionKey
       if (key) keys.add(key)
     })
     return keys
-  }, [effectiveSelectedIds, optionsById])
+  }, [effectiveSelectedIds, optionsById, upfrontKeys])
 
   // A child option only shows once its parent is selected
   const isOptionVisible = (o: QuestionOptionType) =>
@@ -235,6 +243,32 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
         bounces={false}
       >
+        {/* Locked context: filters answered upfront (read-only here; they drive the cascade below) */}
+        {upfrontSelections?.map((sel, idx) => (
+          <React.Fragment key={`upfront-${idx}`}>
+            <DmView className="px-[20] mb-[18]">
+              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+                {isAr && sel.questionTextAr ? sel.questionTextAr : sel.questionText}
+                <DmText className="font-custom400" style={{ fontSize: 11, color: colors.grey }}> · {t("chosen_earlier")}</DmText>
+              </DmText>
+              <DmView className="flex-row flex-wrap">
+                {sel.options.map((o) => (
+                  <DmView
+                    key={o.key}
+                    className="px-[13] py-[7] rounded-5 mr-[8] mb-[8]"
+                    style={{ backgroundColor: "#F5F5F5", borderWidth: 1, borderColor: "#E0E0E0" }}
+                  >
+                    <DmText className="leading-[15px] font-custom600" style={{ fontSize: 12, color: colors.grey }}>
+                      {isAr && o.labelAr ? o.labelAr : o.label}
+                    </DmText>
+                  </DmView>
+                ))}
+              </DmView>
+            </DmView>
+            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+          </React.Fragment>
+        ))}
+
         {/* Service-specific refinement filters (child groups appear once their parent is selected) */}
         {refinementFilters?.map((question) => {
           // Range filters render From/To inputs instead of chips

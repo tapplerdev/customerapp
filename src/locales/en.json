@@ -382,6 +382,7 @@
   "filters": "Filters",
   "see_matches": "See matches",
   "reset_all": "Reset all",
+  "chosen_earlier": "chosen earlier",
   "job_details_added": "{{answered}} of {{total}} job details added",
   "answer_questions_for_better_matches": "Answer questions to find better matches",
   "matches_based_on_answers": "matches based on your answers",

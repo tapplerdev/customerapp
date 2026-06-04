@@ -94,6 +94,11 @@ export type RootStackParamList = {
     refinementFilters?: import("types/cms").ServiceQuestionType[]
     initialRefinementOptionIds?: number[]
     initialRanges?: { filterId: number; min?: number; max?: number }[]
+    upfrontSelections?: {
+      questionText: string
+      questionTextAr?: string
+      options: { key: string; label: string; labelAr?: string }[]
+    }[]
     initialFilters?: {
       proType?: string
       distanceKm?: number
