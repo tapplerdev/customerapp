@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useState } from "react"
 import { I18nManager, ScrollView, TextInput } from "react-native"
 
-import { DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmInput, DmText, DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType, QuestionOptionType } from "types/cms"
 import { useTranslation } from "react-i18next"
@@ -31,11 +31,13 @@ const QuestionComponent: React.FC<Props> = ({
   const { i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
+  // Fall back to the En columns when Ar is missing — CMS content often has
+  // empty textAr/valueAr (same pattern as FiltersScreen/RequestSummaryScreen).
   const getOptionLabel = (opt: QuestionOptionType) =>
-    isAr ? opt.valueAr : opt.value
+    isAr && opt.valueAr ? opt.valueAr : opt.value
 
   const getQuestionText = () =>
-    isAr ? item.textAr : item.text
+    isAr && item.textAr ? item.textAr : item.text
 
   const currentAnswer = answers?.find((a) => a.questionId === item.id)
   const [answer, setAnswer] = useState<QuestionAnswerType | undefined>(currentAnswer)

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import LottieView from "lottie-react-native"
 
 import { RootStackScreenProps } from "navigation/types"
-import { useLazyGetProsForCategoryQuery, useLazyGetServiceByIdQuery } from "services/api"
+import { api, useLazyGetProsForCategoryQuery } from "services/api"
 
 import LogoIconEn from "assets/icons/logo-en.svg"
 import LogoIconAr from "assets/icons/logo-ar.svg"
@@ -18,7 +18,7 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
   const { i18n } = useTranslation()
   const LogoIcon = i18n.language === "ar" ? LogoIconAr : LogoIconEn
   const [getPros] = useLazyGetProsForCategoryQuery()
-  const [getServiceById] = useLazyGetServiceByIdQuery()
+  const prefetchService = api.usePrefetch("getServiceById")
   const hasNavigated = useRef(false)
 
   useEffect(() => {
@@ -28,8 +28,11 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
 
     const minDelay = new Promise((resolve) => setTimeout(resolve, 3000))
     const fetchPros = getPros({ categoryId, placeOfService, customerAddress }).unwrap()
-    // Prefetch service data (questions/filters) in parallel — cached by RTK Query for ProsListingScreen
-    getServiceById(serviceId)
+    // Prefetch service data (questions/filters) in parallel — cached by RTK Query
+    // for ProsListingScreen. ifOlderThan bounds staleness: fresh cache (<2min) is
+    // served instantly (no heavy re-download per search), older data refetches
+    // (getServiceById has no invalidation tags, so age is the only freshness).
+    prefetchService(serviceId, { ifOlderThan: 120 })
 
     Promise.all([minDelay, fetchPros]).then(() => {
       if (!hasNavigated.current) {

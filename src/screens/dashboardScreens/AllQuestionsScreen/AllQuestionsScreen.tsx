@@ -69,13 +69,17 @@ const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
     setFiltersChanged(true)
   }
 
+  const [resetAllPressed, setResetAllPressed] = useState(false)
+
   const handleResetAll = () => {
     setAnswers([])
     setSelectedPlaceOfService(undefined)
     setFiltersChanged(true)
+    setResetAllPressed(true) // signals the results screen to also clear slider filters
     setResetKey((prev) => prev + 1)
   }
 
+  // Both exits commit the latest state — ✕ and "See matches" behave the same.
   const handleSeeMatches = () => {
     const filterOptionIds: number[] = []
     const dataAnswers: QuestionAnswerType[] = []
@@ -107,12 +111,13 @@ const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
       dataAnswers,
       allAnswers: answers,
       filtersChanged,
+      resetAll: resetAllPressed,
     })
     navigation.goBack()
   }
 
   const handleClose = () => {
-    navigation.goBack()
+    handleSeeMatches()
   }
 
   return (

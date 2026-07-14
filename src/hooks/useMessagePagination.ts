@@ -5,6 +5,8 @@ import {
   useGetChatMessagesQuery,
   useMarkAllAsReadMutation,
 } from "services/api"
+import { WebSocketService } from "services/WebSocketService"
+import { setActiveChat } from "services/chatCache"
 
 const POLL_INTERVAL = 10000 // 10 seconds
 
@@ -15,13 +17,32 @@ const useMessagePagination = (chatId: number) => {
   const [hasMore, setHasMore] = useState(true)
   const isLoadingRef = useRef(false)
 
+  // Track WS connectivity so the poll is only the FALLBACK when the socket is
+  // down — while connected, useChatSocket delivers messages instantly and the
+  // 10s poll would be redundant churn.
+  const [isWsConnected, setIsWsConnected] = useState(WebSocketService.isConnected())
+  useEffect(() => {
+    const onUp = () => setIsWsConnected(true)
+    const onDown = () => setIsWsConnected(false)
+    WebSocketService.on("connected", onUp)
+    WebSocketService.on("reconnected", onUp)
+    WebSocketService.on("disconnected", onDown)
+    setIsWsConnected(WebSocketService.isConnected())
+    return () => {
+      WebSocketService.off("connected", onUp)
+      WebSocketService.off("reconnected", onUp)
+      WebSocketService.off("disconnected", onDown)
+    }
+  }, [])
+
   // Main paginated query
   const { data: messagesData } = useGetChatMessagesQuery({ chatId, page, perPage: 20 })
 
-  // Polling query — only polls page 1 for new messages while screen is focused
+  // Polling query — page 1 only, focused AND socket-down. When the socket is
+  // up, live delivery via useChatSocket makes polling unnecessary.
   const { data: pollData } = useGetChatMessagesQuery(
     { chatId, page: 1, perPage: 20 },
-    { pollingInterval: isFocused ? POLL_INTERVAL : 0 }
+    { pollingInterval: isFocused && !isWsConnected ? POLL_INTERVAL : 0 }
   )
 
   const [markAllAsRead] = useMarkAllAsReadMutation()
@@ -69,19 +90,26 @@ const useMessagePagination = (chatId: number) => {
     }
   }, [pollData])
 
-  // Mark as read on focus
+  // Mark as read on focus + tell chatCache which chat is open (so live
+  // messages arriving here don't bump unread or ever banner). Cleared on blur.
   useEffect(() => {
     if (isFocused && chatId) {
+      setActiveChat(chatId)
       markAllAsRead(chatId)
+      return () => setActiveChat(null)
     }
   }, [isFocused, chatId])
 
   const loadMore = useCallback(() => {
+    // Inverted FlatLists fire onEndReached on mount while the list is still
+    // empty — don't paginate until page 1 has actually rendered (once it has,
+    // hasMore is false for short chats and this no-ops correctly).
+    if (allMessages.length === 0) return
     if (hasMore && !isLoadingRef.current) {
       isLoadingRef.current = true
       setPage((p) => p + 1)
     }
-  }, [hasMore])
+  }, [hasMore, allMessages.length])
 
   const addOptimisticMessage = useCallback((msg: ChatMessageType) => {
     setAllMessages((prev) => {

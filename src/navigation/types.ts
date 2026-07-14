@@ -87,6 +87,7 @@ export type RootStackParamList = {
       dataAnswers: import("types/job").QuestionAnswerType[]
       allAnswers: import("types/job").QuestionAnswerType[]
       filtersChanged: boolean
+      resetAll?: boolean
     }) => void
   }
   FiltersScreen: {

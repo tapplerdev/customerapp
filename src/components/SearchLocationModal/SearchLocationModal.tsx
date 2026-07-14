@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { FlatList, Platform, StyleSheet, TextInput } from "react-native"
+import { Animated, FlatList, Platform, StyleSheet, TextInput } from "react-native"
 import {
   BottomSheetModal,
   BottomSheetBackdrop,
@@ -18,6 +18,7 @@ import { ServiceCategoryType } from "types/cms"
 import SearchIcon from "assets/icons/search-black.svg"
 import LocationRedIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
+import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 
 type FlatCategory = ServiceCategoryType & {
   serviceName: string
@@ -53,7 +54,7 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
   const [searchText, setSearchText] = useState(currentCategoryName)
   const [debouncedSearch, setDebouncedSearch] = useState(currentCategoryName)
 
-  const { data: servicesData } = useGetServicesQuery()
+  const { data: servicesData, isFetching } = useGetServicesQuery()
 
   useEffect(() => {
     if (isVisible) {
@@ -83,7 +84,8 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
     )
   }, [servicesData])
 
-  // Filter by search text
+  // Filter by search text — includes the CMS `keywords` field so e.g. "carpet"
+  // matches categories whose names don't contain it (same behavior as proapp).
   const filteredCategories = useMemo(() => {
     if (!debouncedSearch.trim()) return allCategories
     const query = debouncedSearch.toLowerCase()
@@ -92,9 +94,23 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
         c.nameEn.toLowerCase().includes(query) ||
         c.nameAr.includes(query) ||
         c.serviceName.toLowerCase().includes(query) ||
-        c.serviceNameAr.includes(query)
+        c.serviceNameAr.includes(query) ||
+        (c.keywords || "").toLowerCase().includes(query)
     )
   }, [allCategories, debouncedSearch])
+
+  // Fade the results in whenever the (debounced) query settles or data arrives —
+  // proapp's search transition mechanic (300ms opacity).
+  const listFade = useRef(new Animated.Value(0)).current
+  const hasData = allCategories.length > 0
+  useEffect(() => {
+    listFade.setValue(0)
+    Animated.timing(listFade, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start()
+  }, [debouncedSearch, hasData])
 
   const handleSelectCategory = (cat: FlatCategory) => {
     const name = isAr ? cat.nameAr : cat.nameEn
@@ -223,14 +239,30 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
         </DmView>
       </DmView>
 
-      {/* Results */}
-      <FlatList
-        data={filteredCategories}
-        renderItem={renderItem}
-        keyExtractor={(item) => String(item.id)}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      />
+      {/* Results — skeleton shimmer while the services payload first loads,
+          then results fade in (mirrors proapp's search) */}
+      {isFetching && !hasData ? (
+        <DmView>
+          {[64, 46, 72, 55, 38, 60].map((w, i) => (
+            <DmView key={i} className="px-[24] py-[14] border-b-0.5 border-b-grey5">
+              <SkeletonLoader width={`${w}%`} height={15} borderRadius={4} />
+              <DmView className="mt-[6]">
+                <SkeletonLoader width={`${Math.max(24, w - 25)}%`} height={11} borderRadius={4} />
+              </DmView>
+            </DmView>
+          ))}
+        </DmView>
+      ) : (
+        <Animated.View style={{ flex: 1, opacity: listFade }}>
+          <FlatList
+            data={filteredCategories}
+            renderItem={renderItem}
+            keyExtractor={(item) => String(item.id)}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          />
+        </Animated.View>
+      )}
     </BottomSheetModal>
   )
 }

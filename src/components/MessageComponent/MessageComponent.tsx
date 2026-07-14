@@ -111,14 +111,17 @@ const MessageComponent: React.FC<Props> = React.memo(
     if (isSystem) {
       return (
         <DmView style={{ paddingBottom: isLastInGroup ? 12 : 2 }}>
+          {/* Sides are PINNED (iMessage-style): own/system on the physical right,
+              others on the physical left, in both languages. Native forceRTL flips
+              layout in Arabic, so the isAr branch pre-flips to cancel it out. */}
           {showTimestamp && (
-            <DmView className={`pb-[4] pt-[4] ${isAr ? "items-start pl-[53]" : "items-end pr-[49]"}`}>
+            <DmView className={`pb-[4] pt-[4] ${isAr ? "items-start pl-[49]" : "items-end pr-[49]"}`}>
               <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
                 {time}
               </DmText>
             </DmView>
           )}
-          <DmView className={`flex ${isAr ? "pl-[53] items-start" : "pr-[49] items-end"}`}>
+          <DmView className={`flex ${isAr ? "pl-[49] items-start" : "pr-[49] items-end"}`}>
             <DmText className="text-11 leading-[14px] font-custom400 text-red">
               {t(item.text || "")}
             </DmText>
@@ -134,11 +137,15 @@ const MessageComponent: React.FC<Props> = React.memo(
 
     const r = 12
     const small = 2
+    // Native RTL swaps Left/Right corner radii in Arabic — pre-flip so the
+    // squared "tail" lands on the same physical corner in both languages
+    // (own: bottom-right, other: bottom-left), matching the pinned sides.
+    const tailLeft = isAr ? isMyMessage : !isMyMessage
     const bubbleRadius = {
       borderTopLeftRadius: r,
       borderTopRightRadius: r,
-      borderBottomLeftRadius: isLastInGroup && !isMyMessage ? small : r,
-      borderBottomRightRadius: isLastInGroup && isMyMessage ? small : r,
+      borderBottomLeftRadius: isLastInGroup && tailLeft ? small : r,
+      borderBottomRightRadius: isLastInGroup && !tailLeft ? small : r,
     }
 
     const bubbleWidth = BUBBLE_MAX_WIDTH
@@ -298,7 +305,11 @@ const MessageComponent: React.FC<Props> = React.memo(
         {/* Timestamp */}
         {showTimestamp && (
           <DmView
-            className={`pb-[4] pt-[4] ${isMyMessage ? "items-end pr-[49]" : "items-start pl-[53]"}`}
+            className={`pb-[4] pt-[4] ${
+              isMyMessage
+                ? isAr ? "items-start pl-[49]" : "items-end pr-[49]"
+                : isAr ? "items-end pr-[53]" : "items-start pl-[53]"
+            }`}
           >
             <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
               {time}
@@ -306,8 +317,14 @@ const MessageComponent: React.FC<Props> = React.memo(
           </DmView>
         )}
 
-        {/* Bubble */}
-        <DmView className={isMyMessage ? "items-end pr-[49] ml-[80]" : "items-start pl-[53] pr-[80]"}>
+        {/* Bubble — own pinned physical-right, others physical-left (see note above) */}
+        <DmView
+          className={
+            isMyMessage
+              ? isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
+              : isAr ? "items-end pr-[53] pl-[80]" : "items-start pl-[53] pr-[80]"
+          }
+        >
           <DmView
             style={[
               {
@@ -367,7 +384,7 @@ const MessageComponent: React.FC<Props> = React.memo(
 
         {/* Read receipt */}
         {showReadReceipt && (
-          <DmView className="items-end pr-[49] pt-[3]">
+          <DmView className={`pt-[3] ${isAr ? "items-start pl-[49]" : "items-end pr-[49]"}`}>
             <DmText className="text-9 leading-[12px] font-custom400 text-black">
               {t("read_by")} {readByName}
             </DmText>

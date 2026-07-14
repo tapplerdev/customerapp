@@ -23,6 +23,10 @@ const HomeTabs: React.FC = () => {
   const activeChats = chatsData?.data?.filter((c) => c.chat.status === "active") || []
   useChatPrefetch(activeChats)
 
+  // Unread messages badge — updates instantly on read via markAllAsRead's
+  // optimistic cache zero (mirrors the proapp tab badge).
+  const totalUnread = activeChats.reduce((sum, c) => sum + (c.notReadMessages || 0), 0)
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -55,7 +59,7 @@ const HomeTabs: React.FC = () => {
         component={MessagesScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <RenderTabBarIcon focused={focused} type="messages" />
+            <RenderTabBarIcon focused={focused} type="messages" badge={totalUnread} />
           ),
         }}
       />

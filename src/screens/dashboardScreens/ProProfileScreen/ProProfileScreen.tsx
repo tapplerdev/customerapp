@@ -198,6 +198,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               uri={pro.profilePhoto}
               style={styles.fullSize}
               resizeMode="cover"
+              withSkeleton
             />
           ) : (
             <DmView className="flex-1 bg-grey8 items-center justify-center">
@@ -307,10 +308,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                       setViewerVisible(true)
                     }}
                   >
-                    <FastImage
-                      source={{ uri: url }}
+                    <CachedImage
+                      uri={url}
                       style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
-                      resizeMode={FastImage.resizeMode.cover}
+                      resizeMode="cover"
+                      withSkeleton
                     />
                   </DmView>
                 )
@@ -430,6 +432,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     uri={url}
                     style={styles.fullSize}
                     resizeMode="cover"
+                    withSkeleton
                   />
                 )}
               />

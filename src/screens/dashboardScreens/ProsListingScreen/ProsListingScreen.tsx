@@ -8,9 +8,11 @@ import {
   useTourGuideController,
 } from "rn-tourguide"
 
+import FastImage from "react-native-fast-image"
+
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
-import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyGetServiceByIdQuery } from "services/api"
+import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyOpenChatQuery, useLazyGetChatMessagesQuery } from "services/api"
 import { store, useTypedSelector } from "store"
 import { ProType } from "types/pro"
 import { QuestionAnswerType } from "types/job"
@@ -54,7 +56,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [selectedPros, setSelectedPros] = useState<number[]>([])
   const [getPros, { data, isLoading, isError }] = useLazyGetProsForCategoryQuery()
   const [getProProfile] = useLazyGetProProfileQuery()
-  const [getServiceData] = useLazyGetServiceByIdQuery()
+  const [openChat] = useLazyOpenChatQuery()
+  const [getChatMessages] = useLazyGetChatMessagesQuery()
   const prefetchProfile = api.usePrefetch("getProProfile")
 
   const { canStart, start } = useTourGuideController()
@@ -83,7 +86,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [allAnswers, setAllAnswers] = useState<QuestionAnswerType[]>([])
   const [dataAnswers, setDataAnswers] = useState<QuestionAnswerType[]>([])
 
-  // Fetch service data to get placeOfService options for the question flow
+  // Fetch service data to get placeOfService options for the question flow.
+  // NOTE: the services LIST endpoint does NOT include category questions (its
+  // relations omit categories.questions — adversarially verified against the
+  // running backend), so a list-cache fallback here cannot unblock the question
+  // flow. Instant launch comes from cache-warming instead: SubCategoriesScreen
+  // prefetches this query on category tap, and SearchAnimationScreen refreshes
+  // it during the transition — by mount time the cache is warm on normal paths.
   const { data: serviceData } = useGetServiceByIdQuery(serviceId)
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const placeOfServiceOptions = category?.placeOfService || []
@@ -147,7 +156,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [hasSelection])
 
-  // Initial fetch (already done by SearchAnimationScreen, RTK Query cache serves it)
+  // Initial fetch (already done by SearchAnimationScreen, RTK Query cache serves it).
+  // The committed service address rides along: with no placeOfService yet, the
+  // backend returns only pros who could serve that point under AT LEAST ONE of
+  // their modes (ANY-MODE serveability, in lockstep with @ProsServeJobLocation
+  // at submission) — the question flow then narrows the list further.
   useEffect(() => {
     const skipAddress =
       initialPlaceOfService === "remoteOrOnline" || initialPlaceOfService === "fixedLocations"
@@ -174,16 +187,27 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     })
   }, [customerQuestions.length, serviceId])
 
-  // Strategy C: prefetch the first N pro profiles once the list loads, so tapping
-  // a card opens ProProfileScreen instantly from cache. `ifOlderThan` skips re-fetch
-  // if already warm, so this is cheap even if the effect re-runs.
+  // Preload a pro's image BYTES into FastImage's disk cache so the profile
+  // screen renders them instantly instead of popping them in on arrival.
+  const preloadProImages = useCallback((p: ProType) => {
+    const uris = [p.profilePhoto150, p.profilePhoto, ...(p.photosOfWork?.slice(0, 4) ?? [])]
+      .filter(Boolean)
+      .map((uri) => ({ uri: uri as string }))
+    if (uris.length) FastImage.preload(uris)
+  }, [])
+
+  // Strategy C: prefetch the first N pro profiles (data + image bytes) once the
+  // list loads, so tapping a card opens ProProfileScreen instantly from cache.
+  // `ifOlderThan` skips re-fetch if already warm, so this is cheap even if the
+  // effect re-runs. FastImage.preload dedupes against its own cache.
   useEffect(() => {
     const list = data?.data
     if (!list?.length) return
     list.slice(0, 10).forEach((p) => {
       prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+      preloadProImages(p)
     })
-  }, [data?.data, categoryId, prefetchProfile])
+  }, [data?.data, categoryId, prefetchProfile, preloadProImages])
 
   // Shared refetch logic — merges question filters + pro-level filters
   const doRefetch = useCallback(
@@ -194,8 +218,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       ranges?: { filterId: number; min?: number; max?: number }[]
       filters?: FilterValues
     }) => {
-      const placeOfService = opts.pos ?? currentPlaceOfService
-      const skipAddress = !placeOfService || placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
+      // 'pos' in opts distinguishes "explicitly cleared" (Reset all → back to
+      // the ANY-MODE serveability list) from "not provided" (keep the current
+      // choice) — `??` can't. Coords must ride along whenever no POS is set,
+      // matching the initial fetch — dropping them would fall back to the
+      // backend's legacy UNFILTERED list and show pros the submission guard
+      // rejects.
+      const placeOfService = 'pos' in opts ? opts.pos : currentPlaceOfService
+      const skipAddress = placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
       const customerAddress = skipAddress
         ? undefined
         : address?.coords
@@ -268,14 +298,31 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       dataAnswers: QuestionAnswerType[]
       allAnswers: QuestionAnswerType[]
       filtersChanged: boolean
+      resetAll?: boolean
     }) => {
       setCurrentPlaceOfService(result.placeOfService)
       setDataAnswers(result.dataAnswers)
       setAllAnswers(result.allAnswers)
       setQuestionFilterOptionIds(result.filterOptionIds)
+      if (result.resetAll) {
+        // "Reset all" also nukes the slider-modal filters (pro-level +
+        // refinement + ranges) — pass explicit empties so the refetch doesn't
+        // resurrect them from stale state closures.
+        setCurrentFilters({})
+        setRefinementFilterOptionIds([])
+        setRangeFilters([])
+        doRefetch({
+          pos: result.placeOfService,
+          questionFilterOptionIds: result.filterOptionIds,
+          refinementFilterOptionIds: [],
+          ranges: [],
+          filters: {},
+        })
+        return
+      }
       refetchWithFilters(result)
     },
-    [refetchWithFilters]
+    [refetchWithFilters, doRefetch]
   )
 
   // Handle pro-level filters dismiss
@@ -294,6 +341,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const handleSelectService = useCallback(
     (newCategoryId: number, newCategoryName: string, newServiceId: number) => {
       setSearchModalVisible(false)
+      // Same service re-selected (e.g. the user only came to change the address):
+      // keep placeOfService/answers/filters — no reset, no question re-ask.
+      if (newServiceId === serviceId && newCategoryId === categoryId) return
       setCategoryId(newCategoryId)
       setCategoryName(newCategoryName)
       setServiceId(newServiceId)
@@ -307,14 +357,21 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setRangeFilters([])
       setSelectedPros([])
       relaunchQuestions.current = true // re-launch the native question flow once the new service's data loads
-      // Prefetch service data + fetch pros
+      // No explicit service-data fetch needed: setServiceId re-runs the
+      // useGetServiceByIdQuery hook for the new id (cache-served when warm —
+      // the old lazy call here force-re-downloaded the heavy payload every
+      // switch). The interim pros fetch carries the committed address so it's
+      // the ANY-MODE serveability list (same as a fresh search); the question
+      // flow narrows it once completed.
       setIsRefetching(true)
-      getServiceData(newServiceId)
-      getPros({ categoryId: newCategoryId }, true)
+      const customerAddress = address?.coords
+        ? { latitude: address.coords.lat, longitude: address.coords.lon }
+        : undefined
+      getPros({ categoryId: newCategoryId, customerAddress }, true)
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [getPros, getServiceData]
+    [serviceId, categoryId, address, getPros]
   )
 
   // Handle address change
@@ -322,9 +379,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     (newAddress: any) => {
       setAddressModalVisible(false)
       setAddress(newAddress)
-      const customerAddress = newAddress?.coords
-        ? { latitude: newAddress.coords.lat, longitude: newAddress.coords.lon }
-        : undefined
+      // remoteOrOnline/fixedLocations must not send coords — the backend DTO
+      // validator 400s on customerAddress for those modes.
+      const skipAddress =
+        currentPlaceOfService === "remoteOrOnline" || currentPlaceOfService === "fixedLocations"
+      const customerAddress = skipAddress
+        ? undefined
+        : newAddress?.coords
+          ? { latitude: newAddress.coords.lat, longitude: newAddress.coords.lon }
+          : undefined
       setIsRefetching(true)
       getPros(
         {
@@ -346,10 +409,16 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     setTimeout(() => setAddressModalVisible(true), 300)
   }, [])
 
-  // Listen for address picked from PickAddressScreen
+  // Listen for address picked from PickAddressScreen.
+  // Several screens listen to this bus and stay mounted in the stack — only the
+  // FOCUSED screen may act, or one pick triggers them all (e.g. SubCategories
+  // re-launching the search animation on top of these results).
   useEffect(() => {
     const handler = (newAddress: any) => {
-      setTimeout(() => handleSelectNewAddress(newAddress), 600)
+      setTimeout(() => {
+        if (!navigation.isFocused()) return
+        handleSelectNewAddress(newAddress)
+      }, 600)
     }
     addressEventBus.on("address:pick", handler)
     addressEventBus.on("address:select", handler)
@@ -378,8 +447,26 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     )
   }, [])
 
-  const handleMessage = useCallback((pro: ProType) => {
-  }, [])
+  const handleMessage = useCallback(async (pro: ProType) => {
+    // Open (or resume) a direct chat with this pro — backend creates a bare
+    // chat (no job) or returns the existing customer/pro/category thread.
+    setIsProfileLoading(true)
+    try {
+      const chat = await openChat({ categoryId, recipientId: pro.id }, true).unwrap()
+      // Prefetch page 1 of messages (same arg the chat screen queries) so it
+      // mounts straight onto content — failure here shouldn't block the chat.
+      await getChatMessages({ chatId: chat.id, page: 1, perPage: 20 }, true)
+        .unwrap()
+        .catch(() => {})
+      navigation.navigate("MessagesDetailsScreen", {
+        chatPreview: { chat, notReadMessages: 0 },
+      })
+    } catch (e) {
+      setErrorModalVisible(true)
+    } finally {
+      setIsProfileLoading(false)
+    }
+  }, [categoryId, navigation, openChat, getChatMessages])
 
   const handlePressProfile = useCallback(async (pro: ProType) => {
     const arg = { proId: pro.id, serviceCategoryId: categoryId }
@@ -389,6 +476,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     // Already prefetched (strategy C) → open instantly, no overlay, no delay
     const cached = api.endpoints.getProProfile.select(arg)(store.getState()).data
     if (cached) {
+      preloadProImages(cached as unknown as ProType) // head start for any not-yet-cached bytes
       goToProfile()
       return
     }
@@ -396,14 +484,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     // Cold cache → fetch with overlay, then navigate as soon as it resolves
     setIsProfileLoading(true)
     try {
-      await getProProfile(arg, true).unwrap()
+      const profile = await getProProfile(arg, true).unwrap()
+      preloadProImages(profile as unknown as ProType) // images load during the transition
       goToProfile()
     } catch (e) {
       setErrorModalVisible(true)
     } finally {
       setIsProfileLoading(false)
     }
-  }, [navigation, categoryId, getProProfile])
+  }, [navigation, categoryId, getProProfile, preloadProImages])
 
   const pros = data?.data || []
 
@@ -448,10 +537,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const prefetchVisibleRef = useRef<(items: ProType[]) => void>(() => {})
   useEffect(() => {
     prefetchVisibleRef.current = (items) =>
-      items.forEach((p) =>
+      items.forEach((p) => {
         prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
-      )
-  }, [prefetchProfile, categoryId])
+        preloadProImages(p)
+      })
+  }, [prefetchProfile, categoryId, preloadProImages])
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     prefetchVisibleRef.current(viewableItems.map((v) => v.item).filter(Boolean) as ProType[])

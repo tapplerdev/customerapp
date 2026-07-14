@@ -79,5 +79,14 @@ target 'tappler_customer_app' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
+
+    # Customer app's Metro runs on 8082 (proapp uses the default 8081). RCT_METRO_PORT
+    # is compiled into React-Core (RCTBundleURLProvider), so set it here as a build
+    # setting — the debug bundle URL then resolves to :8082 with no AppDelegate hack.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['RCT_METRO_PORT'] = '8082'
+      end
+    end
   end
 end

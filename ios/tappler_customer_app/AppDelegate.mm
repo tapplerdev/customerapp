@@ -26,11 +26,9 @@
 - (NSURL *)getBundleURL
 {
 #if DEBUG
-  // Use port 8082 to avoid conflict with proapp on 8081
-  NSURL *defaultURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
-  NSURLComponents *components = [NSURLComponents componentsWithURL:defaultURL resolvingAgainstBaseURL:NO];
-  components.port = @8082;
-  return components.URL;
+  // Metro port (8082, to avoid clashing with proapp on 8081) is set via RCT_METRO_PORT
+  // in the Podfile post_install hook, so the provider resolves the right URL directly.
+  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif

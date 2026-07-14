@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { api } from "services/api"
 import { RootStackScreenProps, AddressInfo } from "navigation/types"
 import { ServiceCategoryType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -28,7 +29,12 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
     navigation.goBack()
   }
 
+  const prefetchService = api.usePrefetch("getServiceById")
+
   const handleSubCategoryPress = (category: ServiceCategoryType) => {
+    // Warm the service payload (questions/placeOfService) while the customer
+    // picks an address — ProsListingScreen's question flow launches from it.
+    prefetchService(service.id, { ifOlderThan: 120 })
     setSelectedCategory(category)
     setAddressModalVisible(true)
   }
@@ -76,6 +82,10 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
       if (!cat) return
 
       setTimeout(() => {
+        // Only act when this screen is focused — it stays mounted beneath the
+        // results screen, and without this an address change made THERE would
+        // re-trigger the search animation from here.
+        if (!navigation.isFocused()) return
         navigation.navigate("SearchAnimationScreen", {
           nextParams: {
             categoryId: cat.id,

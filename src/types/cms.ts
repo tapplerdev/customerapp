@@ -64,6 +64,7 @@ export type ServiceCategoryType = {
   nameAr: string
   picture?: FileType
   serviceId?: number
+  keywords?: string
   placeOfService?: string[]
   customerQuestions?: ServiceQuestionType[]
   proQuestions?: ServiceQuestionType[]

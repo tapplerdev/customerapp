@@ -10,6 +10,7 @@ import { store, persistor } from "store"
 import BootstrapScreen from "screens/BootstrapScreen/BootstrapScreen"
 import SplashOverlay from "components/SplashOverlay/SplashOverlay"
 import { storage } from "@tappler/shared/src/store/mmkv"
+import { useChatSocket } from "hooks/useChatSocket"
 import "locales/i18n"
 import "react-native-gesture-handler"
 
@@ -36,6 +37,13 @@ const shouldShowSplash = (() => {
   } catch { return false }
 })()
 
+// Mounted inside the Redux Provider so it can read auth state. Renders
+// nothing — it just owns the single global chat WebSocket lifecycle.
+const RealtimeManager: React.FC = () => {
+  useChatSocket()
+  return null
+}
+
 function App(): JSX.Element {
   const [navReady, setNavReady] = useState(false)
   const [splashDone, setSplashDone] = useState(!shouldShowSplash)
@@ -46,6 +54,7 @@ function App(): JSX.Element {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <RealtimeManager />
         <SafeAreaProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <BottomSheetModalProvider>

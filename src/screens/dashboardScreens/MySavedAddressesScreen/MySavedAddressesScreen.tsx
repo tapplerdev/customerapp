@@ -31,6 +31,8 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
       isListeningRef.current = false
       // Delay so PickAddressScreen finishes dismissing before we push
       setTimeout(() => {
+        // Only act when focused — the bus is shared across mounted screens
+        if (!navigation.isFocused()) return
         navigation.navigate("AddNewAddressScreen", {
           address: data.address,
           city: data.city,

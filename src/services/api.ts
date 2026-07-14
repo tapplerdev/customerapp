@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
 import { API_URL } from "config"
+import { chatReadRegistry } from "services/chatReadRegistry"
 import { RootState } from "store"
 import { setTokens, logout } from "store/auth/slice"
 import { PresetType, ServiceType, ServicesResponse } from "types/cms"
@@ -268,6 +269,18 @@ export const api = createApi({
 
     getChats: builder.query<ListChatsResponse, void>({
       query: () => "/chats",
+      // In-flight-read wins: a refetch that started BEFORE the customer read
+      // a chat can land AFTER the local zero carrying pre-read server counts —
+      // without this guard it would resurrect the unread state. (Mirrors the
+      // proapp pattern.)
+      transformResponse: (response: ListChatsResponse) => {
+        response?.data?.forEach((preview) => {
+          if (preview.notReadMessages > 0 && chatReadRegistry.has(preview.chat.id)) {
+            preview.notReadMessages = 0
+          }
+        })
+        return response
+      },
       providesTags: ["Chats"],
     }),
 
@@ -301,12 +314,34 @@ export const api = createApi({
       },
     }),
 
+    // NO success invalidation on purpose: the optimistic zero below is the
+    // truth (the server converges via the PATCH), and the success refetch is
+    // exactly why the list/unread lagged a round trip behind reading a chat.
+    // Invalidate only when the PATCH FAILS. (Mirrors the proapp.)
     markAllAsRead: builder.mutation<ChatMessageType[], number>({
       query: (chatId) => ({
         url: `/chats/${chatId}/messages/mark-all-as-read`,
         method: "PATCH",
       }),
-      invalidatesTags: ["Chats"],
+      async onQueryStarted(chatId, { dispatch, queryFulfilled }) {
+        chatReadRegistry.add(chatId)
+        const zero = () =>
+          dispatch(
+            api.util.updateQueryData("getChats", undefined, (draft) => {
+              const preview = draft?.data?.find((c) => c.chat.id === chatId)
+              if (preview) preview.notReadMessages = 0
+            })
+          )
+        zero()
+        try {
+          await queryFulfilled
+          chatReadRegistry.commit(chatId)
+          zero() // repair anything a mid-flight refetch resurrected
+        } catch {
+          chatReadRegistry.remove(chatId)
+          dispatch(api.util.invalidateTags(["Chats"]))
+        }
+      },
     }),
 
     archiveChat: builder.mutation<ChatType, number>({

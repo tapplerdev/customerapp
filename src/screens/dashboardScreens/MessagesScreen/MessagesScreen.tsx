@@ -49,7 +49,10 @@ const MessagesScreen: React.FC = () => {
   const allChats = data?.data || []
   const activeChats = allChats.filter((item) => {
     if (item.chat.status !== "active") return false
-    if (!item.chat.job) return true
+    // Direct chats (no job) exist the moment the composer is opened from a pro
+    // card — only list them once something was actually said (WhatsApp-style),
+    // otherwise empty ghost threads with no date appear here.
+    if (!item.chat.job) return !!item.lastMessage
     const chatPro = item.chat.job.pros?.find((p) => p.proId === item.chat.proId)
     return chatPro?.selectionStatus === "offer"
   })

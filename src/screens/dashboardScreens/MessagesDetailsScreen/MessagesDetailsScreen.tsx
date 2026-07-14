@@ -205,9 +205,14 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   // Listen for address picked from PickAddressScreen
   React.useEffect(() => {
     const handler = (data: any) => {
-      if (data?.coords) {
+      if (!data?.coords) return
+      // Only act when focused — the bus is shared: without this, picking an
+      // address for SEARCH while this chat sits in the stack would silently
+      // send a location message to the pro.
+      setTimeout(() => {
+        if (!navigation.isFocused()) return
         sendLocation(data.coords)
-      }
+      }, 600)
     }
     addressEventBus.on("address:pick", handler)
     return () => {
