@@ -11,6 +11,8 @@ import BootstrapScreen from "screens/BootstrapScreen/BootstrapScreen"
 import SplashOverlay from "components/SplashOverlay/SplashOverlay"
 import { storage } from "@tappler/shared/src/store/mmkv"
 import { useChatSocket } from "hooks/useChatSocket"
+import { navigationRef } from "navigation/navigationRef"
+import InAppMessageBanner from "components/InAppMessageBanner/InAppMessageBanner"
 import "locales/i18n"
 import "react-native-gesture-handler"
 
@@ -59,7 +61,7 @@ function App(): JSX.Element {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <BottomSheetModalProvider>
               <View style={{ flex: 1 }}>
-                <NavigationContainer theme={navigationTheme} onReady={handleNavReady}>
+                <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={handleNavReady}>
                   <StatusBar
                     barStyle={
                       Platform.OS === "android" ? "dark-content" : "default"
@@ -76,6 +78,10 @@ function App(): JSX.Element {
                     onFinish={handleSplashFinish}
                   />
                 )}
+
+                {/* Global in-app message banner — overlays everything, above
+                    the navigator so it's visible on any screen. */}
+                <InAppMessageBanner />
               </View>
             </BottomSheetModalProvider>
           </GestureHandlerRootView>

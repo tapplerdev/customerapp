@@ -3,7 +3,8 @@ import { AppState } from "react-native"
 import { useDispatch, useStore } from "react-redux"
 
 import { api } from "services/api"
-import { applyIncomingMessage } from "services/chatCache"
+import { applyIncomingMessage, getActiveChat } from "services/chatCache"
+import { messageBannerEventBus } from "events/messageBannerEventBus"
 import { WebSocketService } from "services/WebSocketService"
 import { useTypedSelector } from "store"
 
@@ -65,6 +66,18 @@ export const useChatSocket = () => {
         // slim payload — one targeted refetch of the list.
         if (!applied) {
           dispatch(api.util.invalidateTags(["Chats"]))
+        }
+
+        // In-app banner: only for a PRO's message (incoming), and only when
+        // the customer is NOT already looking at that chat. Look the chat up
+        // in the getChats cache so the banner can open it on tap.
+        const chatId = wsMessage?.chatId
+        if (wsMessage?.ownerType === "pro" && chatId && chatId !== getActiveChat()) {
+          const chats = api.endpoints.getChats.select(undefined)(store.getState() as any)?.data?.data
+          const chatPreview = chats?.find((c) => c.chat.id === chatId)
+          if (chatPreview && wsMessage.text) {
+            messageBannerEventBus.emit("message:new", { chatPreview, body: wsMessage.text })
+          }
         }
       }
       // message.updatedMany (read receipts on the customer's own messages) is

@@ -1,0 +1,172 @@
+import React, { useEffect, useRef, useState } from "react"
+import { Animated, Dimensions, TouchableOpacity } from "react-native"
+import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { PanGestureHandler, State } from "react-native-gesture-handler"
+import FastImage from "react-native-fast-image"
+
+import { messageBannerEventBus } from "events/messageBannerEventBus"
+import { navigateFromRef } from "navigation/navigationRef"
+import { setActiveChat } from "services/chatCache"
+import { ChatPreviewType } from "types/chat"
+
+const DURATION = 5000
+
+type Banner = { chatPreview: ChatPreviewType; title: string; body: string }
+
+/**
+ * Global in-app message banner (customer app). Renders as a slide-down toast
+ * when a pro's message arrives while the customer is on another screen — the
+ * customer-side twin of the proapp's InAppNotification. Driven by
+ * messageBannerEventBus (not Redux, so it never persists). Mount ONCE, as an
+ * overlay sibling of the navigator.
+ *
+ * Slide down on arrive, auto-dismiss after 5s, swipe up to dismiss, tap to
+ * open the chat.
+ */
+const InAppMessageBanner: React.FC = () => {
+  const insets = useSafeAreaInsets()
+  const translateY = useRef(new Animated.Value(-200)).current
+  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const [banner, setBanner] = useState<Banner | null>(null)
+
+  useEffect(() => {
+    const handler = ({ chatPreview, body }: { chatPreview: ChatPreviewType; body: string }) => {
+      const title =
+        chatPreview.chat.pro?.businessName || chatPreview.chat.pro?.registeredName || "New message"
+      setBanner({ chatPreview, title, body })
+    }
+    messageBannerEventBus.on("message:new", handler)
+    return () => {
+      messageBannerEventBus.off("message:new", handler)
+    }
+  }, [])
+
+  // Slide in + arm auto-dismiss whenever a new banner is set. A newer message
+  // replaces the current one and restarts the timer.
+  useEffect(() => {
+    if (!banner) return
+    translateY.setValue(-200)
+    Animated.spring(translateY, {
+      toValue: insets.top + 10,
+      useNativeDriver: true,
+      tension: 30,
+      friction: 10,
+    }).start()
+    timer.current = setTimeout(() => dismiss(), DURATION)
+    return () => {
+      if (timer.current) clearTimeout(timer.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [banner])
+
+  const dismiss = (fast = false) => {
+    if (timer.current) clearTimeout(timer.current)
+    Animated.timing(translateY, {
+      toValue: -200,
+      duration: fast ? 250 : 500,
+      useNativeDriver: true,
+    }).start(() => setBanner(null))
+  }
+
+  const handlePress = () => {
+    if (!banner) return
+    // Pre-mark the chat active so the message the banner announced doesn't also
+    // bump the badge once the chat mounts.
+    setActiveChat(banner.chatPreview.chat.id)
+    dismiss(true)
+    navigateFromRef("MessagesDetailsScreen", { chatPreview: banner.chatPreview })
+  }
+
+  const onGestureEvent = Animated.event(
+    [{ nativeEvent: { translationY: translateY } }],
+    { useNativeDriver: true }
+  )
+
+  const onHandlerStateChange = (event: any) => {
+    if (event.nativeEvent.state === State.END) {
+      const { translationY, velocityY } = event.nativeEvent
+      if (translationY < -50 || velocityY < -500) {
+        dismiss()
+      } else {
+        Animated.spring(translateY, {
+          toValue: insets.top + 10,
+          useNativeDriver: true,
+          tension: 25,
+          friction: 10,
+        }).start()
+      }
+    }
+  }
+
+  if (!banner) return null
+
+  const photo = banner.chatPreview.chat.pro?.profilePhoto150 || banner.chatPreview.chat.pro?.profilePhoto
+
+  return (
+    <PanGestureHandler
+      onGestureEvent={onGestureEvent}
+      onHandlerStateChange={onHandlerStateChange}
+      activeOffsetY={[-10, 10]}
+    >
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 16,
+          right: 16,
+          width: Dimensions.get("window").width - 32,
+          zIndex: 9999,
+          transform: [{ translateY }],
+        }}
+      >
+        <TouchableOpacity activeOpacity={0.9} onPress={handlePress}>
+          <DmView
+            className="bg-white rounded-12 overflow-hidden border-0.5 border-grey5"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.18,
+              shadowRadius: 8,
+              elevation: 6,
+            }}
+          >
+            <DmView className="flex-row items-center p-[14]">
+              {photo ? (
+                <DmView className="w-[40] h-[40] rounded-full overflow-hidden mr-[12]">
+                  <FastImage
+                    source={{ uri: photo }}
+                    style={{ width: 40, height: 40 }}
+                    resizeMode={FastImage.resizeMode.cover}
+                  />
+                </DmView>
+              ) : (
+                <DmView className="w-[40] h-[40] rounded-full bg-red items-center justify-center mr-[12]">
+                  <DmText className="text-white text-16 font-custom600">
+                    {banner.title.charAt(0)}
+                  </DmText>
+                </DmView>
+              )}
+              <DmView className="flex-1">
+                <DmView className="flex-row items-center justify-between mb-[2]">
+                  <DmText
+                    className="text-15 font-custom600 text-black flex-1"
+                    numberOfLines={1}
+                  >
+                    {banner.title}
+                  </DmText>
+                  <DmText className="text-11 font-custom400 text-grey3 ml-[8]">now</DmText>
+                </DmView>
+                <DmText className="text-13 font-custom400 text-grey2" numberOfLines={2}>
+                  {banner.body}
+                </DmText>
+              </DmView>
+            </DmView>
+          </DmView>
+        </TouchableOpacity>
+      </Animated.View>
+    </PanGestureHandler>
+  )
+}
+
+export default InAppMessageBanner
