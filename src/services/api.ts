@@ -101,16 +101,25 @@ const baseQueryWithReauth: BaseQueryFn<
       console.log(`[API] 🔒 Token refresh FAILED:`, JSON.stringify(refreshResult.error?.data || refreshResult.error).substring(0, 200))
       isRefreshing = false
       refreshPromise = null
-      apiBase.dispatch(logout())
-      apiBase.dispatch(api.util.resetApiState())
+      // Only a definitive rejection from a live server means the session is
+      // truly invalid. Network errors / timeouts / 5xx = backend unreachable
+      // (e.g. local restart): keep the session and let a later request retry.
+      const refreshStatus = refreshResult.error?.status
+      if (refreshStatus === 401 || refreshStatus === 403) {
+        console.log(`[API] 🔒 Refresh token rejected — logging out`)
+        apiBase.dispatch(logout())
+        apiBase.dispatch(api.util.resetApiState())
+      } else {
+        console.log(`[API] 🔒 Refresh unreachable (${String(refreshStatus)}) — keeping session`)
+      }
       return result
     }
   } catch (e: any) {
-    console.log(`[API] 🔒 Token refresh EXCEPTION:`, e?.message || e)
+    // Exceptions here are code/network failures, never an auth verdict —
+    // keep the session.
+    console.log(`[API] 🔒 Token refresh EXCEPTION (keeping session):`, e?.message || e)
     isRefreshing = false
     refreshPromise = null
-    apiBase.dispatch(logout())
-    apiBase.dispatch(api.util.resetApiState())
     return result
   }
 }
@@ -125,8 +134,12 @@ export const api = createApi({
       providesTags: ["Preset"],
     }),
 
-    getServices: builder.query<ServicesResponse, void>({
-      query: () => "/services?page=1&perPage=100&sort=ASC",
+    getServices: builder.query<ServicesResponse, void | string>({
+      // Optional search: server full-text matches service names + category
+      // names/keywords (same contract the pro app uses)
+      query: (search) =>
+        "/services?page=1&perPage=100&sort=ASC" +
+        (typeof search === "string" && search ? `&search=${encodeURIComponent(search)}` : ""),
     }),
 
     getServiceById: builder.query<ServiceType, number>({
