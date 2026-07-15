@@ -35,6 +35,7 @@ import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendIcon from "assets/icons/send.svg"
+import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
 import DetailsIcon from "assets/icons/details-icon.svg"
@@ -67,6 +68,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [messageText, setMessageText] = useState("")
   const [sendError, setSendError] = useState<string | null>(null)
+  // Violation modal (ported from proapp): non-null = visible, holds the localized description
+  const [blockedModalText, setBlockedModalText] = useState<string | null>(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const attachmentSheetRef = useRef<BottomSheet>(null)
@@ -133,17 +136,25 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     []
   )
 
-  // Map a send failure to a localized reason. The backend returns a stable
-  // code in validationErrors.text (CHAT_BLOCK_CONTACT_INFO / _PROFANITY) so we
-  // localize here instead of showing the server's raw string (which is English
-  // and would leak internals). Unknown/network errors -> generic.
-  const resolveSendError = useCallback(
-    (e: any): string => {
+  // Route a send failure to the right UI. The backend returns a stable code
+  // in validationErrors.text; VIOLATIONS (profanity / contact-info) get the
+  // proapp-style bottom modal — the blocked text is already restored into the
+  // input by the caller, so "Edit message" just dismisses. Non-violations
+  // (couldn't-verify / network) keep the lightweight banner.
+  const handleSendFailure = useCallback(
+    (e: any) => {
       const code = e?.data?.validationErrors?.text?.[0]
-      if (code === "CHAT_BLOCK_CONTACT_INFO") return t("chat_block_contact_info")
-      if (code === "CHAT_BLOCK_PROFANITY") return t("chat_block_profanity")
-      if (code === "CHAT_BLOCK_UNVERIFIED") return t("chat_block_unverified")
-      return t("failed_to_send")
+      if (code === "CHAT_BLOCK_PROFANITY") {
+        setBlockedModalText(t("message_violates_community_standards"))
+        return
+      }
+      if (code === "CHAT_BLOCK_CONTACT_INFO") {
+        setBlockedModalText(t("chat_block_contact_info"))
+        return
+      }
+      setSendError(
+        code === "CHAT_BLOCK_UNVERIFIED" ? t("chat_block_unverified") : t("failed_to_send")
+      )
     },
     [t]
   )
@@ -161,7 +172,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         await attachments.sendWithAttachments(text)
       } catch (e: any) {
         setMessageText(text)
-        setSendError(resolveSendError(e))
+        handleSendFailure(e)
       }
     } else {
       // Optimistic: show the bubble immediately (matches proapp + the location/
@@ -180,10 +191,10 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       } catch (e: any) {
         pagination.removeOptimisticMessage(optimisticId)
         setMessageText(text)
-        setSendError(resolveSendError(e))
+        handleSendFailure(e)
       }
     }
-  }, [messageText, attachments, context.chatId, sendMessage, pagination, t, resolveSendError])
+  }, [messageText, attachments, context.chatId, sendMessage, pagination, t, handleSendFailure])
 
   // ── Scroll handlers ──
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -223,9 +234,9 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       pagination.replaceOptimisticMessage(optimisticId, realMsg)
     } catch (e: any) {
       pagination.removeOptimisticMessage(optimisticId)
-      setSendError(resolveSendError(e))
+      handleSendFailure(e)
     }
-  }, [context.chatId, sendMessage, pagination, t, resolveSendError])
+  }, [context.chatId, sendMessage, pagination, t, handleSendFailure])
 
   // Listen for address picked from PickAddressScreen
   React.useEffect(() => {
@@ -635,6 +646,13 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </BottomSheetView>
       </BottomSheet>
 
+      {/* Violation modal (profanity / contact-info) — same UX as the proapp.
+          The blocked text is already back in the input; the button dismisses. */}
+      <MessageBlockedModal
+        isVisible={!!blockedModalText}
+        description={blockedModalText ?? ""}
+        onClose={() => setBlockedModalText(null)}
+      />
     </SafeAreaView>
   )
 }

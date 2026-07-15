@@ -25,6 +25,8 @@
   "chat_block_contact_info": "Contact information can't be shared until you select the pro.",
   "chat_block_profanity": "This message violates our community standards.",
   "chat_block_unverified": "We couldn't check your message right now. Please try again.",
+  "message_violates_community_standards": "We detected improper words in your message. Please revise your message and try again.",
+  "edit_message": "Edit message",
   "tap_to_dismiss": "Tap to dismiss",
   "view_on_maps": "View on maps",
   "almost_there": "Almost there",
