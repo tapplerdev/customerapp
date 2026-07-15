@@ -22,6 +22,10 @@ import { CreateReviewRequest, ReviewType } from "types/review"
 
 const baseQuery = fetchBaseQuery({
   baseUrl: API_URL,
+  // Bound every request: a hung server (e.g. jammed DB pooler accepting
+  // connections it never answers) otherwise wedges RTK forever — in-flight
+  // entries never resolve, polling loops stall until app restart.
+  timeout: 20000,
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState
     const { token } = state.auth
