@@ -51,7 +51,12 @@ export type RootStackParamList = {
   ArchivedMessagesScreen: undefined
   MessagesDetailsScreen: { chatPreview: ChatPreviewType }
   CategoriesScreen: undefined
-  SubCategoriesScreen: { service: ServiceType }
+  SubCategoriesScreen: {
+    service: ServiceType
+    /** Set by category-search subcategory hits: opens the address modal for
+        this category immediately on arrival. */
+    autoSelectCategoryId?: number
+  }
   SearchAnimationScreen: {
     nextParams: {
       categoryId: number

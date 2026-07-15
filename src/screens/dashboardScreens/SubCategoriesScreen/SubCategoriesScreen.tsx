@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { api } from "services/api"
+import { useTypedSelector } from "store"
 import { RootStackScreenProps, AddressInfo } from "navigation/types"
 import { ServiceCategoryType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -31,13 +32,50 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const prefetchService = api.usePrefetch("getServiceById")
 
+  const guestLocation = useTypedSelector((state) => state.auth.guestLocation)
+
   const handleSubCategoryPress = (category: ServiceCategoryType) => {
     // Warm the service payload (questions/placeOfService) while the customer
     // picks an address — ProsListingScreen's question flow launches from it.
     prefetchService(service.id, { ifOlderThan: 120 })
+
+    // Remote/fixed-only categories: the address never affects matching or
+    // submission (serveability for those modes is address-independent in the
+    // backend guard + listing filter), so skip the modal and silently carry
+    // the last-used address — exactly what the modal's top row would pick.
+    // No saved address yet → fall through to the modal once.
+    const places = category.placeOfService
+    const addressInert =
+      !!places?.length &&
+      places.every((p) => p === "remoteOrOnline" || p === "fixedLocations")
+    if (addressInert && guestLocation?.address) {
+      navigation.navigate("SearchAnimationScreen", {
+        nextParams: {
+          categoryId: category.id,
+          categoryName: isAr ? category.nameAr : category.nameEn,
+          serviceId: service.id,
+          address: guestLocation.address,
+        },
+      })
+      return
+    }
+
     setSelectedCategory(category)
     setAddressModalVisible(true)
   }
+
+  // Subcategory hit from the categories search: proceed straight into the
+  // address selection for it, as if it was tapped in this list.
+  useEffect(() => {
+    const autoId = route.params.autoSelectCategoryId
+    if (!autoId) return
+    const category = service.categories?.find((c) => c.id === autoId)
+    if (!category) return
+    // Let the screen's push transition settle before presenting the modal
+    const timer = setTimeout(() => handleSubCategoryPress(category), 350)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleCloseAddressModal = () => {
     setAddressModalVisible(false)

@@ -7,7 +7,8 @@ import Animated, { FadeIn } from "react-native-reanimated"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useGetServicesQuery } from "services/api"
-import { ServiceType } from "types/cms"
+import { ServiceCategoryType, ServiceType } from "types/cms"
+import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import colors from "@tappler/shared/src/styles/colors"
@@ -31,26 +32,66 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
     searchTimeout.current = setTimeout(() => setDebouncedSearch(text), 300)
   }, [])
 
-  const { data, isLoading } = useGetServicesQuery()
+  const searchTerm = debouncedSearch.trim()
+  const isSearching = searchTerm.length > 0
+
+  // Search goes to the server (full-text over service + category names and
+  // keywords — same contract the pro app uses); the plain list stays on the
+  // unfiltered cache. Both subscriptions stay warm so clearing the search is
+  // instant and navigation payloads always carry the FULL service object.
+  const { data, isLoading, isFetching } = useGetServicesQuery(isSearching ? searchTerm : undefined)
+  const { data: allData } = useGetServicesQuery()
   const services = data?.data || []
 
-  const filteredServices = useMemo(() => {
-    if (!debouncedSearch.trim()) return services
-    const query = debouncedSearch.toLowerCase()
-    return services.filter((s) =>
-      s.nameEn.toLowerCase().includes(query) ||
-      s.nameAr.includes(query)
+  // One flat list: matching categories first, then matching subcategories
+  type RowItem =
+    | { kind: "category"; service: ServiceType }
+    | { kind: "subCategory"; category: ServiceCategoryType; parentService: ServiceType }
+
+  const listData = useMemo<RowItem[]>(() => {
+    if (!isSearching) {
+      return services.map((s) => ({ kind: "category" as const, service: s }))
+    }
+    const query = searchTerm.toLowerCase()
+    const categoryHits = services
+      .filter((s) => s.nameEn.toLowerCase().includes(query) || s.nameAr.toLowerCase().includes(query))
+      .map((s) => ({ kind: "category" as const, service: s }))
+    const subCategoryHits = services.flatMap((s) =>
+      (s.categories || [])
+        .filter(
+          (c) =>
+            c.nameEn?.toLowerCase().includes(query) ||
+            c.nameAr?.toLowerCase().includes(query) ||
+            c.keywords?.toLowerCase().includes(query)
+        )
+        .map((c) => ({ kind: "subCategory" as const, category: c, parentService: s }))
     )
-  }, [services, debouncedSearch])
+    return [...categoryHits, ...subCategoryHits]
+  }, [services, searchTerm, isSearching])
 
   const handleServicePress = (service: ServiceType) => {
     navigation.navigate("SubCategoriesScreen", { service })
   }
 
-  const renderItem = ({ item }: { item: ServiceType }) => {
-    const name = isAr ? item.nameAr : item.nameEn
+  const handleSubCategoryPress = (category: ServiceCategoryType, parentService: ServiceType) => {
+    // Prefer the full service from the unfiltered cache — the search response
+    // may carry a pruned category list.
+    const fullService = allData?.data?.find((s) => s.id === parentService.id) ?? parentService
+    navigation.navigate("SubCategoriesScreen", {
+      service: fullService,
+      autoSelectCategoryId: category.id,
+    })
+  }
+
+  const renderItem = ({ item }: { item: RowItem }) => {
+    const source = item.kind === "category" ? item.service : item.category
+    const name = isAr ? source.nameAr : source.nameEn
+    const onPress =
+      item.kind === "category"
+        ? () => handleServicePress(item.service)
+        : () => handleSubCategoryPress(item.category, item.parentService)
     return (
-      <DmView onPress={() => handleServicePress(item)}>
+      <DmView onPress={onPress}>
         <DmView className="flex-row items-center px-[19] py-[17]">
           <DmText className="flex-1 text-12 leading-[15px] font-custom500 text-black">
             {name}
@@ -66,6 +107,20 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
     )
   }
+
+  // Skeleton rows shown on initial load and while a search round-trips
+  // (ported from the pro app's services search)
+  const renderSkeleton = () => (
+    <DmView>
+      {[60, 45, 70, 50, 65, 55, 72, 48].map((width, i) => (
+        <DmView key={i} className="py-[17] px-[19] border-b-1 border-b-grey8">
+          <SkeletonLoader width={`${width}%`} height={15} borderRadius={4} />
+        </DmView>
+      ))}
+    </DmView>
+  )
+
+  const showSkeleton = (!data && isLoading) || (isSearching && isFetching)
 
 
   return (
@@ -119,22 +174,35 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
       <DmView className="h-[0.5] bg-grey4" />
 
-      {/* Content */}
-      <FlatList
-        data={filteredServices}
-        renderItem={renderItem}
-        keyExtractor={(item) => String(item.id)}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
-        ListEmptyComponent={
-          <DmView className="flex-1 items-center justify-center pt-[80]">
-            <DmText className="text-14 font-custom500 text-grey3">
-              {t("no_results_found")}
-            </DmText>
-          </DmView>
-        }
-      />
+      {/* Content: skeleton while loading/searching, results fade in per query */}
+      {showSkeleton ? (
+        renderSkeleton()
+      ) : (
+        <Animated.View
+          key={isSearching ? searchTerm : "all"}
+          entering={FadeIn.duration(300)}
+          style={{ flex: 1 }}
+        >
+          <FlatList
+            data={listData}
+            renderItem={renderItem}
+            keyExtractor={(item) =>
+              item.kind === "category" ? `c-${item.service.id}` : `s-${item.category.id}`
+            }
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
+            ListEmptyComponent={
+              <DmView className="flex-1 items-center justify-center pt-[80]">
+                <DmText className="text-14 font-custom500 text-grey3">
+                  {t("no_results_found")}
+                </DmText>
+              </DmView>
+            }
+          />
+        </Animated.View>
+      )}
     </SafeAreaView>
     </Animated.View>
   )
