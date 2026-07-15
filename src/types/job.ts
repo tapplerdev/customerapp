@@ -33,6 +33,7 @@ export type CreateJobRequest = {
   serviceCategoryId: number
   address: CreateJobAddressType
   prosIds: number[]
+  placeOfService?: string
   dateType?: "asap" | "hours48" | "week" | "date" | "notDecided"
   dates?: CreateJobDateType[]
   timeSlots?: CreateJobTimeSlotType[]
