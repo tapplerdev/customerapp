@@ -36,6 +36,7 @@ import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendIcon from "assets/icons/send.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
+import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
 import DetailsIcon from "assets/icons/details-icon.svg"
@@ -73,6 +74,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [showScrollDown, setShowScrollDown] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const attachmentSheetRef = useRef<BottomSheet>(null)
+  // iOS uses the native push-back sheet (state-driven); Android keeps gorhom (ref-driven)
+  const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false)
   const flatListRef = useRef<FlatList>(null)
   const [sendMessage] = useSendMessageMutation()
   const [getProProfile] = useLazyGetProProfileQuery()
@@ -86,25 +89,37 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [])
 
   // ── Attachment handlers ──
+  const closeAttachmentSheet = () => {
+    if (Platform.OS === "ios") {
+      setAttachmentSheetVisible(false)
+    } else {
+      attachmentSheetRef.current?.close()
+    }
+  }
+
   const handleOpenAttachmentSheet = () => {
     Keyboard.dismiss()
     setTimeout(() => {
-      attachmentSheetRef.current?.expand()
+      if (Platform.OS === "ios") {
+        setAttachmentSheetVisible(true)
+      } else {
+        attachmentSheetRef.current?.expand()
+      }
     }, 100)
   }
 
   const handleCameraPress = () => {
-    attachmentSheetRef.current?.close()
+    closeAttachmentSheet()
     attachments.addFromCamera()
   }
 
   const handleGalleryPress = () => {
-    attachmentSheetRef.current?.close()
+    closeAttachmentSheet()
     attachments.addFromGallery()
   }
 
   const handleUploadFile = async () => {
-    attachmentSheetRef.current?.close()
+    closeAttachmentSheet()
     try {
       const [result] = await pick({
         mode: "open",
@@ -125,7 +140,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   }
 
   const handleLocationPress = () => {
-    attachmentSheetRef.current?.close()
+    closeAttachmentSheet()
     navigation.navigate("PickAddressScreen" as any)
   }
 
@@ -134,6 +149,107 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
     ),
     []
+  )
+
+  // Fixed height for the native iOS sheet (gorhom self-sizes; the native one
+  // can't): top pad 10 + header 28 + photo strip 78 + divider 1 + upload row
+  // 48 + divider 1 + location row 48 = 214, plus bottom inset & inactive note.
+  const attachmentSheetHeight =
+    216 + insets.bottom + (context.isJobInactive ? 26 : 0)
+
+  const renderAttachmentSheetContent = () => (
+    <>
+      {context.isJobInactive && (
+        <DmView className="px-[18] pb-[10]">
+          <DmText className="text-11 font-custom400 text-grey3 text-center" style={styles.italic}>
+            {t("attachments_unavailable")}
+          </DmText>
+        </DmView>
+      )}
+
+      <DmView style={context.isJobInactive ? { opacity: 0.3 } : undefined}>
+        {/* Photos & videos header */}
+        <DmView className="flex-row items-center justify-between px-[14] pb-[10]">
+          <DmText className="text-14 font-custom600 text-black">
+            {t("photos_and_videos")}
+          </DmText>
+          <DmView onPress={context.isJobInactive ? undefined : handleGalleryPress}>
+            <DmText className="text-13 font-custom700 text-red">
+              {t("view_library")}
+            </DmText>
+          </DmView>
+        </DmView>
+
+        {/* Photo strip */}
+        <DmView className="px-[14] pb-[14]">
+          <FlatList
+            horizontal
+            data={attachments.recentPhotos}
+            keyExtractor={(item, index) => `photo-${index}`}
+            showsHorizontalScrollIndicator={false}
+            ListHeaderComponent={
+              <DmView
+                onPress={context.isJobInactive ? undefined : handleCameraPress}
+                className="items-center justify-center rounded-6 bg-grey36 mr-[6]"
+                style={styles.photoStripItem}
+              >
+                <CameraIcon width={24} height={20} />
+              </DmView>
+            }
+            renderItem={({ item }) => {
+              const isSelected = attachments.isPhotoSelected(item.uri)
+              const selIndex = attachments.getPhotoSelectionIndex(item.uri)
+              const atMax = attachments.pending.length >= 4 && !isSelected
+
+              return (
+                <DmView
+                  onPress={context.isJobInactive || atMax ? undefined : () => attachments.toggleRecentPhoto(item.uri)}
+                  className="mr-[6] rounded-6 overflow-hidden"
+                  style={[styles.photoStripItem, atMax && !isSelected ? { opacity: 0.4 } : undefined]}
+                >
+                  <RNImage source={{ uri: item.uri }} style={styles.photoStripImage} />
+                  {isSelected && (
+                    <DmView
+                      className="absolute top-[4] right-[4] w-[22] h-[22] rounded-full bg-red items-center justify-center"
+                    >
+                      <DmText className="text-10 font-custom700 text-white">
+                        {selIndex + 1}
+                      </DmText>
+                    </DmView>
+                  )}
+                </DmView>
+              )
+            }}
+          />
+        </DmView>
+
+        <DmView className="h-[0.7] bg-grey19 mx-[14]" />
+
+        {/* Upload file option */}
+        <DmView
+          className="flex-row items-center px-[18] py-[14]"
+          onPress={context.isJobInactive ? undefined : handleUploadFile}
+        >
+          <DocumentIcon fill={colors.red} width={18} height={20} />
+          <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
+            {t("upload_file")}
+          </DmText>
+        </DmView>
+
+        <DmView className="h-[0.7] bg-grey19" style={{ marginStart: 18 }} />
+
+        {/* Location option */}
+        <DmView
+          className="flex-row items-center px-[18] py-[14]"
+          onPress={context.isJobInactive ? undefined : handleLocationPress}
+        >
+          <LocationIcon width={18} height={20} />
+          <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
+            {t("location")}
+          </DmText>
+        </DmView>
+      </DmView>
+    </>
   )
 
   // Route a send failure to the right UI. The backend returns a stable code
@@ -542,109 +658,34 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </DmView>
       </KeyboardAvoidingView>
 
-      {/* Attachment bottom sheet */}
-      <BottomSheet
-        ref={attachmentSheetRef}
-        index={-1}
-        enableDynamicSizing
-        enablePanDownToClose
-        backdropComponent={renderBackdrop}
-        handleIndicatorStyle={styles.sheetHandle}
-        backgroundStyle={styles.sheetBackground}
-      >
-        <BottomSheetView style={{ paddingBottom: insets.bottom + 2 }}>
-          {context.isJobInactive && (
-            <DmView className="px-[18] pb-[10]">
-              <DmText className="text-11 font-custom400 text-grey3 text-center" style={styles.italic}>
-                {t("attachments_unavailable")}
-              </DmText>
-            </DmView>
-          )}
-
-          <DmView style={context.isJobInactive ? { opacity: 0.3 } : undefined}>
-            {/* Photos & videos header */}
-            <DmView className="flex-row items-center justify-between px-[14] pb-[10]">
-              <DmText className="text-14 font-custom600 text-black">
-                {t("photos_and_videos")}
-              </DmText>
-              <DmView onPress={context.isJobInactive ? undefined : handleGalleryPress}>
-                <DmText className="text-13 font-custom700 text-red">
-                  {t("view_library")}
-                </DmText>
-              </DmView>
-            </DmView>
-
-            {/* Photo strip */}
-            <DmView className="px-[14] pb-[14]">
-              <FlatList
-                horizontal
-                data={attachments.recentPhotos}
-                keyExtractor={(item, index) => `photo-${index}`}
-                showsHorizontalScrollIndicator={false}
-                ListHeaderComponent={
-                  <DmView
-                    onPress={context.isJobInactive ? undefined : handleCameraPress}
-                    className="items-center justify-center rounded-6 bg-grey36 mr-[6]"
-                    style={styles.photoStripItem}
-                  >
-                    <CameraIcon width={24} height={20} />
-                  </DmView>
-                }
-                renderItem={({ item }) => {
-                  const isSelected = attachments.isPhotoSelected(item.uri)
-                  const selIndex = attachments.getPhotoSelectionIndex(item.uri)
-                  const atMax = attachments.pending.length >= 4 && !isSelected
-
-                  return (
-                    <DmView
-                      onPress={context.isJobInactive || atMax ? undefined : () => attachments.toggleRecentPhoto(item.uri)}
-                      className="mr-[6] rounded-6 overflow-hidden"
-                      style={[styles.photoStripItem, atMax && !isSelected ? { opacity: 0.4 } : undefined]}
-                    >
-                      <RNImage source={{ uri: item.uri }} style={styles.photoStripImage} />
-                      {isSelected && (
-                        <DmView
-                          className="absolute top-[4] right-[4] w-[22] h-[22] rounded-full bg-red items-center justify-center"
-                        >
-                          <DmText className="text-10 font-custom700 text-white">
-                            {selIndex + 1}
-                          </DmText>
-                        </DmView>
-                      )}
-                    </DmView>
-                  )
-                }}
-              />
-            </DmView>
-
-            <DmView className="h-[0.7] bg-grey19 mx-[14]" />
-
-            {/* Upload file option */}
-            <DmView
-              className="flex-row items-center px-[18] py-[14]"
-              onPress={context.isJobInactive ? undefined : handleUploadFile}
-            >
-              <DocumentIcon fill={colors.red} width={18} height={20} />
-              <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
-                {t("upload_file")}
-              </DmText>
-            </DmView>
-
-            <DmView className="h-[0.7] bg-grey19" style={{ marginStart: 18 }} />
-
-            {/* Location option */}
-            <DmView
-              className="flex-row items-center px-[18] py-[14]"
-              onPress={context.isJobInactive ? undefined : handleLocationPress}
-            >
-              <LocationIcon width={18} height={20} />
-              <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
-                {t("location")}
-              </DmText>
-            </DmView>
+      {/* Attachment sheet: native push-back presentation on iOS (the screen
+          behind recedes like Airbnb's pickers), gorhom bottom sheet on Android */}
+      {Platform.OS === "ios" ? (
+        <NativePushBackSheet
+          visible={attachmentSheetVisible}
+          height={attachmentSheetHeight}
+          onDismissed={() => setAttachmentSheetVisible(false)}
+        >
+          {/* No grabber — swipe-down still dismisses (pan is on the whole sheet) */}
+          <DmView className="flex-1 bg-white pt-[10]">
+            {renderAttachmentSheetContent()}
           </DmView>
-        </BottomSheetView>
-      </BottomSheet>
+        </NativePushBackSheet>
+      ) : (
+        <BottomSheet
+          ref={attachmentSheetRef}
+          index={-1}
+          enableDynamicSizing
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          handleIndicatorStyle={styles.sheetHandle}
+          backgroundStyle={styles.sheetBackground}
+        >
+          <BottomSheetView style={{ paddingBottom: insets.bottom + 2 }}>
+            {renderAttachmentSheetContent()}
+          </BottomSheetView>
+        </BottomSheet>
+      )}
 
       {/* Violation modal (profanity / contact-info) — same UX as the proapp.
           The blocked text is already back in the input; the button dismisses. */}
