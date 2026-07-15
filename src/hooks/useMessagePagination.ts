@@ -127,12 +127,18 @@ const useMessagePagination = (chatId: number) => {
     })
   }, [])
 
+  // Drop an optimistic bubble that failed to send (e.g. blocked by moderation).
+  const removeOptimisticMessage = useCallback((optimisticId: number) => {
+    setAllMessages((prev) => prev.filter((m) => m.id !== optimisticId))
+  }, [])
+
   return {
     messages: allMessages,
     loadMore,
     hasMore,
     addOptimisticMessage,
     replaceOptimisticMessage,
+    removeOptimisticMessage,
   }
 }
 

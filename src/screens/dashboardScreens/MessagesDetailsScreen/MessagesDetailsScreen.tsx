@@ -133,6 +133,21 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     []
   )
 
+  // Map a send failure to a localized reason. The backend returns a stable
+  // code in validationErrors.text (CHAT_BLOCK_CONTACT_INFO / _PROFANITY) so we
+  // localize here instead of showing the server's raw string (which is English
+  // and would leak internals). Unknown/network errors -> generic.
+  const resolveSendError = useCallback(
+    (e: any): string => {
+      const code = e?.data?.validationErrors?.text?.[0]
+      if (code === "CHAT_BLOCK_CONTACT_INFO") return t("chat_block_contact_info")
+      if (code === "CHAT_BLOCK_PROFANITY") return t("chat_block_profanity")
+      if (code === "CHAT_BLOCK_UNVERIFIED") return t("chat_block_unverified")
+      return t("failed_to_send")
+    },
+    [t]
+  )
+
   // ── Send handler ──
   const handleSend = useCallback(async () => {
     const text = messageText.trim()
@@ -146,18 +161,29 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         await attachments.sendWithAttachments(text)
       } catch (e: any) {
         setMessageText(text)
-        setSendError(e?.message || t("failed_to_send"))
+        setSendError(resolveSendError(e))
       }
     } else {
+      // Optimistic: show the bubble immediately (matches proapp + the location/
+      // attachment paths), then swap for the server message on success, or
+      // remove it + show the reason on a block/failure.
+      const optimisticId = -Date.now()
+      pagination.addOptimisticMessage({
+        id: optimisticId,
+        ownerType: "customer",
+        text,
+        createdAt: new Date().toISOString(),
+      } as ChatMessageType)
       try {
         const newMsg = await sendMessage({ chatId: context.chatId, text }).unwrap()
-        pagination.addOptimisticMessage(newMsg)
+        pagination.replaceOptimisticMessage(optimisticId, newMsg)
       } catch (e: any) {
+        pagination.removeOptimisticMessage(optimisticId)
         setMessageText(text)
-        setSendError(e?.message || t("failed_to_send"))
+        setSendError(resolveSendError(e))
       }
     }
-  }, [messageText, attachments, context.chatId, sendMessage, pagination, t])
+  }, [messageText, attachments, context.chatId, sendMessage, pagination, t, resolveSendError])
 
   // ── Scroll handlers ──
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -196,11 +222,10 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
       pagination.replaceOptimisticMessage(optimisticId, realMsg)
     } catch (e: any) {
-      // Remove optimistic on failure
-      pagination.replaceOptimisticMessage(optimisticId, { ...optimisticMsg, id: -999999 })
-      setSendError(e?.message || t("failed_to_send"))
+      pagination.removeOptimisticMessage(optimisticId)
+      setSendError(resolveSendError(e))
     }
-  }, [context.chatId, sendMessage, pagination, t])
+  }, [context.chatId, sendMessage, pagination, t, resolveSendError])
 
   // Listen for address picked from PickAddressScreen
   React.useEffect(() => {
