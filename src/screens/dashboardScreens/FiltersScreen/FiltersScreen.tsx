@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { ScrollView, StyleSheet, TextInput } from "react-native"
+import { Dimensions, ScrollView, StyleSheet, TextInput } from "react-native"
 import Slider from "@react-native-community/slider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
-import { RootStackScreenProps } from "navigation/types"
+import { RootStackParamList, RootStackScreenProps } from "navigation/types"
 import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
+import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
 
@@ -20,10 +21,22 @@ export type FilterValues = {
   creditCardPayment?: boolean
 }
 
+type FiltersParams = RootStackParamList["FiltersScreen"]
+type ContentProps = FiltersParams & { onClose: () => void }
 type Props = RootStackScreenProps<"FiltersScreen">
 
-const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { currentPlaceOfService, initialFilters, refinementFilters, initialRefinementOptionIds, initialRanges, upfrontSelections, onApply } = route.params
+// All filter state & UI. Presentation-agnostic: rendered full-screen by the
+// FiltersScreen route (Android) or inside the native push-back sheet (iOS).
+const FiltersContent: React.FC<ContentProps> = ({
+  currentPlaceOfService,
+  initialFilters,
+  refinementFilters,
+  initialRefinementOptionIds,
+  initialRanges,
+  upfrontSelections,
+  onApply,
+  onClose,
+}) => {
   const insets = useSafeAreaInsets()
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
@@ -146,11 +159,11 @@ const FiltersScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleShowResults = () => {
     onApply(collectFilters())
-    navigation.goBack()
+    onClose()
   }
 
   const handleClose = () => {
-    navigation.goBack()
+    onClose()
   }
 
   const handleResetAll = () => {
@@ -482,5 +495,27 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 })
+
+// Matches the native clamp (sheet height caps at 90% of the container) so
+// the JS-laid-out content and the presented frame agree exactly.
+const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
+
+/**
+ * iOS presentation: the filters inside the native push-back sheet (screen
+ * behind recedes). `contentKey` should change on every open so the filter
+ * state re-seeds from the freshly passed initial values.
+ */
+export const FiltersSheet: React.FC<
+  FiltersParams & { visible: boolean; contentKey: number; onClose: () => void }
+> = ({ visible, contentKey, onClose, ...contentProps }) => (
+  <NativePushBackSheet visible={visible} height={SHEET_HEIGHT} onDismissed={onClose}>
+    <FiltersContent key={contentKey} {...contentProps} onClose={onClose} />
+  </NativePushBackSheet>
+)
+
+// Android (and fallback) presentation: plain navigation route.
+const FiltersScreen: React.FC<Props> = ({ route, navigation }) => (
+  <FiltersContent {...route.params} onClose={() => navigation.goBack()} />
+)
 
 export default FiltersScreen

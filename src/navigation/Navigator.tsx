@@ -153,6 +153,7 @@ const Navigator = () => {
           gestureEnabled: true,
         }}
       />
+      {/* Android-only route — iOS presents FiltersSheet natively from ProsListingScreen */}
       <Stack.Screen
         name="FiltersScreen"
         component={FiltersScreen}

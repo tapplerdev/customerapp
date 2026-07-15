@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, View, ViewToken } from "react-native"
+import { Animated, InteractionManager, Platform, View, ViewToken } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -25,7 +25,9 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 // import QuestionBottomSheet from "components/QuestionBottomSheet/QuestionBottomSheet"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 import AllQuestionsModal from "components/AllQuestionsModal/AllQuestionsModal"
-import { FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
+import { FiltersSheet, FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
+import { QuestionFlowSheet } from "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen"
+import { AllQuestionsSheet } from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
 import SearchLocationModal from "components/SearchLocationModal/SearchLocationModal"
 import AddressSelectionModal from "components/AddressSelectionModal"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
@@ -72,6 +74,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Filters state
   const [currentFilters, setCurrentFilters] = useState<FilterValues>({})
+  // iOS presents filters in the native push-back sheet; the counter re-seeds
+  // the sheet's state from the latest applied filters on every open
+  const [filtersVisible, setFiltersVisible] = useState(false)
+  const [filtersOpenCount, setFiltersOpenCount] = useState(0)
+  const [questionsVisible, setQuestionsVisible] = useState(false)
+  const [questionsOpenCount, setQuestionsOpenCount] = useState(0)
+  const [allQuestionsVisible, setAllQuestionsVisible] = useState(false)
+  const [allQuestionsOpenCount, setAllQuestionsOpenCount] = useState(0)
   // Service filter option ids: primary (from the upfront flow) + refinement (from the filters modal)
   const [questionFilterOptionIds, setQuestionFilterOptionIds] = useState<number[]>([])
   const [refinementFilterOptionIds, setRefinementFilterOptionIds] = useState<number[]>([])
@@ -81,7 +91,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
   const hasLaunchedQuestions = useRef(false)
   const relaunchQuestions = useRef(false)
-  const [isAllQuestionsVisible, setAllQuestionsVisible] = useState(false)
   const [currentPlaceOfService, setCurrentPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
   const [allAnswers, setAllAnswers] = useState<QuestionAnswerType[]>([])
   const [dataAnswers, setDataAnswers] = useState<QuestionAnswerType[]>([])
@@ -178,13 +187,21 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     if (customerQuestions.length === 0) return // wait for the (new) service's questions to load
     hasLaunchedQuestions.current = true
     relaunchQuestions.current = false
-    navigation.push("QuestionStepScreen", {
-      categoryId,
-      categoryName,
-      serviceId,
-      placeOfServiceOptions,
-      customerQuestions,
-    })
+    if (Platform.OS === "ios") {
+      // Wait out the screen's own push animation before presenting natively
+      InteractionManager.runAfterInteractions(() => {
+        setQuestionsOpenCount((c) => c + 1)
+        setQuestionsVisible(true)
+      })
+    } else {
+      navigation.push("QuestionStepScreen", {
+        categoryId,
+        categoryName,
+        serviceId,
+        placeOfServiceOptions,
+        customerQuestions,
+      })
+    }
   }, [customerQuestions.length, serviceId])
 
   // Preload a pro's image BYTES into FastImage's disk cache so the profile
@@ -597,15 +614,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           </DmText>
         </DmView>
         <DmView
-          onPress={() => navigation.navigate("FiltersScreen", {
-            currentPlaceOfService,
-            initialFilters: currentFilters,
-            refinementFilters,
-            initialRefinementOptionIds: refinementFilterOptionIds,
-            initialRanges: rangeFilters,
-            upfrontSelections,
-            onApply: handleFiltersDismiss,
-          })}
+          onPress={() => {
+            if (Platform.OS === "ios") {
+              setFiltersOpenCount((c) => c + 1)
+              setFiltersVisible(true)
+            } else {
+              navigation.navigate("FiltersScreen", {
+                currentPlaceOfService,
+                initialFilters: currentFilters,
+                refinementFilters,
+                initialRefinementOptionIds: refinementFilterOptionIds,
+                initialRanges: rangeFilters,
+                upfrontSelections,
+                onApply: handleFiltersDismiss,
+              })
+            }
+          }}
           className="w-[32] h-[32] items-center justify-center"
           hitSlop={HIT_SLOP_DEFAULT}
         >
@@ -618,14 +642,21 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       <DmView className="px-[16] pt-[14] pb-[8] bg-white">
         {totalQuestions > 0 && (
           <DmView
-            onPress={() => navigation.navigate("AllQuestionsScreen", {
-              categoryName,
-              placeOfServiceOptions,
-              customerQuestions,
-              initialAnswers: allAnswers,
-              initialPlaceOfService: currentPlaceOfService,
-              onApply: handleAllQuestionsDismiss,
-            })}
+            onPress={() => {
+              if (Platform.OS === "ios") {
+                setAllQuestionsOpenCount((c) => c + 1)
+                setAllQuestionsVisible(true)
+              } else {
+                navigation.navigate("AllQuestionsScreen", {
+                  categoryName,
+                  placeOfServiceOptions,
+                  customerQuestions,
+                  initialAnswers: allAnswers,
+                  initialPlaceOfService: currentPlaceOfService,
+                  onApply: handleAllQuestionsDismiss,
+                })
+              }
+            }}
             className="flex-row items-center mb-[12]"
           >
             <JobDetailsIcon width={18} height={18} color={colors.red} />
@@ -753,6 +784,47 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         isVisible={isErrorModalVisible}
         onClose={() => setErrorModalVisible(false)}
         descr={t("an_error_occurred")}
+      />
+
+      {/* First-time question flow — native push-back sheet (iOS); Android
+          uses the QuestionStepScreen route */}
+      <QuestionFlowSheet
+        visible={questionsVisible}
+        contentKey={questionsOpenCount}
+        onClose={() => setQuestionsVisible(false)}
+        categoryId={categoryId}
+        categoryName={categoryName}
+        serviceId={serviceId}
+        placeOfServiceOptions={placeOfServiceOptions}
+        customerQuestions={customerQuestions}
+      />
+
+      {/* Job-details editor — native push-back sheet (iOS); Android uses the
+          AllQuestionsScreen route */}
+      <AllQuestionsSheet
+        visible={allQuestionsVisible}
+        contentKey={allQuestionsOpenCount}
+        onClose={() => setAllQuestionsVisible(false)}
+        categoryName={categoryName}
+        placeOfServiceOptions={placeOfServiceOptions}
+        customerQuestions={customerQuestions}
+        initialAnswers={allAnswers}
+        initialPlaceOfService={currentPlaceOfService}
+        onApply={handleAllQuestionsDismiss}
+      />
+
+      {/* Filters — native push-back sheet (iOS); Android uses the FiltersScreen route */}
+      <FiltersSheet
+        visible={filtersVisible}
+        contentKey={filtersOpenCount}
+        onClose={() => setFiltersVisible(false)}
+        currentPlaceOfService={currentPlaceOfService}
+        initialFilters={currentFilters}
+        refinementFilters={refinementFilters}
+        initialRefinementOptionIds={refinementFilterOptionIds}
+        initialRanges={rangeFilters}
+        upfrontSelections={upfrontSelections}
+        onApply={handleFiltersDismiss}
       />
     </View>
   )

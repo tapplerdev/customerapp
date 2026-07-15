@@ -1,16 +1,16 @@
-import React, { useCallback, useMemo, useState } from "react"
-import { ScrollView, StyleSheet } from "react-native"
-import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Animated, Dimensions, Easing, ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
-import { RootStackScreenProps } from "navigation/types"
+import { RootStackParamList, RootStackScreenProps } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
+import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -25,20 +25,11 @@ const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
   fixedLocations: "at_fixed_location",
 }
 
-// ── Types for the nested stack ──
 type StepItem =
   | { type: "placeOfService" }
   | { type: "question"; question: ServiceQuestionType }
 
-type InnerStackParamList = {
-  QuestionStep: {
-    stepIndex: number
-  }
-}
-
-const InnerStack = createNativeStackNavigator<InnerStackParamList>()
-
-// ── Shared state context (avoids passing through nav params) ──
+// ── Shared state context (avoids prop-drilling into the step view) ──
 type SharedState = {
   steps: StepItem[]
   totalSteps: number
@@ -48,15 +39,107 @@ type SharedState = {
   selectedPlaceOfService?: string
   setAnswers: React.Dispatch<React.SetStateAction<QuestionAnswerType[]>>
   setSelectedPlaceOfService: (place: string) => void
+  goNext: () => void
+  goPrev: () => void
   onDone: () => void
   onClose: () => void
 }
 
 const SharedStateContext = React.createContext<SharedState | null>(null)
 
-// ── Inner question step screen (card transitions within the modal) ──
-const QuestionStepInner: React.FC<{ route: any; navigation: any }> = ({ route, navigation }) => {
-  const { stepIndex } = route.params
+// One stacked step card. Next slides the new step in over the current one —
+// from the right in LTR, from the left in Arabic — and Back slides the top
+// card out the same way, revealing the previous step (the card-over-card feel
+// the original nested-stack flow had; a navigator can't nest inside the
+// natively presented sheet, so the stack is re-created here).
+const StepCard: React.FC<{
+  animateIn: boolean
+  covered: boolean
+  popping: boolean
+  onPopped: () => void
+  children: React.ReactNode
+}> = ({ animateIn, covered, popping, onPopped, children }) => {
+  const { i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
+  // Where "off-screen" is for an incoming card: right edge in LTR, left in RTL
+  const offscreenX = (isAr ? -1 : 1) * Dimensions.get("window").width
+  const translateX = useRef(new Animated.Value(animateIn ? offscreenX : 0)).current
+  const dim = useRef(new Animated.Value(0)).current
+
+  // Entry: the new page slides in over the previous one
+  useEffect(() => {
+    if (animateIn) {
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 320,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Native-push parallax: while covered, the page drifts back ~30% and dims;
+  // it returns as the page above pops. Skipped on mount so it can't fight
+  // the entry animation on the same Animated.Value.
+  const hasMounted = useRef(false)
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true
+      return
+    }
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: covered ? -0.3 * offscreenX : 0,
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(dim, {
+        toValue: covered ? 0.08 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [covered])
+
+  useEffect(() => {
+    if (popping) {
+      Animated.timing(translateX, {
+        toValue: offscreenX,
+        duration: 280,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) onPopped()
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [popping])
+
+  return (
+    <Animated.View
+      style={[
+        StyleSheet.absoluteFillObject,
+        styles.stepCard,
+        // Edge shadow on the leading side, like a pushed UIKit page
+        { shadowOffset: { width: isAr ? 6 : -6, height: 0 } },
+        { transform: [{ translateX }] },
+      ]}
+    >
+      {children}
+      {/* Dims while a newer page covers this one (pointer-transparent) */}
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFillObject, { backgroundColor: "#000", opacity: dim }]}
+      />
+    </Animated.View>
+  )
+}
+
+// ── One question step (header + progress + content + button) ──
+const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
   const ctx = React.useContext(SharedStateContext)!
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
@@ -80,7 +163,7 @@ const QuestionStepInner: React.FC<{ route: any; navigation: any }> = ({ route, n
 
   const handleNext = () => {
     if (!isLastStep) {
-      navigation.push("QuestionStep", { stepIndex: stepIndex + 1 })
+      ctx.goNext()
     } else {
       ctx.onDone()
     }
@@ -88,7 +171,7 @@ const QuestionStepInner: React.FC<{ route: any; navigation: any }> = ({ route, n
 
   const handleBack = () => {
     if (stepIndex > 0) {
-      navigation.goBack()
+      ctx.goPrev()
     } else {
       ctx.onClose()
     }
@@ -203,16 +286,16 @@ const QuestionStepInner: React.FC<{ route: any; navigation: any }> = ({ route, n
   )
 }
 
-// ── Outer modal screen (contains the nested navigator) ──
-type Props = RootStackScreenProps<"QuestionStepScreen">
+// ── The whole flow: state-driven steps, presentation-agnostic ──
+type QuestionFlowParams = RootStackParamList["QuestionStepScreen"]
+type ContentProps = QuestionFlowParams & { onClose: () => void }
 
-const QuestionStepScreen: React.FC<Props> = ({ route, navigation }) => {
-  const {
-    categoryName,
-    placeOfServiceOptions,
-    customerQuestions,
-  } = route.params
-
+const QuestionFlowContent: React.FC<ContentProps> = ({
+  categoryName,
+  placeOfServiceOptions,
+  customerQuestions,
+  onClose,
+}) => {
   // Build steps
   const steps = useMemo<StepItem[]>(() => {
     const result: StepItem[] = []
@@ -237,6 +320,30 @@ const QuestionStepScreen: React.FC<Props> = ({ route, navigation }) => {
   // Shared state
   const [answers, setAnswers] = useState<QuestionAnswerType[]>([])
   const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<string | undefined>()
+  // Stack of step indices; Next pushes a card, Back pops the top card after
+  // its slide-out animation finishes. The pop targets a SPECIFIC card (not a
+  // global flag) so an in-between render can never start popping the next
+  // card down — a global flag cascaded all the way to a blank sheet.
+  const [stepStack, setStepStack] = useState<number[]>([0])
+  const [poppingStep, setPoppingStep] = useState<number | null>(null)
+  const stackRef = useRef(stepStack)
+  stackRef.current = stepStack
+
+  const goNext = useCallback(() => {
+    setStepStack((s) => [...s, s[s.length - 1] + 1])
+  }, [])
+
+  const goPrev = useCallback(() => {
+    const s = stackRef.current
+    if (s.length <= 1) return // never pop the root step
+    const top = s[s.length - 1]
+    setPoppingStep((current) => current ?? top) // one pop in flight at a time
+  }, [])
+
+  const handlePopped = useCallback((poppedStep: number) => {
+    setStepStack((s) => s.filter((idx) => idx !== poppedStep))
+    setPoppingStep((current) => (current === poppedStep ? null : current))
+  }, [])
 
   const handleDone = useCallback(() => {
     const filterOptionIds: number[] = []
@@ -276,12 +383,8 @@ const QuestionStepScreen: React.FC<Props> = ({ route, navigation }) => {
       filtersChanged: true,
     })
 
-    navigation.goBack()
-  }, [answers, steps, selectedPlaceOfService, navigation])
-
-  const handleClose = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
+    onClose()
+  }, [answers, steps, selectedPlaceOfService, onClose])
 
   const sharedState: SharedState = useMemo(() => ({
     steps,
@@ -292,24 +395,32 @@ const QuestionStepScreen: React.FC<Props> = ({ route, navigation }) => {
     selectedPlaceOfService,
     setAnswers,
     setSelectedPlaceOfService,
+    goNext,
+    goPrev,
     onDone: handleDone,
-    onClose: handleClose,
-  }), [steps, categoryName, placeOfServiceOptions, answers, selectedPlaceOfService, handleDone, handleClose])
+    onClose,
+  }), [steps, categoryName, placeOfServiceOptions, answers, selectedPlaceOfService, goNext, goPrev, handleDone, onClose])
 
   return (
     <SharedStateContext.Provider value={sharedState}>
-      <InnerStack.Navigator
-        screenOptions={{
-          headerShown: false,
-          animation: "default",
-        }}
-      >
-        <InnerStack.Screen
-          name="QuestionStep"
-          component={QuestionStepInner}
-          initialParams={{ stepIndex: 0 }}
-        />
-      </InnerStack.Navigator>
+      <DmView className="flex-1 bg-white">
+        {stepStack.map((stepIdx, i) => {
+          // During a pop the card below is already "returning" — treat it as
+          // uncovered so its parallax-return runs alongside the pop.
+          const effectiveTop = stepStack.length - (poppingStep != null ? 2 : 1)
+          return (
+            <StepCard
+              key={stepIdx}
+              animateIn={i > 0}
+              covered={i < effectiveTop}
+              popping={poppingStep === stepIdx}
+              onPopped={() => handlePopped(stepIdx)}
+            >
+              <StepView stepIndex={stepIdx} />
+            </StepCard>
+          )
+        })}
+      </DmView>
     </SharedStateContext.Provider>
   )
 }
@@ -322,6 +433,38 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  // Each stacked step is an opaque card floating over the previous one
+  // (even shadow glow — works for both slide directions)
+  stepCard: {
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 8,
+  },
 })
+
+// Matches the native clamp (sheet height caps at 90% of the container).
+const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
+
+/**
+ * iOS presentation: the question flow inside the native push-back sheet.
+ * `contentKey` should change on every open so answers/step reset.
+ */
+export const QuestionFlowSheet: React.FC<
+  QuestionFlowParams & { visible: boolean; contentKey: number; onClose: () => void }
+> = ({ visible, contentKey, onClose, ...contentProps }) => (
+  <NativePushBackSheet visible={visible} height={SHEET_HEIGHT} onDismissed={onClose}>
+    <QuestionFlowContent key={contentKey} {...contentProps} onClose={onClose} />
+  </NativePushBackSheet>
+)
+
+// Android (and fallback) presentation: plain navigation route.
+type Props = RootStackScreenProps<"QuestionStepScreen">
+
+const QuestionStepScreen: React.FC<Props> = ({ route, navigation }) => (
+  <QuestionFlowContent {...route.params} onClose={() => navigation.goBack()} />
+)
 
 export default QuestionStepScreen

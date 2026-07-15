@@ -1,15 +1,16 @@
-import React, { useCallback, useMemo, useState } from "react"
-import { ScrollView, StyleSheet } from "react-native"
+import React, { useEffect, useMemo, useState } from "react"
+import { Dimensions, ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
-import { RootStackScreenProps } from "navigation/types"
+import { RootStackParamList, RootStackScreenProps } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
+import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
 
@@ -21,18 +22,25 @@ const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
   fixedLocations: "at_fixed_location",
 }
 
+type AllQuestionsParams = RootStackParamList["AllQuestionsScreen"]
+type ContentProps = AllQuestionsParams & {
+  onClose: () => void
+  /** Lets the presenter commit answers when the sheet is dismissed natively
+      (swipe/dim-tap) — every exit path commits, matching X / See matches. */
+  registerCommit?: (commit: () => void) => void
+}
 type Props = RootStackScreenProps<"AllQuestionsScreen">
 
-const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const {
-    categoryName,
-    placeOfServiceOptions,
-    customerQuestions,
-    initialAnswers,
-    initialPlaceOfService,
-    onApply,
-  } = route.params
-
+const AllQuestionsContent: React.FC<ContentProps> = ({
+  categoryName,
+  placeOfServiceOptions,
+  customerQuestions,
+  initialAnswers,
+  initialPlaceOfService,
+  onApply,
+  onClose,
+  registerCommit,
+}) => {
   const insets = useSafeAreaInsets()
   const { t } = useTranslation()
 
@@ -80,7 +88,7 @@ const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   // Both exits commit the latest state — ✕ and "See matches" behave the same.
-  const handleSeeMatches = () => {
+  const commitAnswers = () => {
     const filterOptionIds: number[] = []
     const dataAnswers: QuestionAnswerType[] = []
 
@@ -113,7 +121,16 @@ const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
       filtersChanged,
       resetAll: resetAllPressed,
     })
-    navigation.goBack()
+  }
+
+  // Keep the presenter's dismiss-commit pointing at the LATEST state
+  useEffect(() => {
+    registerCommit?.(commitAnswers)
+  })
+
+  const handleSeeMatches = () => {
+    commitAnswers()
+    onClose()
   }
 
   const handleClose = () => {
@@ -244,5 +261,43 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 })
+
+// Matches the native clamp (sheet height caps at 90% of the container).
+const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
+
+/**
+ * iOS presentation: the job-details editor inside the native push-back sheet.
+ * A native dismiss (swipe/dim-tap) commits answers first — same contract as
+ * X / "See matches". `contentKey` re-seeds state on every open.
+ */
+export const AllQuestionsSheet: React.FC<
+  AllQuestionsParams & { visible: boolean; contentKey: number; onClose: () => void }
+> = ({ visible, contentKey, onClose, ...contentProps }) => {
+  const commitRef = React.useRef<() => void>(() => {})
+  return (
+    <NativePushBackSheet
+      visible={visible}
+      height={SHEET_HEIGHT}
+      onDismissed={() => {
+        commitRef.current()
+        onClose()
+      }}
+    >
+      <AllQuestionsContent
+        key={contentKey}
+        {...contentProps}
+        onClose={onClose}
+        registerCommit={(fn) => {
+          commitRef.current = fn
+        }}
+      />
+    </NativePushBackSheet>
+  )
+}
+
+// Android (and fallback) presentation: plain navigation route.
+const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => (
+  <AllQuestionsContent {...route.params} onClose={() => navigation.goBack()} />
+)
 
 export default AllQuestionsScreen
