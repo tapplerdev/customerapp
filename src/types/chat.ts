@@ -76,6 +76,8 @@ export type ChatType = {
 export type ChatPreviewType = {
   chat: ChatType
   notReadMessages: number
+  /** True when the chat holds at least one pro/customer (non-system) message. */
+  hasHumanMessages?: boolean
   lastMessage?: ChatMessageType
 }
 

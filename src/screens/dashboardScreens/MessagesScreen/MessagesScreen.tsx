@@ -9,6 +9,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
 import { RootStackParamList } from "navigation/types"
 import { ChatPreviewType } from "types/chat"
+import { isChatVisible } from "helpers/chatVisibility"
 import { useGetChatsQuery, useArchiveChatMutation } from "services/api"
 import { useTypedSelector } from "store"
 import SearchMessagesComponent from "components/SearchMessagesComponent/SearchMessagesComponent"
@@ -47,15 +48,9 @@ const MessagesScreen: React.FC = () => {
   }, [])
 
   const allChats = data?.data || []
-  const activeChats = allChats.filter((item) => {
-    if (item.chat.status !== "active") return false
-    // Direct chats (no job) exist the moment the composer is opened from a pro
-    // card — only list them once something was actually said (WhatsApp-style),
-    // otherwise empty ghost threads with no date appear here.
-    if (!item.chat.job) return !!item.lastMessage
-    const chatPro = item.chat.job.pros?.find((p) => p.proId === item.chat.proId)
-    return chatPro?.selectionStatus === "offer"
-  })
+  // Shared predicate with the tab badge (helpers/chatVisibility) — keeping
+  // them identical is what guarantees the badge never counts a hidden chat.
+  const activeChats = allChats.filter(isChatVisible)
   const archivedCount = allChats.filter((item) => item.chat.status === "archived").length
 
   const filteredChats = useMemo(() => {
