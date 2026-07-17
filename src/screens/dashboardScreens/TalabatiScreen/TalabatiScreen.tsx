@@ -26,7 +26,7 @@ const TalabatiScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { isAuth } = useTypedSelector((store) => store.auth)
 
-  const { data, isLoading, refetch, isFetching } = useGetCustomerJobsQuery(undefined, {
+  const { data, isLoading, refetch, isFetching, isError } = useGetCustomerJobsQuery(undefined, {
     skip: !isAuth,
     pollingInterval: 30000, // Poll every 30s for new pro responses
   })
@@ -250,6 +250,24 @@ const TalabatiScreen: React.FC = () => {
         </DmView>
       ) : isLoading ? (
         <TalabatiSkeleton />
+      ) : isError && !data ? (
+        // Fetch failed with nothing cached — a timeout is not "no requests"
+        <DmView className="flex-1 items-center justify-center px-[40]">
+          <DmText className="text-16 font-custom600 text-grey3 text-center">
+            {t("requests_load_error")}
+          </DmText>
+          <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+            {t("requests_load_error_descr")}
+          </DmText>
+          <DmView className="mt-[20] px-[20] w-full">
+            <ActionBtn
+              title={t("try_again")}
+              onPress={refetch}
+              isLoading={isFetching}
+              textClassName="text-14 font-custom600"
+            />
+          </DmView>
+        </DmView>
       ) : jobs.length === 0 ? (
         <DmView className="flex-1 items-center justify-center px-[40]">
           <DmText className="text-16 font-custom600 text-grey3 text-center">
