@@ -32,6 +32,7 @@ import useAttachments from "hooks/useAttachments"
 import MessageComponent from "components/MessageComponent/MessageComponent"
 import { ChatMessageType } from "types/chat"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
+import { checkProfanity } from "@tappler/shared/src/profanity"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendIcon from "assets/icons/send.svg"
@@ -279,6 +280,15 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const handleSend = useCallback(async () => {
     const text = messageText.trim()
     if (!text && attachments.pending.length === 0) return
+
+    // Deterministic client-side profanity fast-block (both text-only and
+    // attachment-caption sends flow through here). Same modal as a server
+    // CHAT_BLOCK_PROFANITY reject — indistinguishable to the user. The typed
+    // text stays in the input so they can edit; the server re-checks on send.
+    if (text && checkProfanity(text).blocked) {
+      setBlockedModalText(t("message_violates_community_standards"))
+      return
+    }
 
     setSendError(null)
     setMessageText("")
