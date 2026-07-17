@@ -48,12 +48,6 @@ class WebSocketServiceClass extends EventEmitter {
   private readonly reconnectionDelay = 1000
   private readonly reconnectionDelayMax = 5000
 
-  // Heartbeat health check
-  private heartbeatInterval: ReturnType<typeof setInterval> | null = null
-  private heartbeatTimeout: ReturnType<typeof setTimeout> | null = null
-  private readonly heartbeatIntervalMs = 30000  // Ping every 30s
-  private readonly heartbeatTimeoutMs = 5000    // Wait 5s for pong
-
   // Background retry after reconnect_failed
   private backgroundRetryInterval: ReturnType<typeof setInterval> | null = null
   private readonly backgroundRetryMs = 60000  // Retry every 60s after giving up
@@ -165,7 +159,6 @@ class WebSocketServiceClass extends EventEmitter {
       this.state.error = undefined
 
       this.stopBackgroundRetry()
-      this.startHeartbeat()
 
       this.emit('connected', {
         socketId: this.socket?.id,
@@ -254,7 +247,6 @@ class WebSocketServiceClass extends EventEmitter {
     this.socket.on('disconnect', (reason) => {
       console.log('🔌 [WebSocketService] Disconnected:', reason)
 
-      this.stopHeartbeat()
       this.state.status = 'disconnected'
       this.state.lastDisconnected = Date.now()
 
@@ -269,7 +261,11 @@ class WebSocketServiceClass extends EventEmitter {
         console.log('🚫 [WebSocketService] Server forced disconnect - not reconnecting')
         this.emit('server_disconnect', { reason })
       } else if (reason === 'transport close' || reason === 'ping timeout') {
-        // Network issues - Socket.IO will auto-reconnect
+        // Network issues - Socket.IO will auto-reconnect.
+        // Stale links surface here as 'ping timeout' via engine.io's built-in
+        // watchdog (server defaults: ping 25s + timeout 20s). Do NOT add a
+        // manual heartbeat that calls socket.disconnect() on staleness —
+        // 'io client disconnect' sets skipReconnect and never auto-reconnects.
         console.log('🔄 [WebSocketService] Network disconnect - will auto-reconnect')
       }
     })
@@ -396,7 +392,6 @@ class WebSocketServiceClass extends EventEmitter {
 
     console.log('🔌 [WebSocketService] Disconnecting...')
 
-    this.stopHeartbeat()
     this.stopBackgroundRetry()
 
     this.socket.removeAllListeners()
@@ -433,51 +428,6 @@ class WebSocketServiceClass extends EventEmitter {
     setTimeout(() => {
       this.connect(currentConfig)
     }, 500)
-  }
-
-  /**
-   * Start periodic heartbeat to detect stale connections.
-   * Sends a ping every 30s. If no pong within 5s, forces disconnect
-   * to trigger Socket.IO's built-in reconnection.
-   */
-  private startHeartbeat(): void {
-    this.stopHeartbeat()
-
-    // Track when we last received any data from the server.
-    // Socket.IO engine emits 'pong' automatically in response to its
-    // built-in ping frames — no server-side handler needed.
-    let lastPong = Date.now()
-
-    const onPong = () => {
-      lastPong = Date.now()
-    }
-
-    this.socket?.io.engine?.on('pong', onPong)
-
-    this.heartbeatInterval = setInterval(() => {
-      if (!this.socket?.connected) {
-        this.stopHeartbeat()
-        return
-      }
-
-      const elapsed = Date.now() - lastPong
-      if (elapsed > this.heartbeatIntervalMs + this.heartbeatTimeoutMs) {
-        // No engine-level pong for 35s — connection is likely stale
-        console.warn(`💔 [WebSocketService] Heartbeat stale — last pong ${Math.round(elapsed / 1000)}s ago, forcing reconnect`)
-        this.socket?.disconnect()
-      }
-    }, this.heartbeatIntervalMs)
-  }
-
-  private stopHeartbeat(): void {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval)
-      this.heartbeatInterval = null
-    }
-    if (this.heartbeatTimeout) {
-      clearTimeout(this.heartbeatTimeout)
-      this.heartbeatTimeout = null
-    }
   }
 
   /**
