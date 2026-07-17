@@ -124,8 +124,12 @@ export function applyIncomingMessage(
         known = true
         const preview = list[index]
         preview.lastMessage = message
-        // Only the FOCUSED chat suppresses the bump (its own screen fires
-        // mark-as-read for each incoming message, so the server converges).
+        // The FOCUSED chat suppresses the bump client-side AND converges the
+        // server: a message arriving while the chat is open must be marked read
+        // server-side (the markAllAsRead below), or the server's readAt stays
+        // NULL and a later getChats refetch (back-nav / foreground / reconnect)
+        // resurrects the pill. Firing the idempotent PATCH per incoming message
+        // is how the server converges (mirrors the proapp screen handler).
         // Deliberately NOT consulting chatReadRegistry here: it would swallow
         // legitimate new-message bumps for its whole TTL after leaving a chat.
         if (chatId === activeChatId) {
@@ -139,6 +143,17 @@ export function applyIncomingMessage(
         }
       })
     )
+  }
+
+  // Converge the SERVER for a message that landed in the OPEN chat: fire the
+  // idempotent markAllAsRead PATCH once (not per cached arg). Without this the
+  // client-only zero above leaves readAt NULL and the pill resurrects on the
+  // next getChats refetch. Gated on the other party's message — own echoes have
+  // nothing to mark. Guarded by `known` so an unknown-chat fallback still runs.
+  if (known && chatId === activeChatId && message.ownerType === OTHER_OWNER_TYPE) {
+    // track:false — fire-and-forget; without it each active-chat message would
+    // leak a tracked mutation entry in the RTK store (never unsubscribed).
+    dispatch(api.endpoints.markAllAsRead.initiate(chatId, { track: false }))
   }
 
   return known

@@ -92,13 +92,16 @@ const useMessagePagination = (chatId: number) => {
 
   // Mark as read on focus + tell chatCache which chat is open (so live
   // messages arriving here don't bump unread or ever banner). Cleared on blur.
+  // Also re-marks on WS reconnect: messages that landed during a WS outage
+  // surface via the reconnect getChats invalidate (not replayed per-message),
+  // so this convergence keeps them from resurrecting the pill while open.
   useEffect(() => {
     if (isFocused && chatId) {
       setActiveChat(chatId)
       markAllAsRead(chatId)
       return () => setActiveChat(null)
     }
-  }, [isFocused, chatId])
+  }, [isFocused, chatId, isWsConnected])
 
   const loadMore = useCallback(() => {
     // Inverted FlatLists fire onEndReached on mount while the list is still
