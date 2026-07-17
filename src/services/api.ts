@@ -106,11 +106,18 @@ const baseQueryWithReauth: BaseQueryFn<
       isRefreshing = false
       refreshPromise = null
       // Only a definitive rejection from a live server means the session is
-      // truly invalid. Network errors / timeouts / 5xx = backend unreachable
-      // (e.g. local restart): keep the session and let a later request retry.
+      // truly invalid. 401/403 = token rejected; 404 = the refresh token no
+      // longer exists server-side (expired, or evicted by a login elsewhere —
+      // the server answered "not found", so retrying can only 404 again → a
+      // permanent zombie session if we kept it). Network errors / timeouts /
+      // 5xx = backend unreachable (e.g. local restart): keep and retry later.
       const refreshStatus = refreshResult.error?.status
-      if (refreshStatus === 401 || refreshStatus === 403) {
-        console.log(`[API] 🔒 Refresh token rejected — logging out`)
+      if (
+        refreshStatus === 401 ||
+        refreshStatus === 403 ||
+        refreshStatus === 404
+      ) {
+        console.log(`[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`)
         apiBase.dispatch(logout())
         apiBase.dispatch(api.util.resetApiState())
       } else {
