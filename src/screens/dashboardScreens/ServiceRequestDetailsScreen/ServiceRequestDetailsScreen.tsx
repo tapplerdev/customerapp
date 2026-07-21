@@ -7,8 +7,10 @@ import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/compon
 import { RootStackScreenProps } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import { useGetServiceByIdQuery } from "services/api"
+import { useGetServiceByIdQuery, useLazyGetProsForCategoryQuery } from "services/api"
 import { QuestionAnswerType } from "types/job"
+import { MainModal } from "@tappler/shared/src/components"
+import { questionFlowEventBus } from "events/questionFlowEventBus"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
@@ -90,7 +92,32 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   // Compute once on first mount: the IDs that were answered before we started
   const stableInitialIds = initialAnsweredIds || (answeredQuestions || []).map((a) => a.questionId)
 
-  const handleNext = () => {
+  // ── Mismatch guard ───────────────────────────────────────────────────────
+  // The only filter questions asked here are ones the customer SKIPPED before
+  // selecting pros (answered ones are carried over and never re-asked). A
+  // late filter answer can therefore exclude a selected pro — and a pro who
+  // doesn't match the answers cannot be submitted to. Check before advancing;
+  // on mismatch, block, explain, and pop back to the (still-mounted) listing,
+  // which merges the answers and prunes the selection.
+  const [checkPros] = useLazyGetProsForCategoryQuery()
+  const [mismatchNames, setMismatchNames] = useState<string[] | null>(null)
+  const [isCheckingMatch, setCheckingMatch] = useState(false)
+
+  const collectFilterOptionIds = (answers: QuestionAnswerType[]): number[] => {
+    const ids: number[] = []
+    customerQuestions.forEach((q) => {
+      if (!q.isFilter || q.tier === "refinement") return
+      const a = answers.find((x) => x.questionId === q.id)
+      const sel = a?.optionsIds ?? (a?.optionId ? [a.optionId] : [])
+      sel.forEach((oid) => {
+        const opt = q.options?.find((o) => o.id === oid)
+        if (opt?.serviceCategoryFilterOptionId) ids.push(opt.serviceCategoryFilterOptionId)
+      })
+    })
+    return ids
+  }
+
+  const proceedNext = () => {
     if (stepIndex < totalSteps - 1) {
       // Push the same screen with next stepIndex — native stack transition
       navigation.push("ServiceRequestDetailsScreen", {
@@ -109,6 +136,56 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         selectedTimeSlot,
       })
     }
+  }
+
+  const handleNext = async () => {
+    if (currentQuestion?.isFilter && selectedProIds.length) {
+      const filterIds = collectFilterOptionIds(questionsAnswers)
+      if (filterIds.length) {
+        setCheckingMatch(true)
+        try {
+          const skipAddress =
+            placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
+          const customerAddress =
+            skipAddress || !address?.coords
+              ? undefined
+              : { latitude: address.coords.lat, longitude: address.coords.lon }
+          const res = await checkPros(
+            { categoryId, placeOfService, customerAddress, filterOptionsIds: filterIds },
+            true
+          ).unwrap()
+          const stillMatching = new Set((res?.data ?? []).map((p) => p.id))
+          const excluded = selectedProIds.filter((id) => !stillMatching.has(id))
+          if (excluded.length) {
+            setMismatchNames(
+              excluded.map(
+                (id) => selectedProsInfo.find((p) => p.id === id)?.name || `#${id}`
+              )
+            )
+            return
+          }
+        } catch {
+          // Fail-open here — the backend performs the same check at submission
+        } finally {
+          setCheckingMatch(false)
+        }
+      }
+    }
+    proceedNext()
+  }
+
+  const handleMismatchConfirm = () => {
+    setMismatchNames(null)
+    // The listing is still mounted below this stack — hand it the final
+    // answers (it refetches + prunes the selection), then pop back to it.
+    questionFlowEventBus.emit("details:answersChanged", { answers: questionsAnswers })
+    navigation.popTo("ProsListingScreen", {
+      categoryId,
+      categoryName,
+      serviceId,
+      address,
+      placeOfService,
+    })
   }
 
   const handleBack = () => {
@@ -272,6 +349,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         <ActionBtn
           title={stepIndex === totalSteps - 1 ? t("continue") : t("next")}
           onPress={handleNext}
+          isLoading={isCheckingMatch}
           disable={!isCurrentAnswered}
           className="h-[52] rounded-10"
           textClassName="text-16 font-custom600"
@@ -284,6 +362,21 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleCalendarConfirm}
         hideSpecialOptions
+      />
+
+      {/* A pro who doesn't match the answers cannot be submitted to — no
+          "keep anyway". One button: back to the (pruned) shortlist. */}
+      <MainModal
+        isVisible={!!mismatchNames}
+        onClose={handleMismatchConfirm}
+        title={t("shortlist_updated")}
+        descr={`${(mismatchNames || []).join(", ")} ${t("pros_cannot_do_job")}`}
+        titleBtn={t("see_matching_pros")}
+        onPress={handleMismatchConfirm}
+        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+        classNameBtns="h-[40]"
+        classNameBtnsWrapper="mt-[20] mx-[15]"
+        classNameModal="px-[17]"
       />
     </SafeAreaView>
   )

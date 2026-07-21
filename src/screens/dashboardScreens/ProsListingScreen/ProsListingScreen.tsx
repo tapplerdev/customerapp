@@ -358,6 +358,56 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [refetchWithFilters])
 
+  // A pro who doesn't match the current answers cannot stay selected. When
+  // the list refreshes (filters/answers/address changed), drop selected pros
+  // that fell out and say so — never silently keep a mismatched pro, never
+  // silently submit to one.
+  const [shortlistNotice, setShortlistNotice] = useState(false)
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const list = data?.data
+    if (!list) return
+    setSelectedPros((prev) => {
+      if (!prev.length) return prev
+      const ids = new Set(list.map((p) => p.id))
+      const kept = prev.filter((id) => ids.has(id))
+      if (kept.length === prev.length) return prev
+      setShortlistNotice(true)
+      if (noticeTimer.current) clearTimeout(noticeTimer.current)
+      noticeTimer.current = setTimeout(() => setShortlistNotice(false), 4000)
+      return kept
+    })
+  }, [data?.data])
+  useEffect(() => () => {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+  }, [])
+
+  // Details-stage redirect: a late filter answer excluded a selected pro.
+  // Merge the final answers, recompute filter ids, refetch — the prune
+  // effect above then trims the selection and shows the notice.
+  useEffect(() => {
+    const handler = ({ answers }: { answers: QuestionAnswerType[] }) => {
+      setAllAnswers(answers)
+      setDataAnswers(answers)
+      const ids: number[] = []
+      customerQuestions.forEach((q) => {
+        if (!q.isFilter || q.tier === "refinement") return
+        const a = answers.find((x) => x.questionId === q.id)
+        const sel = a?.optionsIds ?? (a?.optionId ? [a.optionId] : [])
+        sel.forEach((oid) => {
+          const opt = q.options?.find((o) => o.id === oid)
+          if (opt?.serviceCategoryFilterOptionId) ids.push(opt.serviceCategoryFilterOptionId)
+        })
+      })
+      setQuestionFilterOptionIds(ids)
+      doRefetch({ questionFilterOptionIds: ids })
+    }
+    questionFlowEventBus.on("details:answersChanged", handler)
+    return () => {
+      questionFlowEventBus.off("details:answersChanged", handler)
+    }
+  }, [customerQuestions, doRefetch])
+
   // Handle all-questions modal dismiss
   const handleAllQuestionsDismiss = useCallback(
     (result: {
@@ -595,7 +645,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       selectedProsInfo: prosInfo,
       address,
       placeOfService: currentPlaceOfService,
-      answeredQuestions: dataAnswers,
+      // ALL answers, filter ones included: Details must not re-ask questions
+      // the customer already answered pre-selection (re-asking let them flip
+      // a filter answer to something the selected pro doesn't serve), and the
+      // created job should record filter answers — matching how reposted
+      // jobs already behave.
+      answeredQuestions: allAnswers,
     })
   }
 
@@ -758,6 +813,24 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
 
       {/* Continue button - absolute, slides up from bottom */}
+      {/* Shortlist-updated toast: selected pros that stopped matching were
+          just removed — say it, don't let them wonder */}
+      {shortlistNotice && (
+        <DmView
+          className="absolute left-[16] right-[16] z-50"
+          style={{ bottom: 130 }}
+          pointerEvents="none"
+        >
+          <DmView
+            className="rounded-10 px-[14] py-[10]"
+            style={{ backgroundColor: "rgba(28,25,23,0.92)" }}
+          >
+            <DmText className="text-12 leading-[16px] font-custom600 text-white text-center">
+              {t("shortlist_updated_notice")}
+            </DmText>
+          </DmView>
+        </DmView>
+      )}
       {showContinue && (
         <Animated.View
           style={[
