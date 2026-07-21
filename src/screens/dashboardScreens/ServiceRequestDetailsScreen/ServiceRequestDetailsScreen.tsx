@@ -100,7 +100,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   // on mismatch, block, explain, and pop back to the (still-mounted) listing,
   // which merges the answers and prunes the selection.
   const [checkPros] = useLazyGetProsForCategoryQuery()
-  const [mismatchNames, setMismatchNames] = useState<string[] | null>(null)
+  const [isMismatchVisible, setMismatchVisible] = useState(false)
   const [isCheckingMatch, setCheckingMatch] = useState(false)
 
   const collectFilterOptionIds = (answers: QuestionAnswerType[]): number[] => {
@@ -157,11 +157,8 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
           const stillMatching = new Set((res?.data ?? []).map((p) => p.id))
           const excluded = selectedProIds.filter((id) => !stillMatching.has(id))
           if (excluded.length) {
-            setMismatchNames(
-              excluded.map(
-                (id) => selectedProsInfo.find((p) => p.id === id)?.name || `#${id}`
-              )
-            )
+            // Deliberately vague — no names: "certain pros" keeps it neutral
+            setMismatchVisible(true)
             return
           }
         } catch {
@@ -175,7 +172,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   }
 
   const handleMismatchConfirm = () => {
-    setMismatchNames(null)
+    setMismatchVisible(false)
     // The listing is still mounted below this stack — hand it the final
     // answers (it refetches + prunes the selection), then pop back to it.
     questionFlowEventBus.emit("details:answersChanged", { answers: questionsAnswers })
@@ -367,10 +364,10 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
       {/* A pro who doesn't match the answers cannot be submitted to — no
           "keep anyway". One button: back to the (pruned) shortlist. */}
       <MainModal
-        isVisible={!!mismatchNames}
+        isVisible={isMismatchVisible}
         onClose={handleMismatchConfirm}
         title={t("shortlist_updated")}
-        descr={`${(mismatchNames || []).join(", ")} ${t("pros_cannot_do_job")}`}
+        descr={t("pros_cannot_do_job")}
         titleBtn={t("see_matching_pros")}
         onPress={handleMismatchConfirm}
         classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
