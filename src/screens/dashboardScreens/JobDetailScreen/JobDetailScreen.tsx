@@ -2,13 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import { Animated, FlatList, LayoutAnimation, Platform, TextInput, UIManager } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
+import { useIsFocused } from "@react-navigation/native"
 import FastImage from "react-native-fast-image"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
-import { api, useGetChatsQuery, useGetCustomerJobByIdQuery, useLazyOpenChatQuery, useRespondToOpportunityMutation } from "services/api"
+import { api, useCancelJobMutation, useGetChatsQuery, useGetCustomerJobByIdQuery, useLazyOpenChatQuery, useRespondToOpportunityMutation } from "services/api"
 import useJobPros from "hooks/useJobPros"
 import useCancelJob from "hooks/useCancelJob"
+import useRepostRequest from "hooks/useRepostRequest"
 import { MainModal } from "@tappler/shared/src/components"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -22,12 +24,14 @@ import MailIcon from "assets/icons/mail.svg"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import ProCardBase from "components/ProCardBase/ProCardBase"
 import ErrorModal from "components/ErrorModal"
-import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
+import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 import Modal from "react-native-modal"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import DetailsIcon from "assets/icons/details-icon.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
 import CancelFeedbackIcon from "assets/icons/cancel-feedback.svg"
+import ClockRedIcon from "assets/icons/clock-red-big.svg"
+import UsersRedIcon from "assets/icons/users-red.svg"
 import styles from "./styles"
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -40,11 +44,32 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { jobId } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const { data: job, isLoading: isJobLoading } = useGetCustomerJobByIdQuery(jobId)
+  const {
+    data: job,
+    isLoading: isJobLoading,
+    refetch: refetchJob,
+  } = useGetCustomerJobByIdQuery(jobId)
   const insets = useSafeAreaInsets()
+
+  // Safety net alongside the socket-driven Jobs invalidation: refetch on
+  // RE-focus so a missed socket event (backgrounded app, dropped connection)
+  // can't strand the Other Pros tab on a pre-offer snapshot. Mount already
+  // fetched — skip the first focus.
+  const isFocused = useIsFocused()
+  const hasFocusedOnce = useRef(false)
+  useEffect(() => {
+    if (!isFocused) return
+    if (hasFocusedOnce.current) {
+      refetchJob()
+    } else {
+      hasFocusedOnce.current = true
+    }
+  }, [isFocused])
   const [isMenuVisible, setMenuVisible] = useState(false)
   const [isCancelModalVisible, setCancelModalVisible] = useState(false)
   const [isCancelFeedbackVisible, setCancelFeedbackVisible] = useState(false)
+  const [isFindProsModalVisible, setFindProsModalVisible] = useState(false)
+  const [isRescueBusy, setRescueBusy] = useState(false)
   const prefetchJobDetails = api.usePrefetch("getCustomerJobDetails")
 
   const [openChat] = useLazyOpenChatQuery()
@@ -67,11 +92,60 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [job])
   const [bannerType, setBannerType] = useState<"new_offers" | "pro_moved" | null>(null)
 
+  // Skeleton → content fade (mirrors the opportunities-list pattern): the
+  // skeleton mirrors the real layout, so the swap reads as bars resolving into
+  // content rather than a spinner flash. Seeded to 1 when the job is already
+  // cached at mount (Talabati prefetches as rows scroll into view) — a warm
+  // open renders instantly with NO fade; only real skeleton→content animates.
+  const contentFade = useRef(new Animated.Value(job ? 1 : 0)).current
+  useEffect(() => {
+    if (!isJobLoading && localJob) {
+      Animated.timing(contentFade, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }).start()
+    }
+  }, [isJobLoading, !!localJob])
+
   // Banner animation
   const bannerOpacity = useRef(new Animated.Value(0)).current
   const bannerTranslateY = useRef(new Animated.Value(-20)).current
 
   const { selectedPros, otherPros, offersCount } = useJobPros(localJob?.pros)
+
+  // Rescue surfaces. `ended` → repost (new prefilled request). Active with
+  // every invited pro declined → "Find other pros" (cancel + prefilled
+  // restart). Explicit policy: NO opportunity-pro gate — if opportunity pros
+  // bought this lead, their points are accepted collateral (Omar's call).
+  const isEnded = localJob?.status === "ended"
+  const isStranded =
+    localJob?.status === "active" &&
+    selectedPros.length > 0 &&
+    selectedPros.every((p) => p.selectionStatus === "proRejected")
+
+  const repostFromJob = useRepostRequest()
+  const [cancelJobForRescue] = useCancelJobMutation()
+
+  const handleConfirmFindOtherPros = useCallback(async () => {
+    if (isRescueBusy) return
+    setRescueBusy(true)
+    try {
+      // Close the dead request first (system reason — no reasons quiz for
+      // the customer), then walk into the prefilled flow.
+      await cancelJobForRescue({
+        jobId,
+        reasons: ["All selected pros declined — customer restarted the request"],
+      }).unwrap()
+      setFindProsModalVisible(false)
+      repostFromJob(jobId)
+    } catch {
+      setFindProsModalVisible(false)
+      setErrorModalVisible(true)
+    } finally {
+      setRescueBusy(false)
+    }
+  }, [isRescueBusy, cancelJobForRescue, jobId, repostFromJob])
 
   const cancel = useCancelJob({
     jobId,
@@ -196,9 +270,17 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const offerAmount = item.ratePerHour
     const isFeatured = pro.serviceCategories?.[0]?.isFeatured
     const unreadCount = getUnreadCount(item.proId)
+    // Declined invited pro: the card stays (vanishing would gaslight the
+    // customer) but reads as finished — dimmed, photo washed out, offer row
+    // replaced by a plain status line, tap disabled.
+    const isDeclined = item.selectionStatus === "proRejected"
 
     return (
-      <DmView className="px-[14] py-[14]" onPress={() => handleOpenChat(item)}>
+      <DmView
+        className="px-[14] py-[14]"
+        onPress={isDeclined ? undefined : () => handleOpenChat(item)}
+        style={isDeclined ? { opacity: 0.55 } : undefined}
+      >
         <DmView className="flex-row items-start">
           <DmView>
             <DmView className="w-[85] h-[85] rounded-2 overflow-hidden bg-grey8">
@@ -207,6 +289,12 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   source={{ uri: photoUrl }}
                   style={styles.profilePhoto}
                   resizeMode={FastImage.resizeMode.cover}
+                />
+              )}
+              {isDeclined && (
+                <DmView
+                  className="absolute top-0 left-0 right-0 bottom-0"
+                  style={{ backgroundColor: "rgba(240,240,240,0.55)" }}
                 />
               )}
             </DmView>
@@ -240,24 +328,33 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <DmView className={isAr ? "mt-[2]" : "mt-[8]"}>
               <RateComponent rate={overallScore} reviewsCount={reviewsCount} itemSize={11} />
             </DmView>
-            <DmView className={`${isAr ? "mt-[2]" : "mt-[8]"} flex-row items-center justify-between`}>
-              <DmView className="flex-row items-center">
-                <DmView className="px-[8] py-[3] mr-[6]" style={[styles.offerBadgeBorder, { borderColor: colors.red }]}>
-                  <DmText className="text-12 font-custom500">{t("offer_amount")}</DmText>
-                </DmView>
-                <DmText className="text-14 font-custom700 text-black">
-                  {offerAmount ? `${offerAmount} EGP` : t("no_offer_yet")}
-                </DmText>
-              </DmView>
-              {unreadCount > 0 && (
-                <DmView>
-                  <MailIcon width={22} height={16} />
-                  <DmView className="absolute top-[-8] right-[-8] w-[18] h-[18] rounded-full bg-red items-center justify-center">
-                    <DmText className="text-9 font-custom700 text-white">{unreadCount}</DmText>
+            {isDeclined ? (
+              <DmText
+                className={`${isAr ? "mt-[2]" : "mt-[8]"} text-12 leading-[16px] font-custom400 text-grey3`}
+                style={{ fontStyle: "italic", textAlign: "left" }}
+              >
+                {t("pro_declined_this_job")}
+              </DmText>
+            ) : (
+              <DmView className={`${isAr ? "mt-[2]" : "mt-[8]"} flex-row items-center justify-between`}>
+                <DmView className="flex-row items-center">
+                  <DmView className="px-[8] py-[3] mr-[6]" style={[styles.offerBadgeBorder, { borderColor: colors.red }]}>
+                    <DmText className="text-12 font-custom500">{t("offer_amount")}</DmText>
                   </DmView>
+                  <DmText className="text-14 font-custom700 text-black">
+                    {offerAmount ? `${offerAmount} ${t("EGP")}` : t("no_offer_yet")}
+                  </DmText>
                 </DmView>
-              )}
-            </DmView>
+                {unreadCount > 0 && (
+                  <DmView>
+                    <MailIcon width={22} height={16} />
+                    <DmView className="absolute top-[-8] right-[-8] w-[18] h-[18] rounded-full bg-red items-center justify-center">
+                      <DmText className="text-9 font-custom700 text-white">{unreadCount}</DmText>
+                    </DmView>
+                  </DmView>
+                )}
+              </DmView>
+            )}
           </DmView>
         </DmView>
         <DmView className="mt-[14] h-[0.5] bg-grey19" />
@@ -310,11 +407,54 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   if (isJobLoading || !localJob) {
-    return <LoadingOverlay />
+    // Skeleton mirrors the real layout (header / tabs pill / heading / pro
+    // cards) so loaded content lands in place instead of after a spinner
+    // flash. The back button stays real — the user can always leave.
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <DmView className="flex-row items-center px-[16] py-[12]">
+          <DmView
+            className="w-[32] h-[32] items-center justify-center"
+            hitSlop={HIT_SLOP_DEFAULT}
+            onPress={handleGoBack}
+          >
+            <ChevronLeftIcon
+              color={colors.red}
+              style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
+            />
+          </DmView>
+          <DmView className="flex-1 items-center">
+            <SkeletonLoader width={130} height={16} borderRadius={4} />
+            <SkeletonLoader width={90} height={11} borderRadius={4} className="mt-[6]" />
+          </DmView>
+          <DmView className="w-[32] h-[32]" />
+        </DmView>
+        <DmView className="items-center mt-[14]">
+          <SkeletonLoader width="85%" height={42} borderRadius={8} />
+        </DmView>
+        <DmView className="mt-[12] h-[0.5] bg-grey19" />
+        <DmView className="px-[16] pt-[18]">
+          <SkeletonLoader width={140} height={18} borderRadius={4} />
+          <SkeletonLoader width={230} height={13} borderRadius={4} className="mt-[8]" />
+          {[0, 1].map((i) => (
+            <DmView key={i} className="flex-row mt-[22]">
+              <SkeletonLoader width={85} height={85} borderRadius={4} />
+              <DmView className="flex-1 ml-[12]">
+                <SkeletonLoader width="55%" height={15} borderRadius={4} />
+                <SkeletonLoader width="35%" height={12} borderRadius={4} className="mt-[8]" />
+                <SkeletonLoader width="45%" height={12} borderRadius={4} className="mt-[8]" />
+                <SkeletonLoader width="30%" height={16} borderRadius={8} className="mt-[10]" />
+              </DmView>
+            </DmView>
+          ))}
+        </DmView>
+      </SafeAreaView>
+    )
   }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <Animated.View style={{ flex: 1, opacity: contentFade }}>
       {/* Header */}
       <DmView className="flex-row items-center px-[16] py-[12]">
         <DmView
@@ -397,6 +537,52 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
 
       <DmView className="mt-[12] h-[0.5] bg-grey19" />
+
+      {/* Rescue status card (Claude Design "Concept B"): sits between the
+          tabs and the section header, in the screen's card language. Icon
+          tile + title/subtitle explain the state; the red pill carries the
+          action. Row auto-mirrors under forceRTL, chevron flips. */}
+      {(isEnded || isStranded) && (
+        <DmView
+          className="mx-[16] mt-[12] flex-row items-center"
+          style={styles.rescueCard}
+        >
+          <DmView className="items-center justify-center" style={styles.rescueIconTile}>
+            {isEnded ? (
+              <ClockRedIcon width={20} height={20} />
+            ) : (
+              <UsersRedIcon width={20} height={20} />
+            )}
+          </DmView>
+          <DmView className="flex-1 mx-[12]">
+            <DmText
+              className="text-13 leading-[17px] font-custom700 text-black"
+              style={{ textAlign: "left" }}
+            >
+              {isEnded ? t("request_ended") : t("pros_declined_banner")}
+            </DmText>
+            <DmText
+              className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2"
+              style={{ textAlign: "left" }}
+            >
+              {isEnded ? t("request_ended_descr") : t("pros_declined_descr")}
+            </DmText>
+          </DmView>
+          <DmView
+            className="rounded-full px-[16] py-[9]"
+            style={styles.rescuePill}
+            onPress={
+              isEnded
+                ? () => repostFromJob(jobId)
+                : () => setFindProsModalVisible(true)
+            }
+          >
+            <DmText className="text-12 leading-[15px] font-custom600 text-white">
+              {`${isEnded ? t("repost") : t("find_pros")} ${isAr ? "‹" : "›"}`}
+            </DmText>
+          </DmView>
+        </DmView>
+      )}
 
       {/* Animated banner — "new offers" or "pro moved" */}
       {bannerType && (
@@ -481,6 +667,24 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           setTimeout(() => setCancelFeedbackVisible(true), 400)
         }}
         onPressSecond={() => setCancelModalVisible(false)}
+        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+        classNameBtns="h-[40]"
+        classNameBtnsWrapper="mt-[20] mx-[15]"
+        classNameModal="px-[17]"
+      />
+
+      {/* Find-other-pros confirmation: the cancel is irreversible, so say
+          exactly what happens in plain words before firing it */}
+      <MainModal
+        isVisible={isFindProsModalVisible}
+        onClose={() => !isRescueBusy && setFindProsModalVisible(false)}
+        title={t("find_other_pros")}
+        descr={t("find_other_pros_confirm_descr")}
+        isBtnsTwo
+        titleBtn={t("yes")}
+        titleBtnSecond={t("no")}
+        onPress={handleConfirmFindOtherPros}
+        onPressSecond={() => !isRescueBusy && setFindProsModalVisible(false)}
         classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
         classNameBtns="h-[40]"
         classNameBtnsWrapper="mt-[20] mx-[15]"
@@ -616,6 +820,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           )}
         </DmView>
       </Modal>
+      </Animated.View>
     </SafeAreaView>
   )
 }

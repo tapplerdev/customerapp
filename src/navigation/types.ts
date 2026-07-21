@@ -1,5 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { ChatPreviewType } from "types/chat"
+import { NotificationsItemType } from "types/notification"
 import { ServiceType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import { AddressInfo } from "@tappler/shared/src/types"
@@ -53,9 +54,6 @@ export type RootStackParamList = {
   CategoriesScreen: undefined
   SubCategoriesScreen: {
     service: ServiceType
-    /** Set by category-search subcategory hits: opens the address modal for
-        this category immediately on arrival. */
-    autoSelectCategoryId?: number
   }
   SearchAnimationScreen: {
     nextParams: {
@@ -64,6 +62,9 @@ export type RootStackParamList = {
       serviceId: number
       address: AddressInfo
       placeOfService?: string
+      // Repost flow: forwarded verbatim to ProsListingScreen
+      initialAnswers?: QuestionAnswerType[]
+      forceQuestionFlow?: boolean
     }
   }
   ProsListingScreen: {
@@ -72,6 +73,12 @@ export type RootStackParamList = {
     serviceId: number
     address: AddressInfo
     placeOfService?: string
+    // Repost flow: seeds the listing's answer state from a previous job so
+    // the question flow / details steps arrive pre-filled.
+    initialAnswers?: QuestionAnswerType[]
+    // Repost flow: present the first-arrival question flow even though a
+    // placeOfService is already known — it opens pre-filled, "starting fresh".
+    forceQuestionFlow?: boolean
   }
   QuestionFlowScreen: {
     categoryId: number
@@ -128,6 +135,9 @@ export type RootStackParamList = {
     serviceId: number
     placeOfServiceOptions: string[]
     customerQuestions: import("types/cms").ServiceQuestionType[]
+    // Repost flow: pre-fill the flow with a previous job's answers
+    initialAnswers?: QuestionAnswerType[]
+    initialPlaceOfService?: string
   }
   ServiceRequestDetailsScreen: {
     categoryId: number
@@ -173,6 +183,8 @@ export type RootStackParamList = {
   JobDetailScreen: {
     jobId: number
   }
+  NotificationsScreen: undefined
+  NotificationDetailsScreen: { notification: NotificationsItemType }
   RequestDetailsScreen: {
     jobId: number
   }

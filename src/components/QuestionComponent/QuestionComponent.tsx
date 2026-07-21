@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react"
+import React, { useLayoutEffect, useMemo, useState } from "react"
 import { I18nManager, ScrollView, TextInput } from "react-native"
 
 import { DmChecbox, DmInput, DmText, DmView } from "@tappler/shared/src/components/UI"
@@ -20,6 +20,15 @@ interface Props {
   onChangeAnswer: (answer: QuestionAnswerType) => void
   answers?: QuestionAnswerType[]
   hideBorders?: boolean
+  /** Tightens title weight, checkbox size, and chip size to match the compact
+      place-of-service block (used in the all-questions "Job Details" list). */
+  compact?: boolean
+  /** Enables cascade coherence for parented filter questions (Make → Model):
+      narrows child options to selected parents, auto-selects a child's parent,
+      and prunes orphaned child picks when a parent is deselected. Cascade
+      emits extra onChangeAnswer calls for OTHER questions — only pass this
+      where the handler upserts by answer.questionId. */
+  allQuestions?: ServiceQuestionType[]
 }
 
 const QuestionComponent: React.FC<Props> = ({
@@ -27,6 +36,8 @@ const QuestionComponent: React.FC<Props> = ({
   onChangeAnswer,
   answers,
   hideBorders,
+  compact,
+  allQuestions,
 }) => {
   const { i18n } = useTranslation()
   const isAr = i18n.language === "ar"
@@ -68,13 +79,72 @@ const QuestionComponent: React.FC<Props> = ({
     onChangeAnswer(newAnswer)
   }
 
+  // ── Cascade coherence (parented filters, e.g. Make → Model) ─────────────
+  // Selecting a child with no parent chosen auto-selects the parent option
+  // (a child answer without its parent barely filters server-side);
+  // deselecting a parent prunes its now-orphaned child picks. Inert unless
+  // allQuestions is provided.
+  const emitCascade = (selecting: boolean, option: QuestionOptionType) => {
+    if (!allQuestions?.length) return
+
+    if (selecting && option.parentFilterOptionKey) {
+      const pk = option.parentFilterOptionKey
+      const parentQ = allQuestions.find(
+        (q) => q.id !== item.id && q.options?.some((o) => o.filterOptionKey === pk)
+      )
+      const pOpt = parentQ?.options?.find((o) => o.filterOptionKey === pk)
+      if (!parentQ || !pOpt) return
+      const pAns = answers?.find((a) => a.questionId === parentQ.id)
+      if (parentQ.type === "multipleChoice") {
+        if (pAns?.optionsIds?.includes(pOpt.id)) return
+        const ids = [...(pAns?.optionsIds || []), pOpt.id]
+        const existing = pAns?.answer?.split(", ").filter(Boolean) || []
+        onChangeAnswer({
+          questionId: parentQ.id,
+          optionsIds: ids,
+          answer: [...new Set([...existing, pOpt.value])].join(", "),
+        })
+      } else {
+        if (pAns?.optionId === pOpt.id) return
+        onChangeAnswer({ questionId: parentQ.id, optionId: pOpt.id, answer: pOpt.value })
+      }
+    }
+
+    if (!selecting && option.filterOptionKey) {
+      const rk = option.filterOptionKey
+      allQuestions.forEach((q) => {
+        if (q.id === item.id) return
+        if (!q.options?.some((o) => o.parentFilterOptionKey === rk)) return
+        const cAns = answers?.find((a) => a.questionId === q.id)
+        if (!cAns) return
+        if (q.type === "multipleChoice" && cAns.optionsIds?.length) {
+          const keep = cAns.optionsIds.filter(
+            (id) => q.options?.find((o) => o.id === id)?.parentFilterOptionKey !== rk
+          )
+          if (keep.length !== cAns.optionsIds.length) {
+            const keepVals = keep
+              .map((id) => q.options?.find((o) => o.id === id)?.value)
+              .filter(Boolean)
+            onChangeAnswer({ questionId: q.id, optionsIds: keep, answer: keepVals.join(", ") })
+          }
+        } else if (cAns.optionId) {
+          const cOpt = q.options?.find((o) => o.id === cAns.optionId)
+          if (cOpt?.parentFilterOptionKey === rk) {
+            onChangeAnswer({ questionId: q.id })
+          }
+        }
+      })
+    }
+  }
+
   const handleSelectOption = (option: QuestionOptionType) => {
     if (item.type === "multipleChoice") {
       const prevIds = answer?.optionsIds || []
       let newIds: number[]
       let newAnswerText: string
+      const isDeselecting = prevIds.includes(option.id)
 
-      if (prevIds.includes(option.id)) {
+      if (isDeselecting) {
         newIds = prevIds.filter((id) => id !== option.id)
         newAnswerText = (answer?.answer || "")
           .split(", ")
@@ -93,6 +163,7 @@ const QuestionComponent: React.FC<Props> = ({
       }
       setAnswer(newAnswer)
       onChangeAnswer(newAnswer)
+      emitCascade(!isDeselecting, option)
     } else {
       // oneChoice — toggle
       const isDeselecting = answer?.optionId === option.id
@@ -101,8 +172,46 @@ const QuestionComponent: React.FC<Props> = ({
         : { questionId: item.id, optionId: option.id, answer: option.value }
       setAnswer(newAnswer)
       onChangeAnswer(newAnswer)
+      if (isDeselecting) {
+        emitCascade(false, option)
+      } else {
+        // Switching away from a previous pick releases ITS children first
+        const prevOpt = item.options?.find((o) => o.id === answer?.optionId)
+        if (prevOpt) emitCascade(false, prevOpt)
+        emitCascade(true, option)
+      }
     }
   }
+
+  // Narrow parented options to the selected parents' children (Thumbtack
+  // behavior: BMW picked → only BMW models). With NO parent picked yet, all
+  // children stay visible — partial answering is allowed, and tapping a child
+  // then auto-selects its parent via emitCascade.
+  const visibleOptions = useMemo(() => {
+    const opts = item.options
+    if (!opts?.length || !allQuestions?.length) return opts
+    const myParentKeys = new Set(
+      opts.map((o) => o.parentFilterOptionKey).filter(Boolean) as string[]
+    )
+    if (!myParentKeys.size) return opts
+    const selectedKeys = new Set<string>()
+    answers?.forEach((a) => {
+      if (a.questionId === item.id) return
+      const q = allQuestions.find((qq) => qq.id === a.questionId)
+      if (!q) return
+      const ids =
+        q.type === "multipleChoice" ? a.optionsIds || [] : a.optionId ? [a.optionId] : []
+      ids.forEach((id) => {
+        const k = q.options?.find((o) => o.id === id)?.filterOptionKey
+        if (k) selectedKeys.add(k)
+      })
+    })
+    const anyParentSelected = [...myParentKeys].some((k) => selectedKeys.has(k))
+    if (!anyParentSelected) return opts
+    return opts.filter(
+      (o) => !o.parentFilterOptionKey || selectedKeys.has(o.parentFilterOptionKey)
+    )
+  }, [item, allQuestions, answers])
 
   const isOptionSelected = (option: QuestionOptionType) => {
     if (item.type === "multipleChoice" && answer?.optionsIds?.length) {
@@ -148,36 +257,35 @@ const QuestionComponent: React.FC<Props> = ({
 
   const renderChips = () => {
     const layout = item.layoutQuestionStyle || "onePerRow"
-    const chips = item.options?.map((opt, idx) => (
+    // Space chips via the container's flex `gap` (an inline style) so it applies
+    // reliably — the per-chip className margin wasn't separating them.
+    const gap = compact ? 10 : 14
+    const chips = visibleOptions?.map((opt, idx) => (
       <ChipButton
         key={idx}
         label={getOptionLabel(opt)}
         isSelected={isOptionSelected(opt)}
         onPress={() => handleSelectOption(opt)}
-        className={
-          layout === "onePerRow" ? "mb-[10]" :
-          layout === "wrap" ? "mr-[8] mb-[8]" :
-          "mr-[8]"
-        }
+        compact={compact}
       />
     ))
 
     if (layout === "horizontal") {
       return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
-          <DmView className="flex-row">{chips}</DmView>
+          <DmView className="flex-row" style={{ gap }}>{chips}</DmView>
         </ScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView className="flex-row flex-wrap mt-[16]">{chips}</DmView>
+      return <DmView className="flex-row flex-wrap mt-[16]" style={{ gap }}>{chips}</DmView>
     }
-    return <DmView className="mt-[16]">{chips}</DmView>
+    return <DmView className="mt-[16]" style={{ gap }}>{chips}</DmView>
   }
 
   const renderImageWithText = () => {
     const layout = item.layoutQuestionStyle || "onePerRow"
-    const elements = item.options?.map((opt, idx) => (
+    const elements = visibleOptions?.map((opt, idx) => (
       <ImageWithTextButton
         key={idx}
         label={getOptionLabel(opt)}
@@ -207,7 +315,7 @@ const QuestionComponent: React.FC<Props> = ({
 
   const renderImageWithCheckmark = () => {
     const layout = item.layoutQuestionStyle || "onePerRow"
-    const elements = item.options?.map((opt, idx) => (
+    const elements = visibleOptions?.map((opt, idx) => (
       <ImageWithCheckmarkButton
         key={idx}
         label={getOptionLabel(opt)}
@@ -237,7 +345,7 @@ const QuestionComponent: React.FC<Props> = ({
 
   const renderTextWithCheckmark = () => {
     const layout = item.layoutQuestionStyle || "onePerRow"
-    const elements = item.options?.map((opt, idx) => (
+    const elements = visibleOptions?.map((opt, idx) => (
       <TextWithCheckmarkButton
         key={idx}
         label={getOptionLabel(opt)}
@@ -277,7 +385,7 @@ const QuestionComponent: React.FC<Props> = ({
       case "checkmark":
         return (
           <DmView className="mt-[16]">
-            {item.options?.map((opt, idx) => (
+            {visibleOptions?.map((opt, idx) => (
               <DmView
                 key={idx}
                 onPress={() => handleSelectOption(opt)}
@@ -296,11 +404,12 @@ const QuestionComponent: React.FC<Props> = ({
       case "checkbox":
         return (
           <DmView className="mt-[16]">
-            {item.options?.map((opt, idx) => (
+            {visibleOptions?.map((opt, idx) => (
               <DmChecbox
                 className={idx > 0 ? "mt-[16]" : ""}
                 textClassName="flex-1"
                 variant="square"
+                size={compact ? 20 : undefined}
                 key={idx}
                 title={getOptionLabel(opt)}
                 onPress={() => handleSelectOption(opt)}
@@ -312,11 +421,12 @@ const QuestionComponent: React.FC<Props> = ({
       case "radio":
         return (
           <DmView className="mt-[16]">
-            {item.options?.map((opt, idx) => (
+            {visibleOptions?.map((opt, idx) => (
               <DmChecbox
                 className={idx > 0 ? "mt-[16]" : ""}
                 textClassName="flex-1"
                 variant="circle"
+                size={compact ? 20 : undefined}
                 key={idx}
                 title={getOptionLabel(opt)}
                 onPress={() => handleSelectOption(opt)}
@@ -328,11 +438,12 @@ const QuestionComponent: React.FC<Props> = ({
       default:
         return (
           <DmView className="mt-[16]">
-            {item.options?.map((opt, idx) => (
+            {visibleOptions?.map((opt, idx) => (
               <DmChecbox
                 className={idx > 0 ? "mt-[16]" : ""}
                 textClassName="flex-1"
                 variant={item.type === "multipleChoice" ? "square" : "circle"}
+                size={compact ? 20 : undefined}
                 key={idx}
                 title={getOptionLabel(opt)}
                 onPress={() => handleSelectOption(opt)}
@@ -348,7 +459,7 @@ const QuestionComponent: React.FC<Props> = ({
     <DmView className="mb-[25] px-[14]">
       {(item.type === "oneChoice" || item.type === "multipleChoice") && (
         <>
-          <DmText className="text-15 leading-[19px] font-custom600">
+          <DmText className={compact ? "text-15 leading-[19px] font-custom700" : "text-15 leading-[19px] font-custom600"}>
             {getQuestionText()}
           </DmText>
           {renderQuestionOptions()}
@@ -356,7 +467,7 @@ const QuestionComponent: React.FC<Props> = ({
       )}
       {(item.type === "shortAnswer" || item.type === "paragraph") && (
         <>
-          <DmText className="text-15 leading-[19px] font-custom600 mb-[12]">
+          <DmText className={compact ? "text-15 leading-[19px] font-custom700 mb-[12]" : "text-15 leading-[19px] font-custom600 mb-[12]"}>
             {getQuestionText()}
           </DmText>
           <DmView

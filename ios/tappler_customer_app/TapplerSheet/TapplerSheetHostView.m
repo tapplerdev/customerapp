@@ -23,6 +23,7 @@
     _bridge = bridge;
     _sheetHeight = 300;
     _pushBackScale = 0.92;
+    _dimOpacity = 0.4;
 
     _sheetViewController = [UIViewController new];
     _sheetViewController.view.backgroundColor = [UIColor whiteColor];
@@ -88,6 +89,13 @@
     [_presentationController.containerView setNeedsLayout];
     [_presentationController.containerView layoutIfNeeded];
   }
+}
+
+- (void)setTransparentBackground:(BOOL)transparentBackground
+{
+  _transparentBackground = transparentBackground;
+  _sheetViewController.view.backgroundColor =
+      transparentBackground ? [UIColor clearColor] : [UIColor whiteColor];
 }
 
 - (void)presentSheet
@@ -158,6 +166,7 @@
                                                          presentingViewController:presenting];
   _presentationController.sheetHeight = _sheetHeight;
   _presentationController.pushBackScale = _pushBackScale;
+  _presentationController.dimOpacity = _dimOpacity;
   __weak TapplerSheetHostView *weakSelf = self;
   _presentationController.onDimTap = ^{
     [weakSelf dismissSheetNotify:YES];

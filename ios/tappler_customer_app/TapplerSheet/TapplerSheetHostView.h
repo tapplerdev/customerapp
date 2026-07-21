@@ -15,6 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL visible;
 @property (nonatomic, assign) CGFloat sheetHeight;
 @property (nonatomic, assign) CGFloat pushBackScale;
+@property (nonatomic, assign) CGFloat dimOpacity;
+/// Clear sheet background: content draws its own surfaces, so parts of it
+/// (e.g. a header) can float visually on the dim layer.
+@property (nonatomic, assign) BOOL transparentBackground;
 @property (nonatomic, copy, nullable) RCTDirectEventBlock onDismissed;
 
 @end

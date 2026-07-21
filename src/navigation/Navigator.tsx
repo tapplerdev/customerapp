@@ -27,6 +27,8 @@ import ServiceRequestDetailsScreen from "screens/dashboardScreens/ServiceRequest
 import RequestSummaryScreen from "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen"
 import RequestSuccessScreen from "screens/dashboardScreens/RequestSuccessScreen/RequestSuccessScreen"
 import JobDetailScreen from "screens/dashboardScreens/JobDetailScreen/JobDetailScreen"
+import NotificationsScreen from "screens/dashboardScreens/NotificationsScreen/NotificationsScreen"
+import NotificationDetailsScreen from "screens/dashboardScreens/NotificationDetailsScreen/NotificationDetailsScreen"
 import RequestDetailsScreen from "screens/dashboardScreens/RequestDetailsScreen/RequestDetailsScreen"
 import ProProfileScreen from "screens/dashboardScreens/ProProfileScreen/ProProfileScreen"
 import ReviewProSelectionScreen from "screens/dashboardScreens/ReviewProSelectionScreen/ReviewProSelectionScreen"
@@ -168,6 +170,8 @@ const Navigator = () => {
       <Stack.Screen name="RequestSuccessScreen" component={RequestSuccessScreen} />
       <Stack.Screen name="ViewAddressScreen" component={ViewAddressScreen} />
       <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} />
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+      <Stack.Screen name="NotificationDetailsScreen" component={NotificationDetailsScreen} />
       <Stack.Screen name="RequestDetailsScreen" component={RequestDetailsScreen} options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="ProProfileScreen" component={ProProfileScreen} options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="ReviewProSelectionScreen" component={ReviewProSelectionScreen} />

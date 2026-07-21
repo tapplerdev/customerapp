@@ -10,6 +10,8 @@ import { ChatPreviewType } from "types/chat"
 
 import LocationIcon from "assets/icons/location-red.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
+import { parseOfferUpdate } from "components/OfferUpdateCard/OfferUpdateCard"
+import { localizeDateString } from "helpers/digits"
 
 import styles from "./styles"
 
@@ -54,13 +56,14 @@ const MessagesComponent: React.FC<Props> = React.memo(
         if (!dateStr) return ""
         const date = new Date(dateStr)
         if (isToday(date)) {
-          return format(date, "h:mm a")
+          // Arabic gets Arabic-Indic digits + ص/م meridiem (١١:٢٧ م)
+          return localizeDateString(format(date, "h:mm a"), isAr)
         }
         if (isYesterday(date)) {
           return t("yesterday")
         }
         return isAr
-          ? format(date, "yyyy/MM/dd")
+          ? localizeDateString(format(date, "yyyy/MM/dd"), true)
           : format(date, "dd/MM/yyyy")
       },
       [isAr, t],
@@ -179,7 +182,14 @@ const MessagesComponent: React.FC<Props> = React.memo(
                 >
                   {lastMsg?.text
                     ? (() => {
-                        const displayText = lastMsg.ownerType === "system" ? t(lastMsg.text) : lastMsg.text
+                        // Structured offer revision ("offer_updated:50:60") must not
+                        // hit t() raw (":" is i18next's ns separator → mangled "50.60");
+                        // show the event + the new price instead.
+                        const offerUpdate =
+                          lastMsg.ownerType === "system" ? parseOfferUpdate(lastMsg.text) : null
+                        const displayText = offerUpdate
+                          ? `${t("offer_updated")} · ${offerUpdate.next} ${t("EGP")}`
+                          : lastMsg.ownerType === "system" ? t(lastMsg.text) : lastMsg.text
                         return displayText.length > 40
                           ? displayText.substring(0, 40) + "..."
                           : displayText

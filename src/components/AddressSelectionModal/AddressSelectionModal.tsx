@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef } from "react"
-import { ScrollView } from "react-native"
+import { Platform, ScrollView } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
+import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useTypedSelector } from "store"
@@ -89,18 +90,8 @@ const AddressSelectionModal: React.FC<Props> = ({
     return Math.abs(sLat - lLat) > 0.0001 || Math.abs(sLng - lLon) > 0.0001
   })
 
-  return (
-    <BottomSheet
-      ref={sheetRef}
-      index={-1}
-      enableDynamicSizing
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      onChange={handleSheetChange}
-      handleComponent={null}
-      backgroundStyle={{ backgroundColor: "transparent" }}
-    >
-      <BottomSheetView>
+  const sheetContent = (
+    <>
         {/* Header Section — transparent bg with white text */}
         <DmView className="px-[18] pt-[20] pb-[16] rounded-t-12">
           <DmView className="flex-row items-center mb-[8]">
@@ -178,7 +169,39 @@ const AddressSelectionModal: React.FC<Props> = ({
           </DmView>
         </ScrollView>
         </DmView>
-      </BottomSheetView>
+    </>
+  )
+
+  // iOS: native push-back presentation (house style — the screen behind
+  // recedes like the question/filters sheets). transparentBackground keeps the
+  // container clear so the header floats on the dim exactly like the gorhom
+  // original; dimOpacity matches the 0.85 backdrop below.
+  if (Platform.OS === "ios") {
+    return (
+      <NativePushBackSheet
+        visible={isVisible}
+        onDismissed={onClose}
+        dimOpacity={0.85}
+        transparentBackground
+      >
+        {sheetContent}
+      </NativePushBackSheet>
+    )
+  }
+
+  // Android keeps the gorhom sheet (house pattern: iOS-only native sheets).
+  return (
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      enableDynamicSizing
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={handleSheetChange}
+      handleComponent={null}
+      backgroundStyle={{ backgroundColor: "transparent" }}
+    >
+      <BottomSheetView>{sheetContent}</BottomSheetView>
     </BottomSheet>
   )
 }

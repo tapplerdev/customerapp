@@ -45,7 +45,7 @@ export const useChatSocket = () => {
         if (isAuth && token && user?.id && !WebSocketService.isConnected()) {
           WebSocketService.connect({ token, userId: user.id, userType: "customer" })
         }
-        dispatch(api.util.invalidateTags(["Chats"]))
+        dispatch(api.util.invalidateTags(["Chats", "Notifications"]))
       } else if (next.match(/inactive|background/)) {
         WebSocketService.disconnect()
       }
@@ -65,6 +65,15 @@ export const useChatSocket = () => {
         // Unknown chat (brand-new conversation not in any cached list) or a
         // slim payload — one targeted refetch of the list.
         if (!applied) {
+          dispatch(api.util.invalidateTags(["Chats"]))
+        }
+        // Offer revision system message: the chat header's offer badge reads
+        // ratePerHour out of the chat payload — refetch so it flips the same
+        // moment the offer card lands in the thread.
+        if (
+          typeof wsMessage?.text === "string" &&
+          wsMessage.text.startsWith("offer_updated:")
+        ) {
           dispatch(api.util.invalidateTags(["Chats"]))
         }
 
@@ -92,11 +101,37 @@ export const useChatSocket = () => {
     }
   }, [isAuth, dispatch, store])
 
-  // --- Reconnect reconciliation: message.created events missed while the
-  //     socket was down are never replayed — refetch the chat list to catch up.
+  // --- Job events (offers arriving, opportunity selections, …): the backend
+  //     notifies the customer with `system.job:*` events, but nothing was
+  //     invalidating the Jobs cache — so the job DETAIL (Other Pros tab)
+  //     stayed a pre-offer snapshot until app restart. Invalidate Jobs so a
+  //     mounted screen refetches instantly and unmounted caches refetch on
+  //     next open. (The Talabati LIST already self-heals via 30s polling.)
+  //     Every notification event is also persisted server-side, so the bell
+  //     badge + NotificationsScreen refetch on the same signal.
   useEffect(() => {
     if (!isAuth) return
-    const reconcile = () => dispatch(api.util.invalidateTags(["Chats"]))
+    const handler = (payload: any) => {
+      dispatch(api.util.invalidateTags(["Notifications"]))
+      if (
+        typeof payload?.event === "string" &&
+        payload.event.startsWith("system.job:")
+      ) {
+        dispatch(api.util.invalidateTags(["Jobs"]))
+      }
+    }
+    WebSocketService.on("notification", handler)
+    return () => {
+      WebSocketService.off("notification", handler)
+    }
+  }, [isAuth, dispatch])
+
+  // --- Reconnect reconciliation: events missed while the socket was down are
+  //     never replayed — refetch the chat list AND jobs to catch up.
+  useEffect(() => {
+    if (!isAuth) return
+    const reconcile = () =>
+      dispatch(api.util.invalidateTags(["Chats", "Jobs", "Notifications"]))
     WebSocketService.on("connected", reconcile)
     WebSocketService.on("reconnected", reconcile)
     return () => {

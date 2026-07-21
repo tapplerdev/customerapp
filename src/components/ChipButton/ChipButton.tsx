@@ -7,6 +7,8 @@ interface ChipButtonProps {
   isSelected: boolean
   onPress: () => void
   className?: string
+  /** Tighter padding + smaller label, to match the compact question list. */
+  compact?: boolean
 }
 
 const ChipButton: React.FC<ChipButtonProps> = ({
@@ -14,12 +16,13 @@ const ChipButton: React.FC<ChipButtonProps> = ({
   isSelected,
   onPress,
   className,
+  compact,
 }) => {
   return (
     <DmView
       onPress={onPress}
       className={clsx(
-        "px-[20] py-[12] self-start",
+        compact ? "px-[14] py-[8] self-start" : "px-[20] py-[12] self-start",
         isSelected
           ? "bg-pink"
           : "bg-white",
@@ -37,6 +40,7 @@ const ChipButton: React.FC<ChipButtonProps> = ({
           "text-15 font-custom500 text-center",
           isSelected ? "text-black" : "text-grey2"
         )}
+        style={compact ? { fontSize: 13 } : undefined}
         numberOfLines={1}
       >
         {label}

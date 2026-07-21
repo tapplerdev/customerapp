@@ -15,6 +15,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SearchIcon from "assets/icons/search-red.svg"
 import CloseIcon from "assets/icons/close.svg"
+import { useServiceAddressFlow } from "hooks/useServiceAddressFlow"
 
 type Props = RootStackScreenProps<"CategoriesScreen">
 
@@ -25,6 +26,8 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
   const [searchText, setSearchText] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const { openAddressFor, addressModal } = useServiceAddressFlow()
 
   const handleSearchChange = useCallback((text: string) => {
     setSearchText(text)
@@ -77,10 +80,8 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
     // Prefer the full service from the unfiltered cache — the search response
     // may carry a pruned category list.
     const fullService = allData?.data?.find((s) => s.id === parentService.id) ?? parentService
-    navigation.navigate("SubCategoriesScreen", {
-      service: fullService,
-      autoSelectCategoryId: category.id,
-    })
+    // Open the address sheet in place — no hop through SubCategoriesScreen.
+    openAddressFor(category, fullService)
   }
 
   const renderItem = ({ item }: { item: RowItem }) => {
@@ -203,6 +204,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
           />
         </Animated.View>
       )}
+      {addressModal}
     </SafeAreaView>
     </Animated.View>
   )

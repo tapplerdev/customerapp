@@ -6,7 +6,11 @@ const useJobPros = (pros: JobProType[] | undefined) => {
     pros?.filter((p) =>
       p.selectionStatus === "selected" ||
       (p.selectionStatus === "offer" && !!p.proOfferSentAt && !p.proOpportunityOfferSentAt) ||
-      (p.selectionStatus === "offer" && !!p.opportunityAcceptedAt)
+      (p.selectionStatus === "offer" && !!p.opportunityAcceptedAt) ||
+      // An INVITED pro who declined stays visible (dimmed card with a
+      // "declined" status) — silently vanishing would gaslight the customer.
+      // Opportunity-origin pros can't be proRejected by design.
+      (p.selectionStatus === "proRejected" && !p.proOpportunityOfferSentAt)
     ) || [],
   [pros])
 

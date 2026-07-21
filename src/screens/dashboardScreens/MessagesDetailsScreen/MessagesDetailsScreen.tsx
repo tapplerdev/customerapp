@@ -1,14 +1,17 @@
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
   I18nManager,
   Image as RNImage,
   Keyboard,
+  LayoutAnimation,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  ScrollView,
   TextInput,
+  useWindowDimensions,
 } from "react-native"
 // Using RN's built-in KeyboardAvoidingView (react-native-keyboard-controller not installed in customer app yet)
 import { KeyboardAvoidingView } from "react-native"
@@ -19,10 +22,14 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import FastImage from "react-native-fast-image"
 import { pick, types } from "react-native-document-picker"
 import {
-  useLazyGetCustomerJobDetailsQuery,
+  api,
+  useGetChatsQuery,
+  useGetCustomerJobDetailsQuery,
   useLazyGetProProfileQuery,
   useSendMessageMutation,
 } from "services/api"
+import useRepostRequest from "hooks/useRepostRequest"
+import { format } from "date-fns"
 
 import { RootStackScreenProps } from "navigation/types"
 import useChatContext from "hooks/useChatContext"
@@ -33,32 +40,86 @@ import MessageComponent from "components/MessageComponent/MessageComponent"
 import { ChatMessageType } from "types/chat"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 import { checkProfanity } from "@tappler/shared/src/profanity"
+import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
+import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
-import SendIcon from "assets/icons/send.svg"
+import SendArrow from "assets/icons/sendArrow.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
 import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
-import DetailsIcon from "assets/icons/details-icon.svg"
 import CameraIcon from "assets/icons/camera-icon.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
 import LocationIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
+import TagRedIcon from "assets/icons/tag-red.svg"
+import OfferHistorySheet from "components/OfferHistorySheet/OfferHistorySheet"
 import ChevronDownIcon from "assets/icons/chevron-down.svg"
+import ChevronRightIcon from "assets/icons/chevron-right.svg"
+import ClockIcon from "assets/icons/clock-red-big.svg"
+import MapView, { Marker } from "react-native-maps"
+import LinearGradient from "react-native-linear-gradient"
+import MapMarkerIcon from "assets/icons/location-red-solid.svg"
+import { useTypedSelector } from "store"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
+
+// Short, soft reflow used when the composer expands into / collapses out of its
+// focused (toolbar) layout. Opacity property fades the appearing toolbar row.
+// Scheduled via scheduleLayoutAnimation (helpers/layoutAnimation), which also
+// owns the Android experimental flag and coalesces same-frame schedules.
+const COMPOSER_ANIM = LayoutAnimation.create(
+  180,
+  LayoutAnimation.Types.easeInEaseOut,
+  LayoutAnimation.Properties.opacity
+)
 
 type Props = RootStackScreenProps<"MessagesDetailsScreen">
 
 const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { chatPreview } = route.params
+  const { chatPreview: chatPreviewParam } = route.params
+  // The route param is a NAVIGATION-TIME SNAPSHOT — after the pro revises an
+  // offer, the header badge kept the old rate because the screen never saw the
+  // refetched list. Prefer the live cache entry (the offer-updated socket
+  // message invalidates Chats); fall back to the snapshot mid-refetch.
+  const { liveChatPreview } = useGetChatsQuery(undefined, {
+    selectFromResult: ({ data }) => ({
+      liveChatPreview: data?.data?.find(
+        (c) => c.chat.id === chatPreviewParam.chat.id
+      ),
+    }),
+  })
+  const chatPreview = liveChatPreview ?? chatPreviewParam
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
+  // RTL: RN swaps textAlign left↔right AND marginStart is logical under
+  // force-RTL, so "left"/marginStart auto-flip to the right/right-gap in Arabic
+  // (and stay left in English) — matching DmText's base text-left. Do NOT use
+  // "right" here: it swaps to the visual LEFT in Arabic.
+  const rtlText = { textAlign: "left" } as const
+  const rtlRow = { marginStart: 12, textAlign: "left" } as const
   const insets = useSafeAreaInsets()
+  const { height: windowHeight } = useWindowDimensions()
 
   // Deep module hooks
   const context = useChatContext(chatPreview)
+  // Offer history sheet (opened from the header's offer strip)
+  const [isOfferHistoryVisible, setOfferHistoryVisible] = useState(false)
+  // Warm the history in the background so the sheet's first open renders
+  // instantly from cache (its own open-refetch still revalidates silently).
+  const prefetchOfferHistory = api.usePrefetch("getOfferHistory")
+  useEffect(() => {
+    const proId = chatPreview.chat.proId
+    if (context.jobId && proId && context.offerAmount != null) {
+      prefetchOfferHistory(
+        { jobId: context.jobId, proId },
+        { ifOlderThan: 60 }
+      )
+    }
+  }, [context.jobId, chatPreview.chat.proId, context.offerAmount])
+  // Own display name for the More sheet's "You" participant row.
+  const authUser = useTypedSelector((store) => store.auth.user)
   const pagination = useMessagePagination(context.chatId)
   const groups = useMessageGroups(pagination.messages)
   const attachments = useAttachments({
@@ -74,13 +135,76 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [blockedModalText, setBlockedModalText] = useState<string | null>(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  // Composer focus drives the Airbnb-style reflow: idle = single row, focused =
+  // text on top + a toolbar row below (see the input-bar JSX for the mechanics).
+  const [isInputFocused, setIsInputFocused] = useState(false)
+  // Tracks the KEYBOARD, not focus — they differ (simulator with hardware
+  // keyboard, external keyboards): the bar only swaps its safe-area padding
+  // for the compact 12pt when the keyboard actually covers the bottom inset.
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  // Ref mirror so re-fired events (iOS emits willShow again on QuickType-bar
+  // frame changes) don't re-schedule animations for a state that isn't changing.
+  const keyboardVisibleRef = useRef(false)
+  React.useEffect(() => {
+    // willShow/willHide keeps the swap in sync with the KAV slide on iOS;
+    // Android only emits did* events.
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
+    const onShow = () => {
+      if (keyboardVisibleRef.current) return
+      keyboardVisibleRef.current = true
+      scheduleLayoutAnimation(COMPOSER_ANIM)
+      setIsKeyboardVisible(true)
+    }
+    const onHide = () => {
+      if (!keyboardVisibleRef.current) return
+      keyboardVisibleRef.current = false
+      scheduleLayoutAnimation(COMPOSER_ANIM)
+      setIsKeyboardVisible(false)
+    }
+    const showSub = Keyboard.addListener(showEvent, onShow)
+    const hideSub = Keyboard.addListener(hideEvent, onHide)
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
   const attachmentSheetRef = useRef<BottomSheet>(null)
   // iOS uses the native push-back sheet (state-driven); Android keeps gorhom (ref-driven)
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false)
+  // "More" sheet — single everything-about-this-conversation entry point
+  // (replaces the old action bar + offer bar + decorative three-dot menu).
+  const moreSheetRef = useRef<BottomSheet>(null)
+  const [moreSheetVisible, setMoreSheetVisible] = useState(false)
+  // Lazily mount the sheet's MapView on first open — sheet content is mounted
+  // with the screen (RN-Modal pattern), and a map instance per chat open
+  // would be wasted cost for sheets never opened.
+  const [moreSheetOpened, setMoreSheetOpened] = useState(false)
+  // Stacked "full request" sheet — presents ON TOP of the More sheet
+  // (Airbnb's Show-reservation pattern; the native controller presents from
+  // the top-most VC, so stacking is supported by design).
+  const requestSheetRef = useRef<BottomSheet>(null)
+  const [requestSheetVisible, setRequestSheetVisible] = useState(false)
+  // Lazy-mount the request sheet's map hero on first open (same reasoning as
+  // moreSheetOpened — don't pay a map instance for sheets never opened).
+  const [requestSheetOpened, setRequestSheetOpened] = useState(false)
   const flatListRef = useRef<FlatList>(null)
   const [sendMessage] = useSendMessageMutation()
   const [getProProfile] = useLazyGetProProfileQuery()
-  const [getJobDetails] = useLazyGetCustomerJobDetailsQuery()
+  // Full job for the More sheet's at-a-glance rows — chat-list jobs are slim
+  // (no address/dates). Cached by RTK, shared with the card's prefetch.
+  const { data: glanceJob } = useGetCustomerJobDetailsQuery(
+    context.jobId ?? 0,
+    { skip: !context.jobId }
+  )
+  // "Repost request" on the ended strip: re-enter the request flow
+  // pre-filled from THIS job's stored snapshot — a fresh job through the
+  // normal path, never a backend clone. glanceJob subscribes the same
+  // details query, so the hook's cache-first fetch is warm.
+  const repostFromJob = useRepostRequest()
+  const handleRepostRequest = useCallback(() => {
+    if (context.jobId) repostFromJob(context.jobId)
+  }, [context.jobId, repostFromJob])
 
   const canSend = messageText.trim().length > 0 || attachments.pending.length > 0
 
@@ -95,6 +219,38 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       setAttachmentSheetVisible(false)
     } else {
       attachmentSheetRef.current?.close()
+    }
+  }
+
+  const handleOpenMoreSheet = () => {
+    setMoreSheetOpened(true)
+    if (Platform.OS === "ios") {
+      setMoreSheetVisible(true)
+    } else {
+      moreSheetRef.current?.expand()
+    }
+  }
+  const closeMoreSheet = () => {
+    if (Platform.OS === "ios") {
+      setMoreSheetVisible(false)
+    } else {
+      moreSheetRef.current?.close()
+    }
+  }
+  // Full-request sheet stacks ON TOP — the More sheet stays open behind it.
+  const openRequestSheet = () => {
+    setRequestSheetOpened(true)
+    if (Platform.OS === "ios") {
+      setRequestSheetVisible(true)
+    } else {
+      requestSheetRef.current?.expand()
+    }
+  }
+  const closeRequestSheet = () => {
+    if (Platform.OS === "ios") {
+      setRequestSheetVisible(false)
+    } else {
+      requestSheetRef.current?.close()
     }
   }
 
@@ -406,6 +562,454 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     )
   }
 
+  // Composer controls — shared between the idle (single-row) and focused
+  // (toolbar-row) layouts so their look/behaviour can't drift. Only one layout
+  // renders at a time, so reusing the same element in both is safe.
+  const plusButton = (
+    <DmView
+      onPress={handleOpenAttachmentSheet}
+      className="w-[30] h-[30] rounded-full bg-grey26 items-center justify-center"
+    >
+      <DmView className="absolute bg-grey2" style={styles.plusHorizontal} />
+      <DmView className="absolute bg-grey2" style={styles.plusVertical} />
+    </DmView>
+  )
+
+  const sendButton = (
+    <DmView
+      onPress={canSend ? handleSend : undefined}
+      style={[
+        styles.sendButton,
+        { backgroundColor: canSend ? colors.red : colors.grey29 },
+      ]}
+    >
+      <SendArrow
+        width={22}
+        height={22}
+        color={canSend ? colors.white : colors.grey6}
+      />
+    </DmView>
+  )
+
+  // ── More sheet content ──
+  // Rendered by BOTH presentations (iOS native push-back sheet + Android
+  // gorhom), and by the native sheet's hidden measuring twin — keep it a
+  // plain element with no visibility assumptions.
+  const moreJob = chatPreview.chat.job
+  const moreServiceName = moreJob?.serviceCategory
+    ? isAr
+      ? moreJob.serviceCategory.nameAr
+      : moreJob.serviceCategory.nameEn
+    : chatPreview.chat.serviceCategory
+      ? isAr
+        ? chatPreview.chat.serviceCategory.nameAr
+        : chatPreview.chat.serviceCategory.nameEn
+      : ""
+
+  // Near-full-screen detent like Airbnb's Details sheet: fixed ✕ header,
+  // content scrolls beneath it.
+  const moreSheetHeight = windowHeight - insets.top + 6
+
+  // At-a-glance facts (area + when). Same accessors as RequestDetailsScreen,
+  // incl. the "asap" fallback for undated requests.
+  const glanceSource: any = glanceJob ?? moreJob
+  const glanceArea =
+    glanceSource?.address?.address?.city ||
+    glanceSource?.address?.address?.governorate ||
+    ""
+  const glanceSlotRaw: any = glanceSource?.timeSlots?.[0]
+  const glanceSlot = glanceSlotRaw
+    ? [glanceSlotRaw.start, glanceSlotRaw.end].filter(Boolean).join(" – ")
+    : ""
+  const glanceWhen = glanceSource?.dates?.[0]?.date
+    ? [
+        format(new Date(glanceSource.dates[0].date), "EEEE, dd MMM"),
+        glanceSlot,
+      ]
+        .filter(Boolean)
+        .join("  ·  ")
+    : glanceSource?.dateType === "asap"
+      ? t("as_soon_as_possible")
+      : ""
+  // Coords chain mirrors RequestDetailsScreen (lat/latitude + lng/longitude
+  // fallbacks on the nested address location).
+  const glanceLoc: any = glanceSource?.address?.address?.location
+  const glanceLat = glanceLoc?.lat ?? glanceLoc?.latitude
+  const glanceLng = glanceLoc?.lng ?? glanceLoc?.longitude
+  const glanceHasCoords = glanceLat != null && glanceLng != null
+  // Full-request sheet data — glanceJob IS the /details payload here (QA
+  // included), so no extra query is needed on the customer side.
+  const requestAddress = [
+    glanceSource?.address?.address?.streetAddress,
+    glanceSource?.address?.address?.city,
+    glanceSource?.address?.address?.governorate,
+  ]
+    .filter(Boolean)
+    .join(", ")
+  const requestQA: any[] = (glanceJob as any)?.questionsAnswers ?? []
+  // Pre-filter to renderable label/value rows so the card's dividers can key
+  // off the REAL last item (a skipped tail row would leave a dangling line).
+  const requestQARows = requestQA
+    .map((qa: any) => {
+      const label = isAr
+        ? qa.question?.textAr || qa.question?.text
+        : qa.question?.text
+      const optionLabels = qa.options?.length
+        ? qa.options
+            .map((o: any) =>
+              isAr ? o.labelAr ?? o.valueAr ?? o.label ?? o.value : o.label ?? o.value
+            )
+            .filter(Boolean)
+            .join(", ")
+        : ""
+      const value =
+        qa.answer ||
+        optionLabels ||
+        qa.date ||
+        (qa.startTime && qa.endTime ? `${qa.startTime} - ${qa.endTime}` : "") ||
+        (qa.files?.length ? `${qa.files.length} file(s)` : "")
+      if (!label && !value) return null
+      return { key: qa.id ?? qa.questionId, label, value }
+    })
+    .filter(Boolean) as { key: number; label?: string; value?: string }[]
+
+  const moreSheetContent = (
+    <DmView className="flex-1 bg-white" style={styles.sheetContentRound}>
+      {/* Fixed close header — content scrolls under it */}
+      <DmView className="items-end px-[24] pt-[16] pb-[2]">
+        <DmView onPress={closeMoreSheet} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <CloseIcon width={13} height={13} />
+        </DmView>
+      </DmView>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        // No overscroll bounce: short sheet content shouldn't rubber-band (reads
+        // as "the content is draggable"). With bounce off, a drag at the top
+        // passes to the native sheet's pan → only the whole modal drags.
+        bounces={false}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingBottom: insets.bottom + 32,
+        }}
+      >
+        {context.hasJob && (
+          <>
+            <DmText className="mt-[4] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
+              {t("request_details")}
+            </DmText>
+
+            {/* Trip-card fusion: static map hero (RequestSummary styling —
+                pointerEvents none + gestures disabled, lazy-mounted) with the
+                service/offer/where/when meta below. ONE card, ONE tap target
+                → same prefetch-then-navigate flow as the old action bar. */}
+            <DmView
+              onPress={openRequestSheet}
+              className="mt-[16]"
+              style={styles.sheetCard}
+            >
+              <DmView style={styles.sheetCardInner}>
+                {/* 1c hero: title + offer float ON the map over a soft dark
+                    gradient (Airbnb trip-card style). Map stays static +
+                    lazy-mounted; overlays are pointerEvents-none so the card
+                    press works everywhere. */}
+                {glanceHasCoords && (
+                  <DmView style={styles.glanceHero}>
+                    <DmView pointerEvents="none" style={styles.glanceHeroFill}>
+                      {moreSheetOpened && (
+                        <MapView
+                          style={styles.glanceMap}
+                          liteMode
+                          scrollEnabled={false}
+                          zoomEnabled={false}
+                          rotateEnabled={false}
+                          pitchEnabled={false}
+                          region={{
+                            latitude: glanceLat,
+                            longitude: glanceLng,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.002,
+                          }}
+                        >
+                          <Marker coordinate={{ latitude: glanceLat, longitude: glanceLng }}>
+                            <MapMarkerIcon width={32} height={40} />
+                          </Marker>
+                        </MapView>
+                      )}
+                    </DmView>
+                    <LinearGradient
+                      pointerEvents="none"
+                      colors={["transparent", "rgba(0,0,0,0.15)", "rgba(0,0,0,0.62)"]}
+                      locations={[0.32, 0.6, 1]}
+                      style={styles.glanceHeroFill}
+                    />
+                    <DmView
+                      pointerEvents="none"
+                      style={[styles.glanceHeroText, { alignItems: "flex-start" }]}
+                    >
+                      <DmText
+                        numberOfLines={1}
+                        className="font-custom600"
+                        style={[styles.glanceTitleOnMap, rtlText]}
+                      >
+                        {moreServiceName}
+                      </DmText>
+                      {context.offerAmount != null && (
+                        <DmText className="font-custom500" style={[styles.glanceOfferOnMap, rtlText]}>
+                          {`${t("offer")} · `}
+                          <DmText className="font-custom600" style={styles.glanceOfferAmtOnMap}>
+                            {`${context.offerAmount} ${t("EGP")}`}
+                          </DmText>
+                        </DmText>
+                      )}
+                    </DmView>
+                  </DmView>
+                )}
+                <DmView className="px-[14] pt-[12] pb-[10]">
+                  {!glanceHasCoords && (
+                    <>
+                      <DmText className="text-15 leading-[19px] font-custom600 text-black" numberOfLines={1} style={rtlText}>
+                        {moreServiceName}
+                      </DmText>
+                      {context.offerAmount != null && (
+                        <DmText className="mt-[3] text-13 leading-[17px] font-custom600 text-black" style={rtlText}>
+                          {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
+                        </DmText>
+                      )}
+                    </>
+                  )}
+                  {!!glanceArea && (
+                    <DmView className="flex-row items-center mt-[8]">
+                      <LocationIcon width={15} height={15} />
+                      <DmText className="mx-[8] text-13 leading-[17px] font-custom400 text-grey2" style={rtlText}>
+                        {glanceArea}
+                      </DmText>
+                    </DmView>
+                  )}
+                  {!!glanceWhen && (
+                    <DmView className="flex-row items-center mt-[6]">
+                      <ClockIcon width={15} height={15} />
+                      <DmText className="mx-[8] text-13 leading-[17px] font-custom400 text-grey2" style={rtlText}>
+                        {glanceWhen}
+                      </DmText>
+                    </DmView>
+                  )}
+                  <DmView className="flex-row items-center mt-[10]">
+                    <DmText className="text-13 leading-[17px] font-custom600 text-red">
+                      {t("view_full_request")}
+                    </DmText>
+                    <DmView className={I18nManager.isRTL ? "rotate-[180deg]" : ""}>
+                      <ChevronRightIcon width={12} height={12} color={colors.red} />
+                    </DmView>
+                  </DmView>
+                </DmView>
+              </DmView>
+            </DmView>
+
+          </>
+        )}
+
+        <DmText className="mt-[22] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
+          {t("in_this_conversation")}
+        </DmText>
+        <DmView className="flex-row items-center mt-[14]">
+          {context.pro?.profilePhoto150 || context.pro?.profilePhoto ? (
+            <DmView className="w-[44] h-[44] rounded-full overflow-hidden">
+              <FastImage
+                source={{ uri: context.pro.profilePhoto150 || context.pro.profilePhoto }}
+                style={styles.sheetAvatar}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            </DmView>
+          ) : (
+            <DmView className="w-[44] h-[44] rounded-full bg-red items-center justify-center">
+              <DmText className="text-white text-15 font-custom600">
+                {context.proName.charAt(0)}
+              </DmText>
+            </DmView>
+          )}
+          <DmView className="mx-[14]">
+            <DmText className="text-15 leading-[19px] font-custom600 text-black">
+              {context.proName}
+            </DmText>
+            <DmText className="mt-[1] text-12 leading-[15px] font-custom400 text-grey3">
+              {t("pro_role")}
+            </DmText>
+          </DmView>
+        </DmView>
+        <DmView className="flex-row items-center mt-[14]">
+          <DmView className="w-[44] h-[44] rounded-full bg-grey26 items-center justify-center">
+            <DmText className="text-grey2 text-15 font-custom600">
+              {(authUser?.firstName || "").charAt(0)}
+            </DmText>
+          </DmView>
+          <DmView className="mx-[14]">
+            <DmText className="text-15 leading-[19px] font-custom600 text-black">
+              {t("you")}
+            </DmText>
+            <DmText className="mt-[1] text-12 leading-[15px] font-custom400 text-grey3">
+              {t("customer")}
+            </DmText>
+          </DmView>
+        </DmView>
+
+        {context.hasJob && (
+          <>
+            <DmText className="mt-[26] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
+              {t("conversation_actions")}
+            </DmText>
+            {/* Call / My review — informational rows, same as the old bar */}
+            <DmView className="flex-row items-center py-[14] mt-[4]">
+              <DmView className="w-[32] items-center">
+                <CallIcon
+                  width={20}
+                  height={20}
+                  style={{ transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }] }}
+                />
+              </DmView>
+              <DmText className="text-14 leading-[18px] font-custom400 text-black" style={rtlRow}>
+                {t("call")}
+              </DmText>
+            </DmView>
+            <DmView className="flex-row items-center py-[14]">
+              <DmView className="w-[32] items-center">
+                <ReviewsIcon width={32} height={20} />
+              </DmView>
+              <DmText className="text-14 leading-[18px] font-custom400 text-black" style={rtlRow}>
+                {t("my_review")}
+              </DmText>
+            </DmView>
+          </>
+        )}
+      </ScrollView>
+    </DmView>
+  )
+
+  // ── Stacked "full request" sheet content ──
+  // Airbnb's Show-reservation pattern: presents ON TOP of the More sheet.
+  // Title → date card → address → the answered questions (their own request).
+  const requestSheetContent = (
+    <DmView className="flex-1 bg-white" style={styles.sheetContentRound}>
+      <DmView className="items-end px-[24] pt-[16] pb-[2]">
+        <DmView onPress={closeRequestSheet} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <CloseIcon width={13} height={13} />
+        </DmView>
+      </DmView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        // No overscroll bounce: short sheet content shouldn't rubber-band (reads
+        // as "the content is draggable"). With bounce off, a drag at the top
+        // passes to the native sheet's pan → only the whole modal drags.
+        bounces={false}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingBottom: insets.bottom + 32,
+        }}
+      >
+        {/* Map hero — Airbnb's photo-hero slot, static + lazy-mounted */}
+        {glanceHasCoords && requestSheetOpened && (
+          <DmView className="mt-[14]" style={styles.requestHero} pointerEvents="none">
+            <MapView
+              style={styles.glanceMap}
+              liteMode
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              region={{
+                latitude: glanceLat,
+                longitude: glanceLng,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.002,
+              }}
+            >
+              <Marker coordinate={{ latitude: glanceLat, longitude: glanceLng }}>
+                <MapMarkerIcon width={32} height={40} />
+              </Marker>
+            </MapView>
+          </DmView>
+        )}
+
+        <DmText className="mt-[16] text-20 leading-[25px] font-custom600 text-black" numberOfLines={2} style={rtlText}>
+          {moreServiceName}
+        </DmText>
+        <DmText className="mt-[3] text-13 leading-[17px] font-custom400 text-grey3" style={rtlText}>
+          {context.proName}
+        </DmText>
+        {context.offerAmount != null && (
+          <DmView className="self-start bg-red rounded-full px-[10] py-[3] mt-[8]">
+            <DmText className="text-11 leading-[14px] font-custom600 text-white">
+              {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
+            </DmText>
+          </DmView>
+        )}
+
+        {!!glanceWhen && (
+          <DmView className="flex-row items-center mt-[18] rounded-13 bg-grey58 px-[14] py-[12]">
+            <DmView className="w-[36] h-[36] rounded-full bg-white items-center justify-center">
+              <ClockIcon width={17} height={17} />
+            </DmView>
+            <DmView className="flex-1 mx-[12]">
+              <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+                {t("date_and_time")}
+              </DmText>
+              <DmText className="mt-[2] text-14 leading-[18px] font-custom600 text-black" style={rtlText}>
+                {glanceWhen}
+              </DmText>
+            </DmView>
+          </DmView>
+        )}
+
+        {!!requestAddress && (
+          <DmView className="flex-row items-center mt-[10] rounded-13 bg-grey58 px-[14] py-[12]">
+            <DmView className="w-[36] h-[36] rounded-full bg-white items-center justify-center">
+              <LocationIcon width={17} height={17} />
+            </DmView>
+            <DmView className="flex-1 mx-[12]">
+              <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+                {t("address")}
+              </DmText>
+              <DmText className="mt-[2] text-13 leading-[18px] font-custom400 text-black" style={rtlText}>
+                {requestAddress}
+              </DmText>
+            </DmView>
+          </DmView>
+        )}
+
+        {requestQARows.length > 0 && (
+          <>
+            <DmText className="mt-[24] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
+              {t("request_specifications")}
+            </DmText>
+            <DmView className="mt-[12] rounded-13 bg-grey58 px-[14] py-[4]">
+              {requestQARows.map((row, rowIndex) => (
+                <DmView
+                  key={row.key}
+                  className={
+                    rowIndex < requestQARows.length - 1
+                      ? "py-[11] border-b-0.5 border-grey29"
+                      : "py-[11]"
+                  }
+                >
+                  {!!row.label && (
+                    <DmText className="text-13 leading-[17px] font-custom600 text-black" style={rtlText}>
+                      {row.label}
+                    </DmText>
+                  )}
+                  {!!row.value && (
+                    <DmText className="mt-[3] text-13 leading-[18px] font-custom400 text-grey2" style={rtlText}>
+                      {row.value}
+                    </DmText>
+                  )}
+                </DmView>
+              ))}
+            </DmView>
+          </>
+        )}
+      </ScrollView>
+    </DmView>
+  )
+
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
       <KeyboardAvoidingView
@@ -414,7 +1018,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       >
         {/* Header */}
         <DmView className="bg-white">
-          <DmView className="flex-row items-center px-[19] pb-[5]">
+          <DmView className="flex-row items-center px-[20] pt-[10] pb-[14]">
             <DmView
               onPress={() => navigation.goBack()}
               className={I18nManager.isRTL ? "rotate-[180deg]" : ""}
@@ -467,71 +1071,64 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               </DmView>
             </DmView>
 
-            <DmView className="items-end h-[28] justify-center">
-              <DmView className="flex-row">
-                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-              </DmView>
+            {/* Single "everything else" entry point — opens the More sheet.
+                self-start keeps it level with the NAME line rather than
+                centering against the whole name/lastseen/offer block. */}
+            <DmView
+              onPress={handleOpenMoreSheet}
+              className="self-start bg-grey26 rounded-full px-[13] h-[30] items-center justify-center"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <DmText className="text-12 leading-[15px] font-custom600 text-black">
+                {t("more")}
+              </DmText>
             </DmView>
           </DmView>
 
-          {/* Offer section */}
+          {/* Offer strip (Thumbtack-style): the CURRENT price lives in chrome,
+              permanently glanceable; tap → the full negotiation trail.
+              Replaces the old red pill under "last seen". */}
           {context.offerAmount != null && (
             <DmView
-              className="mt-[4] mb-[4] ml-[55] border-0.3 border-black rounded-5 h-[38] flex-row items-center overflow-hidden"
-              style={styles.offerWidth}
+              className="flex-row items-center px-[14] py-[10] border-t-0.5 border-grey4"
+              onPress={() => setOfferHistoryVisible(true)}
             >
-              <DmView className="w-2/5 h-full items-center justify-center bg-red5">
-                <DmText className="text-13 leading-[16px] font-custom600 text-white tracking-[0.3]">
-                  {t("offer")}
-                </DmText>
-              </DmView>
-              <DmView className="w-3/5 h-full flex-row items-center justify-center">
-                <DmText className="text-22 leading-[27px] font-custom500">
-                  {context.offerAmount}
-                </DmText>
-                <DmText className="ml-[4] text-11 leading-[14px] font-custom400" style={styles.egpMargin}>
-                  EGP
-                </DmText>
-              </DmView>
+              <TagRedIcon width={15} height={15} />
+              <DmText
+                className="ml-[7] text-13 leading-[16px] font-custom600 text-black"
+                style={{ textAlign: "left" }}
+              >
+                {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
+              </DmText>
+              <DmView className="flex-1" />
+              <DmText className="text-11 leading-[14px] font-custom400 text-grey3">
+                {`${t("history")} ›`}
+              </DmText>
             </DmView>
           )}
 
-          {/* Action bar */}
-          {context.hasJob && (
-            <DmView className="px-[16] pt-[8] pb-[10] flex-row justify-around items-center border-b-0.5 border-grey4">
-              <DmView className="flex-row items-center">
-                <CallIcon width={22} height={22} />
-                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
-                  {t("call")}
-                </DmText>
-              </DmView>
-              <DmView className="flex-row items-center">
-                <ReviewsIcon width={32} height={20} />
-                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
-                  {t("my_review")}
-                </DmText>
-              </DmView>
-              <DmView
-                className="flex-row items-center"
-                onPress={async () => {
-                  if (!context.jobId) return
-                  try {
-                    await getJobDetails(context.jobId, true).unwrap()
-                    navigation.navigate("RequestDetailsScreen", { jobId: context.jobId })
-                  } catch (e) {
-                    console.log("Failed to load job details:", e)
-                  }
-                }}
+          {/* Ended strip: expiry is STATE, not just an event — the thread's
+              red line records when it happened; this chrome stays glanceable
+              forever and carries the job-level action. `ended` only (admin
+              cancellations excluded deliberately). */}
+          {chatPreview.chat.job?.status === "ended" && (
+            <DmView
+              className="flex-row items-center px-[14] py-[10] border-t-0.5 border-grey4"
+              onPress={handleRepostRequest}
+            >
+              <DmText
+                className="text-13 leading-[16px] font-custom400 text-grey2"
+                style={{ textAlign: "left" }}
               >
-                <DetailsIcon width={20} height={24} />
-                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
-                  {t("my_request")}
-                </DmText>
-              </DmView>
+                {t("request_ended")}
+              </DmText>
+              <DmView className="flex-1" />
+              <DmText className="text-12 leading-[15px] font-custom600 text-red">
+                {`${t("repost_request")} ›`}
+              </DmText>
             </DmView>
           )}
+          <DmView className="border-b-0.5 border-grey4" />
         </DmView>
 
         {/* Messages list */}
@@ -598,40 +1195,66 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           </DmView>
         )}
 
-        {/* Input bar */}
+        {/* Input bar — the rounded outer sheet (see inputBarSheet) */}
         <DmView
           className="w-full bg-white"
-          style={[styles.inputBarShadow, { paddingBottom: insets.bottom + 10 }]}
+          style={[
+            styles.inputBarSheet,
+            styles.inputBarShadow,
+            // Keyboard up: it covers the home-indicator area, so the safe-area
+            // inset would just be a dead band above it. Keyed on the KEYBOARD,
+            // not focus — focusing without a software keyboard (simulator with
+            // hardware keys) must keep the safe-area padding.
+            { paddingBottom: isKeyboardVisible ? 12 : insets.bottom + 10 },
+          ]}
         >
-          <DmView className="flex-row items-center px-[20] pt-[10]">
+          <DmView className="px-[20] pt-[12]">
+            {/* Rounded, soft-bordered composer card. Idle = single row; focusing
+                expands it — the text jumps to the top and the +/send controls
+                drop to a toolbar row below (Airbnb-style). The TextInput never
+                unmounts across the reflow, so focus/keyboard is preserved. */}
             <DmView
-              onPress={handleOpenAttachmentSheet}
-              className="w-[36] h-[36] mr-[10] rounded-full bg-grey5 items-center justify-center"
+              style={[
+                styles.composerCard,
+                isInputFocused && styles.composerCardFocused,
+              ]}
             >
-              <DmView className="absolute bg-grey2" style={styles.plusHorizontal} />
-              <DmView className="absolute bg-grey2" style={styles.plusVertical} />
-            </DmView>
-
-            <DmView style={[styles.inputContainer, { borderColor: colors.grey4 }]}>
-              <TextInput
-                value={messageText}
-                onChangeText={setMessageText}
-                placeholder={t("type_a_message")}
-                placeholderTextColor={colors.grey2}
-                multiline
-                maxLength={1000}
-                style={[styles.textInput, { textAlign: isAr ? "right" : "left" }]}
-              />
-              <DmView
-                onPress={canSend ? handleSend : undefined}
-                style={{
-                  opacity: canSend ? 1 : 0.3,
-                  marginLeft: 8,
-                  marginBottom: Platform.OS === "ios" ? 0 : 2,
-                }}
-              >
-                <SendIcon width={30} height={30} />
+              <DmView className="flex-row items-center">
+                {!isInputFocused && plusButton}
+                <TextInput
+                  value={messageText}
+                  onChangeText={setMessageText}
+                  onFocus={() => {
+                    scheduleLayoutAnimation(COMPOSER_ANIM)
+                    setIsInputFocused(true)
+                  }}
+                  onBlur={() => {
+                    scheduleLayoutAnimation(COMPOSER_ANIM)
+                    setIsInputFocused(false)
+                  }}
+                  placeholder={t("type_a_message")}
+                  placeholderTextColor={colors.greyPlaceholder}
+                  multiline
+                  maxLength={1000}
+                  style={[
+                    styles.textInput,
+                    isInputFocused && styles.textInputFocused,
+                    takeFontStyles("font-custom400", i18n.language),
+                    { textAlign: isAr ? "right" : "left" },
+                  ]}
+                />
+                {!isInputFocused && sendButton}
               </DmView>
+
+              {isInputFocused && (
+                <DmView
+                  className="flex-row items-center justify-between"
+                  style={styles.toolbarRow}
+                >
+                  {plusButton}
+                  {sendButton}
+                </DmView>
+              )}
             </DmView>
           </DmView>
 
@@ -697,12 +1320,64 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </BottomSheet>
       )}
 
+      {/* More sheet: native push-back on iOS, gorhom on Android — same content */}
+      {Platform.OS === "ios" ? (
+        <NativePushBackSheet
+          visible={moreSheetVisible}
+          height={moreSheetHeight}
+          onDismissed={() => setMoreSheetVisible(false)}
+        >
+          {moreSheetContent}
+        </NativePushBackSheet>
+      ) : (
+        <BottomSheet
+          ref={moreSheetRef}
+          index={-1}
+          snapPoints={["96%"]}
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          handleComponent={null}
+          backgroundStyle={styles.sheetBackground}
+        >
+          <BottomSheetView style={{ flex: 1 }}>{moreSheetContent}</BottomSheetView>
+        </BottomSheet>
+      )}
+
+      {/* Stacked full-request sheet — presents on top of the More sheet */}
+      {Platform.OS === "ios" ? (
+        <NativePushBackSheet
+          visible={requestSheetVisible}
+          height={moreSheetHeight}
+          onDismissed={() => setRequestSheetVisible(false)}
+        >
+          {requestSheetContent}
+        </NativePushBackSheet>
+      ) : (
+        <BottomSheet
+          ref={requestSheetRef}
+          index={-1}
+          snapPoints={["96%"]}
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          handleComponent={null}
+          backgroundStyle={styles.sheetBackground}
+        >
+          <BottomSheetView style={{ flex: 1 }}>{requestSheetContent}</BottomSheetView>
+        </BottomSheet>
+      )}
+
       {/* Violation modal (profanity / contact-info) — same UX as the proapp.
           The blocked text is already back in the input; the button dismisses. */}
       <MessageBlockedModal
         isVisible={!!blockedModalText}
         description={blockedModalText ?? ""}
         onClose={() => setBlockedModalText(null)}
+      />
+      <OfferHistorySheet
+        isVisible={isOfferHistoryVisible}
+        onClose={() => setOfferHistoryVisible(false)}
+        jobId={context.jobId ?? undefined}
+        proId={chatPreview.chat.proId ?? undefined}
       />
     </SafeAreaView>
   )

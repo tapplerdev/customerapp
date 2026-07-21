@@ -33,4 +33,19 @@ export default StyleSheet.create({
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
   },
+  rescueCard: {
+    borderWidth: 1,
+    borderColor: "#ECECEF",
+    borderRadius: 14,
+    padding: 14,
+  },
+  rescueIconTile: {
+    width: 40,
+    height: 40,
+    borderRadius: 11,
+    backgroundColor: "#FFF8F8",
+  },
+  rescuePill: {
+    backgroundColor: "#CC0000",
+  },
 })

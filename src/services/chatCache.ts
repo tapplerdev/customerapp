@@ -124,6 +124,16 @@ export function applyIncomingMessage(
         known = true
         const preview = list[index]
         preview.lastMessage = message
+        // Presence lift: the message payload embeds the PRO joined fresh at
+        // send/fetch time — a newer lastSeen updates the chat header with no
+        // extra request. Guarded against out-of-order deliveries.
+        const freshSeen = (message as any)?.pro?.lastSeen
+        if (freshSeen && preview.chat?.pro) {
+          const current = preview.chat.pro.lastSeen
+          if (!current || new Date(freshSeen) > new Date(current)) {
+            preview.chat.pro.lastSeen = freshSeen
+          }
+        }
         // The FOCUSED chat suppresses the bump client-side AND converges the
         // server: a message arriving while the chat is open must be marked read
         // server-side (the markAllAsRead below), or the server's readAt stays
@@ -157,4 +167,31 @@ export function applyIncomingMessage(
   }
 
   return known
+}
+
+/**
+ * Patch the counterpart PRO's lastSeen into every cached chats-list entry for
+ * a chat. Fed by the thread's message fetch (each message embeds the pro
+ * joined fresh at fetch time) so the header shows the latest state the moment
+ * a chat opens — no dedicated presence request.
+ */
+export function applyCounterpartLastSeen(
+  dispatch: Dispatch,
+  getState: GetState,
+  chatId: number,
+  lastSeen?: string | null
+): void {
+  if (!lastSeen) return
+  for (const arg of api.util.selectCachedArgsForQuery(getState(), "getChats")) {
+    dispatch(
+      api.util.updateQueryData("getChats", arg, (draft: any) => {
+        const preview = draft?.data?.find((c: any) => c.chat.id === chatId)
+        if (!preview?.chat?.pro) return
+        const current = preview.chat.pro.lastSeen
+        if (!current || new Date(lastSeen) > new Date(current)) {
+          preview.chat.pro.lastSeen = lastSeen
+        }
+      })
+    )
+  }
 }

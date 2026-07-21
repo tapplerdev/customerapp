@@ -16,6 +16,8 @@ RCT_EXPORT_MODULE(TapplerSheetView)
 RCT_EXPORT_VIEW_PROPERTY(visible, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(sheetHeight, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(pushBackScale, CGFloat)
+RCT_EXPORT_VIEW_PROPERTY(dimOpacity, CGFloat)
+RCT_EXPORT_VIEW_PROPERTY(transparentBackground, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onDismissed, RCTDirectEventBlock)
 
 @end

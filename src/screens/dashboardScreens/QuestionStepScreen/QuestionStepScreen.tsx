@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, Dimensions, Easing, ScrollView, StyleSheet } from "react-native"
+import { Animated, BackHandler, Dimensions, Easing, Platform, ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -173,7 +173,9 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
     if (stepIndex > 0) {
       ctx.goPrev()
     } else {
-      ctx.onClose()
+      // Exiting from the first step still saves whatever's answered (same as X /
+      // swipe), so partial answers are never dropped.
+      ctx.onDone()
     }
   }
 
@@ -237,7 +239,7 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
         <DmView
           className="w-[32] h-[32] items-center justify-center"
           hitSlop={HIT_SLOP_DEFAULT}
-          onPress={ctx.onClose}
+          onPress={ctx.onDone}
         >
           <CloseIcon width={16} height={16} color={colors.red} />
         </DmView>
@@ -265,6 +267,9 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
             item={currentStep.question}
             onChangeAnswer={handleChangeAnswer}
             answers={ctx.answers}
+            allQuestions={ctx.steps.flatMap((s) =>
+              s.type === "question" ? [s.question] : []
+            )}
           />
         )}
       </ScrollView>
@@ -288,13 +293,21 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
 
 // ── The whole flow: state-driven steps, presentation-agnostic ──
 type QuestionFlowParams = RootStackParamList["QuestionStepScreen"]
-type ContentProps = QuestionFlowParams & { onClose: () => void }
+type ContentProps = QuestionFlowParams & {
+  onClose: () => void
+  // Set by the iOS sheet wrapper so a swipe-down dismiss commits the partial
+  // answers (handleDone) instead of silently closing.
+  commitRef?: React.MutableRefObject<(() => void) | null>
+}
 
 const QuestionFlowContent: React.FC<ContentProps> = ({
   categoryName,
   placeOfServiceOptions,
   customerQuestions,
+  initialAnswers,
+  initialPlaceOfService,
   onClose,
+  commitRef,
 }) => {
   // Build steps
   const steps = useMemo<StepItem[]>(() => {
@@ -317,9 +330,14 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
     return result
   }, [placeOfServiceOptions, customerQuestions])
 
-  // Shared state
-  const [answers, setAnswers] = useState<QuestionAnswerType[]>([])
-  const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<string | undefined>()
+  // Shared state — seeded on repost so the flow opens pre-filled; empty on a
+  // normal first arrival (the seeds are undefined then).
+  const [answers, setAnswers] = useState<QuestionAnswerType[]>(
+    initialAnswers ?? []
+  )
+  const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<
+    string | undefined
+  >(initialPlaceOfService)
   // Stack of step indices; Next pushes a card, Back pops the top card after
   // its slide-out animation finishes. The pop targets a SPECIFIC card (not a
   // global flag) so an in-between render can never start popping the next
@@ -345,7 +363,17 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
     setPoppingStep((current) => (current === poppedStep ? null : current))
   }, [])
 
+  // Guards against a double emit if a programmatic close also fires the sheet's
+  // onDismissed. Resets per open because the content remounts (contentKey).
+  const committedRef = useRef(false)
+
   const handleDone = useCallback(() => {
+    if (committedRef.current) {
+      onClose()
+      return
+    }
+    committedRef.current = true
+
     const filterOptionIds: number[] = []
     const dataAnswers: QuestionAnswerType[] = []
 
@@ -385,6 +413,34 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
 
     onClose()
   }, [answers, steps, selectedPlaceOfService, onClose])
+
+  // The iOS sheet wrapper calls this on swipe-down dismiss so partial answers
+  // are saved (via handleDone) instead of dropped.
+  useEffect(() => {
+    if (!commitRef) return
+    commitRef.current = handleDone
+    return () => {
+      if (commitRef.current === handleDone) commitRef.current = null
+    }
+  }, [commitRef, handleDone])
+
+  // Android hardware back (the nav-route presentation): mirror the in-app back —
+  // step back if we're past the first card, otherwise exit AND commit the
+  // partial answers (same as X / swipe). Subscribe once; a ref keeps the latest
+  // step/answers without re-binding the listener on every keystroke.
+  const backActionRef = useRef<() => void>(() => {})
+  backActionRef.current = () => {
+    if (stackRef.current.length > 1) goPrev()
+    else handleDone()
+  }
+  useEffect(() => {
+    if (Platform.OS !== "android") return
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      backActionRef.current()
+      return true
+    })
+    return () => sub.remove()
+  }, [])
 
   const sharedState: SharedState = useMemo(() => ({
     steps,
@@ -454,11 +510,26 @@ const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
  */
 export const QuestionFlowSheet: React.FC<
   QuestionFlowParams & { visible: boolean; contentKey: number; onClose: () => void }
-> = ({ visible, contentKey, onClose, ...contentProps }) => (
-  <NativePushBackSheet visible={visible} height={SHEET_HEIGHT} onDismissed={onClose}>
-    <QuestionFlowContent key={contentKey} {...contentProps} onClose={onClose} />
-  </NativePushBackSheet>
-)
+> = ({ visible, contentKey, onClose, ...contentProps }) => {
+  // Swipe-down dismiss should commit partial answers (handleDone), not just
+  // close. The content sets this ref to its handleDone; fall back to onClose
+  // until the content has mounted.
+  const commitRef = useRef<(() => void) | null>(null)
+  return (
+    <NativePushBackSheet
+      visible={visible}
+      height={SHEET_HEIGHT}
+      onDismissed={() => (commitRef.current ?? onClose)()}
+    >
+      <QuestionFlowContent
+        key={contentKey}
+        {...contentProps}
+        onClose={onClose}
+        commitRef={commitRef}
+      />
+    </NativePushBackSheet>
+  )
+}
 
 // Android (and fallback) presentation: plain navigation route.
 type Props = RootStackScreenProps<"QuestionStepScreen">

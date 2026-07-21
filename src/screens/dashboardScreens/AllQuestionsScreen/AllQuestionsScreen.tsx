@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react"
-import { Dimensions, ScrollView, StyleSheet } from "react-native"
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import { BackHandler, Dimensions, Platform, ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -221,6 +221,8 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
                   onChangeAnswer={handleChangeAnswer}
                   answers={answers}
                   hideBorders
+                  compact
+                  allQuestions={allQuestions}
                 />
               </DmView>
             </DmView>
@@ -295,9 +297,29 @@ export const AllQuestionsSheet: React.FC<
   )
 }
 
-// Android (and fallback) presentation: plain navigation route.
-const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => (
-  <AllQuestionsContent {...route.params} onClose={() => navigation.goBack()} />
-)
+// Android (and fallback) presentation: plain navigation route. The hardware
+// back button commits partial answers (via the registered commit fn) before
+// leaving, matching the X / See-matches buttons.
+const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
+  const commitRef = useRef<() => void>(() => {})
+  useEffect(() => {
+    if (Platform.OS !== "android") return
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      commitRef.current()
+      navigation.goBack()
+      return true
+    })
+    return () => sub.remove()
+  }, [navigation])
+  return (
+    <AllQuestionsContent
+      {...route.params}
+      onClose={() => navigation.goBack()}
+      registerCommit={(fn) => {
+        commitRef.current = fn
+      }}
+    />
+  )
+}
 
 export default AllQuestionsScreen

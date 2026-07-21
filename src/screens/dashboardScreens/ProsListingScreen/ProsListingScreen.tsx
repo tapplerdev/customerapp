@@ -13,6 +13,7 @@ import FastImage from "react-native-fast-image"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyOpenChatQuery, useLazyGetChatMessagesQuery } from "services/api"
+import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
 import { store, useTypedSelector } from "store"
 import { ProType } from "types/pro"
 import { QuestionAnswerType } from "types/job"
@@ -43,7 +44,7 @@ import styles from "./styles"
 type Props = RootStackScreenProps<"ProsListingScreen">
 
 const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
-  const { placeOfService: initialPlaceOfService } = route.params
+  const { placeOfService: initialPlaceOfService, forceQuestionFlow } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { dontShowBestDealTooltip } = useTypedSelector((store) => store.auth)
@@ -91,9 +92,27 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
   const hasLaunchedQuestions = useRef(false)
   const relaunchQuestions = useRef(false)
+  // HARD "questions first" gate: the list stays non-interactive until the
+  // question flow has actually presented, or is ruled out for this arrival
+  // (place of service already chosen via params, or the service loads with
+  // zero customer questions). Closes the cold-cache window where the list was
+  // tappable before the sheet appeared, and surfaces a retry if the service
+  // (questions) fetch fails — previously that failure silently never asked.
+  const [questionsSettled, setQuestionsSettled] = useState(
+    // Repost (forceQuestionFlow) re-presents the flow even with a known
+    // placeOfService — it opens pre-filled, so the arrival feels brand-new.
+    !!initialPlaceOfService && !forceQuestionFlow
+  )
   const [currentPlaceOfService, setCurrentPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
-  const [allAnswers, setAllAnswers] = useState<QuestionAnswerType[]>([])
-  const [dataAnswers, setDataAnswers] = useState<QuestionAnswerType[]>([])
+  // Repost arrivals seed the previous job's answers so the question flow and
+  // request-details steps open pre-filled instead of blank. The listing stays
+  // broad until the customer opens/edits questions — normal broad-first rules.
+  const [allAnswers, setAllAnswers] = useState<QuestionAnswerType[]>(
+    route.params.initialAnswers ?? []
+  )
+  const [dataAnswers, setDataAnswers] = useState<QuestionAnswerType[]>(
+    route.params.initialAnswers ?? []
+  )
 
   // Fetch service data to get placeOfService options for the question flow.
   // NOTE: the services LIST endpoint does NOT include category questions (its
@@ -102,7 +121,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // flow. Instant launch comes from cache-warming instead: SubCategoriesScreen
   // prefetches this query on category tap, and SearchAnimationScreen refreshes
   // it during the transition — by mount time the cache is warm on normal paths.
-  const { data: serviceData } = useGetServiceByIdQuery(serviceId)
+  const {
+    data: serviceData,
+    isError: isServiceError,
+    refetch: refetchService,
+  } = useGetServiceByIdQuery(serviceId)
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const placeOfServiceOptions = category?.placeOfService || []
   const customerQuestions = category?.customerQuestions || []
@@ -182,7 +205,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Launch native question flow on first mount + whenever the service changes
   // (replaces gorhom QuestionBottomSheet)
   useEffect(() => {
-    const firstLaunch = !hasLaunchedQuestions.current && !initialPlaceOfService
+    const firstLaunch =
+      !hasLaunchedQuestions.current &&
+      (!initialPlaceOfService || !!forceQuestionFlow)
     if (!firstLaunch && !relaunchQuestions.current) return
     if (customerQuestions.length === 0) return // wait for the (new) service's questions to load
     hasLaunchedQuestions.current = true
@@ -192,6 +217,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       InteractionManager.runAfterInteractions(() => {
         setQuestionsOpenCount((c) => c + 1)
         setQuestionsVisible(true)
+        // Gate drops only as the sheet actually presents — not at effect time,
+        // or the push-animation window would reopen.
+        setQuestionsSettled(true)
       })
     } else {
       navigation.push("QuestionStepScreen", {
@@ -200,9 +228,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         serviceId,
         placeOfServiceOptions,
         customerQuestions,
+        // Seeded on repost, empty otherwise — flow opens pre-filled
+        initialAnswers: allAnswers,
+        initialPlaceOfService: currentPlaceOfService,
       })
+      setQuestionsSettled(true)
     }
   }, [customerQuestions.length, serviceId])
+
+  // Gate rule-out: the service payload arrived but this category asks nothing
+  // (also covers a categoryId missing from the payload) — there is no flow to
+  // wait for, so release the list rather than blocking forever.
+  useEffect(() => {
+    if (!questionsSettled && serviceData && customerQuestions.length === 0) {
+      setQuestionsSettled(true)
+    }
+  }, [questionsSettled, serviceData, customerQuestions.length])
 
   // Preload a pro's image BYTES into FastImage's disk cache so the profile
   // screen renders them instantly instead of popping them in on arrival.
@@ -225,6 +266,16 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       preloadProImages(p)
     })
   }, [data?.data, categoryId, prefetchProfile, preloadProImages])
+
+  // Warm EVERY loaded card's sticker/trust SVGs into svgCache (fire-and-forget;
+  // a few KB each). By the time a card can scroll into view its artwork is
+  // cached, so recycled SvgUriContainers render it in the same frame — no
+  // pop-in below the fold. Re-runs per page/filter change; the cache dedupes.
+  useEffect(() => {
+    const list = data?.data
+    if (!list?.length) return
+    prefetchSvgs(collectProStickerUrls(list, isAr))
+  }, [data?.data, isAr])
 
   // Shared refetch logic — merges question filters + pro-level filters
   const doRefetch = useCallback(
@@ -374,6 +425,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setRangeFilters([])
       setSelectedPros([])
       relaunchQuestions.current = true // re-launch the native question flow once the new service's data loads
+      setQuestionsSettled(false) // re-arm the questions-first gate for the new service
       // No explicit service-data fetch needed: setServiceId re-runs the
       // useGetServiceByIdQuery hook for the new id (cache-served when warm —
       // the old lazy call here force-re-downloaded the heavy payload every
@@ -780,6 +832,36 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           <LoadingOverlay />
         </DmView>
       )}
+
+      {/* "Questions first" gate — swallows all touches until the question flow
+          has presented or been ruled out. On the warm path (cache prefetched by
+          SubCategories/SearchAnimation) it's invisible for just the push
+          animation; on a cold cache it shows a spinner while the service
+          payload loads; if that fetch failed it offers a retry instead of
+          silently never asking. System back (edge-swipe / hardware) still
+          works — the gate only blocks in-screen touches. */}
+      {!questionsSettled && (
+        <DmView
+          className="absolute top-0 left-0 right-0 bottom-0"
+          onStartShouldSetResponder={() => true}
+        >
+          {isServiceError ? (
+            <DmView className="flex-1 bg-white items-center justify-center px-[40]">
+              <DmText className="text-16 font-custom600 text-grey3 text-center">
+                {t("an_error_occurred")}
+              </DmText>
+              <ActionBtn
+                title={t("try_again")}
+                onPress={() => refetchService()}
+                className="mt-[20] rounded-5 h-[41] px-[40]"
+                textClassName="text-13 font-custom600"
+              />
+            </DmView>
+          ) : !serviceData ? (
+            <LoadingOverlay />
+          ) : null}
+        </DmView>
+      )}
       <ErrorModal
         isVisible={isErrorModalVisible}
         onClose={() => setErrorModalVisible(false)}
@@ -797,6 +879,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         serviceId={serviceId}
         placeOfServiceOptions={placeOfServiceOptions}
         customerQuestions={customerQuestions}
+        initialAnswers={allAnswers}
+        initialPlaceOfService={currentPlaceOfService}
       />
 
       {/* Job-details editor — native push-back sheet (iOS); Android uses the

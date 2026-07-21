@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Dimensions, ScrollView, StyleSheet, TextInput } from "react-native"
 import Slider from "@react-native-community/slider"
+import RangeSlider from "components/RangeSlider/RangeSlider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -288,6 +289,12 @@ const FiltersContent: React.FC<ContentProps> = ({
           if (question.filter?.valueType === "range") {
             const filterId = question.filter.id
             const range = rangeValues[filterId] ?? {}
+            const boundMin = Number(question.filter.minValue)
+            const boundMax = Number(question.filter.maxValue)
+            const hasBounds =
+              Number.isFinite(boundMin) &&
+              Number.isFinite(boundMax) &&
+              boundMax > boundMin
             return (
               <React.Fragment key={question.id}>
                 <DmView className="px-[20] mb-[18]">
@@ -323,6 +330,21 @@ const FiltersContent: React.FC<ContentProps> = ({
                       />
                     </DmView>
                   </DmView>
+                  {hasBounds && (
+                    <DmView className="mt-[18] px-[4]">
+                      <RangeSlider
+                        min={boundMin}
+                        max={boundMax}
+                        low={range.min ?? boundMin}
+                        high={range.max ?? boundMax}
+                        onChange={(low, high) => {
+                          setRangeBound(filterId, "min", String(low))
+                          setRangeBound(filterId, "max", String(high))
+                        }}
+                        color={colors.black}
+                      />
+                    </DmView>
+                  )}
                 </DmView>
                 <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
               </React.Fragment>
@@ -388,9 +410,9 @@ const FiltersContent: React.FC<ContentProps> = ({
                 minimumValue={1}
                 maximumValue={50}
                 step={1}
-                minimumTrackTintColor={colors.red}
+                minimumTrackTintColor={colors.black}
                 maximumTrackTintColor={colors.grey5}
-                thumbTintColor={colors.red}
+                thumbTintColor={colors.black}
               />
               {/* Editable distance box — type a value or use the slider */}
               <DmView

@@ -1,17 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import { LayoutAnimation } from "react-native"
 import { useIsFocused } from "@react-navigation/native"
+import { useDispatch, useStore } from "react-redux"
 import { ChatMessageType } from "types/chat"
+import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
 import {
   useGetChatMessagesQuery,
   useMarkAllAsReadMutation,
 } from "services/api"
 import { WebSocketService } from "services/WebSocketService"
-import { setActiveChat } from "services/chatCache"
+import { applyCounterpartLastSeen, setActiveChat } from "services/chatCache"
 
 const POLL_INTERVAL = 10000 // 10 seconds
 
+// Slide-up for message arrival: the new bubble fades in at the bottom while
+// the existing rows get pushed up smoothly (Airbnb/iMessage feel). Applied to
+// live inserts only — never pagination (older pages load offscreen at the top).
+// Scheduled via scheduleLayoutAnimation, which owns the Android experimental
+// flag and coalesces same-frame schedules (no override warnings).
+const MESSAGE_ANIM = LayoutAnimation.create(
+  220,
+  LayoutAnimation.Types.easeInEaseOut,
+  LayoutAnimation.Properties.opacity
+)
+
 const useMessagePagination = (chatId: number) => {
   const isFocused = useIsFocused()
+  const dispatch = useDispatch()
+  const store = useStore()
   const [page, setPage] = useState(1)
   const [allMessages, setAllMessages] = useState<ChatMessageType[]>([])
   const [hasMore, setHasMore] = useState(true)
@@ -35,8 +51,29 @@ const useMessagePagination = (chatId: number) => {
     }
   }, [])
 
-  // Main paginated query
-  const { data: messagesData } = useGetChatMessagesQuery({ chatId, page, perPage: 20 })
+  // Main paginated query. refetchOnMountOrArgChange: a cached page served on
+  // re-open can predate messages that arrived while the socket was down (the
+  // app backgrounds → socket disconnects by design → e.g. the job-expired
+  // system message lands unseen; foreground reconciliation refreshes the CHATS
+  // list but not these pages) — so the preview showed "Job expired" while the
+  // thread didn't. Revalidating on every open closes that whole class; the
+  // merge below dedupes by id, so a refetch never duplicates bubbles.
+  const { data: messagesData } = useGetChatMessagesQuery(
+    { chatId, page, perPage: 20 },
+    { refetchOnMountOrArgChange: true }
+  )
+
+  // Presence lift: each fetched message embeds the PRO joined fresh at fetch
+  // time — patch the chats-cache preview so the header's "last seen" reflects
+  // the latest state the moment the thread opens (no dedicated request).
+  useEffect(() => {
+    const fresh = (
+      messagesData?.data?.find((m: any) => m?.pro?.lastSeen) as any
+    )?.pro?.lastSeen
+    if (fresh) {
+      applyCounterpartLastSeen(dispatch, store.getState, chatId, fresh)
+    }
+  }, [messagesData, chatId])
 
   // Polling query — page 1 only, focused AND socket-down. When the socket is
   // up, live delivery via useChatSocket makes polling unnecessary.
@@ -53,7 +90,19 @@ const useMessagePagination = (chatId: number) => {
       isLoadingRef.current = false
 
       if (page === 1) {
-        setAllMessages(messagesData.data)
+        // Live inserts land here too (chatCache unshifts into the page-1 cache
+        // entry). Animate only a genuinely new head on an already-rendered
+        // list — never the initial load, and not post-send refetches (the
+        // optimistic id is swapped for the real one before they land).
+        const next = messagesData.data
+        if (
+          allMessages.length > 0 &&
+          next.length > 0 &&
+          next[0].id !== allMessages[0].id
+        ) {
+          scheduleLayoutAnimation(MESSAGE_ANIM)
+        }
+        setAllMessages(next)
       } else {
         setAllMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id))
@@ -85,6 +134,10 @@ const useMessagePagination = (chatId: number) => {
           })
           return updated
         }
+        // New messages arriving while the main query is pinned to an older
+        // page (user paginated) still deserve the slide-up. Scheduling is a
+        // next-frame side effect, safe inside the updater.
+        scheduleLayoutAnimation(MESSAGE_ANIM)
         return [...newMessages, ...prev]
       })
     }
@@ -115,6 +168,8 @@ const useMessagePagination = (chatId: number) => {
   }, [hasMore, allMessages.length])
 
   const addOptimisticMessage = useCallback((msg: ChatMessageType) => {
+    // Own sends: the new bubble pushes the conversation up smoothly.
+    scheduleLayoutAnimation(MESSAGE_ANIM)
     setAllMessages((prev) => {
       if (prev.some((m) => m.id === msg.id)) return prev
       return [msg, ...prev]
@@ -131,7 +186,9 @@ const useMessagePagination = (chatId: number) => {
   }, [])
 
   // Drop an optimistic bubble that failed to send (e.g. blocked by moderation).
+  // Animated so the neighbours settle back down instead of snapping.
   const removeOptimisticMessage = useCallback((optimisticId: number) => {
+    scheduleLayoutAnimation(MESSAGE_ANIM)
     setAllMessages((prev) => prev.filter((m) => m.id !== optimisticId))
   }, [])
 

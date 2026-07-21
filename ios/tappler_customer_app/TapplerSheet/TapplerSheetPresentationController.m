@@ -1,9 +1,16 @@
 #import "TapplerSheetPresentationController.h"
 
+// Top corner radius of a presented sheet — also the radius a STACKED presenting
+// sheet KEEPS while pushed back, so the two read identical. The root app screen
+// instead recedes to the smaller iOS page-sheet radius.
+static const CGFloat kSheetCornerRadius = 28.0;
+static const CGFloat kRootRecedeCornerRadius = 12.0;
+
 @implementation TapplerSheetPresentationController {
   UIView *_dimmingView;
   UIColor *_savedWindowBackground;
   BOOL _hadMasksToBounds;
+  CGFloat _hadCornerRadius;
 }
 
 - (instancetype)initWithPresentedViewController:(UIViewController *)presentedViewController
@@ -22,7 +29,9 @@
 - (CGRect)frameOfPresentedViewInContainerView
 {
   CGRect bounds = self.containerView.bounds;
-  CGFloat height = MIN(_sheetHeight, bounds.size.height * 0.9);
+  // Safety cap only — callers may request near-full height (Airbnb-style
+  // large detent: the sheet top sits ~10pt below the receded card's top).
+  CGFloat height = MIN(_sheetHeight, bounds.size.height * 0.97);
   return CGRectMake(0, bounds.size.height - height, bounds.size.width, height);
 }
 
@@ -69,7 +78,7 @@
 
   // Round the top corners of the sheet itself.
   UIView *presentedView = self.presentedView;
-  presentedView.layer.cornerRadius = 16;
+  presentedView.layer.cornerRadius = kSheetCornerRadius;
   presentedView.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
   presentedView.layer.masksToBounds = YES;
   if (@available(iOS 13.0, *)) {
@@ -77,6 +86,7 @@
   }
 
   _hadMasksToBounds = presentingView.layer.masksToBounds;
+  _hadCornerRadius = presentingView.layer.cornerRadius;
   CGAffineTransform pushBack = [self pushBackTransformForView:presentingView];
   CGFloat dimOpacity = _dimOpacity;
 
@@ -84,7 +94,13 @@
   NSTimeInterval duration = 0.35;
   id<UIViewControllerTransitionCoordinator> coordinator = self.presentedViewController.transitionCoordinator;
   if (coordinator) duration = coordinator.transitionDuration;
-  [self animateLayerCornerRadius:presentingView.layer to:12 duration:duration];
+  // A sheet stacked on ANOTHER sheet keeps the front sheet's radius so both read
+  // identical while pushed back; only the root app screen recedes to the
+  // smaller iOS page-sheet radius.
+  BOOL presentingIsSheet = [self.presentingViewController.presentationController
+                             isKindOfClass:[TapplerSheetPresentationController class]];
+  CGFloat targetRadius = presentingIsSheet ? kSheetCornerRadius : kRootRecedeCornerRadius;
+  [self animateLayerCornerRadius:presentingView.layer to:targetRadius duration:duration];
   presentingView.layer.masksToBounds = YES;
   if (@available(iOS 13.0, *)) {
     presentingView.layer.cornerCurve = kCACornerCurveContinuous;
@@ -111,7 +127,9 @@
   NSTimeInterval duration = 0.28;
   id<UIViewControllerTransitionCoordinator> coordinator = self.presentedViewController.transitionCoordinator;
   if (coordinator) duration = coordinator.transitionDuration;
-  [self animateLayerCornerRadius:presentingView.layer to:0 duration:duration];
+  // Restore the presenting view's ORIGINAL radius (28 if it's a sheet behind
+  // us, 0 if it's the root screen) — not a hardcoded 0.
+  [self animateLayerCornerRadius:presentingView.layer to:_hadCornerRadius duration:duration];
 
   void (^animations)(void) = ^{
     self->_dimmingView.alpha = 0;
@@ -145,7 +163,7 @@
     // Presentation was cancelled — undo everything.
     UIView *presentingView = self.presentingViewController.view;
     presentingView.transform = CGAffineTransformIdentity;
-    presentingView.layer.cornerRadius = 0;
+    presentingView.layer.cornerRadius = _hadCornerRadius;
     presentingView.layer.masksToBounds = _hadMasksToBounds;
     presentingView.window.backgroundColor = _savedWindowBackground;
     [_dimmingView removeFromSuperview];

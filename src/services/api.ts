@@ -19,6 +19,11 @@ import { ListProsResponse, ProType } from "types/pro"
 import { ChatType, ChatMessageType, ListChatsResponse, ListMessagesResponse } from "types/chat"
 import { CreateJobRequest, JobProType, JobType, ListJobsResponse } from "types/job"
 import { CreateReviewRequest, ReviewType } from "types/review"
+import {
+  ListNotificationsRequest,
+  ListNotificationsResponse,
+  NotificationsItemType,
+} from "types/notification"
 
 const baseQuery = fetchBaseQuery({
   baseUrl: API_URL,
@@ -138,7 +143,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Auth", "Preset", "Jobs", "Chats"],
+  tagTypes: ["Auth", "Preset", "Jobs", "Chats", "Notifications"],
   endpoints: (builder) => ({
     getActivePreset: builder.query<PresetType, void>({
       query: () => "/cms/presets/active",
@@ -280,7 +285,56 @@ export const api = createApi({
         method: "PATCH",
         body: { selectionStatus },
       }),
-      invalidatesTags: ["Jobs"],
+      // Chats too: visibility reads the pro's selectionStatus out of the chat
+      // payload, so Select must surface the thread in Messages immediately.
+      invalidatesTags: ["Jobs", "Chats"],
+    }),
+
+    // Negotiation trail for the chat header's offer strip → history sheet.
+    // Backend gates customers to their own job.
+    getOfferHistory: builder.query<
+      { data: Array<{ id: number; ratePerHour: number; createdAt: string }> },
+      { jobId: number; proId: number }
+    >({
+      query: ({ jobId, proId }) =>
+        `/jobs/${jobId}/pros/${proId}/offer-history`,
+    }),
+
+    // Stored in-app notifications (same backend table + endpoints as proapp;
+    // the API filters to the authed customer). The HomeHeader bell subscribes
+    // with { page: 1, perPage: 100 } and the NotificationsScreen pages by 20 —
+    // two cache entries, both refreshed by the "Notifications" tag.
+    getNotifications: builder.query<
+      ListNotificationsResponse,
+      ListNotificationsRequest
+    >({
+      query: (body) => {
+        const params = new URLSearchParams()
+        params.append("page", String(body.page))
+        params.append("perPage", String(body.perPage || 20))
+        params.append("sort", body.sort || "DESC")
+        if (body.excludeEventPrefix) {
+          params.append("excludeEventPrefix", body.excludeEventPrefix)
+        }
+        return `/notifications?${params}`
+      },
+      providesTags: ["Notifications"],
+    }),
+
+    markNotificationAsRead: builder.mutation<NotificationsItemType, number>({
+      query: (id) => ({
+        url: `/notifications/${id}/mark-as-read`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
+
+    markAllNotificationsAsRead: builder.mutation<NotificationsItemType[], void>({
+      query: () => ({
+        url: "/notifications/mark-all-as-read",
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Notifications"],
     }),
 
     openChat: builder.query<ChatType, { categoryId: number; recipientId: number; jobId?: number }>({
@@ -410,5 +464,10 @@ export const {
   useLazyGetProProfileQuery,
   useCancelJobMutation,
   useRespondToOpportunityMutation,
+  useGetOfferHistoryQuery,
   useCreateReviewMutation,
+  useGetNotificationsQuery,
+  useLazyGetNotificationsQuery,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
 } = api

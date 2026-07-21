@@ -33,6 +33,19 @@ const TalabatiScreen: React.FC = () => {
 
   const jobs = data?.data || []
 
+  // The pull-down spinner tracks ONLY a user's pull. Binding it to isFetching
+  // animated the RefreshControl down on every background refresh — the 30s
+  // poll and every socket-driven Jobs invalidation read as a phantom pull.
+  const [isPullRefreshing, setPullRefreshing] = useState(false)
+  const handlePullRefresh = useCallback(async () => {
+    setPullRefreshing(true)
+    try {
+      await refetch()
+    } finally {
+      setPullRefreshing(false)
+    }
+  }, [refetch])
+
   // Prefetch job details as items become visible on screen
   const prefetchJobById = api.usePrefetch("getCustomerJobById")
   const prefetchedIds = useRef(new Set<number>())
@@ -289,8 +302,8 @@ const TalabatiScreen: React.FC = () => {
           onViewableItemsChanged={onViewableItemsChanged}
           refreshControl={
             <RefreshControl
-              refreshing={isFetching && !isLoading}
-              onRefresh={refetch}
+              refreshing={isPullRefreshing}
+              onRefresh={handlePullRefresh}
               tintColor={colors.red}
             />
           }

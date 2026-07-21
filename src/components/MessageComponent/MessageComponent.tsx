@@ -10,7 +10,11 @@ import {
 } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
-import { format } from "date-fns"
+import OfferUpdateCard, {
+  parseOfferUpdate,
+} from "components/OfferUpdateCard/OfferUpdateCard"
+import moment from "moment"
+import "moment/locale/ar"
 import Autolink from "react-native-autolink"
 import MapView, { Marker } from "react-native-maps"
 import FastImage from "react-native-fast-image"
@@ -83,7 +87,11 @@ const MessageComponent: React.FC<Props> = React.memo(
     const [viewerIndex, setViewerIndex] = useState(0)
     const [docViewerFile, setDocViewerFile] = useState<ChatFileType | null>(null)
 
-    const time = format(new Date(item.createdAt), "h:mm a")
+    // Locale-set per instance so timestamps read in Arabic ("١٢:٤٧ ص") when the
+    // app is Arabic and English ("12:47 AM") otherwise — mirrors proapp (moment).
+    const time = moment(item.createdAt)
+      .locale(isAr ? "ar" : "en")
+      .format("h:mm A")
 
     const imageFiles = item.files?.filter((f) => f.mimeType?.startsWith("image/")) || []
     const docFiles = item.files?.filter((f) => !f.mimeType?.startsWith("image/")) || []
@@ -109,23 +117,34 @@ const MessageComponent: React.FC<Props> = React.memo(
 
     // ── System messages ──
     if (isSystem) {
+      // Structured offer revision → event card (old → new), not red text.
+      const offerUpdate = parseOfferUpdate(item.text)
       return (
         <DmView style={{ paddingBottom: isLastInGroup ? 12 : 2 }}>
           {/* Sides are PINNED (iMessage-style): own/system on the physical right,
               others on the physical left, in both languages. Native forceRTL flips
               layout in Arabic, so the isAr branch pre-flips to cancel it out. */}
-          {showTimestamp && (
+          {/* The card carries its own inline time — outer stamp would double it */}
+          {showTimestamp && !offerUpdate && (
             <DmView className={`pb-[4] pt-[4] ${isAr ? "items-start pl-[49]" : "items-end pr-[49]"}`}>
               <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
                 {time}
               </DmText>
             </DmView>
           )}
-          <DmView className={`flex ${isAr ? "pl-[49] items-start" : "pr-[49] items-end"}`}>
-            <DmText className="text-11 leading-[14px] font-custom400 text-red">
-              {t(item.text || "")}
-            </DmText>
-          </DmView>
+          {offerUpdate ? (
+            <OfferUpdateCard
+              previous={offerUpdate.previous}
+              next={offerUpdate.next}
+              time={time}
+            />
+          ) : (
+            <DmView className={`flex ${isAr ? "pl-[49] items-start" : "pr-[49] items-end"}`}>
+              <DmText className="text-11 leading-[14px] font-custom400 text-red">
+                {t(item.text || "")}
+              </DmText>
+            </DmView>
+          )}
         </DmView>
       )
     }

@@ -12,6 +12,8 @@ interface NativeProps {
   visible: boolean
   sheetHeight?: number
   pushBackScale?: number
+  dimOpacity?: number
+  transparentBackground?: boolean
   onDismissed?: () => void
   style?: ViewStyle
   children?: ReactNode
@@ -36,6 +38,11 @@ interface Props {
   /** Fired when the user closes the sheet natively (dim tap / swipe down). */
   onDismissed: () => void
   pushBackScale?: number
+  /** Dim layer opacity behind the sheet (native default 0.4). */
+  dimOpacity?: number
+  /** Clear native sheet background: content draws its own surfaces, so parts
+   *  of it (e.g. a header) can float visually on the dim layer. */
+  transparentBackground?: boolean
   children: ReactNode
 }
 
@@ -44,6 +51,8 @@ const NativePushBackSheet: React.FC<Props> = ({
   height,
   onDismissed,
   pushBackScale,
+  dimOpacity,
+  transparentBackground,
   children,
 }) => {
   const [measuredHeight, setMeasuredHeight] = useState(0)
@@ -92,8 +101,18 @@ const NativePushBackSheet: React.FC<Props> = ({
         // empty sliver; the gate above keeps the sheet closed until measured.
         sheetHeight={resolvedHeight > 0 ? resolvedHeight : undefined}
         pushBackScale={pushBackScale}
+        dimOpacity={dimOpacity}
+        transparentBackground={transparentBackground}
         onDismissed={onDismissed}
-        style={{ position: "absolute", width: 0, height: 0 }}
+        // Host width MUST equal the content width. RN keeps the reparented
+        // content's shadow node as a child of THIS host, and under force-RTL
+        // Yoga positions children from the parent's RIGHT edge — a width-0 host
+        // places the content at x = 0 − contentWidth (off-screen left) → blank
+        // sheet in Arabic. A full-width host places it at x = 0 in BOTH
+        // directions. (RN's own <Modal> solves the identical problem natively
+        // by feeding the presented VC bounds back via uiManager setSize; giving
+        // the host the real width here is the JS equivalent — no native change.)
+        style={{ position: "absolute", width: windowWidth, height: 0 }}
       >
         <View
           style={{

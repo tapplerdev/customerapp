@@ -71,6 +71,9 @@ export type JobServiceCategoryType = {
   nameEn: string
   nameAr: string
   picture?: string
+  // Parent service — always on the wire (ServiceCategoryDto); needed to
+  // re-enter the request flow from an existing job (repost).
+  serviceId?: number
 }
 
 export type JobProOfferType = {
@@ -125,6 +128,7 @@ export type JobType = {
   dates?: JobDateType[]
   timeSlots?: JobTimeSlotType[]
   questionsAnswers?: QuestionAnswerType[]
+  placeOfService?: string
   isOnReview?: boolean
   orderNotes?: string
   paymentMethod?: string
