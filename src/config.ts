@@ -1,3 +1,5 @@
 import { API_URL as ENV_API_URL } from "@env"
 
-export const API_URL = ENV_API_URL || "https://your-customer-api.com/api"
+// Fallback = deployed DO backend (dev), so a missing .env never strands the
+// app on a dead placeholder host
+export const API_URL = ENV_API_URL || "https://seashell-app-go8ox.ondigitalocean.app/api"
