@@ -364,6 +364,27 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // silently submit to one.
   const [shortlistNotice, setShortlistNotice] = useState(false)
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 0 = hidden (16px low, transparent) → 1 = resting. Slide-up on show,
+  // slide-down on auto-dismiss; stays mounted until the exit finishes.
+  const noticeAnim = useRef(new Animated.Value(0)).current
+  const showShortlistNotice = useCallback(() => {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    setShortlistNotice(true)
+    Animated.timing(noticeAnim, {
+      toValue: 1,
+      duration: 240,
+      useNativeDriver: true,
+    }).start()
+    noticeTimer.current = setTimeout(() => {
+      Animated.timing(noticeAnim, {
+        toValue: 0,
+        duration: 220,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) setShortlistNotice(false)
+      })
+    }, 4000)
+  }, [noticeAnim])
   useEffect(() => {
     const list = data?.data
     if (!list) return
@@ -372,12 +393,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       const ids = new Set(list.map((p) => p.id))
       const kept = prev.filter((id) => ids.has(id))
       if (kept.length === prev.length) return prev
-      setShortlistNotice(true)
-      if (noticeTimer.current) clearTimeout(noticeTimer.current)
-      noticeTimer.current = setTimeout(() => setShortlistNotice(false), 4000)
+      showShortlistNotice()
       return kept
     })
-  }, [data?.data])
+  }, [data?.data, showShortlistNotice])
   useEffect(() => () => {
     if (noticeTimer.current) clearTimeout(noticeTimer.current)
   }, [])
@@ -814,11 +833,26 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Continue button - absolute, slides up from bottom */}
       {/* Shortlist-updated toast: selected pros that stopped matching were
-          just removed — say it, don't let them wonder */}
+          just removed — say it, don't let them wonder. Slides up in, slides
+          down out. */}
       {shortlistNotice && (
-        <DmView
-          className="absolute left-[16] right-[16] z-50"
-          style={{ bottom: 130 }}
+        <Animated.View
+          style={{
+            position: "absolute",
+            left: 16,
+            right: 16,
+            bottom: 130,
+            zIndex: 50,
+            opacity: noticeAnim,
+            transform: [
+              {
+                translateY: noticeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [16, 0],
+                }),
+              },
+            ],
+          }}
           pointerEvents="none"
         >
           <DmView
@@ -829,7 +863,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
               {t("shortlist_updated_notice")}
             </DmText>
           </DmView>
-        </DmView>
+        </Animated.View>
       )}
       {showContinue && (
         <Animated.View
