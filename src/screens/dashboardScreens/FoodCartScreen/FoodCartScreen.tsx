@@ -92,6 +92,7 @@ const FoodCartScreen: React.FC<Props> = ({ navigation }) => {
             uri={line.photo || undefined}
             style={styles.lineImage}
             resizeMode="cover"
+            withSkeleton
           />
         </DmView>
         <DmView className="flex-1 ml-[12] mr-[8]">

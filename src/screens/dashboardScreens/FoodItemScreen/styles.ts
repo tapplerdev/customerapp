@@ -13,6 +13,11 @@ const styles = StyleSheet.create({
   photo: {
     height: 286,
     backgroundColor: colors.grey4,
+    overflow: "hidden",
+  },
+  photoImage: {
+    width: "100%",
+    height: "100%",
   },
   footerShadow: {
     shadowColor: "#000",

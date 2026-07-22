@@ -8,8 +8,9 @@ import {
   DmView,
 } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { ImageBackground, ScrollView } from "react-native"
+import { ScrollView } from "react-native"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
+import CachedImage from "@tappler/shared/src/components/CachedImage"
 
 // Hooks & Redux
 import { useTranslation } from "react-i18next"
@@ -293,29 +294,41 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 14 }}
       >
-        <ImageBackground
-          source={{ uri: menuItem.photo || undefined }}
-          style={styles.photo}
-        />
+        <DmView style={styles.photo}>
+          <CachedImage
+            uri={menuItem.photo || undefined}
+            style={styles.photoImage}
+            resizeMode="cover"
+            withSkeleton
+          />
+        </DmView>
         <DmView className="px-[14]">
           <DmText className="text-18 leading-[22px] font-custom600 mt-[16]">
             {menuItem.name}
           </DmText>
           <DmView className="mt-[8] flex-row items-center">
-            {!!menuItem.discountPrice && (
-              <DmText className="text-18 leading-[22px] font-custom500">
-                {menuItem.discountPrice} {t("EGP")}
+            {Number(menuItem.price) > 0 ? (
+              <>
+                {!!menuItem.discountPrice && (
+                  <DmText className="text-18 leading-[22px] font-custom500">
+                    {menuItem.discountPrice} {t("EGP")}
+                  </DmText>
+                )}
+                <DmText
+                  className={clsx(
+                    "text-18 leading-[22px] font-custom500",
+                    !!menuItem.discountPrice &&
+                      "ml-[17] text-grey2 font-custom400 line-through"
+                  )}
+                >
+                  {menuItem.price} {t("EGP")}
+                </DmText>
+              </>
+            ) : (
+              <DmText className="text-18 leading-[22px] font-custom500 text-grey2">
+                {t("price_on_selection")}
               </DmText>
             )}
-            <DmText
-              className={clsx(
-                "text-18 leading-[22px] font-custom500",
-                !!menuItem.discountPrice &&
-                  "ml-[17] text-grey2 font-custom400 line-through"
-              )}
-            >
-              {menuItem.price} {t("EGP")}
-            </DmText>
           </DmView>
           {!!menuItem.description && (
             <DmText className="my-[8] text-13 leading-[20px] font-custom400">

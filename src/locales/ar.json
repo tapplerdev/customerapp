@@ -492,5 +492,6 @@
   "food_cancel_customerNotAnswering": "لم نتمكن من الوصول إليك لتأكيد الطلب.",
   "food_cancel_missingIngredients": "بعض الأصناف غير متوفرة.",
   "food_cancel_deliveryNotPossible": "التوصيل إلى عنوانك غير ممكن.",
-  "food_cancel_tooBusy": "المكان مشغول جدًا الآن."
+  "food_cancel_tooBusy": "المكان مشغول جدًا الآن.",
+  "price_on_selection": "السعر حسب الاختيار"
 }

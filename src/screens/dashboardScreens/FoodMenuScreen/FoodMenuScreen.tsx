@@ -10,9 +10,15 @@ import FoodMenuItemRow from "components/FoodMenuItemRow"
 
 // Hooks & Redux
 import { useTranslation } from "react-i18next"
+import { useDispatch } from "react-redux"
 import { useGetProMenuQuery } from "services/api"
 import { useTypedSelector } from "store"
-import { cartCount, cartSubtotal } from "store/cart/slice"
+import {
+  addCartItem,
+  cartCount,
+  cartSubtotal,
+  setCartItemQuantity,
+} from "store/cart/slice"
 
 // Helpers & Types
 import { RootStackScreenProps } from "navigation/types"
@@ -53,10 +59,22 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     serviceCategoryId,
   })
 
+  const dispatch = useDispatch()
   const cart = useTypedSelector((state) => state.cart)
-  const basketVisible = cart.proId === proId && cart.items.length > 0
+  const isOwnCart = cart.proId === proId
+  const basketVisible = isOwnCart && cart.items.length > 0
   const basketCount = cartCount(cart.items)
   const basketTotal = cartSubtotal(cart.items)
+
+  // Per-menu-item quantity across cart lines → drives the thumbnail overlay
+  const qtyByItemId = useMemo(() => {
+    const map: Record<number, number> = {}
+    if (!isOwnCart) return map
+    for (const line of cart.items) {
+      map[line.menuItemId] = (map[line.menuItemId] || 0) + line.quantity
+    }
+    return map
+  }, [isOwnCart, cart.items])
 
   const sections = useMemo(() => {
     return (menu?.menuSections || [])
@@ -109,6 +127,52 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     [navigation, proId, serviceCategoryId, serviceId, proName, categoryName, address]
   )
 
+  // Thumbnail "+": optionless items add straight to the cart (uid matches
+  // the detail screen's no-options uid, so lines merge); items with option
+  // groups need choices — open the detail instead.
+  const handleQuickAdd = useCallback(
+    (item: FoodMenuItemType) => {
+      if (item.options?.length) {
+        handlePressItem(item)
+        return
+      }
+      dispatch(
+        addCartItem({
+          context: {
+            proId,
+            serviceCategoryId,
+            serviceId,
+            proName,
+            categoryName,
+            address: address ?? null,
+          },
+          item: {
+            uid: `${item.id}:`,
+            menuItemId: item.id,
+            name: item.name,
+            price: Number(item.discountPrice) || Number(item.price) || 0,
+            quantity: 1,
+            photo: item.photo,
+          },
+        })
+      )
+    },
+    [dispatch, handlePressItem, proId, serviceCategoryId, serviceId, proName, categoryName, address]
+  )
+
+  // Thumbnail trash/−: peel one off the LAST cart line of this item
+  const handleQuickRemove = useCallback(
+    (item: FoodMenuItemType) => {
+      const lines = cart.items.filter((line) => line.menuItemId === item.id)
+      const last = lines[lines.length - 1]
+      if (!last) return
+      dispatch(
+        setCartItemQuantity({ uid: last.uid, quantity: last.quantity - 1 })
+      )
+    },
+    [dispatch, cart.items]
+  )
+
   const renderSection = ({ item }: { item: FoodMenuSectionType }) => {
     return (
       <DmView className="mb-[36.5]">
@@ -121,26 +185,15 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
               key={menuItem.id}
               item={menuItem}
               onPress={handlePressItem}
+              cartQty={qtyByItemId[menuItem.id] || 0}
+              onQuickAdd={handleQuickAdd}
+              onQuickRemove={handleQuickRemove}
             />
           ))}
         </DmView>
       </DmView>
     )
   }
-
-  const deliveryLine = useMemo(() => {
-    if (!menu) return ""
-    const parts: string[] = []
-    parts.push(
-      menu.deliveryCharge
-        ? t("delivery_fee_egp", { fee: menu.deliveryCharge })
-        : t("free_delivery")
-    )
-    if (menu.deliveryCharge && menu.freeDeliveryThreshold) {
-      parts.push(t("free_over_egp", { amount: menu.freeDeliveryThreshold }))
-    }
-    return parts.join(" · ")
-  }, [menu, t])
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -179,13 +232,6 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       ) : (
         <DmView className="flex-1">
-          {!!deliveryLine && (
-            <DmView className="px-[16] py-[8] bg-grey36">
-              <DmText className="text-12 leading-[16px] font-custom500 text-center">
-                {deliveryLine}
-              </DmText>
-            </DmView>
-          )}
           <DmView style={styles.tabsWrapper}>
             <AnimatedSelectCategory
               categories={sectionTitles}
@@ -213,29 +259,21 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       )}
 
-      {/* View Basket bar */}
+      {/* Floating total pill (proapp store style: ① Total: 70 EGP) */}
       {basketVisible && (
         <DmView
-          className="absolute left-[16] right-[16]"
-          style={{ bottom: insets.bottom + 16 }}
+          className="absolute self-center h-[52] rounded-full bg-red flex-row items-center pl-[6] pr-[24]"
+          style={[styles.basketShadow, { bottom: insets.bottom + 16 }]}
+          onPress={() => navigation.navigate("FoodCartScreen")}
         >
-          <DmView
-            className="h-[48] rounded-12 bg-red flex-row items-center justify-between px-[16]"
-            style={styles.basketShadow}
-            onPress={() => navigation.navigate("FoodCartScreen")}
-          >
-            <DmView className="w-[24] h-[24] rounded-full bg-white items-center justify-center">
-              <DmText className="text-13 leading-[16px] font-custom700 text-red">
-                {basketCount}
-              </DmText>
-            </DmView>
-            <DmText className="text-15 leading-[19px] font-custom700 text-white">
-              {t("view_basket")}
-            </DmText>
-            <DmText className="text-14 leading-[18px] font-custom600 text-white">
-              {basketTotal.toFixed(2)} {t("EGP")}
+          <DmView className="w-[40] h-[40] rounded-full bg-white items-center justify-center">
+            <DmText className="text-15 leading-[19px] font-custom700 text-black">
+              {basketCount}
             </DmText>
           </DmView>
+          <DmText className="ml-[14] text-16 leading-[20px] font-custom700 text-white">
+            {t("total")}: {basketTotal % 1 ? basketTotal.toFixed(2) : basketTotal} {t("EGP")}
+          </DmText>
         </DmView>
       )}
     </SafeAreaView>

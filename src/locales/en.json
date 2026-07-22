@@ -493,5 +493,6 @@
   "food_cancel_customerNotAnswering": "We couldn't reach you to confirm the order.",
   "food_cancel_missingIngredients": "Some items weren't available.",
   "food_cancel_deliveryNotPossible": "Delivery to your address wasn't possible.",
-  "food_cancel_tooBusy": "The place is too busy right now."
+  "food_cancel_tooBusy": "The place is too busy right now.",
+  "price_on_selection": "Price on Selection"
 }
