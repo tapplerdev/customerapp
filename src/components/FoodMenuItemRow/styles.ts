@@ -13,6 +13,13 @@ const styles = StyleSheet.create({
   outOfStock: {
     opacity: 0.45,
   },
+  badgeShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
+    elevation: 3,
+  },
 })
 
 export default styles

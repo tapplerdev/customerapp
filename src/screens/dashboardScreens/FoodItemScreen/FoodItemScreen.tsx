@@ -135,6 +135,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
         choices: choices.map((choice) => ({
           name: choice.name,
           price: effectiveChoicePrice(choice),
+          originalPrice: Number(choice.price) || 0,
         })),
       }))
 
@@ -159,9 +160,11 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
           menuItemId: menuItem.id,
           name: menuItem.name,
           price: basePrice,
+          originalPrice: Number(menuItem.price) || 0,
           quantity: count,
           selectedOptions: selectedOptions.length ? selectedOptions : undefined,
           photo: menuItem.photo,
+          isPreOrderOnly: menuItem.isPreOrderOnly,
         },
       })
     )

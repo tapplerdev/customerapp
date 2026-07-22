@@ -493,5 +493,7 @@
   "food_cancel_missingIngredients": "بعض الأصناف غير متوفرة.",
   "food_cancel_deliveryNotPossible": "التوصيل إلى عنوانك غير ممكن.",
   "food_cancel_tooBusy": "المكان مشغول جدًا الآن.",
-  "price_on_selection": "السعر حسب الاختيار"
+  "price_on_selection": "السعر حسب الاختيار",
+  "your_cart": "سلتك",
+  "order_total": "إجمالي الطلب"
 }

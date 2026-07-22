@@ -1,24 +1,17 @@
-import { I18nManager, StyleSheet } from "react-native"
-import colors from "@tappler/shared/src/styles/colors"
+import { StyleSheet } from "react-native"
+
+const THUMB = 88
 
 const styles = StyleSheet.create({
-  lineImage: {
-    width: 54,
-    height: 54,
+  rightCol: {
+    width: THUMB,
   },
-  notesBorder: {
-    borderWidth: 1,
-    borderColor: colors.grey5,
-    borderRadius: 10,
+  thumb: {
+    width: THUMB,
+    height: THUMB,
   },
-  notesInput: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: colors.black,
-    textAlign: I18nManager.isRTL ? "right" : "left",
-    minHeight: 90,
-    textAlignVertical: "top",
+  stepper: {
+    width: THUMB,
   },
 })
 

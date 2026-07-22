@@ -85,53 +85,57 @@ const FoodMenuItemRow: React.FC<Props> = ({
             </DmView>
           </DmView>
         </DmView>
-        <DmView
-          className="ml-[21] overflow-hidden items-center justify-end"
-          style={styles.img}
-        >
+        <DmView className="ml-[21] items-center justify-end" style={styles.img}>
           <CachedImage
             uri={item.photo || undefined}
             style={styles.img}
             resizeMode="cover"
             withSkeleton
           />
-          {!outOfStock &&
-            (cartQty > 0 ? (
-              <DmView className="absolute bottom-[8] flex-row items-center bg-white rounded-3 px-[6] h-[26]">
+          {!outOfStock && (
+            <DmView className="absolute bottom-[8] left-0 right-0 items-center">
+              {cartQty > 0 ? (
                 <DmView
-                  className="w-[22] h-[26] items-center justify-center"
-                  onPress={() => onQuickRemove?.(item)}
+                  className="flex-row items-center bg-white rounded-4 h-[30] px-[8]"
+                  style={styles.badgeShadow}
                 >
-                  <TrashRedIcon width={14} height={14} />
+                  <DmView
+                    className="w-[26] h-[30] items-center justify-center"
+                    onPress={() => onQuickRemove?.(item)}
+                  >
+                    <TrashRedIcon width={15} height={15} />
+                  </DmView>
+                  <DmText className="mx-[12] text-14 leading-[17px] font-custom700">
+                    {cartQty}
+                  </DmText>
+                  <DmView
+                    className="w-[26] h-[30] items-center justify-center"
+                    onPress={() => onQuickAdd?.(item)}
+                  >
+                    <PlusIcon
+                      color={colors.grey13}
+                      width={17}
+                      height={17}
+                      strokeWidth={2.5}
+                    />
+                  </DmView>
                 </DmView>
-                <DmText className="mx-[4] text-13 leading-[16px] font-custom700">
-                  {cartQty}
-                </DmText>
+              ) : (
                 <DmView
-                  className="w-[22] h-[26] items-center justify-center"
+                  className="items-center justify-center w-[34] h-[26] bg-white rounded-4"
+                  style={styles.badgeShadow}
                   onPress={() => onQuickAdd?.(item)}
                 >
                   <PlusIcon
-                    color={colors.red}
-                    width={16}
-                    height={16}
+                    color={colors.black}
+                    width={18}
+                    height={18}
                     strokeWidth={2.5}
                   />
                 </DmView>
-              </DmView>
-            ) : (
-              <DmView
-                className="absolute bottom-[8] items-center justify-center w-[30] h-[23] bg-white rounded-3"
-                onPress={() => onQuickAdd?.(item)}
-              >
-                <PlusIcon
-                  color={colors.black}
-                  width={18}
-                  height={18}
-                  strokeWidth={2.5}
-                />
-              </DmView>
-            ))}
+              )}
+            </DmView>
+          )}
         </DmView>
       </DmView>
       {outOfStock && (

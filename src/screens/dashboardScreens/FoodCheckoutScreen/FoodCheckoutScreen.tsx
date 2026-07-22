@@ -8,7 +8,7 @@ import {
   DmView,
 } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { ScrollView } from "react-native"
+import { ScrollView, TextInput } from "react-native"
 import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
 import ErrorModal from "components/ErrorModal"
 
@@ -16,7 +16,12 @@ import ErrorModal from "components/ErrorModal"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 import { useTypedSelector } from "store"
-import { cartSubtotal, clearCart, setCartAddress } from "store/cart/slice"
+import {
+  cartSubtotal,
+  clearCart,
+  setCartAddress,
+  setOrderNotes,
+} from "store/cart/slice"
 import { useCreateJobMutation, useGetProMenuQuery } from "services/api"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
@@ -25,6 +30,7 @@ import { AddressInfo, RootStackScreenProps } from "navigation/types"
 import { CreateJobRequest } from "types/job"
 
 // Styles & Assets
+import styles from "./styles"
 import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -188,13 +194,21 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
             ],
           }),
         ...(cart.orderNotes && { orderNotes: cart.orderNotes }),
+        // Only the fields the backend validates — display-only extras
+        // (originalPrice, isPreOrderOnly) are stripped here.
         foodOrderItems: cart.items.map((line) => ({
           menuItemId: line.menuItemId,
           name: line.name,
           price: line.price,
           quantity: line.quantity,
           ...(line.selectedOptions?.length && {
-            selectedOptions: line.selectedOptions,
+            selectedOptions: line.selectedOptions.map((option) => ({
+              optionName: option.optionName,
+              choices: option.choices.map((choice) => ({
+                name: choice.name,
+                price: choice.price,
+              })),
+            })),
           }),
         })),
         paymentMethod,
@@ -375,6 +389,21 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
                 isChecked={paymentMethod === "creditCard"}
               />
             </DmView>
+          </DmView>
+        </DmView>
+
+        {/* Order notes */}
+        <DmView className="mt-[20]">
+          {sectionTitle(t("order_notes"))}
+          <DmView className="bg-white" style={styles.notesBorder}>
+            <TextInput
+              value={cart.orderNotes}
+              onChangeText={(text) => dispatch(setOrderNotes(text))}
+              multiline
+              placeholder={t("order_notes_placeholder")}
+              placeholderTextColor={colors.grey5}
+              style={styles.notesInput}
+            />
           </DmView>
         </DmView>
 

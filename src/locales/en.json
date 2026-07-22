@@ -494,5 +494,7 @@
   "food_cancel_missingIngredients": "Some items weren't available.",
   "food_cancel_deliveryNotPossible": "Delivery to your address wasn't possible.",
   "food_cancel_tooBusy": "The place is too busy right now.",
-  "price_on_selection": "Price on Selection"
+  "price_on_selection": "Price on Selection",
+  "your_cart": "Your Cart",
+  "order_total": "Order Total"
 }

@@ -151,8 +151,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
             menuItemId: item.id,
             name: item.name,
             price: Number(item.discountPrice) || Number(item.price) || 0,
+            originalPrice: Number(item.price) || 0,
             quantity: 1,
             photo: item.photo,
+            isPreOrderOnly: item.isPreOrderOnly,
           },
         })
       )
@@ -249,10 +251,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
             renderItem={renderSection}
             keyExtractor={(section) => String(section.id)}
             showsVerticalScrollIndicator={false}
-            className="mt-[10]"
             onScrollToIndexFailed={() => {}}
             contentContainerStyle={{
               flexGrow: 1,
+              paddingTop: 24,
               paddingBottom: 60 + insets.bottom + (basketVisible ? 70 : 0),
             }}
           />

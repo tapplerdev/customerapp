@@ -55,9 +55,12 @@ export type FoodMenuType = {
 
 // One cart line = a menu item + a specific combination of option choices.
 // Same item with different choices is a separate line (own uid).
+// `price` is the EFFECTIVE price (discount applied) — the only one sent to
+// the backend. `originalPrice` is display-only (pre-discount, for strike-
+// through totals) and MUST NOT be submitted.
 export type CartSelectedOptionType = {
   optionName: string
-  choices: { name: string; price: number }[]
+  choices: { name: string; price: number; originalPrice?: number }[]
 }
 
 export type CartItemType = {
@@ -66,7 +69,10 @@ export type CartItemType = {
   name: string
   // Unit base price (discount already applied) — choices priced separately
   price: number
+  originalPrice?: number
   quantity: number
   selectedOptions?: CartSelectedOptionType[]
   photo?: string
+  // Display-only: drives the Pre Order badge in the cart
+  isPreOrderOnly?: boolean
 }
