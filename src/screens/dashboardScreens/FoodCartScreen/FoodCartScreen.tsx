@@ -104,6 +104,7 @@ const FoodCartScreen: React.FC<Props> = ({ navigation }) => {
         key={line.uid}
         className="px-[16] py-[18] border-b-0.5 border-b-grey14"
       >
+        {/* Top: name + options + badge | thumbnail */}
         <DmView className="flex-row">
           <DmView className="flex-1 mr-[12]">
             <DmText className="text-15 leading-[19px] font-custom600">
@@ -124,51 +125,54 @@ const FoodCartScreen: React.FC<Props> = ({ navigation }) => {
                 </DmText>
               </DmView>
             )}
-            <DmView className="mt-[10] flex-row items-center">
-              <DmText className="text-14 leading-[18px] font-custom600">
-                {effectiveTotal % 1 ? effectiveTotal.toFixed(2) : effectiveTotal}{" "}
-                {t("EGP")}
-              </DmText>
-              {showStrike && (
-                <DmText className="ml-[10] text-14 leading-[18px] font-custom400 text-grey2 line-through">
-                  {originalTotal % 1 ? originalTotal.toFixed(2) : originalTotal}{" "}
-                  {t("EGP")}
-                </DmText>
-              )}
-            </DmView>
           </DmView>
 
-          <DmView className="items-center" style={styles.rightCol}>
-            <DmView className="overflow-hidden rounded-8" style={styles.thumb}>
-              <CachedImage
-                uri={line.photo || undefined}
-                style={styles.thumb}
-                resizeMode="cover"
-                withSkeleton
-              />
-            </DmView>
-            {/* Bordered stepper (matches the cart mockup) */}
-            <DmView
-              className="mt-[8] flex-row items-center justify-between border-1 border-grey14 rounded-8 px-[8] h-[32]"
-              style={styles.stepper}
-            >
-              <DmView
-                className="w-[24] h-[32] items-center justify-center"
-                onPress={() => changeQuantity(line, -1)}
-              >
-                <TrashRedIcon width={15} height={15} />
-              </DmView>
-              <DmText className="text-14 leading-[17px] font-custom700">
-                {line.quantity}
+          <DmView className="overflow-hidden rounded-8" style={styles.thumb}>
+            <CachedImage
+              uri={line.photo || undefined}
+              style={styles.thumb}
+              resizeMode="cover"
+              withSkeleton
+            />
+          </DmView>
+        </DmView>
+
+        {/* Bottom: price (left) on the same line as the stepper (right) */}
+        <DmView className="mt-[14] flex-row items-center justify-between">
+          <DmView className="flex-1 flex-row items-center flex-wrap">
+            <DmText className="text-14 leading-[18px] font-custom400">
+              {effectiveTotal % 1 ? effectiveTotal.toFixed(2) : effectiveTotal}{" "}
+              {t("EGP")}
+            </DmText>
+            {showStrike && (
+              <DmText className="ml-[10] text-14 leading-[18px] font-custom400 text-grey2 line-through">
+                {originalTotal % 1 ? originalTotal.toFixed(2) : originalTotal}{" "}
+                {t("EGP")}
               </DmText>
-              <DmView
-                className="w-[24] h-[32] items-center justify-center"
-                onPress={
-                  line.quantity < 30 ? () => changeQuantity(line, 1) : undefined
-                }
-              >
-                <PlusIcon color={colors.red} width={16} height={16} strokeWidth={2.5} />
-              </DmView>
+            )}
+          </DmView>
+
+          {/* Bordered stepper (matches the cart mockup) */}
+          <DmView
+            className="flex-row items-center justify-between border-1 border-grey14 rounded-8 px-[8] h-[34]"
+            style={styles.stepper}
+          >
+            <DmView
+              className="w-[26] h-[34] items-center justify-center"
+              onPress={() => changeQuantity(line, -1)}
+            >
+              <TrashRedIcon width={15} height={15} />
+            </DmView>
+            <DmText className="text-14 leading-[17px] font-custom700">
+              {line.quantity}
+            </DmText>
+            <DmView
+              className="w-[26] h-[34] items-center justify-center"
+              onPress={
+                line.quantity < 30 ? () => changeQuantity(line, 1) : undefined
+              }
+            >
+              <PlusIcon color={colors.red} width={16} height={16} strokeWidth={2.5} />
             </DmView>
           </DmView>
         </DmView>
