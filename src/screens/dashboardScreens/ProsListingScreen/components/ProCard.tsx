@@ -60,9 +60,13 @@ interface Props {
   onMessage?: (pro: ProType) => void
   onPressProfile?: (pro: ProType) => void
   isTourTarget?: boolean
+  // Food (hasMenu) listing: shortlisting doesn't apply — the select button
+  // becomes a solid "Food Menu" action instead
+  foodMode?: boolean
+  onViewMenu?: (pro: ProType) => void
 }
 
-const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPressProfile, isTourTarget }) => {
+const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPressProfile, isTourTarget, foodMode, onViewMenu }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
@@ -235,22 +239,37 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
         >
           <MessagesRedIcon width={18} height={18} />
         </DmView>
-        <DmView
-          className="ml-[8] h-[34] rounded-10 items-center justify-center"
-          style={[
-            styles.buttonShadow,
-            {
-              flex: 2,
-              borderColor: isSelected ? colors.red : "#CC0000",
-              backgroundColor: isSelected ? colors.red : "#FFEBEBB2",
-            },
-          ]}
-          onPress={() => onSelect(pro)}
-        >
-          <DmText className={`text-13 font-custom500 ${isSelected ? "text-white" : "text-black"}`}>
-            {isSelected ? t("selected") : t("select_me")}
-          </DmText>
-        </DmView>
+        {foodMode ? (
+          <DmView
+            className="ml-[8] h-[34] rounded-10 items-center justify-center"
+            style={[
+              styles.buttonShadow,
+              { flex: 2, borderColor: colors.red, backgroundColor: colors.red },
+            ]}
+            onPress={() => onViewMenu?.(pro)}
+          >
+            <DmText className="text-13 font-custom600 text-white">
+              {t("food_menu")}
+            </DmText>
+          </DmView>
+        ) : (
+          <DmView
+            className="ml-[8] h-[34] rounded-10 items-center justify-center"
+            style={[
+              styles.buttonShadow,
+              {
+                flex: 2,
+                borderColor: isSelected ? colors.red : "#CC0000",
+                backgroundColor: isSelected ? colors.red : "#FFEBEBB2",
+              },
+            ]}
+            onPress={() => onSelect(pro)}
+          >
+            <DmText className={`text-13 font-custom500 ${isSelected ? "text-white" : "text-black"}`}>
+              {isSelected ? t("selected") : t("select_me")}
+            </DmText>
+          </DmView>
+        )}
       </DmView>
     </DmView>
   )

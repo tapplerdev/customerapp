@@ -16,6 +16,7 @@ import {
   CustomerSavedAddress,
 } from "types/auth"
 import { ListProsResponse, ProType } from "types/pro"
+import { FoodMenuType } from "types/food"
 import { ChatType, ChatMessageType, ListChatsResponse, ListMessagesResponse } from "types/chat"
 import { CreateJobRequest, JobProType, JobType, ListJobsResponse } from "types/job"
 import { CreateReviewRequest, ReviewType } from "types/review"
@@ -265,6 +266,14 @@ export const api = createApi({
       },
     }),
 
+    // hasMenu categories: the pro's latest APPROVED menu snapshot + delivery
+    // zone info. Item ids/prices here are exactly what job submission is
+    // validated against, so order lines are built from this response only.
+    getProMenu: builder.query<FoodMenuType, { proId: number; serviceCategoryId: number }>({
+      query: ({ proId, serviceCategoryId }) =>
+        `/pros/category/${serviceCategoryId}/${proId}/menu`,
+    }),
+
     createReview: builder.mutation<ReviewType, CreateReviewRequest>({
       query: (body) => ({ url: "/reviews", method: "POST", body }),
       invalidatesTags: ["Jobs"],
@@ -462,6 +471,8 @@ export const {
   useArchiveChatMutation,
   useGetProProfileQuery,
   useLazyGetProProfileQuery,
+  useGetProMenuQuery,
+  useLazyGetProMenuQuery,
   useCancelJobMutation,
   useRespondToOpportunityMutation,
   useGetOfferHistoryQuery,

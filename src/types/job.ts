@@ -39,6 +39,20 @@ export type CreateJobRequest = {
   timeSlots?: CreateJobTimeSlotType[]
   orderNotes?: string
   questionsAnswers: QuestionAnswerType[]
+  // Food orders (hasMenu categories): lines are validated server-side
+  // against the pro's approved menu — names/prices must be the menu's own
+  foodOrderItems?: {
+    menuItemId: number
+    name: string
+    price: number
+    quantity: number
+    selectedOptions?: {
+      optionName: string
+      choices: { name: string; price: number }[]
+    }[]
+  }[]
+  // Both collected on delivery — no in-app payment capture
+  paymentMethod?: "cash" | "creditCard"
 }
 
 export type JobAddressType = {
@@ -110,9 +124,23 @@ export type JobProType = {
   opportunityAcceptedAt?: string
   rejectReason?: string
   status?: string
+  // Food orders: set by the pro when cancelling (customerNotAnswering, ...)
+  foodOrderCancelReason?: string
   pro?: ProType
   offers?: JobProOfferType[]
   review?: JobProReviewType | null
+}
+
+export type JobFoodOrderItemType = {
+  id: number
+  menuItemId: number
+  name: string
+  price: number
+  quantity: number
+  selectedOptions?: {
+    optionName: string
+    choices: { name: string; price: number }[]
+  }[]
 }
 
 export type JobType = {
@@ -132,6 +160,10 @@ export type JobType = {
   isOnReview?: boolean
   orderNotes?: string
   paymentMethod?: string
+  // Food orders: lines + server-computed totals persisted at creation
+  foodOrderItems?: JobFoodOrderItemType[]
+  deliveryFee?: number
+  orderDiscount?: number
   createdAt: string
   updatedAt: string
 }

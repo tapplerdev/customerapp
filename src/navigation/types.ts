@@ -87,6 +87,28 @@ export type RootStackParamList = {
     address: AddressInfo
     placeOfServiceOptions: string[]
   }
+  // Food ordering (hasMenu categories): browse a pro's approved menu →
+  // item detail (options/qty) → cart. Context params ride along so add-to-
+  // cart can stamp the cart with pro/category/address without extra fetches.
+  FoodMenuScreen: {
+    proId: number
+    serviceCategoryId: number
+    serviceId: number
+    proName: string
+    categoryName: string
+    address: AddressInfo | null
+  }
+  FoodItemScreen: {
+    menuItemId: number
+    proId: number
+    serviceCategoryId: number
+    serviceId: number
+    proName: string
+    categoryName: string
+    address: AddressInfo | null
+  }
+  FoodCartScreen: undefined
+  FoodCheckoutScreen: undefined
   AllQuestionsScreen: {
     categoryName: string
     placeOfServiceOptions: string[]
@@ -179,6 +201,13 @@ export type RootStackParamList = {
     serviceCategoryId: number
     serviceCategories?: import("types/pro").ProServiceCategoryType[]
     chatJobId?: number
+    // Present when arriving from a food (hasMenu) listing: shows the
+    // floating "Food Menu" pill and carries the context the menu needs
+    foodMenu?: {
+      serviceId: number
+      categoryName: string
+      address: AddressInfo | null
+    }
   }
   JobDetailScreen: {
     jobId: number

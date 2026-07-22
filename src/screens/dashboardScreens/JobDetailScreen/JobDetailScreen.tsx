@@ -33,6 +33,7 @@ import CancelFeedbackIcon from "assets/icons/cancel-feedback.svg"
 import ClockRedIcon from "assets/icons/clock-red-big.svg"
 import UsersRedIcon from "assets/icons/users-red.svg"
 import styles from "./styles"
+import FoodOrderView from "./components/FoodOrderView"
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -448,6 +449,40 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           ))}
         </DmView>
+      </SafeAreaView>
+    )
+  }
+
+  // Food (hasMenu) orders: order-centric body — status timeline + itemized
+  // breakdown. The pros tabs/offers machinery doesn't apply to a menu order.
+  if (localJob?.foodOrderItems?.length) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Animated.View style={{ flex: 1, opacity: contentFade }}>
+          <DmView className="flex-row items-center px-[16] py-[12]">
+            <DmView
+              className="w-[32] h-[32] items-center justify-center"
+              hitSlop={HIT_SLOP_DEFAULT}
+              onPress={handleGoBack}
+            >
+              <ChevronLeftIcon
+                color={colors.red}
+                style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
+              />
+            </DmView>
+            <DmView className="flex-1 items-center">
+              <DmText className="text-16 font-custom600 text-black">
+                {categoryName}
+              </DmText>
+              <DmText className="text-11 font-custom400 text-grey3">
+                {t("order")}: {jobId}
+              </DmText>
+            </DmView>
+            <DmView className="w-[32]" />
+          </DmView>
+          <DmView className="h-[0.5] bg-grey19" />
+          <FoodOrderView job={localJob} />
+        </Animated.View>
       </SafeAreaView>
     )
   }

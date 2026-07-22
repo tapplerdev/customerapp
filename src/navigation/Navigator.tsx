@@ -41,6 +41,10 @@ import FiltersScreen from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import AllQuestionsScreen from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
 import TapplyAIScreen from "screens/dashboardScreens/TapplyAIScreen/TapplyAIScreen"
 import AuthGateScreen from "screens/dashboardScreens/AuthGateScreen/AuthGateScreen"
+import FoodMenuScreen from "screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen"
+import FoodItemScreen from "screens/dashboardScreens/FoodItemScreen/FoodItemScreen"
+import FoodCartScreen from "screens/dashboardScreens/FoodCartScreen/FoodCartScreen"
+import FoodCheckoutScreen from "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen"
 import { useTypedSelector } from "store"
 import { setCurrentScreen } from "store/auth/slice"
 
@@ -176,6 +180,11 @@ const Navigator = () => {
       <Stack.Screen name="ProProfileScreen" component={ProProfileScreen} options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="ReviewProSelectionScreen" component={ReviewProSelectionScreen} />
       <Stack.Screen name="ReviewFormScreen" component={ReviewFormScreen} />
+      {/* Food ordering (hasMenu categories) */}
+      <Stack.Screen name="FoodMenuScreen" component={FoodMenuScreen} />
+      <Stack.Screen name="FoodItemScreen" component={FoodItemScreen} options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen name="FoodCartScreen" component={FoodCartScreen} />
+      <Stack.Screen name="FoodCheckoutScreen" component={FoodCheckoutScreen} />
     </Stack.Navigator>
   )
 }

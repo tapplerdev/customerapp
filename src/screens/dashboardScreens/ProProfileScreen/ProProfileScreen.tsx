@@ -38,7 +38,7 @@ import CreditCardIcon from "assets/icons/credit-card-icon.svg"
 type Props = RootStackScreenProps<"ProProfileScreen">
 
 const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { proId, serviceCategoryId, serviceCategories: passedServiceCategories, chatJobId } = route.params
+  const { proId, serviceCategoryId, serviceCategories: passedServiceCategories, chatJobId, foodMenu } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
@@ -483,6 +483,28 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           }]}
         >
           <MessagesWhiteIcon width={22} height={22} />
+        </DmView>
+      )}
+
+      {/* Food (hasMenu) category: floating pill into the pro's menu */}
+      {!!foodMenu && !!pro && (
+        <DmView
+          onPress={() =>
+            navigation.navigate("FoodMenuScreen", {
+              proId,
+              serviceCategoryId,
+              serviceId: foodMenu.serviceId,
+              proName: pro.businessName || pro.registeredName || "",
+              categoryName: foodMenu.categoryName,
+              address: foodMenu.address,
+            })
+          }
+          className="absolute self-center h-[44] px-[24] rounded-full bg-red items-center justify-center"
+          style={[styles.floatingButton, { bottom: (insets.bottom || 0) + 16 }]}
+        >
+          <DmText className="text-14 leading-[18px] font-custom700 text-white">
+            {t("food_menu")}
+          </DmText>
         </DmView>
       )}
     </SafeAreaView>

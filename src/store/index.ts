@@ -1,6 +1,7 @@
 import { TypedUseSelectorHook, useSelector } from "react-redux"
 import { configureStore } from "@reduxjs/toolkit"
 import authReducer from "./auth/slice"
+import cartReducer from "./cart/slice"
 import {
   persistStore,
   persistReducer,
@@ -19,11 +20,13 @@ import { reduxMmkvStorage } from "@tappler/shared/src/store/mmkv"
 const persistConfig = {
   key: "tappler_customer_app-root-storage",
   storage: reduxMmkvStorage,
-  whitelist: ["auth"],
+  // cart: a half-built food order survives app kills (delivery-app norm)
+  whitelist: ["auth", "cart"],
 }
 
 const reducers = combineReducers({
   auth: authReducer,
+  cart: cartReducer,
   [api.reducerPath]: api.reducer,
 })
 

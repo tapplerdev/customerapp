@@ -129,6 +129,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const placeOfServiceOptions = category?.placeOfService || []
   const customerQuestions = category?.customerQuestions || []
+  // Food-ordering category: the menu IS the request — no question flow, no
+  // shortlisting; cards lead to the pro's menu instead.
+  const isFoodCategory = !!category?.hasMenu
 
   // Compute answered count for the banner
   const allCustomerQuestions = customerQuestions.filter((q) => q.assignee === "customer")
@@ -205,6 +208,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Launch native question flow on first mount + whenever the service changes
   // (replaces gorhom QuestionBottomSheet)
   useEffect(() => {
+    if (isFoodCategory) {
+      // Food flow: never present questions; release the list immediately.
+      hasLaunchedQuestions.current = true
+      relaunchQuestions.current = false
+      setQuestionsSettled(true)
+      return
+    }
     const firstLaunch =
       !hasLaunchedQuestions.current &&
       (!initialPlaceOfService || !!forceQuestionFlow)
@@ -606,10 +616,33 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [categoryId, navigation, openChat, getChatMessages])
 
+  // Food listing: card action opens the pro's menu straight away
+  const handleViewMenu = useCallback(
+    (pro: ProType) => {
+      navigation.navigate("FoodMenuScreen", {
+        proId: pro.id,
+        serviceCategoryId: categoryId,
+        serviceId,
+        proName: pro.businessName || pro.registeredName || "",
+        categoryName,
+        address: address ?? null,
+      })
+    },
+    [navigation, categoryId, serviceId, categoryName, address]
+  )
+
   const handlePressProfile = useCallback(async (pro: ProType) => {
     const arg = { proId: pro.id, serviceCategoryId: categoryId }
     const goToProfile = () =>
-      navigation.navigate("ProProfileScreen", { proId: pro.id, serviceCategoryId: categoryId, serviceCategories: pro.serviceCategories })
+      navigation.navigate("ProProfileScreen", {
+        proId: pro.id,
+        serviceCategoryId: categoryId,
+        serviceCategories: pro.serviceCategories,
+        // Food category: the profile shows a floating "Food Menu" pill
+        ...(isFoodCategory && {
+          foodMenu: { serviceId, categoryName, address: address ?? null },
+        }),
+      })
 
     // Already prefetched (strategy C) → open instantly, no overlay, no delay
     const cached = api.endpoints.getProProfile.select(arg)(store.getState()).data
@@ -630,7 +663,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     } finally {
       setIsProfileLoading(false)
     }
-  }, [navigation, categoryId, getProProfile, preloadProImages])
+  }, [navigation, categoryId, getProProfile, preloadProImages, isFoodCategory, serviceId, categoryName, address])
 
   const pros = data?.data || []
 
@@ -702,10 +735,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           onMessage={handleMessage}
           onPressProfile={handlePressProfile}
           isTourTarget={index === 0}
+          foodMode={isFoodCategory}
+          onViewMenu={handleViewMenu}
         />
       )
     },
-    [selectedPros, handleToggleSelect, handleMessage, handlePressProfile]
+    [selectedPros, handleToggleSelect, handleMessage, handlePressProfile, isFoodCategory, handleViewMenu]
   )
 
   return (
@@ -739,34 +774,36 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             {" • "}{address?.city || address?.governorate || ""}
           </DmText>
         </DmView>
-        <DmView
-          onPress={() => {
-            if (Platform.OS === "ios") {
-              setFiltersOpenCount((c) => c + 1)
-              setFiltersVisible(true)
-            } else {
-              navigation.navigate("FiltersScreen", {
-                currentPlaceOfService,
-                initialFilters: currentFilters,
-                refinementFilters,
-                initialRefinementOptionIds: refinementFilterOptionIds,
-                initialRanges: rangeFilters,
-                upfrontSelections,
-                onApply: handleFiltersDismiss,
-              })
-            }
-          }}
-          className="w-[32] h-[32] items-center justify-center"
-          hitSlop={HIT_SLOP_DEFAULT}
-        >
-          <FilterSlidersIcon width={22} height={22} color={colors.black} />
-        </DmView>
+        {!isFoodCategory && (
+          <DmView
+            onPress={() => {
+              if (Platform.OS === "ios") {
+                setFiltersOpenCount((c) => c + 1)
+                setFiltersVisible(true)
+              } else {
+                navigation.navigate("FiltersScreen", {
+                  currentPlaceOfService,
+                  initialFilters: currentFilters,
+                  refinementFilters,
+                  initialRefinementOptionIds: refinementFilterOptionIds,
+                  initialRanges: rangeFilters,
+                  upfrontSelections,
+                  onApply: handleFiltersDismiss,
+                })
+              }
+            }}
+            className="w-[32] h-[32] items-center justify-center"
+            hitSlop={HIT_SLOP_DEFAULT}
+          >
+            <FilterSlidersIcon width={22} height={22} color={colors.black} />
+          </DmView>
+        )}
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
       {/* Job details banner + matches heading */}
       <DmView className="px-[16] pt-[14] pb-[8] bg-white">
-        {totalQuestions > 0 && (
+        {totalQuestions > 0 && !isFoodCategory && (
           <DmView
             onPress={() => {
               if (Platform.OS === "ios") {
@@ -793,7 +830,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         )}
         {pros.length > 0 && (
           <DmText className="text-19 leading-[24px] font-custom700 text-black">
-            {pros.length} {t("matches_based_on_answers")}
+            {pros.length}{" "}
+            {t(isFoodCategory ? "available_for_delivery" : "matches_based_on_answers")}
           </DmText>
         )}
       </DmView>

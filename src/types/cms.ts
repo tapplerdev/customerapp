@@ -69,6 +69,9 @@ export type ServiceCategoryType = {
   customerQuestions?: ServiceQuestionType[]
   proQuestions?: ServiceQuestionType[]
   dateTypes?: ServiceCategoryDateType[]
+  // Food-ordering category: browse a menu and place an order instead of the
+  // questions → shortlist → offers flow
+  hasMenu?: boolean
 }
 
 export type ServiceType = {
