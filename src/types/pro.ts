@@ -48,6 +48,17 @@ export type ProServiceCategoryType = {
   subscriptions?: ProSubscriptionType[]
 }
 
+export type ProWorkPhotoType = {
+  id: number
+  url: string
+  url720: string
+  url150: string
+  // Distinguishes a video from an image without sniffing the URL
+  mimeType: string | null
+  // Poster frame uploaded with the video; null for images
+  posterUrl: string | null
+}
+
 export type ProHourType = {
   id: number
   dayOfWeek: string
@@ -93,7 +104,10 @@ export type ProType = {
   offers?: ProOfferType[]
   mobileNumber?: string
   email?: string
-  photosOfWork?: string[]
+  // Per-service gallery: already filtered by the backend to the service being
+  // viewed and to approved items only. Replaces the legacy pro-level
+  // photosOfWork, which is no longer sent to customers.
+  workPhotos?: ProWorkPhotoType[]
   hours?: ProHourType[]
   paymentMethods?: string[]
   socials?: ProSocialType[]

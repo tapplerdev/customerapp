@@ -10,6 +10,7 @@ import { BlurView } from "@react-native-community/blur"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
+import { ProWorkPhotoType } from "types/pro"
 import { useGetProProfileQuery, useLazyOpenChatQuery } from "services/api"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -21,8 +22,10 @@ import CachedImage from "@tappler/shared/src/components/CachedImage"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import useProSubscriptions from "hooks/useProSubscriptions"
 import FastImage from "react-native-fast-image"
+import Video from "react-native-video"
 
 import CloseIcon from "assets/icons/close.svg"
+import PlayIcon from "assets/icons/play.svg"
 import styles from "./styles"
 import IndividualIcon from "assets/icons/individual.svg"
 import BusinessIcon from "assets/icons/business.svg"
@@ -34,6 +37,16 @@ import WebsiteIcon from "assets/icons/website.svg"
 import MessagesWhiteIcon from "assets/icons/messages-white.svg"
 import CashIcon from "assets/icons/cash-icon.svg"
 import CreditCardIcon from "assets/icons/credit-card-icon.svg"
+
+const isVideoMedia = (media: ProWorkPhotoType) =>
+  (media.mimeType ?? "").startsWith("video")
+
+// Videos show the poster uploaded with them; anything without one (or any
+// image) falls back to the small variant, then the original.
+const thumbnailUri = (media: ProWorkPhotoType) =>
+  isVideoMedia(media)
+    ? media.posterUrl || media.url150 || media.url
+    : media.url150 || media.url
 
 type Props = RootStackScreenProps<"ProProfileScreen">
 
@@ -72,6 +85,8 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const overallScore = pro?.reviewScore?.overallScore || 0
   const reviewsCount = pro?.reviewScore?.reviewsCount || 0
   const proServiceCat = passedServiceCategories?.[0] || pro?.serviceCategories?.[0]
+  // Already scoped by the backend to this service and to approved items only.
+  const workPhotos = useMemo(() => pro?.workPhotos ?? [], [pro?.workPhotos])
   const isFeatured = proServiceCat?.isFeatured
   const { featureSubscription, promoLine, trustDocs } = useProSubscriptions({
     subscriptions: proServiceCat?.subscriptions,
@@ -284,8 +299,8 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         )}
 
-        {/* Photos of Work */}
-        {pro.photosOfWork && pro.photosOfWork.length > 0 && (
+        {/* Photos & videos of work — per service, approved only */}
+        {workPhotos.length > 0 && (
           <DmView className="pt-[15] pb-[20] border-t-1 border-grey53 mr-[16]">
             <DmView className="pl-[15] pr-[19]">
               <DmText className="text-14 leading-[18px] font-custom600">
@@ -296,10 +311,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1, paddingRight: 15 }}
-              data={pro.photosOfWork}
-              keyExtractor={(item, index) => item || String(index)}
-              renderItem={({ item: url, index }) => {
+              data={workPhotos}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item, index }) => {
                 const imageSize = (SCREEN_WIDTH - 50) / 3
+                const isVideo = isVideoMedia(item)
                 return (
                   <DmView
                     className={`pt-[10] mr-[10] ${index === 0 ? "ml-[15]" : ""}`}
@@ -309,11 +325,20 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     }}
                   >
                     <CachedImage
-                      uri={url}
+                      uri={thumbnailUri(item)}
                       style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
                       resizeMode="cover"
                       withSkeleton
                     />
+                    {isVideo && (
+                      <DmView
+                        className="absolute items-center justify-center"
+                        style={{ width: imageSize, height: imageSize, top: 10 }}
+                        pointerEvents="none"
+                      >
+                        <PlayIcon width={28} height={28} />
+                      </DmView>
+                    )}
                   </DmView>
                 )
               }}
@@ -401,7 +426,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       </KeyboardAwareScrollView>
 
       {/* Photo viewer modal */}
-      {pro.photosOfWork && pro.photosOfWork.length > 0 && (
+      {workPhotos.length > 0 && (
         <Modal
           visible={viewerVisible}
           transparent
@@ -423,18 +448,31 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 ref={carouselRef}
                 width={SCREEN_WIDTH}
                 height={SCREEN_WIDTH}
-                data={pro.photosOfWork}
+                data={workPhotos}
                 defaultIndex={viewerIndex}
                 onSnapToItem={(index) => setViewerIndex(index)}
                 loop={false}
-                renderItem={({ item: url }) => (
-                  <CachedImage
-                    uri={url}
-                    style={styles.fullSize}
-                    resizeMode="cover"
-                    withSkeleton
-                  />
-                )}
+                renderItem={({ item, index }) =>
+                  isVideoMedia(item) ? (
+                    // Only the slide in view plays; the rest stay paused so
+                    // swiping through a gallery doesn't start several at once.
+                    <Video
+                      source={{ uri: item.url }}
+                      style={styles.fullSize}
+                      resizeMode="contain"
+                      controls
+                      paused={index !== viewerIndex}
+                      repeat={false}
+                    />
+                  ) : (
+                    <CachedImage
+                      uri={item.url720 || item.url}
+                      style={styles.fullSize}
+                      resizeMode="cover"
+                      withSkeleton
+                    />
+                  )
+                }
               />
             </DmView>
 
@@ -445,10 +483,10 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <FlatList
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                data={pro.photosOfWork}
-                keyExtractor={(item, index) => item || String(index)}
+                data={workPhotos}
+                keyExtractor={(item) => String(item.id)}
                 contentContainerStyle={{ paddingHorizontal: 10, alignItems: "center", justifyContent: "center", flexGrow: 1 }}
-                renderItem={({ item: url, index: idx }) => (
+                renderItem={({ item, index: idx }) => (
                   <TouchableOpacity
                     onPress={() => {
                       setViewerIndex(idx)
@@ -460,7 +498,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     ]}
                   >
                     <CachedImage
-                      uri={url}
+                      uri={thumbnailUri(item)}
                       style={styles.thumbnailSize}
                       resizeMode="cover"
                     />

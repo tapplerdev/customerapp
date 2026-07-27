@@ -284,8 +284,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Preload a pro's image BYTES into FastImage's disk cache so the profile
   // screen renders them instantly instead of popping them in on arrival.
+  // Only the profile photo: the work gallery is per service and arrives with
+  // the profile fetch, so it isn't on the list payload to preload from.
   const preloadProImages = useCallback((p: ProType) => {
-    const uris = [p.profilePhoto150, p.profilePhoto, ...(p.photosOfWork?.slice(0, 4) ?? [])]
+    const uris = [p.profilePhoto150, p.profilePhoto]
       .filter(Boolean)
       .map((uri) => ({ uri: uri as string }))
     if (uris.length) FastImage.preload(uris)
