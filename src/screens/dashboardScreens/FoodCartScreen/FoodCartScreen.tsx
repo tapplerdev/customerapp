@@ -13,6 +13,8 @@ import { useTypedSelector } from "store"
 import {
   cartLineTotal,
   cartSubtotal,
+  emptyDraft,
+  selectDraft,
   setCartItemQuantity,
 } from "store/cart/slice"
 import { useGetProMenuQuery } from "services/api"
@@ -50,17 +52,22 @@ const lineOriginalUnit = (line: CartItemType): number => {
 // strikethrough totals, a bordered stepper under each thumbnail, and a plain
 // totals block. Fee/discount preview uses the pro's menu config — the backend
 // recomputes and persists its own numbers at creation.
-const FoodCartScreen: React.FC<Props> = ({ navigation }) => {
+const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { proId } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
   const dispatch = useDispatch()
 
-  const cart = useTypedSelector((state) => state.cart)
+  // This screen always operates on the draft for the pro it was opened from —
+  // other kitchens' baskets are untouched.
+  const cartState = useTypedSelector((state) => state.cart)
+  const cart =
+    selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
 
   const { data: menu } = useGetProMenuQuery(
-    { proId: cart.proId ?? 0, serviceCategoryId: cart.serviceCategoryId ?? 0 },
-    { skip: !cart.proId || !cart.serviceCategoryId }
+    { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
+    { skip: !cart.serviceCategoryId }
   )
 
   const subtotal = cartSubtotal(cart.items)
@@ -87,7 +94,7 @@ const FoodCartScreen: React.FC<Props> = ({ navigation }) => {
 
   const changeQuantity = (line: CartItemType, delta: number) => {
     dispatch(
-      setCartItemQuantity({ uid: line.uid, quantity: line.quantity + delta })
+      setCartItemQuantity({ proId, uid: line.uid, quantity: line.quantity + delta })
     )
   }
 
@@ -284,7 +291,7 @@ const FoodCartScreen: React.FC<Props> = ({ navigation }) => {
               title={t("continue")}
               className="h-[48]"
               textClassName="text-15 leading-[19px] font-custom600"
-              onPress={() => navigation.navigate("FoodCheckoutScreen")}
+              onPress={() => navigation.navigate("FoodCheckoutScreen", { proId })}
             />
           </DmView>
         </>

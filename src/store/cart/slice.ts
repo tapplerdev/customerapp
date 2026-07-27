@@ -2,32 +2,33 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { CartItemType } from "types/food"
 import { AddressInfo } from "navigation/types"
 
-// One food cart at a time, tied to a single pro (one menu, one kitchen).
-// Persisted (whitelisted in store/index.ts) so a half-built order survives
-// app kills — mirroring every delivery app's behavior.
-export interface CartState {
-  proId: number | null
-  serviceCategoryId: number | null
-  serviceId: number | null
-  proName: string | null
-  categoryName: string | null
+// One DRAFT PER PRO (Deliveroo model): browsing another kitchen never destroys
+// the basket you were building at the first one. Drafts are persisted
+// (whitelisted in store/index.ts → MMKV) and expire individually after
+// CART_STALE_MS via a lazy sweep — MMKV has no TTL of its own.
+export interface CartDraft {
+  proId: number
+  serviceCategoryId: number
+  serviceId: number
+  proName: string
+  categoryName: string
   // The address the customer browsed with — checkout starts from it
   address: AddressInfo | null
   items: CartItemType[]
   orderNotes: string
+  // Chosen at the listing (Delivery/Pickup toggle) — steers checkout
+  fulfillmentMode: "delivery" | "pickup"
+  // ms epoch of the last activity on THIS draft — drives per-draft expiry
+  lastUpdatedAt: number
 }
 
-const initialState: CartState = {
-  proId: null,
-  serviceCategoryId: null,
-  serviceId: null,
-  proName: null,
-  categoryName: null,
-  address: null,
-  items: [],
-  orderNotes: "",
+export interface CartState {
+  carts: Record<number, CartDraft>
 }
 
+const initialState: CartState = { carts: {} }
+
+// Everything needed to open a draft for a pro the first time an item is added.
 export interface CartContext {
   proId: number
   serviceCategoryId: number
@@ -35,58 +36,125 @@ export interface CartContext {
   proName: string
   categoryName: string
   address: AddressInfo | null
+  fulfillmentMode: "delivery" | "pickup"
 }
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    // Adding from a different pro must go through clearCart first — the
-    // screens confirm the reset with the customer before dispatching.
     addCartItem: (
       state,
       action: PayloadAction<{ context: CartContext; item: CartItemType }>
     ) => {
       const { context, item } = action.payload
-      if (state.proId !== context.proId) {
-        state.items = []
-      }
-      state.proId = context.proId
-      state.serviceCategoryId = context.serviceCategoryId
-      state.serviceId = context.serviceId
-      state.proName = context.proName
-      state.categoryName = context.categoryName
-      state.address = context.address
+      const draft = state.carts[context.proId]
 
-      const existing = state.items.find((line) => line.uid === item.uid)
+      if (!draft) {
+        state.carts[context.proId] = {
+          ...context,
+          items: [item],
+          orderNotes: "",
+          lastUpdatedAt: Date.now(),
+        }
+        return
+      }
+
+      // Refresh the browsing context (address / mode may have changed since)
+      draft.serviceCategoryId = context.serviceCategoryId
+      draft.serviceId = context.serviceId
+      draft.proName = context.proName
+      draft.categoryName = context.categoryName
+      draft.address = context.address
+      draft.fulfillmentMode = context.fulfillmentMode
+
+      const existing = draft.items.find((line) => line.uid === item.uid)
       if (existing) {
         existing.quantity += item.quantity
       } else {
-        state.items.push(item)
+        draft.items.push(item)
       }
+      draft.lastUpdatedAt = Date.now()
     },
+
     setCartItemQuantity: (
       state,
-      action: PayloadAction<{ uid: string; quantity: number }>
+      action: PayloadAction<{ proId: number; uid: string; quantity: number }>
     ) => {
-      const line = state.items.find((l) => l.uid === action.payload.uid)
+      const { proId, uid, quantity } = action.payload
+      const draft = state.carts[proId]
+      if (!draft) return
+
+      const line = draft.items.find((l) => l.uid === uid)
       if (!line) return
-      if (action.payload.quantity <= 0) {
-        state.items = state.items.filter((l) => l.uid !== action.payload.uid)
+
+      if (quantity <= 0) {
+        draft.items = draft.items.filter((l) => l.uid !== uid)
       } else {
-        line.quantity = action.payload.quantity
+        line.quantity = quantity
+      }
+
+      // Emptied → drop the draft entirely (no zombie pro identity left behind)
+      if (!draft.items.length) {
+        delete state.carts[proId]
+        return
+      }
+      draft.lastUpdatedAt = Date.now()
+    },
+
+    removeCartItem: (
+      state,
+      action: PayloadAction<{ proId: number; uid: string }>
+    ) => {
+      const { proId, uid } = action.payload
+      const draft = state.carts[proId]
+      if (!draft) return
+
+      draft.items = draft.items.filter((l) => l.uid !== uid)
+      if (!draft.items.length) {
+        delete state.carts[proId]
+        return
+      }
+      draft.lastUpdatedAt = Date.now()
+    },
+
+    setCartAddress: (
+      state,
+      action: PayloadAction<{ proId: number; address: AddressInfo }>
+    ) => {
+      const draft = state.carts[action.payload.proId]
+      if (!draft) return
+      draft.address = action.payload.address
+      draft.lastUpdatedAt = Date.now()
+    },
+
+    setOrderNotes: (
+      state,
+      action: PayloadAction<{ proId: number; notes: string }>
+    ) => {
+      const draft = state.carts[action.payload.proId]
+      if (!draft) return
+      draft.orderNotes = action.payload.notes
+      draft.lastUpdatedAt = Date.now()
+    },
+
+    // After a successful order (or an explicit discard) — drops ONLY that pro's
+    // draft; other baskets survive.
+    clearCart: (state, action: PayloadAction<number>) => {
+      delete state.carts[action.payload]
+    },
+
+    // Lazy TTL: called on app launch and on menu entry. Drops every draft that
+    // hasn't been touched within CART_STALE_MS.
+    sweepStaleCarts: (state, action: PayloadAction<number>) => {
+      const now = action.payload
+      for (const key of Object.keys(state.carts)) {
+        const draft = state.carts[Number(key)]
+        if (!draft || now - draft.lastUpdatedAt > CART_STALE_MS) {
+          delete state.carts[Number(key)]
+        }
       }
     },
-    removeCartItem: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter((l) => l.uid !== action.payload)
-    },
-    setCartAddress: (state, action: PayloadAction<AddressInfo>) => {
-      state.address = action.payload
-    },
-    setOrderNotes: (state, action: PayloadAction<string>) => {
-      state.orderNotes = action.payload
-    },
-    clearCart: () => initialState,
   },
 })
 
@@ -97,6 +165,7 @@ export const {
   setCartAddress,
   setOrderNotes,
   clearCart,
+  sweepStaleCarts,
 } = cartSlice.actions
 
 // Per-line total = (base + choices) × qty; subtotal drives the fee/discount
@@ -115,5 +184,47 @@ export const cartSubtotal = (items: CartItemType[]): number =>
 
 export const cartCount = (items: CartItemType[]): number =>
   items.reduce((sum, line) => sum + line.quantity, 0)
+
+// A draft untouched for this long is treated as abandoned.
+export const CART_STALE_MS = 60 * 60 * 1000 // 1 hour
+
+export const isDraftStale = (draft: CartDraft, now: number): boolean =>
+  now - draft.lastUpdatedAt > CART_STALE_MS
+
+// Live (non-expired) drafts. Screens read through these so an expired draft is
+// never rendered, even if the sweep dispatch lands a frame later.
+export const selectDraft = (
+  state: CartState,
+  proId: number | undefined,
+  now: number
+): CartDraft | undefined => {
+  if (!proId) return undefined
+  const draft = state.carts[proId]
+  return draft && !isDraftStale(draft, now) ? draft : undefined
+}
+
+// Placeholder so cart/checkout can render their empty states without
+// null-checking every field (items: [] drives the empty UI).
+export const emptyDraft = (proId: number): CartDraft => ({
+  proId,
+  serviceCategoryId: 0,
+  serviceId: 0,
+  proName: "",
+  categoryName: "",
+  address: null,
+  items: [],
+  orderNotes: "",
+  fulfillmentMode: "delivery",
+  lastUpdatedAt: 0,
+})
+
+export const selectOtherDrafts = (
+  state: CartState,
+  proId: number | undefined,
+  now: number
+): CartDraft[] =>
+  Object.values(state.carts).filter(
+    (draft) => draft.proId !== proId && !isDraftStale(draft, now)
+  )
 
 export default cartSlice.reducer

@@ -46,11 +46,9 @@ export type FoodMenuType = {
   totalOrderValueDiscountThreshold: number | null
   menuSections: FoodMenuSectionType[]
   status?: string
-  // km, null = pro delivers with no radius cap
-  deliveryRadius?: number | null
-  // The pro's address point(s) — an address is in-zone when within
-  // deliveryRadius of ANY of them (mirrors the backend rule).
-  proLocations?: { latitude: number; longitude: number }[]
+  // Pro's fulfillment capability — checkout limits the mode selector to these
+  isDeliveryEnabled?: boolean
+  isPickupEnabled?: boolean
 }
 
 // One cart line = a menu item + a specific combination of option choices.

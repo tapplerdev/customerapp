@@ -52,6 +52,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
     proName,
     categoryName,
     address,
+    fulfillmentMode = "delivery",
   } = route.params
 
   const { t } = useTranslation()
@@ -154,6 +155,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
           proName,
           categoryName,
           address: address ?? null,
+          fulfillmentMode,
         },
         item: {
           uid,

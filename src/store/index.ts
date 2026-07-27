@@ -20,8 +20,18 @@ import { reduxMmkvStorage } from "@tappler/shared/src/store/mmkv"
 const persistConfig = {
   key: "tappler_customer_app-root-storage",
   storage: reduxMmkvStorage,
-  // cart: a half-built food order survives app kills (delivery-app norm)
+  // cart: half-built food orders survive app kills (delivery-app norm)
   whitelist: ["auth", "cart"],
+  // v1: cart went from a single cart object to per-pro drafts
+  // ({ carts: Record<proId, CartDraft> }). The old shape can't be mapped
+  // safely (no per-draft timestamp), so drop any in-flight cart once.
+  version: 1,
+  migrate: async (state: any) => {
+    if (state?.cart && !state.cart.carts) {
+      return { ...state, cart: { carts: {} } }
+    }
+    return state
+  },
 }
 
 const reducers = combineReducers({

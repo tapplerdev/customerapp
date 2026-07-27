@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 // Components
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
@@ -17,7 +17,9 @@ import {
   addCartItem,
   cartCount,
   cartSubtotal,
+  selectDraft,
   setCartItemQuantity,
+  sweepStaleCarts,
 } from "store/cart/slice"
 
 // Helpers & Types
@@ -44,7 +46,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width
 // section tabs + item rows, but taps go to FoodItemScreen (real add-to-cart)
 // and a View Basket bar rides the bottom once the cart has lines.
 const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { proId, serviceCategoryId, serviceId, proName, categoryName, address } =
+  const { proId, serviceCategoryId, serviceId, proName, categoryName, address, fulfillmentMode = "delivery" } =
     route.params
 
   const { t, i18n } = useTranslation()
@@ -61,20 +63,30 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const dispatch = useDispatch()
   const cart = useTypedSelector((state) => state.cart)
-  const isOwnCart = cart.proId === proId
-  const basketVisible = isOwnCart && cart.items.length > 0
-  const basketCount = cartCount(cart.items)
-  const basketTotal = cartSubtotal(cart.items)
 
-  // Per-menu-item quantity across cart lines → drives the thumbnail overlay
+  // Drop abandoned drafts on entry (lazy TTL). Selectors below also filter
+  // expired drafts at render time, so nothing stale can flash first.
+  useEffect(() => {
+    dispatch(sweepStaleCarts(Date.now()))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // THIS pro's draft — drives the pill + thumbnail quantities. Other kitchens'
+  // drafts stay untouched in the background (reachable by revisiting them).
+  const draft = selectDraft(cart, proId, Date.now())
+
+  const basketVisible = !!draft
+  const basketCount = cartCount(draft?.items ?? [])
+  const basketTotal = cartSubtotal(draft?.items ?? [])
+
+  // Per-menu-item quantity across this draft's lines → thumbnail overlay
   const qtyByItemId = useMemo(() => {
     const map: Record<number, number> = {}
-    if (!isOwnCart) return map
-    for (const line of cart.items) {
+    for (const line of draft?.items ?? []) {
       map[line.menuItemId] = (map[line.menuItemId] || 0) + line.quantity
     }
     return map
-  }, [isOwnCart, cart.items])
+  }, [draft])
 
   const sections = useMemo(() => {
     return (menu?.menuSections || [])
@@ -122,9 +134,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         proName,
         categoryName,
         address,
+        fulfillmentMode,
       })
     },
-    [navigation, proId, serviceCategoryId, serviceId, proName, categoryName, address]
+    [navigation, proId, serviceCategoryId, serviceId, proName, categoryName, address, fulfillmentMode]
   )
 
   // Thumbnail "+": optionless items add straight to the cart (uid matches
@@ -145,6 +158,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
             proName,
             categoryName,
             address: address ?? null,
+            fulfillmentMode,
           },
           item: {
             uid: `${item.id}:`,
@@ -159,20 +173,26 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         })
       )
     },
-    [dispatch, handlePressItem, proId, serviceCategoryId, serviceId, proName, categoryName, address]
+    [dispatch, handlePressItem, proId, serviceCategoryId, serviceId, proName, categoryName, address, fulfillmentMode]
   )
 
   // Thumbnail trash/−: peel one off the LAST cart line of this item
   const handleQuickRemove = useCallback(
     (item: FoodMenuItemType) => {
-      const lines = cart.items.filter((line) => line.menuItemId === item.id)
+      const lines = (draft?.items ?? []).filter(
+        (line) => line.menuItemId === item.id
+      )
       const last = lines[lines.length - 1]
       if (!last) return
       dispatch(
-        setCartItemQuantity({ uid: last.uid, quantity: last.quantity - 1 })
+        setCartItemQuantity({
+          proId,
+          uid: last.uid,
+          quantity: last.quantity - 1,
+        })
       )
     },
-    [dispatch, cart.items]
+    [dispatch, draft, proId]
   )
 
   const renderSection = ({ item }: { item: FoodMenuSectionType }) => {
@@ -266,7 +286,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView
           className="absolute self-center h-[52] rounded-full bg-red flex-row items-center pl-[6] pr-[24]"
           style={[styles.basketShadow, { bottom: insets.bottom + 16 }]}
-          onPress={() => navigation.navigate("FoodCartScreen")}
+          onPress={() => navigation.navigate("FoodCartScreen", { proId })}
         >
           <DmView className="w-[40] h-[40] rounded-full bg-white items-center justify-center">
             <DmText className="text-15 leading-[19px] font-custom700 text-black">

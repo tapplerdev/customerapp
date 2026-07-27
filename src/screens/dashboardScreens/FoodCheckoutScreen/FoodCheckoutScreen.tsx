@@ -19,10 +19,16 @@ import { useTypedSelector } from "store"
 import {
   cartSubtotal,
   clearCart,
+  emptyDraft,
+  selectDraft,
   setCartAddress,
   setOrderNotes,
 } from "store/cart/slice"
-import { useCreateJobMutation, useGetProMenuQuery } from "services/api"
+import {
+  useCheckDeliveryQuery,
+  useCreateJobMutation,
+  useGetProMenuQuery,
+} from "services/api"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
 // Helpers & Types
@@ -37,39 +43,25 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 
 type Props = RootStackScreenProps<"FoodCheckoutScreen">
 
-// Straight-line distance in km — same yardstick as the backend's delivery
-// check (ST_Distance vs deliveryRadius km against ANY pro address).
-const distanceKm = (
-  a: { lat: number; lon: number },
-  b: { latitude: number; longitude: number }
-): number => {
-  const R = 6371
-  const dLat = ((b.latitude - a.lat) * Math.PI) / 180
-  const dLon = ((b.longitude - a.lon) * Math.PI) / 180
-  const lat1 = (a.lat * Math.PI) / 180
-  const lat2 = (b.latitude * Math.PI) / 180
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(h))
-}
-
 // Checkout: delivery address (with out-of-zone guard), delivery time
 // (now / scheduled via CalendarTimeModal), payment on delivery, and the
 // final Place Order submit through the standard createJob endpoint.
-const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
+const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { proId } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
   const dispatch = useDispatch()
 
-  const cart = useTypedSelector((state) => state.cart)
+  // Checkout always submits the draft for the pro it was entered from.
+  const cartState = useTypedSelector((state) => state.cart)
+  const cart = selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
   const { isAuth } = useTypedSelector((state) => state.auth)
   const [createJob] = useCreateJobMutation()
 
   const { data: menu } = useGetProMenuQuery(
-    { proId: cart.proId ?? 0, serviceCategoryId: cart.serviceCategoryId ?? 0 },
-    { skip: !cart.proId || !cart.serviceCategoryId }
+    { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
+    { skip: !cart.serviceCategoryId }
   )
 
   const [deliverNow, setDeliverNow] = useState(true)
@@ -93,7 +85,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
     const handler = (address: AddressInfo) => {
       setTimeout(() => {
         if (!navigation.isFocused()) return
-        dispatch(setCartAddress(address))
+        dispatch(setCartAddress({ proId, address }))
       }, 600)
     }
     addressEventBus.on("address:pick", handler)
@@ -104,13 +96,33 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [navigation, dispatch])
 
+  // Fulfillment mode. The listing seeds a hint (cart.fulfillmentMode); the
+  // checkout is the source of truth, limited to what the pro actually offers.
+  const availableModes = useMemo<("delivery" | "pickup")[]>(() => {
+    const modes: ("delivery" | "pickup")[] = []
+    if (menu?.isDeliveryEnabled) modes.push("delivery")
+    if (menu?.isPickupEnabled) modes.push("pickup")
+    return modes.length ? modes : ["delivery"]
+  }, [menu?.isDeliveryEnabled, menu?.isPickupEnabled])
+
+  const [selectedMode, setSelectedMode] = useState<"delivery" | "pickup">(
+    cart.fulfillmentMode
+  )
+  // Once the menu loads, snap to a mode the pro actually offers.
+  useEffect(() => {
+    if (!availableModes.includes(selectedMode)) setSelectedMode(availableModes[0])
+  }, [availableModes, selectedMode])
+
+  // Pickup orders: no delivery fee, no delivery-zone advisory — customer travels.
+  const isPickup = selectedMode === "pickup"
+
   const subtotal = cartSubtotal(cart.items)
   const deliveryFee = useMemo(() => {
-    if (!menu) return 0
+    if (isPickup || !menu) return 0
     if (menu.freeDeliveryThreshold != null && subtotal >= menu.freeDeliveryThreshold)
       return 0
     return menu.deliveryCharge ?? 0
-  }, [menu, subtotal])
+  }, [isPickup, menu, subtotal])
   const orderDiscount = useMemo(() => {
     if (
       !menu ||
@@ -123,20 +135,23 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
   }, [menu, subtotal])
   const total = subtotal + deliveryFee - orderDiscount
 
-  // In-zone when within radius of ANY pro address; no radius = no cap.
-  // Backend re-checks at submission (ProsServeJobLocation), this is the
-  // friendly early warning.
+  // Out-of-zone is decided by the backend (same ST_Distance check createJob
+  // enforces), not client-side math. Fail-open: only block on a definitive
+  // `deliverable: false` — while fetching or on error we don't block, since
+  // createJob is the final authority.
   const addressCoords = cart.address?.coords
 
-  const outOfZone = useMemo(() => {
-    if (!addressCoords) return false
-    if (menu?.deliveryRadius == null) return false
-    const points = menu.proLocations ?? []
-    if (!points.length) return false
-    return !points.some(
-      (point) => distanceKm(addressCoords, point) <= menu.deliveryRadius!
-    )
-  }, [addressCoords, menu])
+  const { data: deliveryCheck } = useCheckDeliveryQuery(
+    {
+      proId: cart.proId ?? 0,
+      serviceCategoryId: cart.serviceCategoryId ?? 0,
+      latitude: addressCoords?.lat ?? 0,
+      longitude: addressCoords?.lon ?? 0,
+    },
+    { skip: isPickup || !cart.proId || !cart.serviceCategoryId || !addressCoords }
+  )
+
+  const outOfZone = !isPickup && deliveryCheck?.deliverable === false
 
   const canSubmit =
     cart.items.length > 0 &&
@@ -184,7 +199,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
         },
         prosIds: [cart.proId],
         questionsAnswers: [],
-        placeOfService: "delivery",
+        placeOfService: selectedMode,
         dateType: deliverNow ? "asap" : "date",
         ...(!deliverNow && scheduledDate && { dates: [{ date: scheduledDate }] }),
         ...(!deliverNow &&
@@ -215,7 +230,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
       }
       await createJob(payload).unwrap()
       const successAddress = cart.address
-      dispatch(clearCart())
+      dispatch(clearCart(proId))
       navigation.navigate("RequestSuccessScreen", { address: successAddress })
     } catch (error: any) {
       const validationErrors = error?.data?.validationErrors
@@ -293,8 +308,44 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
       >
+        {/* Fulfillment mode — only when the pro offers both */}
+        {availableModes.length > 1 && (
+          <DmView className="mb-[20]">
+            {sectionTitle(t("fulfillment"))}
+            <DmView className="flex-row">
+              {availableModes.map((mode, i) => {
+                const active = selectedMode === mode
+                return (
+                  <DmView
+                    key={mode}
+                    onPress={() => setSelectedMode(mode)}
+                    style={{
+                      flex: 1,
+                      height: 44,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      marginRight: i === 0 ? 10 : 0,
+                      backgroundColor: active ? colors.red : colors.white,
+                      borderColor: active ? colors.red : colors.grey14,
+                    }}
+                  >
+                    <DmText
+                      className="text-14 leading-[18px] font-custom600"
+                      style={{ color: active ? colors.white : colors.black }}
+                    >
+                      {t(mode)}
+                    </DmText>
+                  </DmView>
+                )
+              })}
+            </DmView>
+          </DmView>
+        )}
+
         {/* Deliver to */}
-        {sectionTitle(t("deliver_to"))}
+        {sectionTitle(t(isPickup ? "your_location" : "deliver_to"))}
         <DmView
           className="p-[14] rounded-12 border-0.5 border-grey14"
           onPress={() =>
@@ -328,7 +379,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* Delivery time */}
         <DmView className="mt-[20]">
-          {sectionTitle(t("delivery_time"))}
+          {sectionTitle(t(isPickup ? "pickup_time" : "delivery_time"))}
           <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
             <DmView
               className="flex-row items-center justify-between"
@@ -339,7 +390,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
               }}
             >
               <DmText className="text-13 leading-[17px] font-custom500">
-                {t("deliver_now")}
+                {t(isPickup ? "pick_up_now" : "deliver_now")}
               </DmText>
               <DmChecbox variant="circle" isChecked={deliverNow} />
             </DmView>
@@ -350,7 +401,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
             >
               <DmView className="flex-1">
                 <DmText className="text-13 leading-[17px] font-custom500">
-                  {t("schedule_delivery")}
+                  {t(isPickup ? "schedule_pickup" : "schedule_delivery")}
                 </DmText>
                 {!deliverNow && !!scheduledDate && (
                   <DmText className="mt-[3] text-12 leading-[15px] font-custom400 text-grey2">
@@ -398,7 +449,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ navigation }) => {
           <DmView className="bg-white" style={styles.notesBorder}>
             <TextInput
               value={cart.orderNotes}
-              onChangeText={(text) => dispatch(setOrderNotes(text))}
+              onChangeText={(text) => dispatch(setOrderNotes({ proId, notes: text }))}
               multiline
               placeholder={t("order_notes_placeholder")}
               placeholderTextColor={colors.grey5}

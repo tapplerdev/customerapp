@@ -6,7 +6,7 @@ import LottieView from "lottie-react-native"
 import FastImage from "react-native-fast-image"
 
 import { RootStackScreenProps } from "navigation/types"
-import { api, useLazyGetProsForCategoryQuery } from "services/api"
+import { useLazyGetProsForCategoryQuery, useLazyGetServiceByIdQuery } from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
 
 import LogoIconEn from "assets/icons/logo-en.svg"
@@ -21,7 +21,7 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
   const { i18n } = useTranslation()
   const LogoIcon = i18n.language === "ar" ? LogoIconAr : LogoIconEn
   const [getPros] = useLazyGetProsForCategoryQuery()
-  const prefetchService = api.usePrefetch("getServiceById")
+  const [getService] = useLazyGetServiceByIdQuery()
   const hasNavigated = useRef(false)
 
   useEffect(() => {
@@ -49,13 +49,14 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
         const cap = new Promise((resolve) => setTimeout(resolve, 1200))
         return Promise.race([svgWarm, cap])
       })
-    // Prefetch service data (questions/filters) in parallel — cached by RTK Query
-    // for ProsListingScreen. ifOlderThan bounds staleness: fresh cache (<2min) is
-    // served instantly (no heavy re-download per search), older data refetches
-    // (getServiceById has no invalidation tags, so age is the only freshness).
-    prefetchService(serviceId, { ifOlderThan: 120 })
+    // AWAIT the service payload too — it decides isFoodCategory (hasMenu), so
+    // the listing must have it BEFORE it renders. Otherwise food cards flash as
+    // normal pros (registered name, no screen name / distance / capability
+    // badges, "Select me" button) until it loads. Cache-served instantly on
+    // repeat searches; only the first search pays the fetch (well under 3s).
+    const fetchService = getService(serviceId, true).unwrap().catch(() => null)
 
-    Promise.all([minDelay, fetchPros]).then(() => {
+    Promise.all([minDelay, fetchPros, fetchService]).then(() => {
       if (!hasNavigated.current) {
         hasNavigated.current = true
         navigation.replace("ProsListingScreen", nextParams)

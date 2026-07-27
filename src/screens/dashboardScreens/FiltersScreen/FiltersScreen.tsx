@@ -13,6 +13,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
+import TickIcon from "assets/icons/tick.svg"
 
 export type FilterValues = {
   proType?: string
@@ -30,6 +31,8 @@ type Props = RootStackScreenProps<"FiltersScreen">
 // FiltersScreen route (Android) or inside the native push-back sheet (iOS).
 const FiltersContent: React.FC<ContentProps> = ({
   currentPlaceOfService,
+  isFoodCategory,
+  foodMode,
   initialFilters,
   refinementFilters,
   initialRefinementOptionIds,
@@ -58,6 +61,8 @@ const FiltersContent: React.FC<ContentProps> = ({
   const [minRating, setMinRating] = useState<number | undefined>(initialFilters?.minRating)
   const [maxResponseTimeHours, setMaxResponseTimeHours] = useState<number | undefined>(initialFilters?.maxResponseTimeHours)
   const [creditCardPayment, setCreditCardPayment] = useState(initialFilters?.creditCardPayment || false)
+  // Food only: fulfillment mode lives here now (moved out of the results header)
+  const [fulfillment, setFulfillment] = useState<"all" | "delivery" | "pickup">(foodMode ?? "all")
 
   // Keep the typed distance box in sync with the slider; clamp to 1–50 on edit
   useEffect(() => {
@@ -70,6 +75,7 @@ const FiltersContent: React.FC<ContentProps> = ({
   }
 
   const isPhysical =
+    !!isFoodCategory ||
     currentPlaceOfService === "proToCustomer" ||
     currentPlaceOfService === "customerToPro" ||
     currentPlaceOfService === "delivery" ||
@@ -156,7 +162,8 @@ const FiltersContent: React.FC<ContentProps> = ({
     creditCardPayment: creditCardPayment || undefined,
     refinementFilterOptionIds: [...effectiveSelectedIds],
     ranges: activeRanges,
-  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, effectiveSelectedIds, activeRanges])
+    ...(isFoodCategory && { fulfillment }),
+  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, effectiveSelectedIds, activeRanges, isFoodCategory, fulfillment])
 
   const handleShowResults = () => {
     onApply(collectFilters())
@@ -175,14 +182,14 @@ const FiltersContent: React.FC<ContentProps> = ({
     setMinRating(undefined)
     setMaxResponseTimeHours(undefined)
     setCreditCardPayment(false)
+    setFulfillment("all")
   }
 
   const renderChip = (
     label: string,
     isSelected: boolean,
     onPress: () => void,
-    key: string | number = label,
-    withCheck = false
+    key: string | number = label
   ) => (
     <DmView
       key={key}
@@ -194,10 +201,8 @@ const FiltersContent: React.FC<ContentProps> = ({
         borderColor: isSelected ? colors.black : "#E0E0E0",
       }}
     >
-      {withCheck && isSelected && (
-        <DmText className="text-12 leading-[15px] font-custom700 mr-[5]" style={{ color: colors.black }}>
-          ✓
-        </DmText>
+      {isSelected && (
+        <TickIcon width={12} height={12} color={colors.black} style={{ marginRight: 5 }} />
       )}
       <DmText
         className={`text-12 leading-[15px] ${isSelected ? "font-custom700" : "font-custom400"}`}
@@ -207,6 +212,17 @@ const FiltersContent: React.FC<ContentProps> = ({
       </DmText>
     </DmView>
   )
+
+  // Food's filter questions are pro-phrased ("I make food from…"); show the
+  // neutral admin filter name (e.g. "Cuisines") to the customer instead.
+  const filterTitle = (question: ServiceQuestionType) =>
+    isFoodCategory && question.filter?.label
+      ? isAr && question.filter.labelAr
+        ? question.filter.labelAr
+        : question.filter.label
+      : isAr && question.textAr
+        ? question.textAr
+        : question.text
 
   const activeCount =
     [proType, distanceKm < 50 ? distanceKm : undefined, minRating, maxResponseTimeHours, creditCardPayment].filter(Boolean).length +
@@ -257,6 +273,23 @@ const FiltersContent: React.FC<ContentProps> = ({
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
         bounces={false}
       >
+        {/* Food: fulfillment mode (moved here from the results header) */}
+        {isFoodCategory && (
+          <>
+            <DmView className="px-[20] mb-[18]">
+              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+                {t("fulfillment")}
+              </DmText>
+              <DmView className="flex-row">
+                {(["all", "delivery", "pickup"] as const).map((mode) =>
+                  renderChip(t(mode), fulfillment === mode, () => setFulfillment(mode), mode)
+                )}
+              </DmView>
+            </DmView>
+            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+          </>
+        )}
+
         {/* Locked context: filters answered upfront (read-only here; they drive the cascade below) */}
         {upfrontSelections?.map((sel, idx) => (
           <React.Fragment key={`upfront-${idx}`}>
@@ -299,7 +332,7 @@ const FiltersContent: React.FC<ContentProps> = ({
               <React.Fragment key={question.id}>
                 <DmView className="px-[20] mb-[18]">
                   <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
-                    {isAr && question.textAr ? question.textAr : question.text}
+                    {filterTitle(question)}
                   </DmText>
                   <DmView className="flex-row items-center">
                     <DmView
@@ -359,7 +392,7 @@ const FiltersContent: React.FC<ContentProps> = ({
             <React.Fragment key={question.id}>
               <DmView className="px-[20] mb-[18]">
                 <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
-                  {isAr && question.textAr ? question.textAr : question.text}
+                  {filterTitle(question)}
                 </DmText>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {visibleOptions.map((o) =>
@@ -367,8 +400,7 @@ const FiltersContent: React.FC<ContentProps> = ({
                       isAr && o.labelAr ? o.labelAr : o.label,
                       effectiveSelectedIds.has(o.serviceCategoryFilterOptionId!),
                       () => toggleRefinementOption(o.serviceCategoryFilterOptionId!, question),
-                      o.serviceCategoryFilterOptionId!,
-                      question.type === "multipleChoice"
+                      o.serviceCategoryFilterOptionId!
                     )
                   )}
                 </ScrollView>

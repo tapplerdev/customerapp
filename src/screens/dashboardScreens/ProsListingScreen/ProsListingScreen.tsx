@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import clsx from "clsx"
 import { Animated, InteractionManager, Platform, View, ViewToken } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -38,7 +39,9 @@ import SearchIcon from "assets/icons/search-black.svg"
 import FiltersIcon from "assets/icons/filters.svg"
 import JobDetailsIcon from "assets/icons/job-details.svg"
 import FilterSlidersIcon from "assets/icons/filter-sliders.svg"
+import SortIcon from "assets/icons/sort.svg"
 import ErrorModal from "components/ErrorModal"
+import FoodSortSheet from "components/FoodSortSheet/FoodSortSheet"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"ProsListingScreen">
@@ -62,6 +65,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [openChat] = useLazyOpenChatQuery()
   const [getChatMessages] = useLazyGetChatMessagesQuery()
   const prefetchProfile = api.usePrefetch("getProProfile")
+  const prefetchMenu = api.usePrefetch("getProMenu")
 
   const { canStart, start } = useTourGuideController()
 
@@ -104,6 +108,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     !!initialPlaceOfService && !forceQuestionFlow
   )
   const [currentPlaceOfService, setCurrentPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
+  // Food only: broad-first fulfillment mode. "all" shows every pro (any-mode)
+  // with capability badges; delivery/pickup narrows. Rides to checkout via cart.
+  const [foodFulfillment, setFoodFulfillment] = useState<"all" | "delivery" | "pickup">("all")
+  // Food sort — undefined = Default (backend pro_score ranking).
+  const [sortBy, setSortBy] = useState<"distance" | "rating" | "responseTime" | undefined>(undefined)
+  const [sortVisible, setSortVisible] = useState(false)
   // Repost arrivals seed the previous job's answers so the question flow and
   // request-details steps open pre-filled instead of blank. The listing stays
   // broad until the customer opens/edits questions — normal broad-first rules.
@@ -135,7 +145,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Compute answered count for the banner
   const allCustomerQuestions = customerQuestions.filter((q) => q.assignee === "customer")
-  const refinementFilters = allCustomerQuestions.filter((q) => q.isFilter && q.tier === "refinement")
+  // Food's filter questions are PRO-declared (assignee='pro', e.g. Cuisines),
+  // which the backend strips from customerQuestions — so pull them from
+  // proQuestions for the Filters modal. Regular services surface only their
+  // customer-facing refinement-tier filters.
+  const refinementFilters = isFoodCategory
+    ? (category?.proQuestions ?? []).filter((q) => q.isFilter)
+    : allCustomerQuestions.filter((q) => q.isFilter && q.tier === "refinement")
   // Primary (asked-upfront) filter picks — passed to the modal as locked cascade parents
   const upfrontSelections = allCustomerQuestions
     .filter((q) => q.isFilter && q.tier !== "refinement")
@@ -202,7 +218,18 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     const customerAddress =
       skipAddress ? undefined : address?.coords ? { latitude: address.coords.lat, longitude: address.coords.lon } : undefined
 
-    getPros({ categoryId, placeOfService: initialPlaceOfService, customerAddress }, true)
+    getPros(
+      {
+        categoryId,
+        placeOfService: isFoodCategory
+          ? foodFulfillment === "all"
+            ? undefined
+            : foodFulfillment
+          : initialPlaceOfService,
+        customerAddress,
+      },
+      true
+    )
   }, [categoryId])
 
   // Launch native question flow on first mount + whenever the service changes
@@ -275,7 +302,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
       preloadProImages(p)
     })
-  }, [data?.data, categoryId, prefetchProfile, preloadProImages])
+    // Food: the card's primary action opens the MENU (not the profile), so warm
+    // the first few menus too — tapping "Food Menu" then renders from cache.
+    // Fewer than profiles (menu payloads are heavier); scroll warms the rest.
+    if (isFoodCategory) {
+      list.slice(0, 5).forEach((p) =>
+        prefetchMenu({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+      )
+    }
+  }, [data?.data, categoryId, prefetchProfile, preloadProImages, isFoodCategory, prefetchMenu])
 
   // Warm EVERY loaded card's sticker/trust SVGs into svgCache (fire-and-forget;
   // a few KB each). By the time a card can scroll into view its artwork is
@@ -295,6 +330,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       refinementFilterOptionIds?: number[]
       ranges?: { filterId: number; min?: number; max?: number }[]
       filters?: FilterValues
+      sortBy?: "distance" | "rating" | "responseTime"
     }) => {
       // 'pos' in opts distinguishes "explicitly cleared" (Reset all → back to
       // the ANY-MODE serveability list) from "not provided" (keep the current
@@ -302,7 +338,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       // matching the initial fetch — dropping them would fall back to the
       // backend's legacy UNFILTERED list and show pros the submission guard
       // rejects.
-      const placeOfService = 'pos' in opts ? opts.pos : currentPlaceOfService
+      const placeOfService = 'pos' in opts ? opts.pos : (isFoodCategory ? (foodFulfillment === "all" ? undefined : foodFulfillment) : currentPlaceOfService)
       const skipAddress = placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
       const customerAddress = skipAddress
         ? undefined
@@ -329,13 +365,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           minRating: f.minRating,
           maxResponseTimeHours: f.maxResponseTimeHours,
           creditCardPayment: f.creditCardPayment,
+          sortBy: 'sortBy' in opts ? opts.sortBy : sortBy,
         },
         true
       )
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [categoryId, address, getPros, currentPlaceOfService, currentFilters, questionFilterOptionIds, refinementFilterOptionIds, rangeFilters]
+    [categoryId, address, getPros, currentPlaceOfService, isFoodCategory, foodFulfillment, sortBy, currentFilters, questionFilterOptionIds, refinementFilterOptionIds, rangeFilters]
   )
 
   const refetchWithFilters = useCallback(
@@ -344,6 +381,16 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       doRefetch({ pos: result.placeOfService, questionFilterOptionIds: result.filterOptionIds })
     },
     [doRefetch]
+  )
+
+  const handleSortChange = useCallback(
+    (newSort: "distance" | "rating" | "responseTime" | undefined) => {
+      setSortVisible(false)
+      if (newSort === sortBy) return
+      setSortBy(newSort)
+      doRefetch({ sortBy: newSort })
+    },
+    [sortBy, doRefetch]
   )
 
   // Listen for question flow results (emitted by QuestionStepScreen)
@@ -474,12 +521,19 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle pro-level filters dismiss
   const handleFiltersDismiss = useCallback(
-    (filters: FilterValues & { refinementFilterOptionIds: number[]; ranges: { filterId: number; min?: number; max?: number }[] }) => {
-      const { refinementFilterOptionIds: refinementIds, ranges, ...rest } = filters
+    (filters: FilterValues & { refinementFilterOptionIds: number[]; ranges: { filterId: number; min?: number; max?: number }[]; fulfillment?: "all" | "delivery" | "pickup" }) => {
+      const { refinementFilterOptionIds: refinementIds, ranges, fulfillment, ...rest } = filters
       setCurrentFilters(rest)
       setRefinementFilterOptionIds(refinementIds)
       setRangeFilters(ranges)
-      doRefetch({ filters: rest, refinementFilterOptionIds: refinementIds, ranges })
+      if (fulfillment) setFoodFulfillment(fulfillment)
+      doRefetch({
+        filters: rest,
+        refinementFilterOptionIds: refinementIds,
+        ranges,
+        // Food fulfillment drives placeOfService; "all" → broad (undefined)
+        ...(fulfillment && { pos: fulfillment === "all" ? undefined : fulfillment }),
+      })
     },
     [doRefetch]
   )
@@ -623,12 +677,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         proId: pro.id,
         serviceCategoryId: categoryId,
         serviceId,
-        proName: pro.businessName || pro.registeredName || "",
+        proName: pro.screenName || pro.businessName || pro.registeredName || "",
         categoryName,
         address: address ?? null,
+        fulfillmentMode: foodFulfillment === "all" ? undefined : foodFulfillment,
       })
     },
-    [navigation, categoryId, serviceId, categoryName, address]
+    [navigation, categoryId, serviceId, categoryName, address, foodFulfillment]
   )
 
   const handlePressProfile = useCallback(async (pro: ProType) => {
@@ -716,8 +771,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       items.forEach((p) => {
         prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
         preloadProImages(p)
+        // Food: warm each menu as its card scrolls into view (Strategy B for menus)
+        if (isFoodCategory) {
+          prefetchMenu({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+        }
       })
-  }, [prefetchProfile, categoryId, preloadProImages])
+  }, [prefetchProfile, categoryId, preloadProImages, isFoodCategory, prefetchMenu])
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     prefetchVisibleRef.current(viewableItems.map((v) => v.item).filter(Boolean) as ProType[])
@@ -774,7 +833,20 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             {" • "}{address?.city || address?.governorate || ""}
           </DmText>
         </DmView>
-        {!isFoodCategory && (
+        <DmView className="flex-row items-center">
+          {isFoodCategory && (
+            <DmView
+              onPress={() => setSortVisible(true)}
+              className="w-[32] h-[32] items-center justify-center mr-[4]"
+              hitSlop={HIT_SLOP_DEFAULT}
+            >
+              <SortIcon
+                width={20}
+                height={20}
+                color={sortBy ? colors.red : colors.black}
+              />
+            </DmView>
+          )}
           <DmView
             onPress={() => {
               if (Platform.OS === "ios") {
@@ -783,6 +855,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
               } else {
                 navigation.navigate("FiltersScreen", {
                   currentPlaceOfService,
+                  isFoodCategory,
+                  foodMode: foodFulfillment,
                   initialFilters: currentFilters,
                   refinementFilters,
                   initialRefinementOptionIds: refinementFilterOptionIds,
@@ -797,7 +871,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           >
             <FilterSlidersIcon width={22} height={22} color={colors.black} />
           </DmView>
-        )}
+        </DmView>
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
@@ -831,7 +905,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         {pros.length > 0 && (
           <DmText className="text-19 leading-[24px] font-custom700 text-black">
             {pros.length}{" "}
-            {t(isFoodCategory ? "available_for_delivery" : "matches_based_on_answers")}
+            {isFoodCategory
+              ? foodFulfillment === "pickup"
+                ? t("available_for_pickup")
+                : foodFulfillment === "delivery"
+                  ? t("available_for_delivery")
+                  : t("available_pros")
+              : t("matches_based_on_answers")}
           </DmText>
         )}
       </DmView>
@@ -1048,12 +1128,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         contentKey={filtersOpenCount}
         onClose={() => setFiltersVisible(false)}
         currentPlaceOfService={currentPlaceOfService}
+        isFoodCategory={isFoodCategory}
+        foodMode={foodFulfillment}
         initialFilters={currentFilters}
         refinementFilters={refinementFilters}
         initialRefinementOptionIds={refinementFilterOptionIds}
         initialRanges={rangeFilters}
         upfrontSelections={upfrontSelections}
         onApply={handleFiltersDismiss}
+      />
+
+      {/* Food Sort sheet (native on iOS, modal fallback on Android) */}
+      <FoodSortSheet
+        visible={sortVisible}
+        value={sortBy}
+        onSelect={handleSortChange}
+        onClose={() => setSortVisible(false)}
       />
     </View>
   )

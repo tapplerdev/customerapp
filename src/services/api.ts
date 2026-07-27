@@ -194,9 +194,10 @@ export const api = createApi({
         minRating?: number
         maxResponseTimeHours?: number
         creditCardPayment?: boolean
+        sortBy?: "distance" | "rating" | "responseTime"
       }
     >({
-      query: ({ categoryId, placeOfService, customerAddress, filterOptionsIds, filterRanges, proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment }) => {
+      query: ({ categoryId, placeOfService, customerAddress, filterOptionsIds, filterRanges, proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, sortBy }) => {
         const params = new URLSearchParams()
         if (placeOfService) {
           params.append("placeOfService", placeOfService)
@@ -218,6 +219,7 @@ export const api = createApi({
         if (minRating) params.append("minRating", String(minRating))
         if (maxResponseTimeHours) params.append("maxResponseTimeHours", String(maxResponseTimeHours))
         if (creditCardPayment) params.append("creditCardPayment", "true")
+        if (sortBy) params.append("sortBy", sortBy)
         return `/pros/category/${categoryId}?${params.toString()}`
       },
     }),
@@ -272,6 +274,20 @@ export const api = createApi({
     getProMenu: builder.query<FoodMenuType, { proId: number; serviceCategoryId: number }>({
       query: ({ proId, serviceCategoryId }) =>
         `/pros/category/${serviceCategoryId}/${proId}/menu`,
+    }),
+
+    // Backend-authoritative delivery-zone advisory — same ST_Distance check
+    // createJob enforces. Coords ride in the body, not the URL. A query (not
+    // a mutation) so the checkout can read isFetching/error for fail-open.
+    checkDelivery: builder.query<
+      { deliverable: boolean; deliveryRadius: number | null },
+      { proId: number; serviceCategoryId: number; latitude: number; longitude: number }
+    >({
+      query: ({ proId, serviceCategoryId, latitude, longitude }) => ({
+        url: `/pros/category/${serviceCategoryId}/${proId}/delivery-check`,
+        method: "POST",
+        body: { latitude, longitude },
+      }),
     }),
 
     createReview: builder.mutation<ReviewType, CreateReviewRequest>({
@@ -473,6 +489,7 @@ export const {
   useLazyGetProProfileQuery,
   useGetProMenuQuery,
   useLazyGetProMenuQuery,
+  useCheckDeliveryQuery,
   useCancelJobMutation,
   useRespondToOpportunityMutation,
   useGetOfferHistoryQuery,

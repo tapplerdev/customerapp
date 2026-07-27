@@ -42,6 +42,10 @@ export type ServiceQuestionType = {
   tier?: "primary" | "refinement"
   filter?: {
     id: number
+    // Neutral admin-authored filter name (e.g. "Cuisines") — used as the
+    // customer-facing title for food, whose question text is pro-phrased.
+    label?: string
+    labelAr?: string
     valueType?: "discrete" | "range"
     minValue?: number
     maxValue?: number

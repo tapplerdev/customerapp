@@ -97,6 +97,7 @@ export type RootStackParamList = {
     proName: string
     categoryName: string
     address: AddressInfo | null
+    fulfillmentMode?: "delivery" | "pickup"
   }
   FoodItemScreen: {
     menuItemId: number
@@ -106,9 +107,11 @@ export type RootStackParamList = {
     proName: string
     categoryName: string
     address: AddressInfo | null
+    fulfillmentMode?: "delivery" | "pickup"
   }
-  FoodCartScreen: undefined
-  FoodCheckoutScreen: undefined
+  // Both operate on the draft for the pro they were entered from
+  FoodCartScreen: { proId: number }
+  FoodCheckoutScreen: { proId: number }
   AllQuestionsScreen: {
     categoryName: string
     placeOfServiceOptions: string[]
@@ -126,6 +129,10 @@ export type RootStackParamList = {
   }
   FiltersScreen: {
     currentPlaceOfService?: string
+    // Food only: shows a Fulfillment (All/Delivery/Pickup) section + un-gates
+    // the distance slider.
+    isFoodCategory?: boolean
+    foodMode?: "all" | "delivery" | "pickup"
     refinementFilters?: import("types/cms").ServiceQuestionType[]
     initialRefinementOptionIds?: number[]
     initialRanges?: { filterId: number; min?: number; max?: number }[]
@@ -149,6 +156,7 @@ export type RootStackParamList = {
       creditCardPayment?: boolean
       refinementFilterOptionIds: number[]
       ranges: { filterId: number; min?: number; max?: number }[]
+      fulfillment?: "all" | "delivery" | "pickup"
     }) => void
   }
   QuestionStepScreen: {

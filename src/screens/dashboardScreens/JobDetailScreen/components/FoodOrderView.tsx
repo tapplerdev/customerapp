@@ -1,9 +1,10 @@
 import React, { useMemo } from "react"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
-import { ScrollView } from "react-native"
+import { Alert, ScrollView } from "react-native"
 
 import { useTranslation } from "react-i18next"
+import { useCancelJobMutation } from "services/api"
 import { JobFoodOrderItemType, JobType } from "types/job"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -24,6 +25,28 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
   const status = jobPro?.status
   const isCancelled = status === "cancelled" || job.status === "cancelled"
   const currentStep = STEPS.indexOf(status as (typeof STEPS)[number])
+
+  // Customer may cancel only before the pro starts preparing (status null =
+  // order placed, or "accepted"). Once preparing/out-for-delivery it's not
+  // self-serve. Status-flip only — no refund handling yet.
+  const [cancelJob, { isLoading: isCancelling }] = useCancelJobMutation()
+  const canCancel = !isCancelled && currentStep < 1
+
+  const handleCancel = () => {
+    Alert.alert(t("cancel_order"), t("cancel_order_confirm"), [
+      { text: t("keep_order"), style: "cancel" },
+      {
+        text: t("cancel_order"),
+        style: "destructive",
+        onPress: () => {
+          cancelJob({
+            jobId: job.id,
+            reasons: ["Customer cancelled the order"],
+          })
+        },
+      },
+    ])
+  }
 
   const stepLabels: Record<(typeof STEPS)[number], string> = {
     accepted: t("order_accepted"),
@@ -221,6 +244,18 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
           </>
         )}
       </DmView>
+
+      {/* Cancel — only before the pro starts preparing */}
+      {canCancel && (
+        <DmView
+          onPress={isCancelling ? undefined : handleCancel}
+          className="mt-[20] h-[48] rounded-12 border-1 border-red items-center justify-center"
+        >
+          <DmText className="text-15 leading-[19px] font-custom600 text-red">
+            {isCancelling ? t("cancelling") : t("cancel_order")}
+          </DmText>
+        </DmView>
+      )}
     </ScrollView>
   )
 }

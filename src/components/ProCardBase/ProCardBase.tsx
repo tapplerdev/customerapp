@@ -220,14 +220,6 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
         />
       )}
 
-      {/* OFFERS banner */}
-      <DmView className="mt-[16]">
-        <OffersSection
-          subscriptions={subscriptions}
-          compact
-        />
-      </DmView>
-
       {/* SELECT ME / PASS buttons */}
       {showSelectPassButtons && !isRejected && (
         <DmView className="mt-[12] flex-row items-center">
@@ -258,6 +250,23 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           <DmText className="text-11 font-custom500 text-grey3" style={styles.italic}>
             {t("passed")}
           </DmText>
+        </DmView>
+      )}
+
+      {/* Motivational stickers — the card's FOOTER band: negative margins
+          cancel the card's px-[15]/pb-[12] so it bleeds to the edges, and the
+          bottom corners pick up the card's rounded-20. */}
+      {subscriptions.some((s: any) => s.product?.subType === "motivational") && (
+        <DmView
+          className="mt-[14] overflow-hidden"
+          style={{
+            marginHorizontal: -15,
+            marginBottom: -12,
+            borderBottomLeftRadius: 20,
+            borderBottomRightRadius: 20,
+          }}
+        >
+          <OffersSection subscriptions={subscriptions} variant="strip" />
         </DmView>
       )}
     </DmView>

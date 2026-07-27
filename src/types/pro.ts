@@ -72,6 +72,12 @@ export type ProType = {
   registeredName: string
   businessName?: string
   screenName?: string
+  // Straight-line km to the pro (backend-computed; set only when the list
+  // request carries a customer address). Food cards render it.
+  distanceKm?: number
+  // Food fulfillment capability (food listings only) — drives the card badges
+  isDeliveryEnabled?: boolean
+  isPickupEnabled?: boolean
   displayName?: string
   proType: "individual" | "company"
   profilePhoto?: string
