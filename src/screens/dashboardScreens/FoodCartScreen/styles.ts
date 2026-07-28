@@ -7,8 +7,10 @@ const styles = StyleSheet.create({
     width: THUMB,
     height: THUMB,
   },
+  // Same width as the thumbnail it sits under, so the two line up as one
+  // column instead of the stepper overhanging the image by 16.
   stepper: {
-    width: 104,
+    width: THUMB,
   },
   // Matches FiltersScreen's "Show results" footer — an upward shadow is what
   // makes it read as pinned above the content rather than floating in it.

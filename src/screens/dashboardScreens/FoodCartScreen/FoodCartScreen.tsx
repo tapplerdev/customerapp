@@ -161,11 +161,11 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Bordered stepper (matches the cart mockup) */}
           <DmView
-            className="flex-row items-center justify-between border-1 border-grey14 rounded-8 px-[8] h-[34]"
+            className="flex-row items-center justify-between border-1 border-grey14 rounded-8 px-[6] h-[34]"
             style={styles.stepper}
           >
             <DmView
-              className="w-[26] h-[34] items-center justify-center"
+              className="w-[24] h-[34] items-center justify-center"
               onPress={() => changeQuantity(line, -1)}
             >
               <TrashRedIcon width={15} height={15} />
@@ -174,7 +174,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
               {line.quantity}
             </DmText>
             <DmView
-              className="w-[26] h-[34] items-center justify-center"
+              className="w-[24] h-[34] items-center justify-center"
               onPress={
                 line.quantity < 30 ? () => changeQuantity(line, 1) : undefined
               }
