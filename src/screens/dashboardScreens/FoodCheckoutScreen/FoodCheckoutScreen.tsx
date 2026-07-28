@@ -279,6 +279,17 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       paymentLabel:
         paymentOptions.find((option) => option.key === paymentMethod)?.label ??
         "",
+      // Pickup anchors on the pro's own address, delivery on the customer's.
+      // The two come from different sources and disagree on the longitude key:
+      // the server sends lng, the address picker stores lon.
+      mapCoords: isPickup
+        ? pro?.address?.address?.location
+          ? {
+              lat: pro.address.address.location.lat,
+              lon: pro.address.address.location.lng,
+            }
+          : null
+        : addressCoords ?? null,
     })
   }
 

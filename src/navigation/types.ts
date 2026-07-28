@@ -124,6 +124,9 @@ export type RootStackParamList = {
     whereValue: string
     whenValue: string
     paymentLabel: string
+    // Anchors the map: the customer's address on delivery, the pro's on
+    // pickup (where it only resolves the area — it is never pinned).
+    mapCoords?: { lat: number; lon: number } | null
   }
   AllQuestionsScreen: {
     categoryName: string

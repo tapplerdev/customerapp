@@ -16,7 +16,11 @@ import {
   CustomerSavedAddress,
 } from "types/auth"
 import { ListProsResponse, ProType } from "types/pro"
-import { FoodMenuType } from "types/food"
+import {
+  AreaGeometryResponse,
+  FoodMenuType,
+  PointAreasResponse,
+} from "types/food"
 import { ChatType, ChatMessageType, ListChatsResponse, ListMessagesResponse } from "types/chat"
 import { CreateJobRequest, JobProType, JobType, ListJobsResponse } from "types/job"
 import { CreateReviewRequest, ReviewType } from "types/review"
@@ -290,6 +294,23 @@ export const api = createApi({
       }),
     }),
 
+    // Which curated area a point falls in. Used to turn the pro's coordinates
+    // into an area we can outline on a pickup order, without ever putting a pin
+    // on their exact address before they've accepted.
+    getPointAreas: builder.query<
+      PointAreasResponse,
+      { latitude: number; longitude: number }
+    >({
+      query: ({ latitude, longitude }) =>
+        `/service-areas/point?latitude=${latitude}&longitude=${longitude}`,
+    }),
+
+    // Server-simplified area outline (GeoJSON, [lng, lat] order) — the same
+    // endpoint the pro app's opportunity map uses.
+    getAreaGeometry: builder.query<AreaGeometryResponse, { type: string; id: string }>({
+      query: ({ type, id }) => `/service-areas/geometry?type=${type}&id=${id}`,
+    }),
+
     createReview: builder.mutation<ReviewType, CreateReviewRequest>({
       query: (body) => ({ url: "/reviews", method: "POST", body }),
       invalidatesTags: ["Jobs"],
@@ -490,6 +511,8 @@ export const {
   useGetProMenuQuery,
   useLazyGetProMenuQuery,
   useCheckDeliveryQuery,
+  useGetPointAreasQuery,
+  useGetAreaGeometryQuery,
   useCancelJobMutation,
   useRespondToOpportunityMutation,
   useGetOfferHistoryQuery,

@@ -33,7 +33,9 @@ export type ProAddressType = {
     city?: string
     governorate?: string
     unitNumber?: string
-    location?: { lat: number; lon: number }
+    // The wire uses lng, not lon (transformCoordinatesToPoint -> PointDto).
+    // The customer's OWN address is the one that uses lon; do not conflate them.
+    location?: { lat: number; lng: number }
   }
 }
 

@@ -21,6 +21,7 @@ import {
   selectDraft,
 } from "store/cart/slice"
 import ErrorModal from "components/ErrorModal"
+import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
 
 import styles from "./styles"
 
@@ -31,8 +32,16 @@ type Props = RootStackScreenProps<"FoodOrderReviewScreen">
 // rather than this screen re-deriving it from scratch. It is plain JSON, so it
 // crosses the navigation boundary without a serialisation warning.
 const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { proId, payload, isPickup, whereLabel, whereValue, whenValue, paymentLabel } =
-    route.params
+  const {
+    proId,
+    payload,
+    isPickup,
+    whereLabel,
+    whereValue,
+    whenValue,
+    paymentLabel,
+    mapCoords,
+  } = route.params
 
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
@@ -149,6 +158,14 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
           // a saved address has no street line.
           whereValue || t(isPickup ? "pickup_area_unavailable" : "choose_address")
         )}
+
+        {/* The same "where" one line up, drawn: a pin on the address the
+            customer chose, or the pro's area outlined for a pickup. */}
+        <OrderLocationMap
+          coords={mapCoords}
+          isPickup={isPickup}
+          className="mt-[10]"
+        />
         {block(t(isPickup ? "pickup_time" : "delivery_time"), whenValue)}
         {block(t("payment_method"), paymentLabel)}
         {block(t("order_notes"), cart.orderNotes)}

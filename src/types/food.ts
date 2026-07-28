@@ -74,3 +74,31 @@ export type CartItemType = {
   // Display-only: drives the Pre Order badge in the cart
   isPreOrderOnly?: boolean
 }
+
+// --- Service-area geometry (map overlays) ---------------------------------
+// The pickup map outlines the pro's curated area rather than pinning their
+// exact address, matching the pro app's opportunity map.
+
+export type ServiceAreaRefType = {
+  id: string | number
+  type: string
+  nameEn?: string | null
+  nameAr?: string | null
+}
+
+export type PointAreasResponse = {
+  country?: ServiceAreaRefType
+  governorate?: ServiceAreaRefType
+  area?: ServiceAreaRefType
+}
+
+// Server-simplified outline. GeoJSON coordinate order throughout: [lng, lat].
+export type AreaGeometryResponse = {
+  id: string
+  type: string
+  nameEn: string | null
+  nameAr: string | null
+  geometry:
+    | { type: "Polygon"; coordinates: number[][][] }
+    | { type: "MultiPolygon"; coordinates: number[][][][] }
+}
