@@ -159,7 +159,6 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
             serviceId,
             proName,
             categoryName,
-            address: address ?? null,
             fulfillmentMode,
           },
           item: {

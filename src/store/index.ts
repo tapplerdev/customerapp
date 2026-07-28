@@ -25,10 +25,26 @@ const persistConfig = {
   // v1: cart went from a single cart object to per-pro drafts
   // ({ carts: Record<proId, CartDraft> }). The old shape can't be mapped
   // safely (no per-draft timestamp), so drop any in-flight cart once.
-  version: 1,
+  // v2: the delivery address moved off each draft onto the slice — one
+  // address for the whole food flow. Lift it from any surviving draft so a
+  // persisted basket doesn't come back asking for an address it already had.
+  version: 2,
   migrate: async (state: any) => {
     if (state?.cart && !state.cart.carts) {
-      return { ...state, cart: { carts: {} } }
+      return { ...state, cart: { carts: {}, address: null } }
+    }
+    if (state?.cart && state.cart.address === undefined) {
+      const drafts: any[] = Object.values(state.cart.carts ?? {})
+      const newest = drafts
+        .filter((draft) => draft?.address)
+        .sort((a, b) => (b?.lastUpdatedAt ?? 0) - (a?.lastUpdatedAt ?? 0))[0]
+      const carts = Object.fromEntries(
+        drafts.map(({ address, ...draft }: any) => [draft.proId, draft])
+      )
+      return {
+        ...state,
+        cart: { carts, address: newest?.address ?? null },
+      }
     }
     return state
   },

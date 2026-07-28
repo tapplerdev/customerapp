@@ -4,6 +4,7 @@ import { Animated, InteractionManager, Platform, View, ViewToken } from "react-n
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
+import { useFocusEffect } from "@react-navigation/native"
 import {
   TourGuideProvider,
   useTourGuideController,
@@ -15,7 +16,9 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyOpenChatQuery, useLazyGetChatMessagesQuery } from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
+import { useDispatch } from "react-redux"
 import { store, useTypedSelector } from "store"
+import { setBrowsingAddress } from "store/cart/slice"
 import { ProType } from "types/pro"
 import { QuestionAnswerType } from "types/job"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -45,6 +48,7 @@ import styles from "./styles"
 type Props = RootStackScreenProps<"ProsListingScreen">
 
 const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
+  const dispatch = useDispatch()
   const { placeOfService: initialPlaceOfService, forceQuestionFlow } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
@@ -572,6 +576,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     (newAddress: any) => {
       setAddressModalVisible(false)
       setAddress(newAddress)
+      // Food carts read this, so changing the address here has to reach them.
+      // It used to only refresh when an item was added, which meant walking
+      // back to an existing basket showed the address the customer had just
+      // moved away from.
+      if (newAddress) dispatch(setBrowsingAddress(newAddress))
       // remoteOrOnline/fixedLocations must not send coords — the backend DTO
       // validator 400s on customerAddress for those modes.
       const skipAddress =
@@ -594,7 +603,34 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [categoryId, currentPlaceOfService, currentFilters, getPros]
+    [categoryId, currentPlaceOfService, currentFilters, getPros, dispatch]
+  )
+
+  // ...and the same address flowing back UP. Checkout can change it too (its
+  // own sheet, or a picker) while this screen sits mounted underneath holding
+  // its own copy.
+  //
+  // First focus PUBLISHES rather than adopts: arriving here means the customer
+  // just chose this address, so it must win over whatever a persisted basket
+  // from a previous session left in the shared slot. Only later focuses — the
+  // ones you reach by coming back from downstream — adopt.
+  const browsingAddress = useTypedSelector((state) => state.cart.address)
+  const hasFocusedOnce = useRef(false)
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnce.current) {
+        hasFocusedOnce.current = true
+        if (address) dispatch(setBrowsingAddress(address))
+        return
+      }
+      const next = browsingAddress?.coords
+      if (!next) return
+      // Guarded on the coords actually differing: handleSelectNewAddress
+      // dispatches the same value straight back, which would otherwise loop.
+      const current = address?.coords
+      if (current && current.lat === next.lat && current.lon === next.lon) return
+      handleSelectNewAddress(browsingAddress)
+    }, [browsingAddress, address, dispatch, handleSelectNewAddress])
   )
 
   const handleChangeLocation = useCallback(() => {

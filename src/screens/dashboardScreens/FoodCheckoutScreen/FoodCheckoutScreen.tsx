@@ -21,7 +21,7 @@ import {
   emptyDraft,
   formatMoney,
   selectDraft,
-  setCartAddress,
+  setBrowsingAddress,
   setOrderNotes,
 } from "store/cart/slice"
 import {
@@ -57,6 +57,10 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // Checkout always submits the draft for the pro it was entered from.
   const cartState = useTypedSelector((state) => state.cart)
   const cart = selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
+  // One address for the whole food flow — see CartState.address. Read it here
+  // rather than off the draft so a change made on the listing (or in the sheet
+  // below) is reflected the moment this screen renders again.
+  const orderAddress = cartState.address
   const { isAuth } = useTypedSelector((state) => state.auth)
 
   const { data: pro } = useGetProProfileQuery(
@@ -89,7 +93,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     const handler = (address: AddressInfo) => {
       setTimeout(() => {
         if (!navigation.isFocused()) return
-        dispatch(setCartAddress({ proId, address }))
+        dispatch(setBrowsingAddress(address))
       }, 600)
     }
     addressEventBus.on("address:pick", handler)
@@ -174,7 +178,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // Runs for BOTH modes. Pickup used to skip it, but a pro can cap how far a
   // customer may travel from (pickupRadius) and ProsServeJobLocation enforces
   // that, so skipping only moved the rejection to a raw 400 at Submit.
-  const addressCoords = cart.address?.coords
+  const addressCoords = orderAddress?.coords
 
   const { data: deliveryCheck } = useCheckDeliveryQuery(
     {
@@ -217,16 +221,16 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // focus, so it is focused by the time it fires (same order as the
   // question-mismatch flow in ServiceRequestDetailsScreen).
   const handleFindOtherPros = () => {
-    if (!cart.address) return
+    if (!orderAddress) return
     // The bus is what actually re-queries: the listing seeds its address from
     // route params only on mount, so params alone would not refresh a screen
     // that is already mounted underneath us.
-    addressEventBus.emit("address:select", cart.address)
+    addressEventBus.emit("address:select", orderAddress)
     navigation.popTo("ProsListingScreen", {
       categoryId: cart.serviceCategoryId,
       categoryName: cart.categoryName,
       serviceId: cart.serviceId,
-      address: cart.address,
+      address: orderAddress,
     })
   }
 
@@ -249,7 +253,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       !canSubmit ||
       !cart.proId ||
       !cart.serviceCategoryId ||
-      !cart.address ||
+      !orderAddress ||
       !addressCoords
     )
       return
@@ -261,9 +265,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     const payload: CreateJobRequest = {
         serviceCategoryId: cart.serviceCategoryId,
         address: {
-          city: cart.address.city || "",
-          governorate: cart.address.governorate || "",
-          streetAddress: cart.address.address,
+          city: orderAddress.city || "",
+          governorate: orderAddress.governorate || "",
+          streetAddress: orderAddress.address,
           location: {
             lat: addressCoords.lat,
             lng: addressCoords.lon,
@@ -311,8 +315,8 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       // area we already hold and send in the payload.
       whereValue: isPickup
         ? pickupArea
-        : cart.address?.address ||
-          [cart.address?.city, cart.address?.governorate]
+        : orderAddress?.address ||
+          [orderAddress?.city, orderAddress?.governorate]
             .filter(Boolean)
             .join(", "),
       whenValue: deliverNow
@@ -406,7 +410,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           onPress={handleFindOtherPros}
         >
           <DmText className="text-11 leading-[15px] font-custom600 text-red">
-            {t("find_other_places")}
+            {t("find_other_pros")}
           </DmText>
         </DmView>
       </DmView>
@@ -516,7 +520,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                 className="flex-1 text-13 leading-[18px] font-custom500"
                 numberOfLines={2}
               >
-                {cart.address?.address || t("choose_address")}
+                {orderAddress?.address || t("choose_address")}
               </DmText>
               <DmText className="ml-[10] text-12 leading-[15px] font-custom600 text-red">
                 {t("change")}
@@ -662,7 +666,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setAddressModalVisible(false)}
         onSelectAddress={(address) => {
           setAddressModalVisible(false)
-          dispatch(setCartAddress({ proId, address }))
+          dispatch(setBrowsingAddress(address))
         }}
         onSelectNewLocation={() => {
           setAddressModalVisible(false)

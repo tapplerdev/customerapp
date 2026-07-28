@@ -12,8 +12,6 @@ export interface CartDraft {
   serviceId: number
   proName: string
   categoryName: string
-  // The address the customer browsed with — checkout starts from it
-  address: AddressInfo | null
   items: CartItemType[]
   orderNotes: string
   // Chosen at the listing (Delivery/Pickup toggle) — steers checkout
@@ -24,18 +22,27 @@ export interface CartDraft {
 
 export interface CartState {
   carts: Record<number, CartDraft>
+  // ONE address for the whole food flow, not a copy per draft. Baskets are
+  // per-pro because you can shop two kitchens at once; the address you are
+  // ordering to is a property of the session, not of the kitchen. Copies on
+  // each draft only refreshed inside addCartItem, so changing the address
+  // anywhere else — the listing, the checkout sheet — left every existing
+  // basket pointing at the address the customer had already abandoned.
+  address: AddressInfo | null
 }
 
-const initialState: CartState = { carts: {} }
+const initialState: CartState = { carts: {}, address: null }
 
 // Everything needed to open a draft for a pro the first time an item is added.
+// Deliberately NO address: it lives on the slice, written by whoever actually
+// changes it. Carrying it here meant a menu screen opened before the customer
+// changed their address could hand back the old one on the next add.
 export interface CartContext {
   proId: number
   serviceCategoryId: number
   serviceId: number
   proName: string
   categoryName: string
-  address: AddressInfo | null
   fulfillmentMode: "delivery" | "pickup"
 }
 
@@ -60,12 +67,11 @@ const cartSlice = createSlice({
         return
       }
 
-      // Refresh the browsing context (address / mode may have changed since)
+      // Refresh the browsing context (pro/category naming may have changed)
       draft.serviceCategoryId = context.serviceCategoryId
       draft.serviceId = context.serviceId
       draft.proName = context.proName
       draft.categoryName = context.categoryName
-      draft.address = context.address
       draft.fulfillmentMode = context.fulfillmentMode
 
       const existing = draft.items.find((line) => line.uid === item.uid)
@@ -118,14 +124,11 @@ const cartSlice = createSlice({
       draft.lastUpdatedAt = Date.now()
     },
 
-    setCartAddress: (
-      state,
-      action: PayloadAction<{ proId: number; address: AddressInfo }>
-    ) => {
-      const draft = state.carts[action.payload.proId]
-      if (!draft) return
-      draft.address = action.payload.address
-      draft.lastUpdatedAt = Date.now()
+    // Every screen that can change where the order is going dispatches this:
+    // the pros listing, the checkout sheet, the address pickers. One write,
+    // and every screen in the flow reads the same value back.
+    setBrowsingAddress: (state, action: PayloadAction<AddressInfo>) => {
+      state.address = action.payload
     },
 
     setOrderNotes: (
@@ -162,7 +165,7 @@ export const {
   addCartItem,
   setCartItemQuantity,
   removeCartItem,
-  setCartAddress,
+  setBrowsingAddress,
   setOrderNotes,
   clearCart,
   sweepStaleCarts,
@@ -243,7 +246,6 @@ export const emptyDraft = (proId: number): CartDraft => ({
   serviceId: 0,
   proName: "",
   categoryName: "",
-  address: null,
   items: [],
   orderNotes: "",
   fulfillmentMode: "delivery",

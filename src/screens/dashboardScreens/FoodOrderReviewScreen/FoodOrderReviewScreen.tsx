@@ -73,7 +73,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       setSubmitting(true)
       await createJob(payload).unwrap()
-      const successAddress = cart.address ?? undefined
+      const successAddress = cartState.address ?? undefined
       dispatch(clearCart(proId))
       navigation.navigate("RequestSuccessScreen", { address: successAddress })
     } catch (error: any) {
