@@ -12,7 +12,13 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useCreateJobMutation, useGetProMenuQuery } from "services/api"
 import { useTypedSelector } from "store"
-import { clearCart, computeOrderTotals, emptyDraft, selectDraft } from "store/cart/slice"
+import {
+  cartLineTotal,
+  clearCart,
+  computeOrderTotals,
+  emptyDraft,
+  selectDraft,
+} from "store/cart/slice"
 import ErrorModal from "components/ErrorModal"
 
 import styles from "./styles"
@@ -84,6 +90,11 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
     )
 
+  // The mock shows whole amounts ("185 EGP"); only surface decimals when the
+  // figure genuinely has them.
+  const money = (value: number) =>
+    value % 1 ? value.toFixed(2) : String(value)
+
   const totalsRow = (label: string, value: string, bold?: boolean) => (
     <DmView className="flex-row items-center justify-between mt-[8]">
       <DmText
@@ -135,7 +146,13 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
           {t("review_order")}
         </DmText>
 
-        {block(whereLabel, whereValue)}
+        {block(
+          whereLabel,
+          // Never let the destination vanish: block() hides on an empty string,
+          // and whereValue is "" while the pro profile is still loading or when
+          // a saved address has no street line.
+          whereValue || t(isPickup ? "pickup_area_unavailable" : "choose_address")
+        )}
         {block(t(isPickup ? "pickup_time" : "delivery_time"), whenValue)}
         {block(t("payment_method"), paymentLabel)}
         {block(t("order_notes"), cart.orderNotes)}
@@ -152,7 +169,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
                   {line.quantity}×  {line.name}
                 </DmText>
                 <DmText className="text-13 leading-[18px] font-custom400">
-                  {(line.price * line.quantity).toFixed(2)} {t("EGP")}
+                  {money(cartLineTotal(line))} {t("EGP")}
                 </DmText>
               </DmView>
 
@@ -172,18 +189,18 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
           ))}
 
           <DmView className="h-[0.7] bg-grey14 mt-[14]" />
-          {totalsRow(t("subtotal"), `${subtotal.toFixed(2)} ${t("EGP")}`)}
+          {totalsRow(t("subtotal"), `${money(subtotal)} ${t("EGP")}`)}
           {!isPickup &&
             totalsRow(
               t("delivery_fee"),
-              deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
+              deliveryFee ? `${money(deliveryFee)} ${t("EGP")}` : t("free")
             )}
           {orderDiscount > 0 &&
             totalsRow(
               t("discount"),
-              `- ${orderDiscount.toFixed(2)} ${t("EGP")}`
+              `-${money(orderDiscount)} ${t("EGP")}`
             )}
-          {totalsRow(t("order_total"), `${total.toFixed(2)} ${t("EGP")}`, true)}
+          {totalsRow(t("order_total"), `${money(total)} ${t("EGP")}`, true)}
         </DmView>
       </ScrollView>
 

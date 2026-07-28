@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux"
 import { useTypedSelector } from "store"
 import {
   cartLineTotal,
-  cartSubtotal,
+  computeOrderTotals,
   emptyDraft,
   selectDraft,
   setCartItemQuantity,
@@ -70,27 +70,16 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
     { skip: !cart.serviceCategoryId }
   )
 
-  const subtotal = cartSubtotal(cart.items)
 
-  const deliveryFee = useMemo(() => {
-    if (!menu) return 0
-    if (menu.freeDeliveryThreshold != null && subtotal >= menu.freeDeliveryThreshold)
-      return 0
-    return menu.deliveryCharge ?? 0
-  }, [menu, subtotal])
+  // Shared with checkout and review — the cart had its own copy of this math
+  // with no pickup awareness, so a pickup draft showed a delivery fee here and
+  // none on the next screen.
+  const isPickup = cart.fulfillmentMode === "pickup"
 
-  const orderDiscount = useMemo(() => {
-    if (
-      !menu ||
-      menu.totalOrderValueDiscountRate == null ||
-      menu.totalOrderValueDiscountThreshold == null ||
-      subtotal < menu.totalOrderValueDiscountThreshold
-    )
-      return 0
-    return Math.round(subtotal * menu.totalOrderValueDiscountRate) / 100
-  }, [menu, subtotal])
-
-  const total = subtotal + deliveryFee - orderDiscount
+  const { subtotal, deliveryFee, orderDiscount, total } = useMemo(
+    () => computeOrderTotals(cart.items, menu, isPickup),
+    [cart.items, menu, isPickup]
+  )
 
   const changeQuantity = (line: CartItemType, delta: number) => {
     dispatch(

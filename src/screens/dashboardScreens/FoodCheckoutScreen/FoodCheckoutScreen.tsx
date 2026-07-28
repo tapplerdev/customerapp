@@ -522,10 +522,13 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           ))}
           <DmView className="h-[0.7] bg-grey14 mt-[10]" />
           {totalsRow(t("subtotal"), `${subtotal.toFixed(2)} ${t("EGP")}`)}
-          {totalsRow(
-            t("delivery_fee"),
-            deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
-          )}
+          {/* Nothing is delivered on a pickup order, so the row would read
+              "Free" — a claim, not an omission. */}
+          {!isPickup &&
+            totalsRow(
+              t("delivery_fee"),
+              deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
+            )}
           {orderDiscount > 0 &&
             totalsRow(t("discount"), `- ${orderDiscount.toFixed(2)} ${t("EGP")}`)}
           {totalsRow(t("total"), `${total.toFixed(2)} ${t("EGP")}`, true)}
