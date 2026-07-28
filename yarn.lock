@@ -7164,6 +7164,11 @@ react-native-compressor@^1.16.0:
   resolved "https://registry.yarnpkg.com/react-native-compressor/-/react-native-compressor-1.18.1.tgz#5b9378220601fcc0db3823cdad93fb2fe43cbb54"
   integrity sha512-1YQZzA3DSPIojumjTidC8TCmdyIijkrkyTgaNPJ00WjBRjZOt1pWz/I+G1g/ddJn4XoZMvKhV7XJYRl1zBKBJQ==
 
+react-native-create-thumbnail@^2.1.1:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/react-native-create-thumbnail/-/react-native-create-thumbnail-2.2.0.tgz#d5c99c97c02cd5c51a57983f5d79088e58e986bb"
+  integrity sha512-zrwVYWMpeMEGIYO1jgwUMBpSpIzMR7Z2gkSANVlf9BFZLRw017k7CfjttvDhCHjsxNNDb7+V8uJaNwIGdTpz/g==
+
 react-native-document-picker@^9.3.1:
   version "9.3.1"
   resolved "https://registry.yarnpkg.com/react-native-document-picker/-/react-native-document-picker-9.3.1.tgz#f2c33237a906fd0893130e0605c8f18a3aef1605"
@@ -7249,6 +7254,11 @@ react-native-modal@^14.0.0-rc.1:
   integrity sha512-v5pvGyx1FlmBzdHyPqBsYQyS2mIJhVmuXyNo5EarIzxicKhuoul6XasXMviGcXboEUT0dTYWs88/VendojPiVw==
   dependencies:
     react-native-animatable "1.4.0"
+
+react-native-orientation-locker@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/react-native-orientation-locker/-/react-native-orientation-locker-1.7.0.tgz#47ef2b9c24618e40f0a521f184b51270e576b028"
+  integrity sha512-2PhG4UyRJktb3KCTISStuu8/q+Q3q3oPesGg9DhdY0b6Cu/ZzxkCvkbJte2TPWRYkS0JpClimvqVaonulGvDrA==
 
 react-native-permissions@^5.5.1:
   version "5.5.1"

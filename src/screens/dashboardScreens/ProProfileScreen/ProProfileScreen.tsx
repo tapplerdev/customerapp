@@ -19,6 +19,8 @@ import OffersSection from "components/OffersSection/OffersSection"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
+import MediaViewerModal from "@tappler/shared/src/components/MediaViewer/MediaViewerModal"
+import VideoThumbnail from "@tappler/shared/src/components/MediaViewer/VideoThumbnail"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import useProSubscriptions from "hooks/useProSubscriptions"
 import FastImage from "react-native-fast-image"
@@ -93,6 +95,15 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const proServiceCat = passedServiceCategories?.[0] || pro?.serviceCategories?.[0]
   // Already scoped by the backend to this service and to approved items only.
   const workPhotos = useMemo(() => pro?.workPhotos ?? [], [pro?.workPhotos])
+
+  const mediaItems = useMemo(
+    () =>
+      workPhotos.map((media) => ({
+        type: (isVideoMedia(media) ? "video" : "photo") as "photo" | "video",
+        uri: media.url,
+      })),
+    [workPhotos]
+  )
   const isFeatured = proServiceCat?.isFeatured
   const { featureSubscription, promoLine, trustDocs } = useProSubscriptions({
     subscriptions: proServiceCat?.subscriptions,
@@ -338,9 +349,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                         withSkeleton
                       />
                     ) : (
-                      <DmView
+                      // No poster (pre-poster uploads): decode a frame on
+                      // device, exactly as the pro app's grid does.
+                      <VideoThumbnail
+                        videoUri={item.url}
                         style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
-                        className="bg-grey2"
                       />
                     )}
                     {isVideo && (
@@ -438,138 +451,14 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         )}
       </KeyboardAwareScrollView>
 
-      {/* Photo viewer modal */}
-      {workPhotos.length > 0 && (
-        <Modal
-          visible={viewerVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setViewerVisible(false)}
-        >
-          <DmView className="flex-1" style={styles.modalOverlay}>
-            <DmView
-              className="absolute z-10 mt-[10] left-[18] w-[28] h-[28] rounded-full bg-white items-center justify-center"
-              style={{ top: insets.top || 35 }}
-              onPress={() => setViewerVisible(false)}
-              hitSlop={HIT_SLOP_DEFAULT}
-            >
-              <CloseIcon fill={colors.red} />
-            </DmView>
-
-            <DmView className="flex-1 justify-center" style={{ paddingTop: insets.top }}>
-              <Carousel
-                ref={carouselRef}
-                width={SCREEN_WIDTH}
-                height={VIEWER_HEIGHT}
-                data={workPhotos}
-                defaultIndex={viewerIndex}
-                onSnapToItem={(index) => setViewerIndex(index)}
-                loop={false}
-                renderItem={({ item, index }) =>
-                  isVideoMedia(item) ? (
-                    // Only the slide in view plays; the rest stay paused so
-                    // swiping through a gallery doesn't start several at once.
-                    <Video
-                      source={{ uri: item.url }}
-                      style={styles.fullSize}
-                      resizeMode="cover"
-                      controls
-                      paused={index !== viewerIndex}
-                      repeat={false}
-                    />
-                  ) : (
-                    <CachedImage
-                      uri={item.url720 || item.url}
-                      style={styles.fullSize}
-                      resizeMode="cover"
-                      withSkeleton
-                    />
-                  )
-                }
-              />
-            </DmView>
-
-            <DmView
-              className="absolute left-0 right-0 items-center justify-center"
-              style={{ bottom: insets.bottom + 20 }}
-            >
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={workPhotos}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={{ paddingHorizontal: 10, alignItems: "center", justifyContent: "center", flexGrow: 1 }}
-                renderItem={({ item, index: idx }) => (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setViewerIndex(idx)
-                      carouselRef.current?.scrollTo({ index: idx, animated: true })
-                    }}
-                    style={[
-                      styles.thumbnailBase,
-                      { borderColor: idx === viewerIndex ? "#fff" : "transparent" },
-                    ]}
-                  >
-                    {thumbnailUri(item) ? (
-                      <CachedImage
-                        uri={thumbnailUri(item) as string}
-                        style={styles.thumbnailSize}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <DmView style={styles.thumbnailSize} className="bg-grey2" />
-                    )}
-                    {isVideoMedia(item) && (
-                      <DmView
-                        style={styles.thumbnailOverlay}
-                        pointerEvents="none"
-                      >
-                        <PlayIcon width={20} height={20} />
-                      </DmView>
-                    )}
-                  </TouchableOpacity>
-                )}
-              />
-            </DmView>
-          </DmView>
-        </Modal>
-      )}
-
-      {/* FAB — pinned to bottom-right of screen */}
-      {!!serviceCategoryId && (
-        <DmView
-          onPress={handleMessage}
-          className="absolute w-[52] h-[52] rounded-full bg-red items-center justify-center"
-          style={[styles.floatingButton, {
-            bottom: (insets.bottom || 0) + 16,
-            [isAr ? "left" : "right"]: 18,
-          }]}
-        >
-          <MessagesWhiteIcon width={22} height={22} />
-        </DmView>
-      )}
-
-      {/* Food (hasMenu) category: floating pill into the pro's menu */}
-      {!!foodMenu && !!pro && (
-        <DmView
-          onPress={() =>
-            navigation.navigate("FoodMenuScreen", {
-              proId,
-              serviceCategoryId,
-              serviceId: foodMenu.serviceId,
-              proName: pro.businessName || pro.registeredName || "",
-              categoryName: foodMenu.categoryName,
-              address: foodMenu.address,
-            })
-          }
-          className="absolute self-center h-[44] px-[24] rounded-full bg-red items-center justify-center"
-          style={[styles.floatingButton, { bottom: (insets.bottom || 0) + 16 }]}
-        >
-          <DmText className="text-14 leading-[18px] font-custom700 text-white">
-            {t("food_menu")}
-          </DmText>
-        </DmView>
-      )}
+      {/* The same viewer the pro app uses, so a gallery reads identically in
+          both apps — carousel, thumbnail strip, video playback and all. */}
+      <MediaViewerModal
+        isVisible={viewerVisible}
+        onClose={() => setViewerVisible(false)}
+        mediaItems={mediaItems}
+        initialIndex={viewerIndex}
+      />
     </SafeAreaView>
   )
 }
