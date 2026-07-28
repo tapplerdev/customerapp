@@ -478,6 +478,8 @@
   "schedule_delivery": "جدولة لوقت لاحق",
   "choose_date_time": "اختر التاريخ والوقت",
   "cash_on_delivery": "الدفع نقدًا عند الاستلام",
+  "cash_on_pickup": "الدفع نقدًا عند الاستلام من المكان",
+  "card_on_pickup": "الدفع بالبطاقة عند الاستلام من المكان",
   "card_on_delivery": "الدفع بالبطاقة عند الاستلام",
   "order_summary": "ملخص الطلب",
   "place_order": "تأكيد الطلب",

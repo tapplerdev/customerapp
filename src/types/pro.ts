@@ -109,7 +109,9 @@ export type ProType = {
   // photosOfWork, which is no longer sent to customers.
   workPhotos?: ProWorkPhotoType[]
   hours?: ProHourType[]
-  paymentMethods?: string[]
+  // The API serialises these as objects ({ type: "cash" | "credit card" }),
+  // not bare strings — ProDto @Type()s them to ProPaymentMethodDto.
+  paymentMethods?: { type: string }[]
   socials?: ProSocialType[]
   media?: ProMediaType[]
   responseTimeHours?: number

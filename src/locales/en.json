@@ -479,6 +479,8 @@
   "schedule_delivery": "Schedule for later",
   "choose_date_time": "Choose date & time",
   "cash_on_delivery": "Cash on delivery",
+  "cash_on_pickup": "Cash on pickup",
+  "card_on_pickup": "Card on pickup",
   "card_on_delivery": "Card on delivery",
   "order_summary": "Order summary",
   "place_order": "Place Order",

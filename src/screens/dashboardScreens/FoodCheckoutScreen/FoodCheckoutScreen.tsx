@@ -28,6 +28,7 @@ import {
   useCheckDeliveryQuery,
   useCreateJobMutation,
   useGetProMenuQuery,
+  useGetProProfileQuery,
 } from "services/api"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
@@ -59,6 +60,11 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const { isAuth } = useTypedSelector((state) => state.auth)
   const [createJob] = useCreateJobMutation()
 
+  const { data: pro } = useGetProProfileQuery(
+    { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
+    { skip: !cart.serviceCategoryId }
+  )
+
   const { data: menu } = useGetProMenuQuery(
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
     { skip: !cart.serviceCategoryId }
@@ -74,6 +80,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "creditCard">(
     "cash"
   )
+
   const [isSubmitting, setSubmitting] = useState(false)
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -108,6 +115,41 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const [selectedMode, setSelectedMode] = useState<"delivery" | "pickup">(
     cart.fulfillmentMode
   )
+
+  // Driven by what THIS pro accepts (pro_payment_methods), not a hardcoded
+  // pair. A cook who only takes cash never sees a card option, and the label
+  // follows fulfillment so it never promises "on delivery" for a pickup.
+  const paymentOptions = useMemo(() => {
+    const accepted = (pro?.paymentMethods ?? []).map((method) => method.type)
+    const isPickup = selectedMode === "pickup"
+
+    const options: { key: "cash" | "creditCard"; label: string }[] = []
+
+    if (!accepted.length || accepted.includes("cash")) {
+      options.push({
+        key: "cash",
+        label: isPickup ? t("cash_on_pickup") : t("cash_on_delivery"),
+      })
+    }
+
+    if (accepted.includes("credit card")) {
+      options.push({
+        key: "creditCard",
+        label: isPickup ? t("card_on_pickup") : t("card_on_delivery"),
+      })
+    }
+
+    return options
+  }, [pro?.paymentMethods, selectedMode, t])
+
+  // A method the pro does not accept must never stay selected — switching
+  // fulfillment or a late profile load can strand the old choice.
+  useEffect(() => {
+    if (!paymentOptions.some((option) => option.key === paymentMethod)) {
+      setPaymentMethod(paymentOptions[0]?.key ?? "cash")
+    }
+  }, [paymentOptions, paymentMethod])
+
   // Once the menu loads, snap to a mode the pro actually offers.
   useEffect(() => {
     if (!availableModes.includes(selectedMode)) setSelectedMode(availableModes[0])
@@ -418,28 +460,29 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="mt-[20]">
           {sectionTitle(t("payment_method"))}
           <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
-            <DmView
-              className="flex-row items-center justify-between"
-              onPress={() => setPaymentMethod("cash")}
-            >
-              <DmText className="text-13 leading-[17px] font-custom500">
-                {t("cash_on_delivery")}
-              </DmText>
-              <DmChecbox variant="circle" isChecked={paymentMethod === "cash"} />
-            </DmView>
-            <DmView className="h-[0.5] bg-grey14 my-[12]" />
-            <DmView
-              className="flex-row items-center justify-between"
-              onPress={() => setPaymentMethod("creditCard")}
-            >
-              <DmText className="text-13 leading-[17px] font-custom500">
-                {t("card_on_delivery")}
-              </DmText>
-              <DmChecbox
-                variant="circle"
-                isChecked={paymentMethod === "creditCard"}
-              />
-            </DmView>
+            {paymentOptions.map((option, index) => (
+              <React.Fragment key={option.key}>
+                {index > 0 && (
+                  <DmView className="h-[0.5] bg-grey14 my-[12]" />
+                )}
+                <DmView
+                  className="flex-row items-center justify-between"
+                  onPress={() => setPaymentMethod(option.key)}
+                  // One accepted method is not a choice — show it, don't ask.
+                  disabled={paymentOptions.length === 1}
+                >
+                  <DmText className="text-13 leading-[17px] font-custom500">
+                    {option.label}
+                  </DmText>
+                  {paymentOptions.length > 1 && (
+                    <DmChecbox
+                      variant="circle"
+                      isChecked={paymentMethod === option.key}
+                    />
+                  )}
+                </DmView>
+              </React.Fragment>
+            ))}
           </DmView>
         </DmView>
 
