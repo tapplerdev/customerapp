@@ -41,11 +41,13 @@ import CreditCardIcon from "assets/icons/credit-card-icon.svg"
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
 
-// Videos show the poster uploaded with them; anything without one (or any
-// image) falls back to the small variant, then the original.
+// Returns null for a video with no poster rather than falling through to the
+// video's own url: FastImage cannot decode an mp4, so that fallback rendered a
+// blank tile with nothing but the play badge on it. Videos uploaded since
+// posters were added always have one; only older rows land here.
 const thumbnailUri = (media: ProWorkPhotoType) =>
   isVideoMedia(media)
-    ? media.posterUrl || media.url150 || media.url
+    ? media.posterUrl || null
     : media.url150 || media.url
 
 type Props = RootStackScreenProps<"ProProfileScreen">
@@ -57,6 +59,10 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets()
   const scrollY = useSharedValue(0)
   const SCREEN_WIDTH = Dimensions.get("window").width
+  // Fixed frame per slide, matching proapp's MediaViewerModal: every item
+  // fills the same box with `cover`. The native player controls handle
+  // fullscreen when someone wants to see a video uncropped.
+  const VIEWER_HEIGHT = SCREEN_WIDTH
   const [viewerVisible, setViewerVisible] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
   const carouselRef = useRef<ICarouselInstance>(null)
@@ -324,12 +330,19 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                       setViewerVisible(true)
                     }}
                   >
-                    <CachedImage
-                      uri={thumbnailUri(item)}
-                      style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
-                      resizeMode="cover"
-                      withSkeleton
-                    />
+                    {thumbnailUri(item) ? (
+                      <CachedImage
+                        uri={thumbnailUri(item) as string}
+                        style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
+                        resizeMode="cover"
+                        withSkeleton
+                      />
+                    ) : (
+                      <DmView
+                        style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
+                        className="bg-grey2"
+                      />
+                    )}
                     {isVideo && (
                       <DmView
                         className="absolute items-center justify-center"
@@ -447,7 +460,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <Carousel
                 ref={carouselRef}
                 width={SCREEN_WIDTH}
-                height={SCREEN_WIDTH}
+                height={VIEWER_HEIGHT}
                 data={workPhotos}
                 defaultIndex={viewerIndex}
                 onSnapToItem={(index) => setViewerIndex(index)}
@@ -459,7 +472,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Video
                       source={{ uri: item.url }}
                       style={styles.fullSize}
-                      resizeMode="contain"
+                      resizeMode="cover"
                       controls
                       paused={index !== viewerIndex}
                       repeat={false}
@@ -497,11 +510,23 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                       { borderColor: idx === viewerIndex ? "#fff" : "transparent" },
                     ]}
                   >
-                    <CachedImage
-                      uri={thumbnailUri(item)}
-                      style={styles.thumbnailSize}
-                      resizeMode="cover"
-                    />
+                    {thumbnailUri(item) ? (
+                      <CachedImage
+                        uri={thumbnailUri(item) as string}
+                        style={styles.thumbnailSize}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <DmView style={styles.thumbnailSize} className="bg-grey2" />
+                    )}
+                    {isVideoMedia(item) && (
+                      <DmView
+                        style={styles.thumbnailOverlay}
+                        pointerEvents="none"
+                      >
+                        <PlayIcon width={20} height={20} />
+                      </DmView>
+                    )}
                   </TouchableOpacity>
                 )}
               />
