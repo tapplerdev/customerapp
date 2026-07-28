@@ -182,7 +182,26 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       year: "numeric",
     })
     const slot = job.timeSlots?.[0]
-    return slot ? `${day} · ${slot.start} - ${slot.end}` : day
+    if (!slot) return day
+
+    // The wire sends time columns as "09:00:00" — seconds are noise, and the
+    // rest of the flow reads 12-hour. Same shape as the checkout label.
+    const clock = (value: string) => {
+      const [hour, minute] = value.split(":").map(Number)
+      return {
+        text: `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""}`,
+        suffix: hour >= 12 ? t("pm") : t("am"),
+      }
+    }
+    const from = clock(slot.start)
+    const endsAtMidnight = slot.end.startsWith("00:")
+    const to = endsAtMidnight ? { text: "12", suffix: t("am") } : clock(slot.end)
+    const window =
+      !endsAtMidnight && from.suffix === to.suffix
+        ? `${from.text} - ${to.text} ${to.suffix}`
+        : `${from.text} ${from.suffix} - ${to.text} ${to.suffix}`
+
+    return `${day} · ${window}`
   }, [job.dates, job.timeSlots, job.dateType, isPickup, isAr, t])
 
   const totalsRow = (
@@ -195,7 +214,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       <DmText
         className={
           bold
-            ? "text-15 leading-[19px] font-custom700"
+            ? "text-13 leading-[17px] font-custom700"
             : "text-13 leading-[17px] font-custom400 text-grey2"
         }
       >
@@ -204,7 +223,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       <DmText
         className={
           bold
-            ? "text-15 leading-[19px] font-custom700"
+            ? "text-13 leading-[17px] font-custom700"
             : "text-13 leading-[17px] font-custom500"
         }
         style={negative ? { color: colors.red } : undefined}
@@ -237,7 +256,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
               {t("status")}:{" "}
             </DmText>
             <DmText
-              className="flex-1 text-12 leading-[16px] font-custom600"
+              className="flex-1 text-12 leading-[16px] font-custom400"
               style={{ color: isCancelled ? colors.red : colors.green }}
               numberOfLines={1}
             >
@@ -245,12 +264,12 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             </DmText>
           </DmView>
           <DmView className="mt-[8] flex-row items-center">
-            <DmView className="px-[10] py-[4] rounded-8 border-0.5 border-grey14">
-              <DmText className="text-12 leading-[16px] font-custom400 text-grey2">
+            <DmView className="px-[14] py-[6] rounded-20 border-0.5 border-grey14">
+              <DmText className="text-13 leading-[17px] font-custom500">
                 {t("total")}
               </DmText>
             </DmView>
-            <DmText className="ml-[8] flex-1 text-15 leading-[19px] font-custom700">
+            <DmText className="ml-[10] flex-1 text-17 leading-[21px] font-custom700">
               {formatMoney(total)} {t("EGP")}
             </DmText>
             {!!onOpenChat && (
@@ -285,8 +304,8 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
         {trustDocs.map((doc: any) => (
           <DmView key={doc.id} className="mr-[14]">
             <SvgUriContainer
-              width={100}
-              height={22}
+              width={140}
+              height={30}
               uri={
                 isAr
                   ? doc.trustDocumentData?.trustProduct?.pictureAr
