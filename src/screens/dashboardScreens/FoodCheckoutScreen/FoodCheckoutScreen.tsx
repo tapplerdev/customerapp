@@ -325,9 +325,56 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       })
     : ""
 
-  const scheduleLabel = scheduledDate
-    ? `${scheduledDate}${scheduledSlot ? ` · ${scheduledSlot.start} - ${scheduledSlot.end}` : ""}`
-    : t("choose_date_time")
+  // "2026-07-28 · 15:00 - 18:00" is a database row, not something you tell a
+  // person. Near dates get named, everything else gets a short date, and the
+  // window collapses to one am/pm when both ends share it — the same shape the
+  // calendar's own slot labels use.
+  const scheduleLabel = useMemo(() => {
+    if (!scheduledDate) return t("choose_date_time")
+
+    const [year, month, day] = scheduledDate.split("-").map(Number)
+    const when = new Date(year, month - 1, day)
+    const midnight = new Date()
+    midnight.setHours(0, 0, 0, 0)
+    const daysOut = Math.round(
+      (when.getTime() - midnight.getTime()) / 86_400_000
+    )
+
+    const dayLabel =
+      daysOut === 0
+        ? t("today")
+        : daysOut === 1
+          ? t("tomorrow")
+          : when.toLocaleDateString(isAr ? "ar-EG" : "en-GB", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })
+
+    if (!scheduledSlot) return dayLabel
+
+    const clock = (value: string) => {
+      const [hour, minute] = value.split(":").map(Number)
+      return {
+        text: `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""}`,
+        suffix: hour >= 12 ? t("pm") : t("am"),
+      }
+    }
+
+    const from = clock(scheduledSlot.start)
+    // 00:00 ends the last slot: that is MIDNIGHT (12 AM), not noon. Calling it
+    // PM rendered "9 - 12 PM", which reads backwards. It also never collapses
+    // with the start, or a 6am-midnight span would print "6 - 12 AM".
+    const endsAtMidnight = scheduledSlot.end.startsWith("00:")
+    const to = endsAtMidnight ? { text: "12", suffix: t("am") } : clock(scheduledSlot.end)
+
+    const window =
+      !endsAtMidnight && from.suffix === to.suffix
+        ? `${from.text} - ${to.text} ${to.suffix}`
+        : `${from.text} ${from.suffix} - ${to.text} ${to.suffix}`
+
+    return `${dayLabel} · ${window}`
+  }, [scheduledDate, scheduledSlot, isAr, t])
 
   const handleReviewOrder = () => {
     if (

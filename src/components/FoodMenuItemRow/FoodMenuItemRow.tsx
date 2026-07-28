@@ -80,11 +80,7 @@ const FoodMenuItemRow: React.FC<Props> = ({
             <DmView className="flex-1 items-end">
               {item.isPreOrderOnly && (
                 <ActionBtn
-                  title={
-                    item.leadTimeHours
-                      ? t("pre_order_with_notice", { hours: item.leadTimeHours })
-                      : t("pre_order")
-                  }
+                  title={t("pre_order")}
                   className="h-[20] self-auto bg-red2 rounded-4 px-[8]"
                   classNameTextWrapper="mx-[0]"
                   textClassName="text-11 leading-[14px] font-custom700 text-white"

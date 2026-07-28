@@ -118,9 +118,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
             {line.isPreOrderOnly && (
               <DmView className="mt-[8] self-start bg-red2 rounded-4 px-[8] py-[3]">
                 <DmText className="text-11 leading-[14px] font-custom700 text-white">
-                  {line.leadTimeHours
-                    ? t("pre_order_with_notice", { hours: line.leadTimeHours })
-                    : t("pre_order")}
+                  {t("pre_order")}
                 </DmText>
               </DmView>
             )}

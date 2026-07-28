@@ -348,12 +348,8 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
         {menuItem.isPreOrderOnly && (
           <DmView className="flex-row items-center py-[9] px-[14] border-t-grey35 border-b-grey35 border-t-0.5 border-b-0.5">
             <ActionBtn
-              title={
-                menuItem.leadTimeHours
-                  ? t("pre_order_with_notice", { hours: menuItem.leadTimeHours })
-                  : t("pre_order")
-              }
-              className="h-[20] self-auto bg-red2 rounded-4 px-[8]"
+              title={t("pre_order")}
+              className="h-[20] self-auto bg-red2 rounded-4"
               textClassName="text-11 leading-[14px] font-custom700 text-white"
             />
             <DmText className="flex-1 ml-[7] text-14 leading-[18px] font-custom600">

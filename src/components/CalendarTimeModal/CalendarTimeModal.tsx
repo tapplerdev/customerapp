@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { ScrollView } from "react-native"
 import { useTranslation } from "react-i18next"
 import Modal from "react-native-modal"
@@ -42,15 +42,6 @@ const CalendarTimeModal: React.FC<Props> = ({
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null)
   const [specialOption, setSpecialOption] = useState<"any_time" | "asap" | null>(null)
 
-  // Reset state when modal opens
-  React.useEffect(() => {
-    if (isVisible) {
-      setSelectedDate("")
-      setSelectedSlotIndex(null)
-      setSpecialOption(null)
-    }
-  }, [isVisible])
-
   // Local calendar day, not toISOString() — that converts to UTC and rolls
   // the date backwards for anyone east of Greenwich, which is all of Egypt.
   const toLocalDay = (value: Date) =>
@@ -58,18 +49,52 @@ const CalendarTimeModal: React.FC<Props> = ({
       value.getDate()
     ).padStart(2, "0")}`
 
-  const today = toLocalDay(new Date())
-  const minDay = earliestAt ? toLocalDay(earliestAt) : today
+  // NOW is always the floor. A lead time only pushes it later — it never made
+  // sense to offer this morning's window at 6pm, and before this only baskets
+  // with a pre-order item were bounded at all.
+  const floor = useMemo(() => {
+    const now = new Date()
+    return earliestAt && earliestAt > now ? earliestAt : now
+  }, [earliestAt, isVisible])
 
-  // On the earliest day itself, a slot only counts if it ENDS after the
-  // earliest time — a 12:00-15:00 window is still usable at 12:30.
-  const isSlotTooEarly = (slot: { start: string; end: string }) => {
-    if (!earliestAt || selectedDate !== toLocalDay(earliestAt)) return false
+  const minutesOnFloorDay = floor.getHours() * 60 + floor.getMinutes()
+
+  // A slot survives if it ENDS after the floor — 12:00-15:00 is still usable
+  // at 12:30. Only the floor's own day is constrained; later days are open.
+  const isSlotTooEarlyOn = (day: string, slot: { start: string; end: string }) => {
+    if (day !== toLocalDay(floor)) return false
     const [h, m] = slot.end.split(":").map(Number)
-    // "00:00" closes the day, so treat it as midnight-at-the-end.
     const endMinutes = h === 0 && m === 0 ? 24 * 60 : h * 60 + m
-    return endMinutes <= earliestAt.getHours() * 60 + earliestAt.getMinutes()
+    return endMinutes <= minutesOnFloorDay
   }
+
+  const isSlotTooEarly = (slot: { start: string; end: string }) =>
+    isSlotTooEarlyOn(selectedDate, slot)
+
+  // The first day that still has a usable window. Late enough in the evening
+  // every slot on the floor's day is gone, and landing the customer on a fully
+  // greyed-out list is worse than opening on tomorrow.
+  const firstOpenDay = useMemo(() => {
+    for (let offset = 0; offset < 14; offset += 1) {
+      const day = new Date(floor)
+      day.setDate(day.getDate() + offset)
+      const key = toLocalDay(day)
+      if (TIME_SLOTS.some((slot) => !isSlotTooEarlyOn(key, slot))) return key
+    }
+    return toLocalDay(floor)
+  }, [floor])
+
+  const minDay = toLocalDay(floor)
+
+  // Open on a usable day already selected — the customer's most likely answer
+  // is "today", and making them tap the date first is a step for nothing.
+  React.useEffect(() => {
+    if (isVisible) {
+      setSelectedDate(firstOpenDay)
+      setSelectedSlotIndex(null)
+      setSpecialOption(null)
+    }
+  }, [isVisible])
 
   const handleDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString)
