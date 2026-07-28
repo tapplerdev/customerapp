@@ -504,6 +504,7 @@
   "show_order_details": "عرض تفاصيل طلبي",
   "order_details": "تفاصيل الطلب",
   "delivery_address": "عنوان التوصيل",
+  "customer_area": "منطقة الاستلام",
   "place_order": "تأكيد الطلب",
   "order": "الطلب",
   "order_placed": "تم إرسال الطلب",

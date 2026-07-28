@@ -505,6 +505,7 @@
   "show_order_details": "Show my order details",
   "order_details": "Order Details",
   "delivery_address": "Delivery Address",
+  "customer_area": "Pickup area",
   "place_order": "Place Order",
   "order": "Order",
   "order_placed": "Order placed",

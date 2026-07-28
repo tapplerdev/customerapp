@@ -97,7 +97,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   // The design's static "Status: Accepted by Pro" line — the timeline below
   // carries the detail, this is the one-glance answer.
   const headlineStatus = isCancelled
-    ? t("order_cancelled")
+    ? t("cancelled")
     : currentStep >= 0
       ? stepLabels[STEPS[currentStep]]
       : t("order_sent_to_pro")
@@ -341,16 +341,13 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       {/* Status */}
       <DmView className="mt-[16]" />
       {isCancelled ? (
-        <DmView className="p-[14] rounded-12 bg-pink1">
-          <DmText className="text-15 leading-[19px] font-custom700 text-red">
-            {t("order_cancelled")}
-          </DmText>
-          {!!jobPro?.foodOrderCancelReason && (
-            <DmText className="mt-[4] text-12 leading-[16px] font-custom400 text-red">
+        !!jobPro?.foodOrderCancelReason && (
+          <DmView className="p-[14] rounded-12 bg-pink1">
+            <DmText className="text-12 leading-[16px] font-custom400 text-red">
               {t(`food_cancel_${jobPro.foodOrderCancelReason}`)}
             </DmText>
-          )}
-        </DmView>
+          </DmView>
+        )
       ) : (
         <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
           {/* No headline here — the pro card above already states the status,
