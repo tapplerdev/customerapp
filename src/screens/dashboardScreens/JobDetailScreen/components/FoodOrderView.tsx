@@ -1,6 +1,7 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import CachedImage from "@tappler/shared/src/components/CachedImage"
 import { Alert, ScrollView } from "react-native"
 
 import { useTranslation } from "react-i18next"
@@ -8,9 +9,21 @@ import { useCancelJobMutation } from "services/api"
 import { formatMoney } from "store/cart/slice"
 import { JobFoodOrderItemType, JobType } from "types/job"
 import colors from "@tappler/shared/src/styles/colors"
+import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
+import OffersSection from "components/OffersSection/OffersSection"
+
+import IndividualIcon from "assets/icons/individual.svg"
+import BusinessIcon from "assets/icons/business.svg"
+import MailIcon from "assets/icons/mail.svg"
+
+import styles from "./styles"
 
 interface Props {
   job: JobType
+  // Resolved by JobDetailScreen from the chats cache — the order payload has
+  // no chat data of its own.
+  unreadCount?: number
+  onOpenChat?: () => void
 }
 
 // Order-centric detail body for food (hasMenu) jobs: status timeline driven
@@ -19,8 +32,9 @@ interface Props {
 // cache invalidation; the screen's re-focus refetch is the safety net.
 const STEPS = ["accepted", "preparing", "withDeliveryCourier", "delivered"] as const
 
-const FoodOrderView: React.FC<Props> = ({ job }) => {
-  const { t } = useTranslation()
+const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) => {
+  const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
 
   const jobPro = job.pros?.[0]
   const status = jobPro?.status
@@ -55,6 +69,28 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
     withDeliveryCourier: t("order_out_for_delivery"),
     delivered: t("order_delivered"),
   }
+
+  // Pro identity for the header card. Everything here already rides on the
+  // job (CustomerJobDetailsRelations loads prosProfilePhoto / prosDocuments /
+  // prosServiceCategories), so no extra request.
+  const pro = jobPro?.pro
+  const isCompany = pro?.proType === "company"
+  const proName =
+    pro?.screenName || (isCompany ? pro?.businessName : pro?.registeredName) || ""
+  const trustDocs = (pro?.documents ?? []).filter(
+    (doc: any) => doc.type === "trust" && doc.status === "approved"
+  )
+  const subscriptions = pro?.serviceCategories?.[0]?.subscriptions ?? []
+
+  // The design's static "Status: Accepted by Pro" line — the timeline below
+  // carries the detail, this is the one-glance answer.
+  const headlineStatus = isCancelled
+    ? t("order_cancelled")
+    : currentStep >= 0
+      ? stepLabels[STEPS[currentStep]]
+      : t("order_sent_to_pro")
+
+  const [isDetailsOpen, setDetailsOpen] = useState(true)
 
   const items = job.foodOrderItems ?? []
   const subtotal = useMemo(
@@ -108,7 +144,53 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
     )
   }
 
-  const totalsRow = (label: string, value: string, bold?: boolean) => (
+  // Label above value, hidden entirely when there is nothing to say — an
+  // empty "Order Notes" heading is worse than no heading.
+  const detailRow = (label: string, value?: string | null) =>
+    !!value && (
+      <DmView className="mt-[14]">
+        <DmText className="text-13 leading-[17px] font-custom700">{label}</DmText>
+        <DmText className="mt-[3] text-13 leading-[18px] font-custom400">
+          {value}
+        </DmText>
+      </DmView>
+    )
+
+  // The wire nests this (address.address.*); city/governorate fill in when
+  // there is no street line, so the row never collapses to nothing.
+  const addressLabel = [
+    job.address?.address?.streetAddress,
+    job.address?.address?.city,
+    job.address?.address?.governorate,
+  ]
+    .filter(Boolean)
+    .join(", ")
+
+  // "asap" carries no dates at all — say so rather than leaving it blank.
+  const whenLabel = useMemo(() => {
+    const date = job.dates?.[0]?.date
+    if (!date) {
+      return job.dateType === "asap"
+        ? t(isPickup ? "pick_up_now" : "deliver_now")
+        : ""
+    }
+    const when = new Date(date)
+    const day = when.toLocaleDateString(isAr ? "ar-EG" : "en-GB", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    const slot = job.timeSlots?.[0]
+    return slot ? `${day} · ${slot.start} - ${slot.end}` : day
+  }, [job.dates, job.timeSlots, job.dateType, isPickup, isAr, t])
+
+  const totalsRow = (
+    label: string,
+    value: string,
+    bold?: boolean,
+    negative?: boolean
+  ) => (
     <DmView className="flex-row items-center justify-between mt-[8]">
       <DmText
         className={
@@ -125,6 +207,7 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
             ? "text-15 leading-[19px] font-custom700"
             : "text-13 leading-[17px] font-custom500"
         }
+        style={negative ? { color: colors.red } : undefined}
       >
         {value}
       </DmText>
@@ -136,7 +219,94 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
+      {/* Who the order is with — photo, name, headline status and the running
+          total, matching the design's header card. */}
+      <DmView className="flex-row">
+        <CachedImage
+          uri={pro?.profilePhoto150 || pro?.profilePhoto || undefined}
+          style={styles.proPhoto}
+          resizeMode="cover"
+          withSkeleton
+        />
+        <DmView className="flex-1 ml-[12] justify-center">
+          <DmText className="text-15 leading-[19px] font-custom700" numberOfLines={1}>
+            {proName}
+          </DmText>
+          <DmView className="mt-[4] flex-row items-center">
+            <DmText className="text-12 leading-[16px] font-custom400 text-grey2">
+              {t("status")}:{" "}
+            </DmText>
+            <DmText
+              className="flex-1 text-12 leading-[16px] font-custom600"
+              style={{ color: isCancelled ? colors.red : colors.green }}
+              numberOfLines={1}
+            >
+              {headlineStatus}
+            </DmText>
+          </DmView>
+          <DmView className="mt-[8] flex-row items-center">
+            <DmView className="px-[10] py-[4] rounded-8 border-0.5 border-grey14">
+              <DmText className="text-12 leading-[16px] font-custom400 text-grey2">
+                {t("total")}
+              </DmText>
+            </DmView>
+            <DmText className="ml-[8] flex-1 text-15 leading-[19px] font-custom700">
+              {formatMoney(total)} {t("EGP")}
+            </DmText>
+            {!!onOpenChat && (
+              <DmView className="pl-[8]" onPress={onOpenChat}>
+                <MailIcon width={24} height={24} />
+                {unreadCount > 0 && (
+                  <DmView className="absolute -top-[6] -right-[6] min-w-[16] h-[16] px-[4] rounded-full bg-red items-center justify-center">
+                    <DmText className="text-9 font-custom700 text-white">
+                      {unreadCount}
+                    </DmText>
+                  </DmView>
+                )}
+              </DmView>
+            )}
+          </DmView>
+        </DmView>
+      </DmView>
+
+      {/* Individual · trust stickers · Offers — the same trio the pro card and
+          profile show, so the customer sees consistent credentials. */}
+      <DmView className="mt-[14] flex-row items-center flex-wrap">
+        <DmView className="flex-row items-center mr-[14]">
+          {isCompany ? (
+            <BusinessIcon width={16} height={16} />
+          ) : (
+            <IndividualIcon width={16} height={16} />
+          )}
+          <DmText className="ml-[4] text-12 leading-[16px] font-custom400">
+            {t(isCompany ? "business" : "individual")}
+          </DmText>
+        </DmView>
+        {trustDocs.map((doc: any) => (
+          <DmView key={doc.id} className="mr-[14]">
+            <SvgUriContainer
+              width={100}
+              height={22}
+              uri={
+                isAr
+                  ? doc.trustDocumentData?.trustProduct?.pictureAr
+                  : doc.trustDocumentData?.trustProduct?.pictureEn
+              }
+            />
+          </DmView>
+        ))}
+      </DmView>
+
+      {!!subscriptions.length && (
+        <DmView className="mt-[12]">
+          <OffersSection subscriptions={subscriptions} compact />
+        </DmView>
+      )}
+
+      <DmView className="h-[0.5] bg-grey19 mt-[16]" />
+
       {/* Status */}
+      <DmView className="mt-[16]" />
       {isCancelled ? (
         <DmView className="p-[14] rounded-12 bg-pink1">
           <DmText className="text-15 leading-[19px] font-custom700 text-red">
@@ -150,18 +320,18 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
         </DmView>
       ) : (
         <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
-          <DmText className="text-15 leading-[19px] font-custom700">
-            {currentStep >= 0
-              ? stepLabels[STEPS[currentStep]]
-              : t("order_placed")}
-          </DmText>
+          {/* No headline here — the pro card above already states the status,
+              and printing it twice on one screen reads as a bug. This keeps
+              only what the card cannot say: what happens next. */}
           {currentStep < 0 && (
-            <DmText className="mt-[3] text-12 leading-[16px] font-custom400 text-grey2">
+            <DmText className="text-12 leading-[16px] font-custom400 text-grey2">
               {t("order_placed_descr")}
             </DmText>
           )}
           {/* Timeline */}
-          <DmView className="mt-[14] flex-row items-center">
+          <DmView
+            className={`flex-row items-center ${currentStep < 0 ? "mt-[14]" : ""}`}
+          >
             {STEPS.map((step, idx) => (
               <React.Fragment key={step}>
                 {idx > 0 && (
@@ -194,60 +364,59 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
         </DmView>
       )}
 
-      {/* Items + totals */}
-      <DmView className="mt-[16] p-[14] rounded-12 bg-grey36">
-        <DmText className="text-14 leading-[18px] font-custom700">
-          {t("order_summary")}
+      {/* Everything below the fold, in the design's order: where, when, how
+          paid, notes, then the itemised bill. Collapsible because the status
+          is the answer on a repeat visit and the bill is the answer once. */}
+      <DmView
+        className="mt-[18] flex-row items-center justify-center"
+        onPress={() => setDetailsOpen((open) => !open)}
+      >
+        <DmText className="text-13 leading-[17px] font-custom600 text-red">
+          {t(isDetailsOpen ? "hide_order_details" : "show_order_details")}
         </DmText>
-        {items.map(renderLine)}
-        <DmView className="h-[0.7] bg-grey14 mt-[12]" />
-        {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
-        {/* A pickup order carries no fee, and 0 renders as "Free". */}
-        {!isPickup &&
-          totalsRow(
-            t("delivery_fee"),
-            deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
-          )}
-        {orderDiscount > 0 &&
-          totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
-        {totalsRow(t("total"), `${formatMoney(total)} ${t("EGP")}`, true)}
+        <DmText className="ml-[6] text-13 leading-[17px] font-custom600 text-red">
+          {isDetailsOpen ? "\u2303" : "\u2304"}
+        </DmText>
       </DmView>
 
-      {/* Payment + notes + address */}
-      <DmView className="mt-[16] p-[14] rounded-12 border-0.5 border-grey14">
-        <DmView className="flex-row items-center justify-between">
-          <DmText className="text-13 leading-[17px] font-custom400 text-grey2">
-            {t("payment_method")}
+      {isDetailsOpen && (
+        <DmView className="mt-[14]">
+          {detailRow(
+            t(isPickup ? "pickup_from" : "delivery_address"),
+            addressLabel
+          )}
+          {detailRow(t(isPickup ? "pickup_time" : "delivery_time"), whenLabel)}
+          {detailRow(
+            t("payment_method"),
+            job.paymentMethod === "creditCard"
+              ? t(isPickup ? "card_on_pickup" : "card_on_delivery")
+              : t(isPickup ? "cash_on_pickup" : "cash_on_delivery")
+          )}
+          {detailRow(t("order_notes"), job.orderNotes)}
+
+          <DmText className="mt-[18] text-14 leading-[18px] font-custom700">
+            {t("order_details")}
           </DmText>
-          <DmText className="text-13 leading-[17px] font-custom600">
-            {job.paymentMethod === "creditCard"
-              ? t("card_on_delivery")
-              : t("cash_on_delivery")}
-          </DmText>
+          {items.map(renderLine)}
+
+          <DmView className="h-[0.7] bg-grey14 mt-[14]" />
+          {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
+          {/* A pickup order carries no fee, and 0 renders as "Free". */}
+          {!isPickup &&
+            totalsRow(
+              t("delivery_fee"),
+              deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
+            )}
+          {orderDiscount > 0 &&
+            totalsRow(
+              t("discount"),
+              `- ${formatMoney(orderDiscount)} ${t("EGP")}`,
+              false,
+              true
+            )}
+          {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
         </DmView>
-        {!!job.orderNotes && (
-          <>
-            <DmView className="h-[0.5] bg-grey14 my-[10]" />
-            <DmText className="text-13 leading-[17px] font-custom400 text-grey2">
-              {t("order_notes")}
-            </DmText>
-            <DmText className="mt-[4] text-13 leading-[18px] font-custom500">
-              {job.orderNotes}
-            </DmText>
-          </>
-        )}
-        {!!job.address?.address?.streetAddress && (
-          <>
-            <DmView className="h-[0.5] bg-grey14 my-[10]" />
-            <DmText className="text-13 leading-[17px] font-custom400 text-grey2">
-              {t("deliver_to")}
-            </DmText>
-            <DmText className="mt-[4] text-13 leading-[18px] font-custom500">
-              {job.address.address.streetAddress}
-            </DmText>
-          </>
-        )}
-      </DmView>
+      )}
 
       {/* Cancel — only before the pro starts preparing */}
       {canCancel && (

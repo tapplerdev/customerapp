@@ -481,7 +481,16 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             <DmView className="w-[32]" />
           </DmView>
           <DmView className="h-[0.5] bg-grey19" />
-          <FoodOrderView job={localJob} />
+          <FoodOrderView
+            job={localJob}
+            // The order payload carries no chat data; the chats cache does.
+            unreadCount={getUnreadCount(localJob.pros?.[0]?.proId ?? -1)}
+            onOpenChat={
+              localJob.pros?.[0]
+                ? () => handleOpenChat(localJob.pros![0])
+                : undefined
+            }
+          />
         </Animated.View>
       </SafeAreaView>
     )
