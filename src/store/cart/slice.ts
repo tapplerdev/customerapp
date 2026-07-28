@@ -228,3 +228,45 @@ export const selectOtherDrafts = (
   )
 
 export default cartSlice.reducer
+
+// One source of truth for order money. Checkout and Review must never compute
+// this separately — a customer approving one total and being charged another
+// is the worst possible divergence, and it would be invisible in review.
+// Mirrors the server's math in job.service.createJob.
+export const computeOrderTotals = (
+  items: CartItemType[],
+  menu:
+    | {
+        deliveryCharge?: number | null
+        freeDeliveryThreshold?: number | null
+        totalOrderValueDiscountRate?: number | null
+        totalOrderValueDiscountThreshold?: number | null
+      }
+    | undefined,
+  isPickup: boolean
+) => {
+  const subtotal = cartSubtotal(items)
+
+  const deliveryFee =
+    isPickup || !menu
+      ? 0
+      : menu.freeDeliveryThreshold != null &&
+          subtotal >= menu.freeDeliveryThreshold
+        ? 0
+        : (menu.deliveryCharge ?? 0)
+
+  const orderDiscount =
+    !menu ||
+    menu.totalOrderValueDiscountRate == null ||
+    menu.totalOrderValueDiscountThreshold == null ||
+    subtotal < menu.totalOrderValueDiscountThreshold
+      ? 0
+      : Math.round(subtotal * menu.totalOrderValueDiscountRate) / 100
+
+  return {
+    subtotal,
+    deliveryFee,
+    orderDiscount,
+    total: subtotal + deliveryFee - orderDiscount,
+  }
+}

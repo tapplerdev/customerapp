@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 import { useTypedSelector } from "store"
 import {
-  cartSubtotal,
+  computeOrderTotals,
   clearCart,
   emptyDraft,
   selectDraft,
@@ -164,24 +164,10 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // Pickup orders: no delivery fee, no delivery-zone advisory — customer travels.
   const isPickup = selectedMode === "pickup"
 
-  const subtotal = cartSubtotal(cart.items)
-  const deliveryFee = useMemo(() => {
-    if (isPickup || !menu) return 0
-    if (menu.freeDeliveryThreshold != null && subtotal >= menu.freeDeliveryThreshold)
-      return 0
-    return menu.deliveryCharge ?? 0
-  }, [isPickup, menu, subtotal])
-  const orderDiscount = useMemo(() => {
-    if (
-      !menu ||
-      menu.totalOrderValueDiscountRate == null ||
-      menu.totalOrderValueDiscountThreshold == null ||
-      subtotal < menu.totalOrderValueDiscountThreshold
-    )
-      return 0
-    return Math.round(subtotal * menu.totalOrderValueDiscountRate) / 100
-  }, [menu, subtotal])
-  const total = subtotal + deliveryFee - orderDiscount
+  const { subtotal, deliveryFee, orderDiscount, total } = useMemo(
+    () => computeOrderTotals(cart.items, menu, isPickup),
+    [cart.items, menu, isPickup]
+  )
 
   // Out-of-zone is decided by the backend (same ST_Distance check createJob
   // enforces), not client-side math. Fail-open: only block on a definitive
