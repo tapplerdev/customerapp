@@ -17,6 +17,7 @@ import {
   addCartItem,
   cartCount,
   cartSubtotal,
+  formatMoney,
   selectDraft,
   setCartItemQuantity,
   sweepStaleCarts,
@@ -311,7 +312,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
               </DmView>
 
               <DmText className="text-14 leading-[18px] font-custom600 text-white">
-                {basketTotal.toFixed(2)} {t("EGP")}
+                {formatMoney(basketTotal)} {t("EGP")}
               </DmText>
             </DmView>
           </DmView>

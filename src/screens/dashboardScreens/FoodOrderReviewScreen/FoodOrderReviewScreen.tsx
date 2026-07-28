@@ -17,6 +17,7 @@ import {
   clearCart,
   computeOrderTotals,
   emptyDraft,
+  formatMoney,
   selectDraft,
 } from "store/cart/slice"
 import ErrorModal from "components/ErrorModal"
@@ -89,11 +90,6 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmText>
       </DmView>
     )
-
-  // The mock shows whole amounts ("185 EGP"); only surface decimals when the
-  // figure genuinely has them.
-  const money = (value: number) =>
-    value % 1 ? value.toFixed(2) : String(value)
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
     <DmView className="flex-row items-center justify-between mt-[8]">
@@ -169,7 +165,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
                   {line.quantity}×  {line.name}
                 </DmText>
                 <DmText className="text-13 leading-[18px] font-custom400">
-                  {money(cartLineTotal(line))} {t("EGP")}
+                  {formatMoney(cartLineTotal(line))} {t("EGP")}
                 </DmText>
               </DmView>
 
@@ -189,18 +185,18 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
           ))}
 
           <DmView className="h-[0.7] bg-grey14 mt-[14]" />
-          {totalsRow(t("subtotal"), `${money(subtotal)} ${t("EGP")}`)}
+          {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
           {!isPickup &&
             totalsRow(
               t("delivery_fee"),
-              deliveryFee ? `${money(deliveryFee)} ${t("EGP")}` : t("free")
+              deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
             )}
           {orderDiscount > 0 &&
             totalsRow(
               t("discount"),
-              `-${money(orderDiscount)} ${t("EGP")}`
+              `-${formatMoney(orderDiscount)} ${t("EGP")}`
             )}
-          {totalsRow(t("order_total"), `${money(total)} ${t("EGP")}`, true)}
+          {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
         </DmView>
       </ScrollView>
 

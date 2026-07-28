@@ -5,6 +5,7 @@ import { Alert, ScrollView } from "react-native"
 
 import { useTranslation } from "react-i18next"
 import { useCancelJobMutation } from "services/api"
+import { formatMoney } from "store/cart/slice"
 import { JobFoodOrderItemType, JobType } from "types/job"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -100,7 +101,7 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
           )}
         </DmView>
         <DmText className="text-13 leading-[17px] font-custom500">
-          {((Number(line.price) + choicesTotal) * line.quantity).toFixed(2)}{" "}
+          {formatMoney((Number(line.price) + choicesTotal) * line.quantity)}{" "}
           {t("EGP")}
         </DmText>
       </DmView>
@@ -200,16 +201,16 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
         </DmText>
         {items.map(renderLine)}
         <DmView className="h-[0.7] bg-grey14 mt-[12]" />
-        {totalsRow(t("subtotal"), `${subtotal.toFixed(2)} ${t("EGP")}`)}
+        {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
         {/* A pickup order carries no fee, and 0 renders as "Free". */}
         {!isPickup &&
           totalsRow(
             t("delivery_fee"),
-            deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
+            deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
           )}
         {orderDiscount > 0 &&
-          totalsRow(t("discount"), `- ${orderDiscount.toFixed(2)} ${t("EGP")}`)}
-        {totalsRow(t("total"), `${total.toFixed(2)} ${t("EGP")}`, true)}
+          totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
+        {totalsRow(t("total"), `${formatMoney(total)} ${t("EGP")}`, true)}
       </DmView>
 
       {/* Payment + notes + address */}

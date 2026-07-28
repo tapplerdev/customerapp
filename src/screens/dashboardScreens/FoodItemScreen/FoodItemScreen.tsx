@@ -16,7 +16,7 @@ import CachedImage from "@tappler/shared/src/components/CachedImage"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 import { useGetProMenuQuery } from "services/api"
-import { addCartItem } from "store/cart/slice"
+import { addCartItem, formatMoney } from "store/cart/slice"
 
 // Helpers & Types
 import { RootStackScreenProps } from "navigation/types"
@@ -381,7 +381,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
         <ActionBtn
           disable={missingRequired}
           title={t("add_to_cart_for_egp_count", {
-            price: (totalPrice * count).toFixed(2),
+            price: formatMoney(totalPrice * count),
           })}
           className={clsx("mt-[23] h-[41]", missingRequired && "opacity-50")}
           textClassName="text-13 leading-[16px] font-custom600"

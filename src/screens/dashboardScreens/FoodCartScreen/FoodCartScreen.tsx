@@ -14,6 +14,7 @@ import {
   cartLineTotal,
   computeOrderTotals,
   emptyDraft,
+  formatMoney,
   selectDraft,
   setCartItemQuantity,
 } from "store/cart/slice"
@@ -137,12 +138,12 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="mt-[14] flex-row items-center justify-between">
           <DmView className="flex-1 flex-row items-center flex-wrap">
             <DmText className="text-14 leading-[18px] font-custom400">
-              {effectiveTotal % 1 ? effectiveTotal.toFixed(2) : effectiveTotal}{" "}
+              {formatMoney(effectiveTotal)}{" "}
               {t("EGP")}
             </DmText>
             {showStrike && (
               <DmText className="ml-[10] text-14 leading-[18px] font-custom400 text-grey2 line-through">
-                {originalTotal % 1 ? originalTotal.toFixed(2) : originalTotal}{" "}
+                {formatMoney(originalTotal)}{" "}
                 {t("EGP")}
               </DmText>
             )}
@@ -251,25 +252,25 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
 
             {/* Totals */}
             <DmView className="px-[16] pt-[16]">
-              {totalsRow(t("subtotal"), `${subtotal % 1 ? subtotal.toFixed(2) : subtotal} ${t("EGP")}`)}
+              {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
               {/* Zeroed on pickup, and a 0 renders as "Free" — a claim the
                   business never made. Hide the row instead. */}
               {!isPickup &&
                 totalsRow(
                   t("delivery_fee"),
                   deliveryFee
-                    ? `${deliveryFee % 1 ? deliveryFee.toFixed(2) : deliveryFee} ${t("EGP")}`
+                    ? `${formatMoney(deliveryFee)} ${t("EGP")}`
                     : t("free")
                 )}
               {orderDiscount > 0 &&
                 totalsRow(
                   t("discount"),
-                  `- ${orderDiscount % 1 ? orderDiscount.toFixed(2) : orderDiscount} ${t("EGP")}`
+                  `- ${formatMoney(orderDiscount)} ${t("EGP")}`
                 )}
               <DmView className="h-[0.7] bg-grey14 mt-[14]" />
               {totalsRow(
                 t("order_total"),
-                `${total % 1 ? total.toFixed(2) : total} ${t("EGP")}`,
+                `${formatMoney(total)} ${t("EGP")}`,
                 true
               )}
             </DmView>

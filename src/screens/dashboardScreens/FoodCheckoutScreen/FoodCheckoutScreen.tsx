@@ -18,6 +18,7 @@ import { useTypedSelector } from "store"
 import {
   computeOrderTotals,
   emptyDraft,
+  formatMoney,
   selectDraft,
   setCartAddress,
   setOrderNotes,
@@ -529,17 +530,17 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           ))}
           <DmView className="h-[0.7] bg-grey14 mt-[10]" />
-          {totalsRow(t("subtotal"), `${subtotal.toFixed(2)} ${t("EGP")}`)}
+          {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
           {/* Nothing is delivered on a pickup order, so the row would read
               "Free" — a claim, not an omission. */}
           {!isPickup &&
             totalsRow(
               t("delivery_fee"),
-              deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
+              deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
             )}
           {orderDiscount > 0 &&
-            totalsRow(t("discount"), `- ${orderDiscount.toFixed(2)} ${t("EGP")}`)}
-          {totalsRow(t("total"), `${total.toFixed(2)} ${t("EGP")}`, true)}
+            totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
+          {totalsRow(t("total"), `${formatMoney(total)} ${t("EGP")}`, true)}
         </DmView>
       </ScrollView>
 

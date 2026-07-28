@@ -168,6 +168,14 @@ export const {
   sweepStaleCarts,
 } = cartSlice.actions
 
+// One formatter for every amount in the food flow. Whole values print bare
+// ("185 EGP"), which is what the design shows and what each screen previously
+// re-implemented on its own. A genuinely fractional amount still shows its
+// decimals — rounding those away would misstate a price, and the order
+// discount (round(subtotal * rate) / 100) can legitimately land on one.
+export const formatMoney = (value: number): string =>
+  value % 1 === 0 ? String(value) : value.toFixed(2)
+
 // Per-line total = (base + choices) × qty; subtotal drives the fee/discount
 // preview — the backend recomputes and persists its own numbers at creation.
 export const cartLineTotal = (line: CartItemType): number => {
