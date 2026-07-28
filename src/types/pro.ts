@@ -115,9 +115,10 @@ export type ProType = {
   // photosOfWork, which is no longer sent to customers.
   workPhotos?: ProWorkPhotoType[]
   hours?: ProHourType[]
-  // The API serialises these as objects ({ type: "cash" | "credit card" }),
-  // not bare strings — ProDto @Type()s them to ProPaymentMethodDto.
-  paymentMethods?: { type: string }[]
+  // Bare strings ("cash" | "credit card"). ProDto @Type()s them to
+  // ProPaymentMethodDto but a @Transform ABOVE that flattens to type, so the
+  // wire format is a string array despite the DTO's declared type.
+  paymentMethods?: string[]
   socials?: ProSocialType[]
   media?: ProMediaType[]
   responseTimeHours?: number

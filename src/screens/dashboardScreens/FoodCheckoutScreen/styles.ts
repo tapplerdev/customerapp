@@ -16,6 +16,15 @@ const styles = StyleSheet.create({
     minHeight: 80,
     textAlignVertical: "top",
   },
+  // Matches FiltersScreen / FoodCart / FoodMenu — the upward shadow is what
+  // reads as pinned above the content rather than floating in it.
+  footerShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 5,
+  },
 })
 
 export default styles

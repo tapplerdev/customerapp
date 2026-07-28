@@ -120,7 +120,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // pair. A cook who only takes cash never sees a card option, and the label
   // follows fulfillment so it never promises "on delivery" for a pickup.
   const paymentOptions = useMemo(() => {
-    const accepted = (pro?.paymentMethods ?? []).map((method) => method.type)
+    const accepted = pro?.paymentMethods ?? []
     const isPickup = selectedMode === "pickup"
 
     const options: { key: "cash" | "creditCard"; label: string }[] = []
@@ -554,9 +554,12 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       </ScrollView>
 
+      {/* Same pinned white footer as the menu basket bar and the cart, with the
+          shadow cast upward onto the content it covers. The button keeps its
+          own pill radius. */}
       <DmView
-        className="px-[16] bg-white"
-        style={{ paddingBottom: insets.bottom + 12 }}
+        className="px-[16] pt-[14] bg-white"
+        style={[styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
       >
         <ActionBtn
           title={t("place_order")}

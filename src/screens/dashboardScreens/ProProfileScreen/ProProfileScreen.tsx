@@ -423,9 +423,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 <DmView key={idx} className="flex-row items-center pt-[10]">
                   <DmView className="mr-[8] w-[8] h-[8] rounded-full bg-red" />
                   <DmText className="text-13 leading-[16px] font-custom400 capitalize">
-                    {/* The API sends { type }, not a bare string — t(method)
-                        was being handed an object and rendered nothing. */}
-                    {t(method.type, { defaultValue: method.type })}
+                    {t(method, { defaultValue: method })}
                   </DmText>
                 </DmView>
               ))}
