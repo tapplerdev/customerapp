@@ -48,7 +48,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width
 // section tabs + item rows, but taps go to FoodItemScreen (real add-to-cart)
 // and a View Basket bar rides the bottom once the cart has lines.
 const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { proId, serviceCategoryId, serviceId, proName, categoryName, address, fulfillmentMode = "delivery" } =
+  const { proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode = "delivery" } =
     route.params
 
   const { t, i18n } = useTranslation()
@@ -135,11 +135,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         serviceId,
         proName,
         categoryName,
-        address,
         fulfillmentMode,
       })
     },
-    [navigation, proId, serviceCategoryId, serviceId, proName, categoryName, address, fulfillmentMode]
+    [navigation, proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode]
   )
 
   // Thumbnail "+": optionless items add straight to the cart (uid matches
@@ -174,7 +173,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         })
       )
     },
-    [dispatch, handlePressItem, proId, serviceCategoryId, serviceId, proName, categoryName, address, fulfillmentMode]
+    [dispatch, handlePressItem, proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode]
   )
 
   // Thumbnail trash/−: peel one off the LAST cart line of this item

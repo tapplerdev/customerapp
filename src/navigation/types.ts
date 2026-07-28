@@ -97,7 +97,6 @@ export type RootStackParamList = {
     serviceId: number
     proName: string
     categoryName: string
-    address: AddressInfo | null
     fulfillmentMode?: "delivery" | "pickup"
   }
   FoodItemScreen: {
@@ -107,7 +106,6 @@ export type RootStackParamList = {
     serviceId: number
     proName: string
     categoryName: string
-    address: AddressInfo | null
     fulfillmentMode?: "delivery" | "pickup"
   }
   // Both operate on the draft for the pro they were entered from

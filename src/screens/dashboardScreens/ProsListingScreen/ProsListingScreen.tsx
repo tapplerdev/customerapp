@@ -706,7 +706,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         serviceId,
         proName: pro.screenName || pro.businessName || pro.registeredName || "",
         categoryName,
-        address: address ?? null,
         fulfillmentMode: foodFulfillment === "all" ? undefined : foodFulfillment,
       })
     },

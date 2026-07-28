@@ -56,7 +56,6 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
     serviceId,
     proName,
     categoryName,
-    address,
     fulfillmentMode = "delivery",
   } = route.params
 
