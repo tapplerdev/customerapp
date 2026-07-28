@@ -22,9 +22,19 @@ interface Props {
   onClose: () => void
   onConfirm: (date: string, timeSlot?: { start: string; end: string }, dateType?: string) => void
   hideSpecialOptions?: boolean
+  // Nothing before this can be prepared in time (basket lead time). Advisory
+  // by design: it greys out what the pro almost certainly cannot make, but the
+  // pro's accept/decline remains the real gate, so this never hard-blocks.
+  earliestAt?: Date | null
 }
 
-const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm, hideSpecialOptions }) => {
+const CalendarTimeModal: React.FC<Props> = ({
+  isVisible,
+  onClose,
+  onConfirm,
+  hideSpecialOptions,
+  earliestAt,
+}) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
 
@@ -41,11 +51,32 @@ const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm, hid
     }
   }, [isVisible])
 
-  const today = new Date().toISOString().split("T")[0]
+  // Local calendar day, not toISOString() — that converts to UTC and rolls
+  // the date backwards for anyone east of Greenwich, which is all of Egypt.
+  const toLocalDay = (value: Date) =>
+    `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(
+      value.getDate()
+    ).padStart(2, "0")}`
+
+  const today = toLocalDay(new Date())
+  const minDay = earliestAt ? toLocalDay(earliestAt) : today
+
+  // On the earliest day itself, a slot only counts if it ENDS after the
+  // earliest time — a 12:00-15:00 window is still usable at 12:30.
+  const isSlotTooEarly = (slot: { start: string; end: string }) => {
+    if (!earliestAt || selectedDate !== toLocalDay(earliestAt)) return false
+    const [h, m] = slot.end.split(":").map(Number)
+    // "00:00" closes the day, so treat it as midnight-at-the-end.
+    const endMinutes = h === 0 && m === 0 ? 24 * 60 : h * 60 + m
+    return endMinutes <= earliestAt.getHours() * 60 + earliestAt.getMinutes()
+  }
 
   const handleDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString)
     setSpecialOption(null)
+    // Switching days can make the held slot too early — drop it rather than
+    // let Confirm submit a window that is greyed out on screen.
+    setSelectedSlotIndex(null)
   }
 
   const handleSlotPress = (index: number) => {
@@ -116,7 +147,7 @@ const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm, hid
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Calendar */}
           <Calendar
-            minDate={today}
+            minDate={minDay}
             onDayPress={handleDayPress}
             markedDates={markedDates}
             theme={{
@@ -140,13 +171,15 @@ const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm, hid
             <DmView className="flex-row flex-wrap gap-[8]">
               {TIME_SLOTS.map((slot, index) => {
                 const isSelected = selectedSlotIndex === index
+                const tooEarly = isSlotTooEarly(slot)
                 return (
                   <DmView
                     key={index}
                     className={`px-[14] py-[10] rounded-8 border-1 ${
                       isSelected ? "border-red bg-red/10" : "border-grey1"
                     }`}
-                    onPress={() => handleSlotPress(index)}
+                    style={tooEarly ? { opacity: 0.35 } : undefined}
+                    onPress={tooEarly ? undefined : () => handleSlotPress(index)}
                   >
                     <DmText
                       className={`text-12 font-custom500 ${

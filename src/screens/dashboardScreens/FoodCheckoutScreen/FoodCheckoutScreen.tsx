@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 
 // Components
 import {
@@ -180,6 +180,35 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const isUrgentCategory = category ? !allowedDateTypes.length : true
   const canScheduleLater = allowedDateTypes.includes("date")
 
+  // The slowest item in the basket sets the pace. Named, not just counted —
+  // the customer's real choice is to remove that item, and they cannot make it
+  // if we only say "something here needs notice".
+  const slowestLine = useMemo(
+    () =>
+      cart.items.reduce<(typeof cart.items)[number] | null>(
+        (worst, line) =>
+          (line.leadTimeHours ?? 0) > (worst?.leadTimeHours ?? 0) ? line : worst,
+        null
+      ),
+    [cart.items]
+  )
+  const leadTimeHours = slowestLine?.leadTimeHours ?? 0
+  const earliestAt = useMemo(
+    () => (leadTimeHours ? new Date(Date.now() + leadTimeHours * 3600_000) : null),
+    [leadTimeHours]
+  )
+
+  // Steer to scheduling when the basket needs notice — but only until the
+  // customer touches the control themselves. "Deliver now" stays selectable
+  // on purpose: the pro's accept/decline is the real gate, and a cook with
+  // some already made should be free to say yes.
+  const hasChosenTiming = useRef(false)
+  useEffect(() => {
+    if (!hasChosenTiming.current && leadTimeHours > 0 && canScheduleLater) {
+      setDeliverNow(false)
+    }
+  }, [leadTimeHours, canScheduleLater])
+
   // A category that cannot schedule must never be left on "Schedule for
   // later" — the option can disappear when the service data arrives.
   useEffect(() => {
@@ -271,6 +300,30 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     setScheduledSlot(timeSlot ?? null)
     setDeliverNow(false)
   }
+
+  // Today's line only. The full week lives on the pro profile; at checkout the
+  // customer is deciding about NOW, and context beats a table. Shown, never
+  // enforced — a kitchen that is technically closed can still say yes.
+  const todayHours = useMemo(() => {
+    const day = new Date().toLocaleDateString("en-US", { weekday: "long" })
+    const row = pro?.hours?.find(
+      (hour) => hour.dayOfWeek?.toLowerCase() === day.toLowerCase()
+    )
+    if (!row?.openingTime || !row?.closingTime) return null
+    if (row.openingTime === row.closingTime) return null
+    return `${row.openingTime} - ${row.closingTime}`
+  }, [pro?.hours])
+
+  // Day + hour is enough here; the exact window is chosen in the calendar.
+  const earliestLabel = earliestAt
+    ? earliestAt.toLocaleString(isAr ? "ar-EG" : "en-GB", {
+        weekday: "long",
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : ""
 
   const scheduleLabel = scheduledDate
     ? `${scheduledDate}${scheduledSlot ? ` · ${scheduledSlot.start} - ${scheduledSlot.end}` : ""}`
@@ -563,10 +616,31 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Delivery time */}
         <DmView className="mt-[20]">
           {sectionTitle(t(isPickup ? "pickup_time" : "delivery_time"))}
+
+          {/* Says WHICH item and WHEN. A bare "this needs notice" leaves the
+              customer unable to act on it — the useful move is usually to drop
+              that one item. Advisory: "now" is still selectable below. */}
+          {!!leadTimeHours && (
+            <DmView className="mb-[10] px-[12] py-[10] rounded-8 bg-grey58">
+              <DmText className="text-12 leading-[16px] font-custom600">
+                {t("needs_notice_title", {
+                  name: slowestLine?.name,
+                  hours: leadTimeHours,
+                })}
+              </DmText>
+              <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2">
+                {canScheduleLater
+                  ? t("needs_notice_earliest", { when: earliestLabel })
+                  : t("needs_notice_pro_confirms")}
+              </DmText>
+            </DmView>
+          )}
+
           <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
             <DmView
               className="flex-row items-center justify-between"
               onPress={() => {
+                hasChosenTiming.current = true
                 setDeliverNow(true)
                 setScheduledDate(null)
                 setScheduledSlot(null)
@@ -585,7 +659,10 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                 <DmView className="h-[0.5] bg-grey14 my-[12]" />
                 <DmView
                   className="flex-row items-center justify-between"
-                  onPress={() => setCalendarVisible(true)}
+                  onPress={() => {
+                    hasChosenTiming.current = true
+                    setCalendarVisible(true)
+                  }}
                 >
                   <DmView className="flex-1">
                     <DmText className="text-13 leading-[17px] font-custom500">
@@ -602,6 +679,11 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               </>
             )}
           </DmView>
+          {!!todayHours && (
+            <DmText className="mt-[6] text-11 leading-[15px] font-custom400 text-grey2">
+              {t("kitchen_hours")}: {todayHours}
+            </DmText>
+          )}
         </DmView>
 
         {/* Payment */}
@@ -720,6 +802,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleConfirmSchedule}
         hideSpecialOptions
+        earliestAt={earliestAt}
       />
     </SafeAreaView>
   )
