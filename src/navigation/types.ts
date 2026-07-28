@@ -1,3 +1,4 @@
+import { CreateJobRequest } from "types/job"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { ChatPreviewType } from "types/chat"
 import { NotificationsItemType } from "types/notification"
@@ -112,6 +113,18 @@ export type RootStackParamList = {
   // Both operate on the draft for the pro they were entered from
   FoodCartScreen: { proId: number }
   FoodCheckoutScreen: { proId: number }
+  // The payload is built by checkout and passed through verbatim — plain JSON,
+  // so it crosses the boundary without a serialisation warning. The display
+  // strings ride along so this screen never re-derives what checkout decided.
+  FoodOrderReviewScreen: {
+    proId: number
+    payload: CreateJobRequest
+    isPickup: boolean
+    whereLabel: string
+    whereValue: string
+    whenValue: string
+    paymentLabel: string
+  }
   AllQuestionsScreen: {
     categoryName: string
     placeOfServiceOptions: string[]

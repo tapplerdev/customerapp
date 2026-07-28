@@ -10,7 +10,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { ScrollView, TextInput } from "react-native"
 import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
-import ErrorModal from "components/ErrorModal"
 
 // Hooks & Redux
 import { useTranslation } from "react-i18next"
@@ -18,7 +17,6 @@ import { useDispatch } from "react-redux"
 import { useTypedSelector } from "store"
 import {
   computeOrderTotals,
-  clearCart,
   emptyDraft,
   selectDraft,
   setCartAddress,
@@ -26,7 +24,6 @@ import {
 } from "store/cart/slice"
 import {
   useCheckDeliveryQuery,
-  useCreateJobMutation,
   useGetProMenuQuery,
   useGetProProfileQuery,
 } from "services/api"
@@ -46,7 +43,8 @@ type Props = RootStackScreenProps<"FoodCheckoutScreen">
 
 // Checkout: delivery address (with out-of-zone guard), delivery time
 // (now / scheduled via CalendarTimeModal), payment on delivery, and the
-// final Place Order submit through the standard createJob endpoint.
+// Gathers and validates, then hands a built payload to Review, which owns
+// the actual submit.
 const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const { proId } = route.params
   const { t, i18n } = useTranslation()
@@ -58,7 +56,6 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const cartState = useTypedSelector((state) => state.cart)
   const cart = selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
   const { isAuth } = useTypedSelector((state) => state.auth)
-  const [createJob] = useCreateJobMutation()
 
   const { data: pro } = useGetProProfileQuery(
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
@@ -81,9 +78,6 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     "cash"
   )
 
-  const [isSubmitting, setSubmitting] = useState(false)
-  const [isErrorVisible, setErrorVisible] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
 
   // Address changed from MySavedAddresses/PickAddress → adopt it for the
   // order. Focus + delay guard copied from useServiceAddressFlow: this
@@ -191,8 +185,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     cart.items.length > 0 &&
     !!addressCoords &&
     !outOfZone &&
-    (deliverNow || !!scheduledDate) &&
-    !isSubmitting
+    (deliverNow || !!scheduledDate)
 
   const handleConfirmSchedule = (
     date: string,
@@ -204,7 +197,11 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     setDeliverNow(false)
   }
 
-  const handlePlaceOrder = async () => {
+  const scheduleLabel = scheduledDate
+    ? `${scheduledDate}${scheduledSlot ? ` · ${scheduledSlot.start} - ${scheduledSlot.end}` : ""}`
+    : t("choose_date_time")
+
+  const handleReviewOrder = () => {
     if (
       !canSubmit ||
       !cart.proId ||
@@ -218,9 +215,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       return
     }
 
-    try {
-      setSubmitting(true)
-      const payload: CreateJobRequest = {
+    const payload: CreateJobRequest = {
         serviceCategoryId: cart.serviceCategoryId,
         address: {
           city: cart.address.city || "",
@@ -262,25 +257,22 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         })),
         paymentMethod,
       }
-      await createJob(payload).unwrap()
-      const successAddress = cart.address
-      dispatch(clearCart(proId))
-      navigation.navigate("RequestSuccessScreen", { address: successAddress })
-    } catch (error: any) {
-      const validationErrors = error?.data?.validationErrors
-      const message = validationErrors
-        ? Object.values(validationErrors).flat().join(", ")
-        : error?.data?.message || t("an_error_occurred")
-      setErrorMessage(String(message))
-      setErrorVisible(true)
-    } finally {
-      setSubmitting(false)
-    }
+
+    navigation.navigate("FoodOrderReviewScreen", {
+      proId,
+      payload,
+      isPickup,
+      whereLabel: t(isPickup ? "pickup_from" : "deliver_to"),
+      whereValue: isPickup ? pickupArea : (cart.address?.address ?? ""),
+      whenValue: deliverNow
+        ? t(isPickup ? "pick_up_now" : "deliver_now")
+        : scheduleLabel,
+      paymentLabel:
+        paymentOptions.find((option) => option.key === paymentMethod)?.label ??
+        "",
+    })
   }
 
-  const scheduleLabel = scheduledDate
-    ? `${scheduledDate}${scheduledSlot ? ` · ${scheduledSlot.start} - ${scheduledSlot.end}` : ""}`
-    : t("choose_date_time")
 
   const sectionTitle = (label: string) => (
     <DmText className="text-15 leading-[19px] font-custom700 mb-[10]">
@@ -548,12 +540,11 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         style={[styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
       >
         <ActionBtn
-          title={t("place_order")}
+          title={t("review_order")}
           className="h-[44]"
           textClassName="text-14 leading-[18px] font-custom600"
           disable={!canSubmit}
-          isLoading={isSubmitting}
-          onPress={canSubmit ? handlePlaceOrder : undefined}
+          onPress={canSubmit ? handleReviewOrder : undefined}
         />
       </DmView>
 
@@ -562,12 +553,6 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleConfirmSchedule}
         hideSpecialOptions
-      />
-      <ErrorModal
-        isVisible={isErrorVisible}
-        onClose={() => setErrorVisible(false)}
-        title={t("an_error_occurred")}
-        descr={errorMessage}
       />
     </SafeAreaView>
   )

@@ -45,6 +45,7 @@ import FoodMenuScreen from "screens/dashboardScreens/FoodMenuScreen/FoodMenuScre
 import FoodItemScreen from "screens/dashboardScreens/FoodItemScreen/FoodItemScreen"
 import FoodCartScreen from "screens/dashboardScreens/FoodCartScreen/FoodCartScreen"
 import FoodCheckoutScreen from "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen"
+import FoodOrderReviewScreen from "screens/dashboardScreens/FoodOrderReviewScreen"
 import { useTypedSelector } from "store"
 import { setCurrentScreen } from "store/auth/slice"
 
@@ -185,6 +186,7 @@ const Navigator = () => {
       <Stack.Screen name="FoodItemScreen" component={FoodItemScreen} options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="FoodCartScreen" component={FoodCartScreen} />
       <Stack.Screen name="FoodCheckoutScreen" component={FoodCheckoutScreen} />
+      <Stack.Screen name="FoodOrderReviewScreen" component={FoodOrderReviewScreen} />
     </Stack.Navigator>
   )
 }
