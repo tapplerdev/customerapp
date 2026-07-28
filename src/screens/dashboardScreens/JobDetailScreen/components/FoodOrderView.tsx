@@ -252,11 +252,11 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             {proName}
           </DmText>
           <DmView className="mt-[4] flex-row items-center">
-            <DmText className="text-12 leading-[16px] font-custom400 text-grey2">
+            <DmText className="text-15 leading-[19px] font-custom400 text-grey2">
               {t("status")}:{" "}
             </DmText>
             <DmText
-              className="flex-1 text-12 leading-[16px] font-custom400"
+              className="flex-1 text-15 leading-[19px] font-custom400"
               style={{ color: isCancelled ? colors.red : colors.green }}
               numberOfLines={1}
             >
@@ -264,12 +264,12 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             </DmText>
           </DmView>
           <DmView className="mt-[8] flex-row items-center">
-            <DmView className="px-[14] py-[6] rounded-20 border-0.5 border-grey14">
-              <DmText className="text-13 leading-[17px] font-custom500">
+            <DmView className="px-[14] py-[5] rounded-20 border-0.5 border-grey14">
+              <DmText className="text-15 leading-[19px] font-custom400">
                 {t("total")}
               </DmText>
             </DmView>
-            <DmText className="ml-[10] flex-1 text-17 leading-[21px] font-custom700">
+            <DmText className="ml-[10] flex-1 text-15 leading-[19px] font-custom700">
               {formatMoney(total)} {t("EGP")}
             </DmText>
             {!!onOpenChat && (
@@ -297,7 +297,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           ) : (
             <IndividualIcon width={16} height={16} />
           )}
-          <DmText className="ml-[4] text-12 leading-[16px] font-custom400">
+          <DmText className="ml-[4] text-12 leading-[16px] font-custom700">
             {t(isCompany ? "business" : "individual")}
           </DmText>
         </DmView>
