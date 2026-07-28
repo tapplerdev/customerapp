@@ -61,19 +61,30 @@ const CalendarTimeModal: React.FC<Props> = ({ isVisible, onClose, onConfirm, hid
     }
   }
 
+  // "Any time" means the whole service day, not "no time" — a date request
+  // MUST carry a slot (@JobDatesCorrect wants dates AND timeSlots together),
+  // so the open-ended answer gets the full span rather than nothing.
+  const ANY_TIME_SLOT = {
+    start: TIME_SLOTS[0].start,
+    end: TIME_SLOTS[TIME_SLOTS.length - 1].end,
+  }
+
   const handleConfirm = () => {
     if (specialOption === "asap") {
       onConfirm("", undefined, "asap")
     } else if (specialOption === "any_time" && selectedDate) {
-      onConfirm(selectedDate, undefined, "date")
+      onConfirm(selectedDate, ANY_TIME_SLOT, "date")
     } else if (selectedDate && selectedSlotIndex !== null) {
       onConfirm(selectedDate, TIME_SLOTS[selectedSlotIndex], "date")
-    } else if (selectedDate) {
-      onConfirm(selectedDate, undefined, "date")
     }
   }
 
-  const canConfirm = specialOption === "asap" || !!selectedDate
+  // A day with no slot at all was a request the server was guaranteed to
+  // refuse, so it can no longer be confirmed.
+  const canConfirm =
+    specialOption === "asap" ||
+    (!!selectedDate &&
+      (specialOption === "any_time" || selectedSlotIndex !== null))
 
   const markedDates = selectedDate
     ? { [selectedDate]: { selected: true, selectedColor: colors.red } }

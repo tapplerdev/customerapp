@@ -28,6 +28,7 @@ import {
   useCheckDeliveryQuery,
   useGetProMenuQuery,
   useGetProProfileQuery,
+  useGetServiceByIdQuery,
 } from "services/api"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
@@ -162,6 +163,33 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!availableModes.includes(selectedMode)) setSelectedMode(availableModes[0])
   }, [availableModes, selectedMode])
 
+  // What date types this category actually accepts. @JobDateTypeCorrect
+  // rejects the order outright if we send one the category has not been
+  // configured for — and an "urgent" category (which is simply one with no
+  // dateTypes) must be sent NO dateType at all. Offering a choice the server
+  // will refuse is how "dateType is not correct" reached the customer.
+  const { data: service } = useGetServiceByIdQuery(cart.serviceId, {
+    skip: !cart.serviceId,
+  })
+  const category = service?.categories?.find(
+    (item) => item.id === cart.serviceCategoryId
+  )
+  // Fail SAFE while the service is still loading: assume urgent (send no
+  // dateType) rather than guessing a type the category may not accept.
+  const allowedDateTypes = category?.dateTypes ?? []
+  const isUrgentCategory = category ? !allowedDateTypes.length : true
+  const canScheduleLater = allowedDateTypes.includes("date")
+
+  // A category that cannot schedule must never be left on "Schedule for
+  // later" — the option can disappear when the service data arrives.
+  useEffect(() => {
+    if (!canScheduleLater && !deliverNow) {
+      setDeliverNow(true)
+      setScheduledDate(null)
+      setScheduledSlot(null)
+    }
+  }, [canScheduleLater, deliverNow])
+
   // Pickup orders carry no delivery fee — the customer travels.
   const isPickup = selectedMode === "pickup"
 
@@ -276,7 +304,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         prosIds: [cart.proId],
         questionsAnswers: [],
         placeOfService: selectedMode,
-        dateType: deliverNow ? "asap" : "date",
+        // Urgent categories take no dateType; @JobDatesCorrect then also
+        // requires dates/timeSlots to be absent, which they are.
+        ...(isUrgentCategory ? {} : { dateType: deliverNow ? "asap" : "date" }),
         ...(!deliverNow && scheduledDate && { dates: [{ date: scheduledDate }] }),
         ...(!deliverNow &&
           scheduledSlot && {
@@ -547,23 +577,30 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               </DmText>
               <DmChecbox variant="circle" isChecked={deliverNow} />
             </DmView>
-            <DmView className="h-[0.5] bg-grey14 my-[12]" />
-            <DmView
-              className="flex-row items-center justify-between"
-              onPress={() => setCalendarVisible(true)}
-            >
-              <DmView className="flex-1">
-                <DmText className="text-13 leading-[17px] font-custom500">
-                  {t(isPickup ? "schedule_pickup" : "schedule_delivery")}
-                </DmText>
-                {!deliverNow && !!scheduledDate && (
-                  <DmText className="mt-[3] text-12 leading-[15px] font-custom400 text-grey2">
-                    {scheduleLabel}
-                  </DmText>
-                )}
-              </DmView>
-              <DmChecbox variant="circle" isChecked={!deliverNow} />
-            </DmView>
+            {/* Only offered when the category is configured for it — the
+                server rejects a `date` order otherwise, and there is nothing
+                the customer could do about it. */}
+            {canScheduleLater && (
+              <>
+                <DmView className="h-[0.5] bg-grey14 my-[12]" />
+                <DmView
+                  className="flex-row items-center justify-between"
+                  onPress={() => setCalendarVisible(true)}
+                >
+                  <DmView className="flex-1">
+                    <DmText className="text-13 leading-[17px] font-custom500">
+                      {t(isPickup ? "schedule_pickup" : "schedule_delivery")}
+                    </DmText>
+                    {!deliverNow && !!scheduledDate && (
+                      <DmText className="mt-[3] text-12 leading-[15px] font-custom400 text-grey2">
+                        {scheduleLabel}
+                      </DmText>
+                    )}
+                  </DmView>
+                  <DmChecbox variant="circle" isChecked={!deliverNow} />
+                </DmView>
+              </>
+            )}
           </DmView>
         </DmView>
 

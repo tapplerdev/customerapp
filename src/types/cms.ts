@@ -57,10 +57,6 @@ export type ServiceQuestionType = {
   order: number
 }
 
-export type ServiceCategoryDateType = {
-  id: number
-  type: string
-}
 
 export type ServiceCategoryType = {
   id: number
@@ -72,7 +68,13 @@ export type ServiceCategoryType = {
   placeOfService?: string[]
   customerQuestions?: ServiceQuestionType[]
   proQuestions?: ServiceQuestionType[]
-  dateTypes?: ServiceCategoryDateType[]
+  // Bare strings ("asap" | "date" | "hours48" | "week" | "notDecided").
+  // ServiceCategoryDto @Transform()s the entity rows down to their `type`, so
+  // despite the DTO's declared type the wire is a flat string array.
+  dateTypes?: string[]
+  // Derived server-side as `!dateTypes.length` and enforced by
+  // @JobDateTypeCorrect: an urgent category takes NO dateType at all.
+  isUrgent?: boolean
   // Food-ordering category: browse a menu and place an order instead of the
   // questions → shortlist → offers flow
   hasMenu?: boolean

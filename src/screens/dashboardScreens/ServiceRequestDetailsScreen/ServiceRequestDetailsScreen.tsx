@@ -228,7 +228,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   })()
 
   // Filter date options based on what the category supports
-  const allowedBackendTypes = new Set(category?.dateTypes?.map((d) => d.type) || [])
+  const allowedBackendTypes = new Set(category?.dateTypes || [])
 
   const allDateOptions: { key: DateTypeOption; label: string; backendType: string }[] = [
     { key: "notDecided", label: t("havent_decided_yet"), backendType: "notDecided" },
