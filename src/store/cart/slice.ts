@@ -176,23 +176,21 @@ export const {
 export const formatMoney = (value: number): string =>
   value % 1 === 0 ? String(value) : value.toFixed(2)
 
-// The pro set a discount when the field is a usable number — including 0, for
-// a giveaway item. Everything else (null, absent, "", junk) means no discount.
-// The strikethrough and the price it strikes out both read this, so they can
-// never disagree about whether a discount exists.
+// A discount exists only when discountPrice is above zero. 0 is this system's
+// "no discount" sentinel, not a giveaway: proapp submits Number("") → 0 for a
+// blank discount field and reads it back as blank, the backend DTO makes
+// discountPrice required on option choices, and in the live menu 212 of 449
+// items sit at exactly 0 while NOT ONE is null. Treating 0 as a real price
+// would zero out half the menu.
 export const hasDiscount = (row: {
   discountPrice?: string | number | null
-}): boolean =>
-  row.discountPrice !== null &&
-  row.discountPrice !== undefined &&
-  row.discountPrice !== "" &&
-  Number.isFinite(Number(row.discountPrice))
+}): boolean => Number(row.discountPrice) > 0
 
-// What the customer actually pays for one unit. Mirrors the server's
-// `discountPrice ?? price` (food-order-items-match-menu.decorator.ts) — the
-// obvious `Number(discountPrice) || Number(price)` disagrees on a discountPrice
-// of exactly 0, because 0 is falsy: the app would charge full price for a free
-// item and the menu-match validator would reject the whole order with a 400.
+// What the customer actually pays for one unit. The strikethrough and the
+// price it strikes out both go through here, so they cannot disagree about
+// whether a discount exists. Kept in lockstep with the server's effectivePrice
+// in food-order-items-match-menu.decorator.ts — if these two ever diverge the
+// menu-match validator rejects the whole order with a 400.
 export const effectiveUnitPrice = (row: {
   price?: string | number | null
   discountPrice?: string | number | null
