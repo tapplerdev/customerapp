@@ -281,20 +281,26 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       )}
 
-      {/* Floating total pill (proapp store style: ① Total: 70 EGP) */}
+      {/* Full-width basket bar: count on the left, action in the middle, total
+          on the right — the three things a customer checks before tapping. */}
       {basketVisible && (
         <DmView
-          className="absolute self-center h-[52] rounded-full bg-red flex-row items-center pl-[6] pr-[24]"
+          className="absolute left-[16] right-[16] h-[60] rounded-8 bg-red flex-row items-center px-[10]"
           style={[styles.basketShadow, { bottom: insets.bottom + 16 }]}
           onPress={() => navigation.navigate("FoodCartScreen", { proId })}
         >
-          <DmView className="w-[40] h-[40] rounded-full bg-white items-center justify-center">
-            <DmText className="text-15 leading-[19px] font-custom700 text-black">
+          <DmView className="w-[40] h-[40] rounded-5 bg-white items-center justify-center">
+            <DmText className="text-16 leading-[20px] font-custom700 text-black">
               {basketCount}
             </DmText>
           </DmView>
-          <DmText className="ml-[14] text-16 leading-[20px] font-custom700 text-white">
-            {t("total")}: {basketTotal % 1 ? basketTotal.toFixed(2) : basketTotal} {t("EGP")}
+
+          <DmText className="flex-1 text-center text-16 leading-[20px] font-custom700 text-white">
+            {t("view_basket")}
+          </DmText>
+
+          <DmText className="text-16 leading-[20px] font-custom700 text-white">
+            {basketTotal % 1 ? basketTotal.toFixed(2) : basketTotal} {t("EGP")}
           </DmText>
         </DmView>
       )}
