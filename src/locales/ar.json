@@ -450,6 +450,7 @@
   "free_over_egp": "مجاني فوق {{amount}} جنيه",
   "required": "مطلوب",
   "pre_order": "يطلب مسبقا",
+  "pre_order_with_notice": "طلب مسبق · تنبيه {{hours}} ساعة",
   "item_prepared_on_order_only": "يتم تجهيزه فقط عند الطلب",
   "out_of_stock": "غير متاح",
   "choose_up_to_number": "اختر حتى {{number}}",

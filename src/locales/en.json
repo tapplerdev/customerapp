@@ -451,6 +451,7 @@
   "free_over_egp": "Free over EGP {{amount}}",
   "required": "Required",
   "pre_order": "Pre Order",
+  "pre_order_with_notice": "Pre-order · {{hours}}h notice",
   "item_prepared_on_order_only": "Item prepared on order only",
   "out_of_stock": "Out of stock",
   "choose_up_to_number": "Choose up to {{number}}",

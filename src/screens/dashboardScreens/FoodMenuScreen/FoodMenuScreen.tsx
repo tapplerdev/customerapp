@@ -169,6 +169,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
             quantity: 1,
             photo: item.photo,
             isPreOrderOnly: item.isPreOrderOnly,
+            leadTimeHours: item.leadTimeHours,
           },
         })
       )

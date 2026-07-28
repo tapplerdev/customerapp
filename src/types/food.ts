@@ -27,6 +27,8 @@ export type FoodMenuItemType = {
   discountPrice: number
   isExpressDeliveryAvailable: boolean
   isPreOrderOnly: boolean
+  // Hours of notice this item needs; null when it needs none.
+  leadTimeHours?: number | null
   options?: FoodOptionType[]
   photo: string
   inStock?: boolean
@@ -73,6 +75,7 @@ export type CartItemType = {
   photo?: string
   // Display-only: drives the Pre Order badge in the cart
   isPreOrderOnly?: boolean
+  leadTimeHours?: number | null
 }
 
 // --- Service-area geometry (map overlays) ---------------------------------
