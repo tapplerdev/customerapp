@@ -284,7 +284,15 @@ export const api = createApi({
     // createJob enforces. Coords ride in the body, not the URL. A query (not
     // a mutation) so the checkout can read isFetching/error for fail-open.
     checkDelivery: builder.query<
-      { deliverable: boolean; deliveryRadius: number | null },
+      {
+        deliverable: boolean
+        deliveryRadius: number | null
+        // A pro can cap how far a customer may travel from for pickup.
+        // ProsServeJobLocation enforces it at createJob, so the checkout
+        // reads it here rather than surfacing a raw 400 at Submit.
+        pickupReachable: boolean
+        pickupRadius: number | null
+      },
       { proId: number; serviceCategoryId: number; latitude: number; longitude: number }
     >({
       query: ({ proId, serviceCategoryId, latitude, longitude }) => ({

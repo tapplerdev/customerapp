@@ -10,6 +10,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { ScrollView, TextInput } from "react-native"
 import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
+import AddressSelectionModal from "components/AddressSelectionModal"
 
 // Hooks & Redux
 import { useTranslation } from "react-i18next"
@@ -78,6 +79,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "creditCard">(
     "cash"
   )
+  const [isAddressModalVisible, setAddressModalVisible] = useState(false)
 
 
   // Address changed from MySavedAddresses/PickAddress → adopt it for the
@@ -156,7 +158,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!availableModes.includes(selectedMode)) setSelectedMode(availableModes[0])
   }, [availableModes, selectedMode])
 
-  // Pickup orders: no delivery fee, no delivery-zone advisory — customer travels.
+  // Pickup orders carry no delivery fee — the customer travels.
   const isPickup = selectedMode === "pickup"
 
   const { subtotal, deliveryFee, orderDiscount, total } = useMemo(
@@ -164,10 +166,14 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     [cart.items, menu, isPickup]
   )
 
-  // Out-of-zone is decided by the backend (same ST_Distance check createJob
-  // enforces), not client-side math. Fail-open: only block on a definitive
-  // `deliverable: false` — while fetching or on error we don't block, since
+  // Reachability is decided by the backend (the same ST_Distance checks
+  // createJob enforces), not client-side math. Fail-open: only block on a
+  // definitive false — while fetching or on error we don't block, since
   // createJob is the final authority.
+  //
+  // Runs for BOTH modes. Pickup used to skip it, but a pro can cap how far a
+  // customer may travel from (pickupRadius) and ProsServeJobLocation enforces
+  // that, so skipping only moved the rejection to a raw 400 at Submit.
   const addressCoords = cart.address?.coords
 
   const { data: deliveryCheck } = useCheckDeliveryQuery(
@@ -177,16 +183,52 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       latitude: addressCoords?.lat ?? 0,
       longitude: addressCoords?.lon ?? 0,
     },
-    { skip: isPickup || !cart.proId || !cart.serviceCategoryId || !addressCoords }
+    { skip: !cart.proId || !cart.serviceCategoryId || !addressCoords }
   )
 
-  const outOfZone = !isPickup && deliveryCheck?.deliverable === false
+  const outOfDeliveryZone = deliveryCheck?.deliverable === false
+  const outOfPickupRange = deliveryCheck?.pickupReachable === false
+  const outOfZone = isPickup ? outOfPickupRange : outOfDeliveryZone
+
+  // Switching mode is only an escape route if the pro offers it AND the
+  // address actually reaches it — otherwise we'd bounce the customer between
+  // two dead ends.
+  const canSwitchToPickup =
+    availableModes.includes("pickup") && !outOfPickupRange
+  const canSwitchToDelivery =
+    availableModes.includes("delivery") && !outOfDeliveryZone
+  const alternativeMode = isPickup
+    ? canSwitchToDelivery
+      ? ("delivery" as const)
+      : null
+    : canSwitchToPickup
+      ? ("pickup" as const)
+      : null
 
   const canSubmit =
     cart.items.length > 0 &&
     !!addressCoords &&
     !outOfZone &&
     (deliverNow || !!scheduledDate)
+
+  // Walk back to the listing carrying the address that just failed, so the
+  // results are the places that DO serve it. Emit first, pop second: the
+  // listing is mounted below and its bus handler waits 600ms then checks
+  // focus, so it is focused by the time it fires (same order as the
+  // question-mismatch flow in ServiceRequestDetailsScreen).
+  const handleFindOtherPros = () => {
+    if (!cart.address) return
+    // The bus is what actually re-queries: the listing seeds its address from
+    // route params only on mount, so params alone would not refresh a screen
+    // that is already mounted underneath us.
+    addressEventBus.emit("address:select", cart.address)
+    navigation.popTo("ProsListingScreen", {
+      categoryId: cart.serviceCategoryId,
+      categoryName: cart.categoryName,
+      serviceId: cart.serviceId,
+      address: cart.address,
+    })
+  }
 
   const handleConfirmSchedule = (
     date: string,
@@ -323,6 +365,59 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     </DmView>
   )
 
+  // Out of range used to be a dead end: a red banner and a disabled button,
+  // with undoing the address as the only way forward. The cart is the
+  // expensive thing the customer built, so both exits here keep it — drafts
+  // are per-pro and persisted, so even walking back to the listing is
+  // recoverable.
+  const zoneBanner = () => (
+    <DmView className="mt-[10] px-[10] py-[8] rounded-8 bg-pink1">
+      <DmText className="text-12 leading-[16px] font-custom600 text-red">
+        {t(isPickup ? "outside_pickup_range" : "outside_delivery_zone")}
+      </DmText>
+      <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-red">
+        {t(
+          isPickup ? "outside_pickup_range_descr" : "outside_delivery_zone_descr"
+        )}
+      </DmText>
+
+      <DmView className="flex-row items-center mt-[8]">
+        {/* Cheapest possible escape: the same cart, the other mode. Only
+            offered when that mode is actually reachable. */}
+        {!!alternativeMode && (
+          <DmView
+            className="px-[12] py-[7] rounded-8 bg-red"
+            hitSlop={HIT_SLOP_DEFAULT}
+            onPress={() => setSelectedMode(alternativeMode)}
+          >
+            <DmText className="text-11 leading-[15px] font-custom600 text-white">
+              {t(
+                alternativeMode === "pickup"
+                  ? "switch_to_pickup"
+                  : "switch_to_delivery"
+              )}
+            </DmText>
+          </DmView>
+        )}
+
+        <DmView
+          className={`px-[12] py-[7] rounded-8 border-0.5 border-red ${alternativeMode ? "ml-[8]" : ""}`}
+          hitSlop={HIT_SLOP_DEFAULT}
+          onPress={handleFindOtherPros}
+        >
+          <DmText className="text-11 leading-[15px] font-custom600 text-red">
+            {t("find_other_places")}
+          </DmText>
+        </DmView>
+      </DmView>
+
+      {/* Say it plainly, or leaving looks like losing the cart. */}
+      <DmText className="mt-[6] text-10 leading-[14px] font-custom400 text-red">
+        {t("cart_kept_note")}
+      </DmText>
+    </DmView>
+  )
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Header */}
@@ -406,15 +501,15 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             <DmText className="mt-[4] text-11 leading-[15px] font-custom400 text-grey2">
               {t("exact_address_after_acceptance")}
             </DmText>
+            {/* Pickup still depends on the customer's address: the pro caps
+                how far they will let people travel from. Silent until now,
+                which meant a 400 at Submit. */}
+            {outOfZone && zoneBanner()}
           </DmView>
         ) : (
           <DmView
             className="p-[14] rounded-12 border-0.5 border-grey14"
-            onPress={() =>
-              navigation.navigate("MySavedAddressesScreen", {
-                selectionMode: true,
-              })
-            }
+            onPress={() => setAddressModalVisible(true)}
           >
             <DmView className="flex-row items-center justify-between">
               <DmText
@@ -427,16 +522,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                 {t("change")}
               </DmText>
             </DmView>
-            {outOfZone && (
-              <DmView className="mt-[10] px-[10] py-[8] rounded-8 bg-pink1">
-                <DmText className="text-12 leading-[16px] font-custom600 text-red">
-                  {t("outside_delivery_zone")}
-                </DmText>
-                <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-red">
-                  {t("outside_delivery_zone_descr")}
-                </DmText>
-              </DmView>
-            )}
+            {outOfZone && zoneBanner()}
           </DmView>
         )}
 
@@ -570,6 +656,23 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           onPress={canSubmit ? handleReviewOrder : undefined}
         />
       </DmView>
+
+      <AddressSelectionModal
+        isVisible={isAddressModalVisible}
+        onClose={() => setAddressModalVisible(false)}
+        onSelectAddress={(address) => {
+          setAddressModalVisible(false)
+          dispatch(setCartAddress({ proId, address }))
+        }}
+        onSelectNewLocation={() => {
+          setAddressModalVisible(false)
+          navigation.navigate("PickAddressScreen")
+        }}
+        onViewAllAddresses={() => {
+          setAddressModalVisible(false)
+          navigation.navigate("MySavedAddressesScreen", { selectionMode: true })
+        }}
+      />
 
       <CalendarTimeModal
         isVisible={isCalendarVisible}
