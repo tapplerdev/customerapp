@@ -143,77 +143,79 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
 
       <ScrollView
-        className="flex-1 px-[16]"
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        <DmText className="mt-[16] text-16 leading-[20px] font-custom700 text-red text-center">
-          {t("review_order")}
-        </DmText>
+        {/* Full-bleed hero: where this order is going, drawn. A pin on the
+            address the customer chose, or the pro's area outlined for a
+            pickup. Same opening as the regular-service review screen, which is
+            why the horizontal padding sits on the content below rather than on
+            the ScrollView. */}
+        <OrderLocationMap coords={mapCoords} isPickup={isPickup} />
 
-        {block(
-          whereLabel,
-          // Never let the destination vanish: block() hides on an empty string,
-          // and whereValue is "" while the pro profile is still loading or when
-          // a saved address has no street line.
-          whereValue || t(isPickup ? "pickup_area_unavailable" : "choose_address")
-        )}
-
-        {/* The same "where" one line up, drawn: a pin on the address the
-            customer chose, or the pro's area outlined for a pickup. */}
-        <OrderLocationMap
-          coords={mapCoords}
-          isPickup={isPickup}
-          className="mt-[10]"
-        />
-        {block(t(isPickup ? "pickup_time" : "delivery_time"), whenValue)}
-        {block(t("payment_method"), paymentLabel)}
-        {block(t("order_notes"), cart.orderNotes)}
-
-        <DmView className="mt-[18]">
-          <DmText className="text-14 leading-[18px] font-custom700">
-            {t("ordered_items")}
+        <DmView className="px-[16]">
+          <DmText className="mt-[16] text-16 leading-[20px] font-custom700 text-red text-center">
+            {t("review_order")}
           </DmText>
 
-          {cart.items.map((line) => (
-            <DmView key={line.uid} className="mt-[10]">
-              <DmView className="flex-row justify-between">
-                <DmText className="flex-1 pr-[10] text-13 leading-[18px] font-custom500">
-                  {line.quantity}×  {line.name}
-                </DmText>
-                <DmText className="text-13 leading-[18px] font-custom400">
-                  {formatMoney(cartLineTotal(line))} {t("EGP")}
-                </DmText>
-              </DmView>
+          {block(
+            whereLabel,
+            // Never let the destination vanish: block() hides on an empty
+            // string, and whereValue is "" while the pro profile is still
+            // loading or when a saved address has no street line.
+            whereValue ||
+              t(isPickup ? "pickup_area_unavailable" : "choose_address")
+          )}
+          {block(t(isPickup ? "pickup_time" : "delivery_time"), whenValue)}
+          {block(t("payment_method"), paymentLabel)}
+          {block(t("order_notes"), cart.orderNotes)}
 
-              {/* Chosen options sit under their line, unpriced — their cost is
-                  already inside the line total above. */}
-              {(line.selectedOptions ?? []).flatMap((option) =>
-                option.choices.map((choice) => (
-                  <DmText
-                    key={`${line.uid}-${option.optionName}-${choice.name}`}
-                    className="mt-[2] ml-[16] text-12 leading-[16px] font-custom400 text-grey2"
-                  >
-                    {choice.name}
+          <DmView className="mt-[18]">
+            <DmText className="text-14 leading-[18px] font-custom700">
+              {t("ordered_items")}
+            </DmText>
+
+            {cart.items.map((line) => (
+              <DmView key={line.uid} className="mt-[10]">
+                <DmView className="flex-row justify-between">
+                  <DmText className="flex-1 pr-[10] text-13 leading-[18px] font-custom500">
+                    {line.quantity}×  {line.name}
                   </DmText>
-                ))
-              )}
-            </DmView>
-          ))}
+                  <DmText className="text-13 leading-[18px] font-custom400">
+                    {formatMoney(cartLineTotal(line))} {t("EGP")}
+                  </DmText>
+                </DmView>
 
-          <DmView className="h-[0.7] bg-grey14 mt-[14]" />
-          {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
-          {!isPickup &&
-            totalsRow(
-              t("delivery_fee"),
-              deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
-            )}
-          {orderDiscount > 0 &&
-            totalsRow(
-              t("discount"),
-              `-${formatMoney(orderDiscount)} ${t("EGP")}`
-            )}
-          {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
+                {/* Chosen options sit under their line, unpriced — their cost is
+                    already inside the line total above. */}
+                {(line.selectedOptions ?? []).flatMap((option) =>
+                  option.choices.map((choice) => (
+                    <DmText
+                      key={`${line.uid}-${option.optionName}-${choice.name}`}
+                      className="mt-[2] ml-[16] text-12 leading-[16px] font-custom400 text-grey2"
+                    >
+                      {choice.name}
+                    </DmText>
+                  ))
+                )}
+              </DmView>
+            ))}
+
+            <DmView className="h-[0.7] bg-grey14 mt-[14]" />
+            {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
+            {!isPickup &&
+              totalsRow(
+                t("delivery_fee"),
+                deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
+              )}
+            {orderDiscount > 0 &&
+              totalsRow(
+                t("discount"),
+                `-${formatMoney(orderDiscount)} ${t("EGP")}`
+              )}
+            {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
+          </DmView>
         </DmView>
       </ScrollView>
 

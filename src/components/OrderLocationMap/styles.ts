@@ -1,12 +1,16 @@
 import { StyleSheet } from "react-native"
-import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
-  frame: {
-    borderWidth: 0.7,
-    borderColor: colors.grey19,
-  },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  // Same 80pt white fade the regular-service review screen uses to land its
+  // map hero on the page.
+  fade: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
   },
 })
