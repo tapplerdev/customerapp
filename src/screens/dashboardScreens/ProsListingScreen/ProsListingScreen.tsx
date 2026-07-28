@@ -39,9 +39,7 @@ import SearchIcon from "assets/icons/search-black.svg"
 import FiltersIcon from "assets/icons/filters.svg"
 import JobDetailsIcon from "assets/icons/job-details.svg"
 import FilterSlidersIcon from "assets/icons/filter-sliders.svg"
-import SortIcon from "assets/icons/sort.svg"
 import ErrorModal from "components/ErrorModal"
-import FoodSortSheet from "components/FoodSortSheet/FoodSortSheet"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"ProsListingScreen">
@@ -111,9 +109,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Food only: broad-first fulfillment mode. "all" shows every pro (any-mode)
   // with capability badges; delivery/pickup narrows. Rides to checkout via cart.
   const [foodFulfillment, setFoodFulfillment] = useState<"all" | "delivery" | "pickup">("all")
-  // Food sort — undefined = Default (backend pro_score ranking).
-  const [sortBy, setSortBy] = useState<"distance" | "rating" | "responseTime" | undefined>(undefined)
-  const [sortVisible, setSortVisible] = useState(false)
   // Repost arrivals seed the previous job's answers so the question flow and
   // request-details steps open pre-filled instead of blank. The listing stays
   // broad until the customer opens/edits questions — normal broad-first rules.
@@ -142,6 +137,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // Food-ordering category: the menu IS the request — no question flow, no
   // shortlisting; cards lead to the pro's menu instead.
   const isFoodCategory = !!category?.hasMenu
+  // Food is ordered by distance, always. The Sort sheet was removed: Filters
+  // already narrow the set, and for food nearest ≈ fastest, so proximity is the
+  // one order worth having and it does not need a control of its own.
+  const sortBy = isFoodCategory ? ("distance" as const) : undefined
 
   // Compute answered count for the banner
   const allCustomerQuestions = customerQuestions.filter((q) => q.assignee === "customer")
@@ -383,16 +382,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       doRefetch({ pos: result.placeOfService, questionFilterOptionIds: result.filterOptionIds })
     },
     [doRefetch]
-  )
-
-  const handleSortChange = useCallback(
-    (newSort: "distance" | "rating" | "responseTime" | undefined) => {
-      setSortVisible(false)
-      if (newSort === sortBy) return
-      setSortBy(newSort)
-      doRefetch({ sortBy: newSort })
-    },
-    [sortBy, doRefetch]
   )
 
   // Listen for question flow results (emitted by QuestionStepScreen)
@@ -836,19 +825,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           </DmText>
         </DmView>
         <DmView className="flex-row items-center">
-          {isFoodCategory && (
-            <DmView
-              onPress={() => setSortVisible(true)}
-              className="w-[32] h-[32] items-center justify-center mr-[4]"
-              hitSlop={HIT_SLOP_DEFAULT}
-            >
-              <SortIcon
-                width={20}
-                height={20}
-                color={sortBy ? colors.red : colors.black}
-              />
-            </DmView>
-          )}
           <DmView
             onPress={() => {
               if (Platform.OS === "ios") {
@@ -1140,13 +1116,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         onApply={handleFiltersDismiss}
       />
 
-      {/* Food Sort sheet (native on iOS, modal fallback on Android) */}
-      <FoodSortSheet
-        visible={sortVisible}
-        value={sortBy}
-        onSelect={handleSortChange}
-        onClose={() => setSortVisible(false)}
-      />
     </View>
   )
 }
