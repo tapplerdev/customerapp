@@ -24,11 +24,17 @@ export type ProOfferType = {
   description?: string
 }
 
+// The API nests this: ProAddressDto wraps an AddressDto. The flat shape here
+// never matched the payload, which is why nothing could read it.
 export type ProAddressType = {
-  city?: string
-  governorate?: string
-  streetAddress?: string
-  location?: { lat: number; lon: number }
+  changedAt?: string
+  address?: {
+    streetAddress?: string
+    city?: string
+    governorate?: string
+    unitNumber?: string
+    location?: { lat: number; lon: number }
+  }
 }
 
 export type ProReviewScoreType = {

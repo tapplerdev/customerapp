@@ -142,6 +142,12 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     return options
   }, [pro?.paymentMethods, selectedMode, t])
 
+  // City + governorate only — never streetAddress or unitNumber.
+  const pickupArea = useMemo(() => {
+    const address = pro?.address?.address
+    return [address?.city, address?.governorate].filter(Boolean).join(", ")
+  }, [pro?.address?.address])
+
   // A method the pro does not accept must never stay selected — switching
   // fulfillment or a late profile load can strand the old choice.
   useEffect(() => {
@@ -386,38 +392,55 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         )}
 
-        {/* Deliver to */}
-        {sectionTitle(t(isPickup ? "your_location" : "deliver_to"))}
-        <DmView
-          className="p-[14] rounded-12 border-0.5 border-grey14"
-          onPress={() =>
-            navigation.navigate("MySavedAddressesScreen", {
-              selectionMode: true,
-            })
-          }
-        >
-          <DmView className="flex-row items-center justify-between">
-            <DmText
-              className="flex-1 text-13 leading-[18px] font-custom500"
-              numberOfLines={2}
-            >
-              {cart.address?.address || t("choose_address")}
+        {/* Where the handover happens. On DELIVERY that is the customer's
+            address, which they can change. On PICKUP the customer travels to
+            the pro, so showing their own address was simply the wrong end of
+            the journey — and there is nothing for them to change. */}
+        {sectionTitle(t(isPickup ? "pickup_from" : "deliver_to"))}
+        {isPickup ? (
+          <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
+            <DmText className="text-13 leading-[18px] font-custom500">
+              {pickupArea || t("pickup_area_unavailable")}
             </DmText>
-            <DmText className="ml-[10] text-12 leading-[15px] font-custom600 text-red">
-              {t("change")}
+            {/* Area only until the order is accepted. These are home cooks —
+                the exact address is theirs to give, not ours to publish to
+                anyone who opens a checkout. */}
+            <DmText className="mt-[4] text-11 leading-[15px] font-custom400 text-grey2">
+              {t("exact_address_after_acceptance")}
             </DmText>
           </DmView>
-          {outOfZone && (
-            <DmView className="mt-[10] px-[10] py-[8] rounded-8 bg-pink1">
-              <DmText className="text-12 leading-[16px] font-custom600 text-red">
-                {t("outside_delivery_zone")}
+        ) : (
+          <DmView
+            className="p-[14] rounded-12 border-0.5 border-grey14"
+            onPress={() =>
+              navigation.navigate("MySavedAddressesScreen", {
+                selectionMode: true,
+              })
+            }
+          >
+            <DmView className="flex-row items-center justify-between">
+              <DmText
+                className="flex-1 text-13 leading-[18px] font-custom500"
+                numberOfLines={2}
+              >
+                {cart.address?.address || t("choose_address")}
               </DmText>
-              <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-red">
-                {t("outside_delivery_zone_descr")}
+              <DmText className="ml-[10] text-12 leading-[15px] font-custom600 text-red">
+                {t("change")}
               </DmText>
             </DmView>
-          )}
-        </DmView>
+            {outOfZone && (
+              <DmView className="mt-[10] px-[10] py-[8] rounded-8 bg-pink1">
+                <DmText className="text-12 leading-[16px] font-custom600 text-red">
+                  {t("outside_delivery_zone")}
+                </DmText>
+                <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-red">
+                  {t("outside_delivery_zone_descr")}
+                </DmText>
+              </DmView>
+            )}
+          </DmView>
+        )}
 
         {/* Delivery time */}
         <DmView className="mt-[20]">

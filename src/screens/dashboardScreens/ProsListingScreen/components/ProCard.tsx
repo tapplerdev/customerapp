@@ -104,7 +104,9 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
         : pro.isDeliveryEnabled
           ? [{ label: t("delivery_only"), accent: true, mode: "delivery" }]
           : []
-  const location = [pro.address?.city, pro.address?.governorate]
+  // Nested: ProAddressDto wraps an AddressDto. Read flat, this was always
+  // undefined and the card silently rendered no location.
+  const location = [pro.address?.address?.city, pro.address?.address?.governorate]
     .filter(Boolean)
     .join(", ")
   const photoUrl = pro.profilePhoto150 || pro.profilePhoto
