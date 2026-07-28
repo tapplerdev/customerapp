@@ -290,22 +290,30 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
           style={[styles.basketShadow, { paddingBottom: insets.bottom + 12 }]}
         >
           <DmView
-            className="h-[52] rounded-8 bg-red flex-row items-center px-[14]"
+            className="h-[50] rounded-8 bg-red justify-center px-[12]"
             onPress={() => navigation.navigate("FoodCartScreen", { proId })}
           >
-            <DmView className="w-[34] h-[34] rounded-5 bg-white items-center justify-center">
-              <DmText className="text-15 leading-[19px] font-custom700 text-black">
-                {basketCount}
-              </DmText>
-            </DmView>
-
-            <DmText className="flex-1 text-center text-15 leading-[19px] font-custom700 text-white">
+            {/* Centred across the WHOLE bar, not the gap between the badge and
+                the total — those two differ in width, so centring in the
+                leftover space put the label visibly off-centre. */}
+            <DmText
+              style={styles.basketLabel}
+              className="text-center text-14 leading-[18px] font-custom600 text-white"
+            >
               {t("view_basket")}
             </DmText>
 
-            <DmText className="text-15 leading-[19px] font-custom700 text-white">
-              {basketTotal.toFixed(2)} {t("EGP")}
-            </DmText>
+            <DmView className="flex-row items-center justify-between">
+              <DmView className="w-[30] h-[30] rounded-5 bg-white items-center justify-center">
+                <DmText className="text-14 leading-[18px] font-custom600 text-black">
+                  {basketCount}
+                </DmText>
+              </DmView>
+
+              <DmText className="text-14 leading-[18px] font-custom600 text-white">
+                {basketTotal.toFixed(2)} {t("EGP")}
+              </DmText>
+            </DmView>
           </DmView>
         </DmView>
       )}

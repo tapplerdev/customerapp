@@ -18,6 +18,13 @@ const styles = StyleSheet.create({
   // Matches FiltersScreen's footer: the shadow casts UPWARD onto the content
   // it covers, which is what makes it read as a pinned bar rather than a
   // floating pill.
+  // Spans the full bar so the label centres on the BAR, not on the gap left
+  // between the count badge and the total (those differ in width).
+  basketLabel: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+  },
   basketShadow: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -3 },
