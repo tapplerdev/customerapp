@@ -283,9 +283,12 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           </ScrollView>
 
+          {/* Same pinned footer as the Filters sheet and the menu basket bar:
+              white container, shadow cast upward onto the content it covers.
+              The button keeps its own pill radius. */}
           <DmView
-            className="px-[16] bg-white"
-            style={{ paddingBottom: insets.bottom + 12, paddingTop: 8 }}
+            className="px-[16] pt-[14] bg-white"
+            style={[styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
           >
             <ActionBtn
               title={t("continue")}
