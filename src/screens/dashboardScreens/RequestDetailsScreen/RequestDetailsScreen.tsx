@@ -7,7 +7,10 @@ import { format } from "date-fns"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
-import { useGetCustomerJobDetailsQuery } from "services/api"
+import {
+  useGetCustomerJobDetailsQuery,
+  useGetProProfileQuery,
+} from "services/api"
 import { formatJobSchedule } from "helpers/jobSchedule"
 import { formatMoney } from "store/cart/slice"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -69,6 +72,23 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       ) || t("not_decided")
     )
   })()
+
+  // A pickup order is collected FROM the pro, so their district is the useful
+  // outline — the customer's own address is the wrong end of that journey.
+  // Only fetched when it will actually be drawn.
+  const proId = job?.pros?.[0]?.proId
+  const { data: pro } = useGetProProfileQuery(
+    { proId: proId ?? 0, serviceCategoryId: job?.serviceCategoryId ?? 0 },
+    { skip: !isPickup || !proId || !job?.serviceCategoryId }
+  )
+  const proLocation = pro?.address?.address?.location
+  const mapCoords = isPickup
+    ? proLocation
+      ? { lat: proLocation.lat, lon: proLocation.lng }
+      : null
+    : hasCoords
+      ? { lat, lon: lng }
+      : null
 
   const subtotal = items.reduce((sum, line) => {
     const choices = (line.selectedOptions ?? []).reduce(
@@ -144,10 +164,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {/* Pin on delivery, district outline on pickup — the same rule the
             checkout and review screens follow. */}
-        <OrderLocationMap
-          coords={hasCoords ? { lat, lon: lng } : null}
-          isPickup={isPickup}
-        />
+        <OrderLocationMap coords={mapCoords} isPickup={isPickup} />
 
         {/* Details */}
         <DmView className="mt-[20] px-[16]">
