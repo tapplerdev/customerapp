@@ -252,12 +252,15 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
             {/* Totals */}
             <DmView className="px-[16] pt-[16]">
               {totalsRow(t("subtotal"), `${subtotal % 1 ? subtotal.toFixed(2) : subtotal} ${t("EGP")}`)}
-              {totalsRow(
-                t("delivery_fee"),
-                deliveryFee
-                  ? `${deliveryFee % 1 ? deliveryFee.toFixed(2) : deliveryFee} ${t("EGP")}`
-                  : t("free")
-              )}
+              {/* Zeroed on pickup, and a 0 renders as "Free" — a claim the
+                  business never made. Hide the row instead. */}
+              {!isPickup &&
+                totalsRow(
+                  t("delivery_fee"),
+                  deliveryFee
+                    ? `${deliveryFee % 1 ? deliveryFee.toFixed(2) : deliveryFee} ${t("EGP")}`
+                    : t("free")
+                )}
               {orderDiscount > 0 &&
                 totalsRow(
                   t("discount"),

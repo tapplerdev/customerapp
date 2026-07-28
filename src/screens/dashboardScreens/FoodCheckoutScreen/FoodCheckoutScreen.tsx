@@ -263,7 +263,15 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       payload,
       isPickup,
       whereLabel: t(isPickup ? "pickup_from" : "deliver_to"),
-      whereValue: isPickup ? pickupArea : (cart.address?.address ?? ""),
+      // A blank street line must not leave the confirmation screen telling
+      // someone to choose an address they already chose — fall back to the
+      // area we already hold and send in the payload.
+      whereValue: isPickup
+        ? pickupArea
+        : cart.address?.address ||
+          [cart.address?.city, cart.address?.governorate]
+            .filter(Boolean)
+            .join(", "),
       whenValue: deliverNow
         ? t(isPickup ? "pick_up_now" : "deliver_now")
         : scheduleLabel,

@@ -69,6 +69,7 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
     [items]
   )
   const deliveryFee = job.deliveryFee ?? 0
+  const isPickup = job.placeOfService === "pickup"
   const orderDiscount = job.orderDiscount ?? 0
   const total = subtotal + deliveryFee - orderDiscount
 
@@ -200,10 +201,12 @@ const FoodOrderView: React.FC<Props> = ({ job }) => {
         {items.map(renderLine)}
         <DmView className="h-[0.7] bg-grey14 mt-[12]" />
         {totalsRow(t("subtotal"), `${subtotal.toFixed(2)} ${t("EGP")}`)}
-        {totalsRow(
-          t("delivery_fee"),
-          deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
-        )}
+        {/* A pickup order carries no fee, and 0 renders as "Free". */}
+        {!isPickup &&
+          totalsRow(
+            t("delivery_fee"),
+            deliveryFee ? `${deliveryFee.toFixed(2)} ${t("EGP")}` : t("free")
+          )}
         {orderDiscount > 0 &&
           totalsRow(t("discount"), `- ${orderDiscount.toFixed(2)} ${t("EGP")}`)}
         {totalsRow(t("total"), `${total.toFixed(2)} ${t("EGP")}`, true)}
