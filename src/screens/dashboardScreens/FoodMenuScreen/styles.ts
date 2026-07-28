@@ -15,12 +15,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
+  // Matches FiltersScreen's footer: the shadow casts UPWARD onto the content
+  // it covers, which is what makes it read as a pinned bar rather than a
+  // floating pill.
   basketShadow: {
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 5,
   },
 })
 

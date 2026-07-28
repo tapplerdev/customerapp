@@ -281,27 +281,32 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       )}
 
-      {/* Full-width basket bar: count on the left, action in the middle, total
-          on the right — the three things a customer checks before tapping. */}
+      {/* Pinned white footer with an upward shadow — the same shape as the
+          Filters sheet's "Show results" bar, so the bottom of the app behaves
+          consistently. The red bar is the button inside it. */}
       {basketVisible && (
         <DmView
-          className="absolute left-[16] right-[16] h-[60] rounded-8 bg-red flex-row items-center px-[10]"
-          style={[styles.basketShadow, { bottom: insets.bottom + 16 }]}
-          onPress={() => navigation.navigate("FoodCartScreen", { proId })}
+          className="absolute left-0 right-0 bottom-0 px-[16] pt-[14] bg-white"
+          style={[styles.basketShadow, { paddingBottom: insets.bottom + 12 }]}
         >
-          <DmView className="w-[40] h-[40] rounded-5 bg-white items-center justify-center">
-            <DmText className="text-16 leading-[20px] font-custom700 text-black">
-              {basketCount}
+          <DmView
+            className="h-[52] rounded-8 bg-red flex-row items-center px-[14]"
+            onPress={() => navigation.navigate("FoodCartScreen", { proId })}
+          >
+            <DmView className="w-[34] h-[34] rounded-5 bg-white items-center justify-center">
+              <DmText className="text-15 leading-[19px] font-custom700 text-black">
+                {basketCount}
+              </DmText>
+            </DmView>
+
+            <DmText className="flex-1 text-center text-15 leading-[19px] font-custom700 text-white">
+              {t("view_basket")}
+            </DmText>
+
+            <DmText className="text-15 leading-[19px] font-custom700 text-white">
+              {basketTotal.toFixed(2)} {t("EGP")}
             </DmText>
           </DmView>
-
-          <DmText className="flex-1 text-center text-16 leading-[20px] font-custom700 text-white">
-            {t("view_basket")}
-          </DmText>
-
-          <DmText className="text-16 leading-[20px] font-custom700 text-white">
-            {basketTotal % 1 ? basketTotal.toFixed(2) : basketTotal} {t("EGP")}
-          </DmText>
         </DmView>
       )}
     </SafeAreaView>
