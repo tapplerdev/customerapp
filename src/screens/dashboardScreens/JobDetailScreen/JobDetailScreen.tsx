@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { Alert, Animated, FlatList, LayoutAnimation, Platform, TextInput, UIManager } from "react-native"
+import { Animated, FlatList, LayoutAnimation, Platform, TextInput, UIManager } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useIsFocused } from "@react-navigation/native"
@@ -36,7 +36,7 @@ import styles from "./styles"
 import FoodOrderView, {
   canCancelFoodOrder,
 } from "./components/FoodOrderView"
-import FoodOrderMenuSheet from "./components/FoodOrderMenuSheet"
+import JobMenuSheet from "./components/JobMenuSheet"
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -132,25 +132,20 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [cancelJobForRescue] = useCancelJobMutation()
   const [isFoodMenuVisible, setFoodMenuVisible] = useState(false)
 
-  // Cancel moved out of the page body and behind the header's ••• menu, so
-  // the confirm lives here with the control.
+  // Cancel moved out of the page body and behind the header's ••• menu. Uses
+  // the app's own confirm dialog — the same MainModal the regular-service
+  // cancel opens — rather than a native Alert.
   const handleCancelFoodOrder = () => {
     setFoodMenuVisible(false)
-    setTimeout(() => {
-      Alert.alert(t("cancel_order"), t("cancel_order_confirm"), [
-        { text: t("keep_order"), style: "cancel" },
-        {
-          text: t("cancel_order"),
-          style: "destructive",
-          onPress: () => {
-            cancelJobForRescue({
-              jobId,
-              reasons: ["Customer cancelled the order"],
-            })
-          },
-        },
-      ])
-    }, 350)
+    setTimeout(() => setCancelModalVisible(true), 400)
+  }
+
+  const confirmCancelFoodOrder = () => {
+    setCancelModalVisible(false)
+    cancelJobForRescue({
+      jobId,
+      reasons: ["Customer cancelled the order"],
+    })
   }
 
   const handleConfirmFindOtherPros = useCallback(async () => {
@@ -508,29 +503,40 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               hitSlop={HIT_SLOP_DEFAULT}
               onPress={() => setFoodMenuVisible(true)}
             >
-              {/* Three dots — no asset for this in the app, and a row of
-                  views is lighter than adding one. */}
-              <DmView className="flex-row items-center">
-                {[0, 1, 2].map((dot) => (
-                  <DmView
-                    key={dot}
-                    className={`w-[4] h-[4] rounded-full bg-black ${dot ? "ml-[3]" : ""}`}
-                  />
-                ))}
+              <DmView className="flex-row">
+                <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
+                <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
+                <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
               </DmView>
             </DmView>
           </DmView>
           <DmView className="h-[0.5] bg-grey19" />
-          <FoodOrderMenuSheet
+          <MainModal
+            isVisible={isCancelModalVisible}
+            onClose={() => setCancelModalVisible(false)}
+            Icon={<TrashRedIcon width={40} height={40} />}
+            title={t("are_you_sure_cancel")}
+            isBtnsTwo
+            titleBtn={t("yes")}
+            titleBtnSecond={t("no")}
+            onPress={confirmCancelFoodOrder}
+            onPressSecond={() => setCancelModalVisible(false)}
+            classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+            classNameBtns="h-[40]"
+            classNameBtnsWrapper="mt-[20] mx-[15]"
+            classNameModal="px-[17]"
+          />
+          <JobMenuSheet
             isVisible={isFoodMenuVisible}
             onClose={() => setFoodMenuVisible(false)}
             onShowDetails={() => {
               setFoodMenuVisible(false)
               setTimeout(
                 () => navigation.navigate("RequestDetailsScreen", { jobId }),
-                350
+                400
               )
             }}
+            cancelLabel={t("cancel_order")}
             onCancel={
               canCancelFoodOrder(localJob) ? handleCancelFoodOrder : undefined
             }
@@ -871,53 +877,27 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       </Modal>
 
-      {/* Three dots bottom sheet menu */}
-      <Modal
+      {/* Three dots bottom sheet menu — same component the food body uses */}
+      <JobMenuSheet
         isVisible={isMenuVisible}
-        onBackdropPress={() => setMenuVisible(false)}
-        className="m-0 justify-end"
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        hardwareAccelerated
-        statusBarTranslucent
-        backdropTransitionOutTiming={0}
-        hideModalContentWhileAnimating
-      >
-        <DmView className="bg-white rounded-t-12" style={{ paddingBottom: insets.bottom + 2 }}>
-          <DmView className="self-center w-[40] h-[4] rounded-full bg-grey19 mt-[10] mb-[14]" />
-
-          <DmView
-            className="flex-row items-center px-[18] py-[14]"
-            onPress={() => {
-              setMenuVisible(false)
-              setTimeout(() => navigation.navigate("RequestDetailsScreen", { jobId }), 400)
-            }}
-          >
-            <DetailsIcon width={20} height={24} />
-            <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
-              {t("my_request_details")}
-            </DmText>
-          </DmView>
-
-          {localJob?.status === "active" && (
-            <>
-              <DmView className="h-[0.7] bg-grey19" style={{ marginStart: 18 }} />
-              <DmView
-                className="flex-row items-center px-[18] py-[14]"
-                onPress={() => {
-                  setMenuVisible(false)
-                  setTimeout(() => setCancelModalVisible(true), 400)
-                }}
-              >
-                <TrashRedIcon width={20} height={24} />
-                <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
-                  {t("cancel_service_request")}
-                </DmText>
-              </DmView>
-            </>
-          )}
-        </DmView>
-      </Modal>
+        onClose={() => setMenuVisible(false)}
+        onShowDetails={() => {
+          setMenuVisible(false)
+          setTimeout(
+            () => navigation.navigate("RequestDetailsScreen", { jobId }),
+            400
+          )
+        }}
+        cancelLabel={t("cancel_service_request")}
+        onCancel={
+          localJob?.status === "active"
+            ? () => {
+                setMenuVisible(false)
+                setTimeout(() => setCancelModalVisible(true), 400)
+              }
+            : undefined
+        }
+      />
       </Animated.View>
     </SafeAreaView>
   )
