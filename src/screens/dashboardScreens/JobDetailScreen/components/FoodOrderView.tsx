@@ -3,7 +3,6 @@ import React, { useMemo, useState } from "react"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 import {
-  Alert,
   LayoutAnimation,
   Platform,
   ScrollView,
@@ -11,7 +10,6 @@ import {
 } from "react-native"
 
 import { useTranslation } from "react-i18next"
-import { useCancelJobMutation } from "services/api"
 import { formatMoney } from "store/cart/slice"
 import { JobFoodOrderItemType, JobType } from "types/job"
 import colors from "@tappler/shared/src/styles/colors"
@@ -58,6 +56,14 @@ const detailsTransition = {
   },
 }
 
+// Exported so the header's ••• menu can gate its Cancel row on the same rule
+// the body used to, rather than re-deriving it and drifting.
+export const canCancelFoodOrder = (job: JobType): boolean => {
+  const status = job.pros?.[0]?.status
+  const isCancelled = status === "cancelled" || job.status === "cancelled"
+  return !isCancelled && STEPS.indexOf(status as (typeof STEPS)[number]) < 1
+}
+
 const STEPS = ["accepted", "preparing", "withDeliveryCourier", "delivered"] as const
 
 const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) => {
@@ -68,28 +74,6 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   const status = jobPro?.status
   const isCancelled = status === "cancelled" || job.status === "cancelled"
   const currentStep = STEPS.indexOf(status as (typeof STEPS)[number])
-
-  // Customer may cancel only before the pro starts preparing (status null =
-  // order placed, or "accepted"). Once preparing/out-for-delivery it's not
-  // self-serve. Status-flip only — no refund handling yet.
-  const [cancelJob, { isLoading: isCancelling }] = useCancelJobMutation()
-  const canCancel = !isCancelled && currentStep < 1
-
-  const handleCancel = () => {
-    Alert.alert(t("cancel_order"), t("cancel_order_confirm"), [
-      { text: t("keep_order"), style: "cancel" },
-      {
-        text: t("cancel_order"),
-        style: "destructive",
-        onPress: () => {
-          cancelJob({
-            jobId: job.id,
-            reasons: ["Customer cancelled the order"],
-          })
-        },
-      },
-    ])
-  }
 
   const stepLabels: Record<(typeof STEPS)[number], string> = {
     accepted: t("order_accepted"),
@@ -276,17 +260,17 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           withSkeleton
         />
         <DmView className="flex-1 ml-[12] justify-center">
-          <DmText className="text-15 leading-[19px] font-custom700" numberOfLines={1}>
+          <DmText className="text-14 leading-[18px] font-custom700" numberOfLines={1}>
             {proName}
           </DmText>
           <DmView className="mt-[4] flex-row items-center">
             {/* Label bold and black, value regular and coloured — the design
                 weights the two differently on purpose. */}
-            <DmText className="text-15 leading-[19px] font-custom700">
+            <DmText className="text-14 leading-[18px] font-custom700">
               {t("status")}:{" "}
             </DmText>
             <DmText
-              className="flex-1 text-15 leading-[19px] font-custom400"
+              className="flex-1 text-14 leading-[18px] font-custom400"
               style={{ color: isCancelled ? colors.red : colors.green }}
               numberOfLines={1}
             >
@@ -295,11 +279,11 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           </DmView>
           <DmView className="mt-[8] flex-row items-center">
             <DmView className="px-[14] py-[5] rounded-20 border-1 border-red">
-              <DmText className="text-15 leading-[19px] font-custom400">
+              <DmText className="text-14 leading-[18px] font-custom700">
                 {t("total")}
               </DmText>
             </DmView>
-            <DmText className="ml-[10] flex-1 text-15 leading-[19px] font-custom700">
+            <DmText className="ml-[10] flex-1 text-14 leading-[18px] font-custom700">
               {formatMoney(total)} {t("EGP")}
             </DmText>
             {!!onOpenChat && (
@@ -470,17 +454,6 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
         </DmView>
       )}
 
-      {/* Cancel — only before the pro starts preparing */}
-      {canCancel && (
-        <DmView
-          onPress={isCancelling ? undefined : handleCancel}
-          className="mt-[20] h-[48] rounded-12 border-1 border-red items-center justify-center"
-        >
-          <DmText className="text-15 leading-[19px] font-custom600 text-red">
-            {isCancelling ? t("cancelling") : t("cancel_order")}
-          </DmText>
-        </DmView>
-      )}
     </ScrollView>
   )
 }

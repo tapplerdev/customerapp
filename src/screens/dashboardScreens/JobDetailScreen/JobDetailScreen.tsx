@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { Animated, FlatList, LayoutAnimation, Platform, TextInput, UIManager } from "react-native"
+import { Alert, Animated, FlatList, LayoutAnimation, Platform, TextInput, UIManager } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useIsFocused } from "@react-navigation/native"
@@ -33,7 +33,10 @@ import CancelFeedbackIcon from "assets/icons/cancel-feedback.svg"
 import ClockRedIcon from "assets/icons/clock-red-big.svg"
 import UsersRedIcon from "assets/icons/users-red.svg"
 import styles from "./styles"
-import FoodOrderView from "./components/FoodOrderView"
+import FoodOrderView, {
+  canCancelFoodOrder,
+} from "./components/FoodOrderView"
+import FoodOrderMenuSheet from "./components/FoodOrderMenuSheet"
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -127,6 +130,28 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const repostFromJob = useRepostRequest()
   const [cancelJobForRescue] = useCancelJobMutation()
+  const [isFoodMenuVisible, setFoodMenuVisible] = useState(false)
+
+  // Cancel moved out of the page body and behind the header's ••• menu, so
+  // the confirm lives here with the control.
+  const handleCancelFoodOrder = () => {
+    setFoodMenuVisible(false)
+    setTimeout(() => {
+      Alert.alert(t("cancel_order"), t("cancel_order_confirm"), [
+        { text: t("keep_order"), style: "cancel" },
+        {
+          text: t("cancel_order"),
+          style: "destructive",
+          onPress: () => {
+            cancelJobForRescue({
+              jobId,
+              reasons: ["Customer cancelled the order"],
+            })
+          },
+        },
+      ])
+    }, 350)
+  }
 
   const handleConfirmFindOtherPros = useCallback(async () => {
     if (isRescueBusy) return
@@ -478,9 +503,38 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 {t("order")}: {jobId}
               </DmText>
             </DmView>
-            <DmView className="w-[32]" />
+            <DmView
+              className="w-[32] h-[32] items-center justify-center"
+              hitSlop={HIT_SLOP_DEFAULT}
+              onPress={() => setFoodMenuVisible(true)}
+            >
+              {/* Three dots — no asset for this in the app, and a row of
+                  views is lighter than adding one. */}
+              <DmView className="flex-row items-center">
+                {[0, 1, 2].map((dot) => (
+                  <DmView
+                    key={dot}
+                    className={`w-[4] h-[4] rounded-full bg-black ${dot ? "ml-[3]" : ""}`}
+                  />
+                ))}
+              </DmView>
+            </DmView>
           </DmView>
           <DmView className="h-[0.5] bg-grey19" />
+          <FoodOrderMenuSheet
+            isVisible={isFoodMenuVisible}
+            onClose={() => setFoodMenuVisible(false)}
+            onShowDetails={() => {
+              setFoodMenuVisible(false)
+              setTimeout(
+                () => navigation.navigate("RequestDetailsScreen", { jobId }),
+                350
+              )
+            }}
+            onCancel={
+              canCancelFoodOrder(localJob) ? handleCancelFoodOrder : undefined
+            }
+          />
           <FoodOrderView
             job={localJob}
             // The order payload carries no chat data; the chats cache does.
