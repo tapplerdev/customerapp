@@ -2,7 +2,13 @@ import React, { useMemo, useState } from "react"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
-import { Alert, ScrollView } from "react-native"
+import {
+  Alert,
+  LayoutAnimation,
+  Platform,
+  ScrollView,
+  UIManager,
+} from "react-native"
 
 import { useTranslation } from "react-i18next"
 import { useCancelJobMutation } from "services/api"
@@ -30,6 +36,28 @@ interface Props {
 // by the pro's jobPro.status, then the itemized breakdown with the
 // server-persisted totals. Live updates ride the existing socket → Jobs
 // cache invalidation; the screen's re-focus refetch is the safety net.
+// Same preset MapPickerWithSearchView uses for its search-mode collapse, so
+// the two behave alike. Android needs the flag switched on once.
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true)
+}
+
+const detailsTransition = {
+  duration: 220,
+  create: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+  update: { type: LayoutAnimation.Types.easeInEaseOut },
+  delete: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+}
+
 const STEPS = ["accepted", "preparing", "withDeliveryCourier", "delivered"] as const
 
 const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) => {
@@ -252,7 +280,9 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             {proName}
           </DmText>
           <DmView className="mt-[4] flex-row items-center">
-            <DmText className="text-15 leading-[19px] font-custom400 text-grey2">
+            {/* Label bold and black, value regular and coloured — the design
+                weights the two differently on purpose. */}
+            <DmText className="text-15 leading-[19px] font-custom700">
               {t("status")}:{" "}
             </DmText>
             <DmText
@@ -264,7 +294,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             </DmText>
           </DmView>
           <DmView className="mt-[8] flex-row items-center">
-            <DmView className="px-[14] py-[5] rounded-20 border-0.5 border-grey14">
+            <DmView className="px-[14] py-[5] rounded-20 border-1 border-red">
               <DmText className="text-15 leading-[19px] font-custom400">
                 {t("total")}
               </DmText>
@@ -388,7 +418,10 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           is the answer on a repeat visit and the bill is the answer once. */}
       <DmView
         className="mt-[18] flex-row items-center justify-center"
-        onPress={() => setDetailsOpen((open) => !open)}
+        onPress={() => {
+          LayoutAnimation.configureNext(detailsTransition)
+          setDetailsOpen((open) => !open)
+        }}
       >
         <DmText className="text-13 leading-[17px] font-custom600 text-red">
           {t(isDetailsOpen ? "hide_order_details" : "show_order_details")}
