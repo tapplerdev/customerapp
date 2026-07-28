@@ -16,7 +16,12 @@ import CachedImage from "@tappler/shared/src/components/CachedImage"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 import { useGetProMenuQuery } from "services/api"
-import { addCartItem, formatMoney } from "store/cart/slice"
+import {
+  addCartItem,
+  effectiveUnitPrice,
+  formatMoney,
+  hasDiscount,
+} from "store/cart/slice"
 
 // Helpers & Types
 import { RootStackScreenProps } from "navigation/types"
@@ -37,7 +42,7 @@ import MinusIcon from "assets/icons/minus.svg"
 type Props = RootStackScreenProps<"FoodItemScreen">
 
 const effectiveChoicePrice = (choice: FoodOptionChoiceType): number =>
-  Number(choice.discountPrice) || Number(choice.price) || 0
+  effectiveUnitPrice(choice)
 
 // Ported from proapp's PreviewScreen (item detail: photo, option groups,
 // qty stepper) — with the mock "add to cart" replaced by the real cart slice
@@ -81,7 +86,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const basePrice = useMemo(() => {
     if (!menuItem) return 0
-    return Number(menuItem.discountPrice) || Number(menuItem.price) || 0
+    return effectiveUnitPrice(menuItem)
   }, [menuItem])
 
   const optionsPrice = useMemo(() => {
@@ -230,15 +235,15 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
               <DmView className="flex-row items-center">
                 {!!Number(choice.price) && (
                   <>
-                    {!!Number(choice.discountPrice) && (
+                    {hasDiscount(choice) && (
                       <DmText className="mx-[10] text-13 leading-[16px] font-custom400 text-red">
-                        + {choice.discountPrice} {t("EGP")}
+                        + {formatMoney(effectiveUnitPrice(choice))} {t("EGP")}
                       </DmText>
                     )}
                     <DmText
                       className={clsx(
                         "text-13 leading-[16px] font-custom400",
-                        Number(choice.discountPrice) && "line-through"
+                        hasDiscount(choice) && "line-through"
                       )}
                     >
                       + {choice.price} {t("EGP")}
@@ -314,15 +319,15 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
           <DmView className="mt-[8] flex-row items-center">
             {Number(menuItem.price) > 0 ? (
               <>
-                {!!menuItem.discountPrice && (
+                {hasDiscount(menuItem) && (
                   <DmText className="text-18 leading-[22px] font-custom500">
-                    {menuItem.discountPrice} {t("EGP")}
+                    {formatMoney(effectiveUnitPrice(menuItem))} {t("EGP")}
                   </DmText>
                 )}
                 <DmText
                   className={clsx(
                     "text-18 leading-[22px] font-custom500",
-                    !!menuItem.discountPrice &&
+                    hasDiscount(menuItem) &&
                       "ml-[17] text-grey2 font-custom400 line-through"
                   )}
                 >

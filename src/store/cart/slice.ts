@@ -176,6 +176,32 @@ export const {
 export const formatMoney = (value: number): string =>
   value % 1 === 0 ? String(value) : value.toFixed(2)
 
+// The pro set a discount when the field is a usable number — including 0, for
+// a giveaway item. Everything else (null, absent, "", junk) means no discount.
+// The strikethrough and the price it strikes out both read this, so they can
+// never disagree about whether a discount exists.
+export const hasDiscount = (row: {
+  discountPrice?: string | number | null
+}): boolean =>
+  row.discountPrice !== null &&
+  row.discountPrice !== undefined &&
+  row.discountPrice !== "" &&
+  Number.isFinite(Number(row.discountPrice))
+
+// What the customer actually pays for one unit. Mirrors the server's
+// `discountPrice ?? price` (food-order-items-match-menu.decorator.ts) — the
+// obvious `Number(discountPrice) || Number(price)` disagrees on a discountPrice
+// of exactly 0, because 0 is falsy: the app would charge full price for a free
+// item and the menu-match validator would reject the whole order with a 400.
+export const effectiveUnitPrice = (row: {
+  price?: string | number | null
+  discountPrice?: string | number | null
+}): number => {
+  if (hasDiscount(row)) return Number(row.discountPrice)
+  const base = Number(row.price)
+  return Number.isFinite(base) ? base : 0
+}
+
 // Per-line total = (base + choices) × qty; subtotal drives the fee/discount
 // preview — the backend recomputes and persists its own numbers at creation.
 export const cartLineTotal = (line: CartItemType): number => {

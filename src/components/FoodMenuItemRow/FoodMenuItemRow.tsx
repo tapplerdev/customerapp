@@ -4,6 +4,11 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 
 import styles from "./styles"
+import {
+  effectiveUnitPrice,
+  formatMoney,
+  hasDiscount,
+} from "store/cart/slice"
 import { FoodMenuItemType } from "types/food"
 import { useTranslation } from "react-i18next"
 import colors from "@tappler/shared/src/styles/colors"
@@ -59,12 +64,11 @@ const FoodMenuItemRow: React.FC<Props> = ({
             {hasPrice ? (
               <>
                 <DmText className="text-13 leading-[16px] font-custom600">
-                  {item.discountPrice ? item.discountPrice : item.price}{" "}
-                  {t("EGP")}
+                  {formatMoney(effectiveUnitPrice(item))} {t("EGP")}
                 </DmText>
-                {!!item.discountPrice && (
+                {hasDiscount(item) && (
                   <DmText className="ml-[10] text-13 leading-[16px] text-grey2 font-custom400 line-through">
-                    {item.price} {t("EGP")}
+                    {formatMoney(Number(item.price))} {t("EGP")}
                   </DmText>
                 )}
               </>
