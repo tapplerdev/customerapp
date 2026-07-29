@@ -99,6 +99,14 @@ const MessageComponent: React.FC<Props> = React.memo(
     const hasLocation = !!item.location
     const hasMedia = hasFiles || hasLocation
 
+    // A message with NO text, NO files and NO location is an attachment whose
+    // file rows are gone (every chat attachment sent before the backend's
+    // 2026-04-07 fix was swept by the nightly unused-file cron, which deleted
+    // the storage objects AND the `files` rows). Without this branch the
+    // bubble renders as a bare empty grey pill — the "broken bubble" users
+    // report as "photos don't show in this chat". Say so instead.
+    const isOrphanedAttachment = !item.text && !hasMedia
+
     // Media items for viewer (full res)
     const mediaItems = imageFiles.map((f) => ({
       uri: f.url1920 || f.url,
@@ -355,8 +363,28 @@ const MessageComponent: React.FC<Props> = React.memo(
               !hasMedia && { paddingVertical: 8, paddingHorizontal: 14 },
             ]}
           >
-            {/* Upload overlay */}
-            {hasMedia && isUploading ? (
+            {/* Attachment whose file rows no longer exist — see note above */}
+            {isOrphanedAttachment ? (
+              <DmView className="flex-row items-center">
+                <DocumentIcon
+                  width={14}
+                  height={14}
+                  color={isMyMessage ? "#AAAAAA" : "#737385"}
+                />
+                <DmText
+                  className="font-custom400 ml-[8]"
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontStyle: "italic",
+                    color: isMyMessage ? "#AAAAAA" : "#737385",
+                    textAlign: isAr ? "right" : "left",
+                  }}
+                >
+                  {t("attachment_unavailable")}
+                </DmText>
+              </DmView>
+            ) : hasMedia && isUploading ? (
               <DmView>
                 <DmView style={{ opacity: 0.4 }}>
                   {renderImageGrid()}
