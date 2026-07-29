@@ -372,10 +372,11 @@ const MessageComponent: React.FC<Props> = React.memo(
                   color={isMyMessage ? "#AAAAAA" : "#737385"}
                 />
                 <DmText
-                  className="font-custom400 ml-[8]"
+                  className="font-custom400"
                   style={{
                     fontSize: 12,
                     lineHeight: 16,
+                    marginStart: 8,
                     fontStyle: "italic",
                     color: isMyMessage ? "#AAAAAA" : "#737385",
                     textAlign: isAr ? "right" : "left",
