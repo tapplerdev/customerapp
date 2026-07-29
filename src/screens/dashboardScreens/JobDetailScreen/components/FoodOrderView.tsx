@@ -1,8 +1,10 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 import {
+  Animated,
+  Easing,
   LayoutAnimation,
   Platform,
   ScrollView,
@@ -19,6 +21,7 @@ import OffersSection from "components/OffersSection/OffersSection"
 import IndividualIcon from "assets/icons/individual.svg"
 import BusinessIcon from "assets/icons/business.svg"
 import MailIcon from "assets/icons/mail.svg"
+import ChevronDownSolidIcon from "assets/icons/chevron-down-solid.svg"
 
 import styles from "./styles"
 
@@ -103,6 +106,27 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       : t("order_sent_to_pro")
 
   const [isDetailsOpen, setDetailsOpen] = useState(true)
+
+  // The chevron rides the same 220ms ease-in-ease-out as detailsTransition, so
+  // the arrow turning and the section opening read as one motion rather than
+  // two. Starts at 1 because the section starts open (chevron pointing up).
+  const chevronSpin = useRef(new Animated.Value(isDetailsOpen ? 1 : 0)).current
+  const chevronRotation = chevronSpin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "180deg"],
+  })
+
+  const toggleDetails = () => {
+    const nextOpen = !isDetailsOpen
+    LayoutAnimation.configureNext(detailsTransition)
+    setDetailsOpen(nextOpen)
+    Animated.timing(chevronSpin, {
+      toValue: nextOpen ? 1 : 0,
+      duration: detailsTransition.duration,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }).start()
+  }
 
   const items = job.foodOrderItems ?? []
   const subtotal = useMemo(
@@ -399,17 +423,19 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           is the answer on a repeat visit and the bill is the answer once. */}
       <DmView
         className="mt-[18] flex-row items-center justify-center"
-        onPress={() => {
-          LayoutAnimation.configureNext(detailsTransition)
-          setDetailsOpen((open) => !open)
-        }}
+        onPress={toggleDetails}
       >
         <DmText className="text-13 leading-[17px] font-custom600 text-red">
           {t(isDetailsOpen ? "hide_order_details" : "show_order_details")}
         </DmText>
-        <DmText className="ml-[6] text-13 leading-[17px] font-custom600 text-red">
-          {isDetailsOpen ? "\u2303" : "\u2304"}
-        </DmText>
+        <Animated.View
+          style={[
+            styles.detailsChevron,
+            { transform: [{ rotate: chevronRotation }] },
+          ]}
+        >
+          <ChevronDownSolidIcon width={14} height={14} color={colors.red} />
+        </Animated.View>
       </DmView>
 
       {isDetailsOpen && (
