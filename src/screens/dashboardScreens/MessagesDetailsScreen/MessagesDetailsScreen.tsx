@@ -46,6 +46,7 @@ import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendArrow from "assets/icons/sendArrow.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
+import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 import NativePushBackSheet, {
   BOTTOM_SHEET_PUSH_BACK_SCALE,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
@@ -172,7 +173,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       hideSub.remove()
     }
   }, [])
-  const attachmentSheetRef = useRef<BottomSheet>(null)
   // iOS uses the native push-back sheet (state-driven); Android keeps gorhom (ref-driven)
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false)
   // "More" sheet — single everything-about-this-conversation entry point
@@ -217,13 +217,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [])
 
   // ── Attachment handlers ──
-  const closeAttachmentSheet = () => {
-    if (Platform.OS === "ios") {
-      setAttachmentSheetVisible(false)
-    } else {
-      attachmentSheetRef.current?.close()
-    }
-  }
+  const closeAttachmentSheet = () => setAttachmentSheetVisible(false)
 
   const handleOpenMoreSheet = () => {
     setMoreSheetOpened(true)
@@ -259,13 +253,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleOpenAttachmentSheet = () => {
     Keyboard.dismiss()
-    setTimeout(() => {
-      if (Platform.OS === "ios") {
-        setAttachmentSheetVisible(true)
-      } else {
-        attachmentSheetRef.current?.expand()
-      }
-    }, 100)
+    setTimeout(() => setAttachmentSheetVisible(true), 100)
   }
 
   const handleCameraPress = () => {
@@ -1332,35 +1320,25 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </DmView>
       </KeyboardAvoidingView>
 
-      {/* Attachment sheet: native push-back presentation on iOS (the screen
-          behind recedes like Airbnb's pickers), gorhom bottom sheet on Android */}
-      {Platform.OS === "ios" ? (
-        <NativePushBackSheet
-          visible={attachmentSheetVisible}
-          height={attachmentSheetHeight}
-          pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
-          onDismissed={() => setAttachmentSheetVisible(false)}
+      {/* Attachment sheet. One component for both platforms now: native
+          push-back on iOS, react-native-modal on Android — the same shell every
+          other action sheet in this app uses. Android was on gorhom, which also
+          meant it opened by REF while iOS opened by STATE; that split is gone.
+          Height is passed because the camera-roll strip populates after first
+          layout, so the native self-measure lands short. */}
+      <NativeActionSheet
+        isVisible={attachmentSheetVisible}
+        onClose={() => setAttachmentSheetVisible(false)}
+        height={attachmentSheetHeight}
+      >
+        {/* No grabber — swipe-down still dismisses (pan is on the whole sheet) */}
+        <DmView
+          className="bg-white rounded-t-12 pt-[10]"
+          style={{ paddingBottom: insets.bottom + 2 }}
         >
-          {/* No grabber — swipe-down still dismisses (pan is on the whole sheet) */}
-          <DmView className="flex-1 bg-white pt-[10]">
-            {renderAttachmentSheetContent()}
-          </DmView>
-        </NativePushBackSheet>
-      ) : (
-        <BottomSheet
-          ref={attachmentSheetRef}
-          index={-1}
-          enableDynamicSizing
-          enablePanDownToClose
-          backdropComponent={renderBackdrop}
-          handleIndicatorStyle={styles.sheetHandle}
-          backgroundStyle={styles.sheetBackground}
-        >
-          <BottomSheetView style={{ paddingBottom: insets.bottom + 2 }}>
-            {renderAttachmentSheetContent()}
-          </BottomSheetView>
-        </BottomSheet>
-      )}
+          {renderAttachmentSheetContent()}
+        </DmView>
+      </NativeActionSheet>
 
       {/* More sheet: native push-back on iOS, gorhom on Android — same content */}
       {Platform.OS === "ios" ? (

@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, FlatList, Platform, StyleSheet, TextInput } from "react-native"
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet"
-import { FullWindowOverlay } from "react-native-screens"
+import Modal from "react-native-modal"
+import NativePushBackSheet, {
+  useFullSheetHeight,
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -46,10 +45,8 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
   const insets = useSafeAreaInsets()
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const modalRef = useRef<BottomSheetModal>(null)
   const inputRef = useRef<TextInput>(null)
 
-  const snapPoints = useMemo(() => ["92%"], [])
 
   const [searchText, setSearchText] = useState(currentCategoryName)
   const [debouncedSearch, setDebouncedSearch] = useState(currentCategoryName)
@@ -60,7 +57,6 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
     if (isVisible) {
       setSearchText(currentCategoryName)
       setDebouncedSearch(currentCategoryName)
-      modalRef.current?.present()
       setTimeout(() => inputRef.current?.focus(), 400)
     }
   }, [isVisible, currentCategoryName])
@@ -115,38 +111,21 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
   const handleSelectCategory = (cat: FlatCategory) => {
     const name = isAr ? cat.nameAr : cat.nameEn
     onSelectService(cat.id, name, cat.parentServiceId)
-    modalRef.current?.dismiss()
+    onClose()
   }
 
   const handleLocationPress = () => {
-    modalRef.current?.dismiss()
+    onClose()
     onChangeLocation()
   }
 
   const handleClose = () => {
-    modalRef.current?.dismiss()
+    onClose()
   }
 
   const handleDismiss = useCallback(() => {
     onClose()
   }, [onClose])
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
-    ),
-    []
-  )
-
-  const renderContainerComponent = useCallback(
-    (props: any) =>
-      Platform.OS === "ios" ? (
-        <FullWindowOverlay>{props.children}</FullWindowOverlay>
-      ) : (
-        props.children
-      ),
-    []
-  )
 
   const addressParts = [currentAddress?.address, currentAddress?.city || currentAddress?.governorate].filter(Boolean)
   const locationDisplay = addressParts.join(" • ") || ""
@@ -172,17 +151,19 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
     )
   }
 
-  return (
-    <BottomSheetModal
-      ref={modalRef}
-      snapPoints={snapPoints}
-      enableDynamicSizing={false}
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      containerComponent={renderContainerComponent}
-      onDismiss={handleDismiss}
-      handleComponent={null}
-      backgroundStyle={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
+  // 92% of the screen was what the gorhom snapPoint asked for; useFullSheetHeight
+  // is the same intent expressed off the safe area, so the top edge lands below
+  // the status bar on every device instead of at a fixed fraction.
+  //
+  // No pushBackScale override: this is a NEAR-FULL sheet, and the native 0.92
+  // default is what that size was tuned for. BOTTOM_SHEET_PUSH_BACK_SCALE is
+  // for the short ones.
+  const fullSheetHeight = useFullSheetHeight()
+
+  const content = (
+    <DmView
+      className="flex-1 bg-white"
+      style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10, overflow: "hidden" }}
     >
       {/* Header */}
       <DmView className="flex-row items-center justify-between px-[20] pt-[16] pb-[12]">
@@ -263,7 +244,42 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
           />
         </Animated.View>
       )}
-    </BottomSheetModal>
+    </DmView>
+  )
+
+  if (Platform.OS === "ios") {
+    return (
+      <NativePushBackSheet
+        visible={isVisible}
+        height={fullSheetHeight}
+        onDismissed={handleDismiss}
+      >
+        {content}
+      </NativePushBackSheet>
+    )
+  }
+
+  // Android: react-native-modal, the same fallback every other native sheet in
+  // this app uses. Replaces the gorhom BottomSheetModal (and with it the
+  // FullWindowOverlay container gorhom needed to escape the RN root on iOS).
+  return (
+    <Modal
+      isVisible={isVisible}
+      onBackdropPress={handleDismiss}
+      onSwipeComplete={handleDismiss}
+      swipeDirection="down"
+      className="m-0 justify-end"
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      hardwareAccelerated
+      statusBarTranslucent
+      backdropOpacity={0.5}
+      backdropTransitionOutTiming={0}
+      hideModalContentWhileAnimating
+      avoidKeyboard
+    >
+      <DmView style={{ height: fullSheetHeight }}>{content}</DmView>
+    </Modal>
   )
 }
 

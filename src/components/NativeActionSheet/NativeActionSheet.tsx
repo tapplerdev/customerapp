@@ -15,6 +15,14 @@ interface Props {
    * backdrop-press / swipe-down.
    */
   onClose: () => void
+  /**
+   * Fixed sheet height in pts, iOS only. Omit to self-size — the native sheet
+   * measures a hidden twin of the content. Pass it when that measurement is
+   * unreliable, e.g. content with a lazily-populated camera-roll strip whose
+   * height settles after first layout. Android's modal is content-sized either
+   * way, so it ignores this.
+   */
+  height?: number
   children: React.ReactNode
 }
 
@@ -25,11 +33,17 @@ interface Props {
  * self-sizes (no height prop) and supplies its own bg/rounded-top container,
  * exactly like the modals it replaces.
  */
-const NativeActionSheet: React.FC<Props> = ({ isVisible, onClose, children }) => {
+const NativeActionSheet: React.FC<Props> = ({
+  isVisible,
+  onClose,
+  height,
+  children,
+}) => {
   if (Platform.OS === "ios") {
     return (
       <NativePushBackSheet
         visible={isVisible}
+        height={height}
         onDismissed={onClose}
         pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
       >
