@@ -4,7 +4,7 @@ import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import NativePushBackSheet, {
   BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useTypedSelector } from "store"

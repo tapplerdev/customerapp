@@ -7,7 +7,7 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import NativePushBackSheet, {
   BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 

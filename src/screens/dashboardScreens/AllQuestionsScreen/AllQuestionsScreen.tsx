@@ -12,7 +12,7 @@ import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import NativePushBackSheet, {
   useFullSheetHeight,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
 

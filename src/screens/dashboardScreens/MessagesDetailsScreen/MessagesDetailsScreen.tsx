@@ -48,7 +48,7 @@ import SendArrow from "assets/icons/sendArrow.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
 import NativePushBackSheet, {
   BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
 import DetailsIcon from "assets/icons/details-icon.svg"

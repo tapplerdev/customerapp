@@ -12,7 +12,7 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import NativePushBackSheet, {
   useFullSheetHeight,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
 import TickIcon from "assets/icons/tick.svg"

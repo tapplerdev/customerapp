@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import NativePushBackSheet, {
   BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 
 import LeaveReviewIcon from "assets/icons/leave-review.svg"
 

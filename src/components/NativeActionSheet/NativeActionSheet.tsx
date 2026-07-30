@@ -4,7 +4,7 @@ import Modal from "react-native-modal"
 
 import NativePushBackSheet, {
   BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "components/NativePushBackSheet/NativePushBackSheet"
+} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 
 interface Props {
   isVisible: boolean
