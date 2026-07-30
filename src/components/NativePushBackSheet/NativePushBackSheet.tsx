@@ -40,11 +40,12 @@ interface Props {
   /**
    * How far the screen behind recedes, as a scale factor. 1.0 is no recede.
    *
-   * Defaults to 0.97 here rather than the native 0.92: an 8% shrink reads as
-   * the chat screen being shoved into the distance, which is much heavier than
-   * the effect is meant to be. Note the top edge lands in the same place
-   * either way — pushBackTransformForView pins it to `topInset - 16` — so a
-   * higher scale does not move the card, it just shrinks it less.
+   * Defaults to 0.985 here rather than the native 0.92. An 8% shrink read as
+   * the screen behind being shoved into the distance; 3% was still a touch
+   * much. 1.5% keeps just enough recede to say "there is a layer behind this"
+   * without the content visibly getting smaller. Note the top edge lands in
+   * the same place at any scale — pushBackTransformForView pins it to
+   * `topInset - 16` — so this only changes the shrink, never the position.
    */
   pushBackScale?: number
   /** Dim layer opacity behind the sheet (native default 0.4). */
@@ -59,7 +60,7 @@ const NativePushBackSheet: React.FC<Props> = ({
   visible,
   height,
   onDismissed,
-  pushBackScale = 0.97,
+  pushBackScale = 0.985,
   dimOpacity,
   transparentBackground,
   children,
