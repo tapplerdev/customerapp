@@ -41,12 +41,12 @@ export default StyleSheet.create({
     marginHorizontal: 0,
   },
   photoStripItem: {
-    width: 64,
-    height: 64,
+    width: 70,
+    height: 70,
   },
   photoStripImage: {
-    width: 64,
-    height: 64,
+    width: 70,
+    height: 70,
     borderRadius: 6,
   },
   pendingWrapper: {

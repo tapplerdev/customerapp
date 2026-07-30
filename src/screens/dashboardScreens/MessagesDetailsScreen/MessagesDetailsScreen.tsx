@@ -299,11 +299,14 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     []
   )
 
-  // Fixed height for the native iOS sheet (gorhom self-sizes; the native one
-  // can't): top pad 10 + header 28 + photo strip 78 + divider 1 + upload row
-  // 48 + divider 1 + location row 48 = 214, plus bottom inset & inactive note.
+  // Fixed height for the native sheet (it cannot self-measure this content —
+  // the camera-roll strip fills in after first layout): top pad 10 + header 28
+  // + photo strip 84 + divider 1 + upload row 48 + divider 1 + location row 48
+  // = 220, plus bottom inset & inactive note. Strip is 84 = the 70pt tile plus
+  // its pb-[14]; keep this in step with photoStripItem in styles.ts, and with
+  // proapp, which uses the same numbers.
   const attachmentSheetHeight =
-    216 + insets.bottom + (context.isJobInactive ? 26 : 0)
+    222 + insets.bottom + (context.isJobInactive ? 26 : 0)
 
   const renderAttachmentSheetContent = () => (
     <>

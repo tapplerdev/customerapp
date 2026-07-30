@@ -23,6 +23,15 @@ interface Props {
    * way, so it ignores this.
    */
   height?: number
+  /**
+   * How far the screen behind recedes. Defaults to the short-sheet value;
+   * near-full sheets should pass NEAR_FULL_PUSH_BACK_SCALE. iOS only.
+   */
+  pushBackScale?: number
+  /** Clear the native container so a header can float on the dim. iOS only. */
+  transparentBackground?: boolean
+  /** Backdrop darkness. Raise it when content puts white text on the dim. */
+  dimOpacity?: number
   children: React.ReactNode
 }
 
@@ -37,6 +46,9 @@ const NativeActionSheet: React.FC<Props> = ({
   isVisible,
   onClose,
   height,
+  pushBackScale = BOTTOM_SHEET_PUSH_BACK_SCALE,
+  transparentBackground,
+  dimOpacity,
   children,
 }) => {
   if (Platform.OS === "ios") {
@@ -45,7 +57,9 @@ const NativeActionSheet: React.FC<Props> = ({
         visible={isVisible}
         height={height}
         onDismissed={onClose}
-        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
+        pushBackScale={pushBackScale}
+        transparentBackground={transparentBackground}
+        dimOpacity={dimOpacity}
       >
         {children}
       </NativePushBackSheet>
@@ -63,6 +77,7 @@ const NativeActionSheet: React.FC<Props> = ({
       animationOut="slideOutDown"
       hardwareAccelerated
       statusBarTranslucent
+      backdropOpacity={dimOpacity}
       backdropTransitionOutTiming={0}
       hideModalContentWhileAnimating
     >
