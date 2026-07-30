@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useRef, useState } from "react"
-import { FlatList, TextInput } from "react-native"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FlatList, InteractionManager, TextInput } from "react-native"
+import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -36,6 +37,21 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
 
   const searchTerm = debouncedSearch.trim()
   const isSearching = searchTerm.length > 0
+
+  // Layout animations are only safe once the push has finished. While the
+  // native stack is still animating this screen in there is no committed
+  // layout for reanimated to enter FROM, so it draws the subtree at the
+  // container origin for a frame — the rows over the search bar. Gating on
+  // InteractionManager means the FIRST mount never animates, and every
+  // remount after it (each new search key) does. That is the split we want:
+  // no fade arriving on the screen, fade on every result change.
+  const [canAnimateResults, setCanAnimateResults] = useState(false)
+  useEffect(() => {
+    const handle = InteractionManager.runAfterInteractions(() =>
+      setCanAnimateResults(true),
+    )
+    return () => handle.cancel()
+  }, [])
 
   // Search goes to the server (full-text over service + category names and
   // keywords — same contract the pro app uses); the plain list stays on the
@@ -184,13 +200,14 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
       {showSkeleton ? (
         renderSkeleton()
       ) : (
-        // key still resets the list per query; the FadeIn that used to be
-        // here is gone. It was the remaining source of the rows appearing over
-        // the search bar on entry — same race as the root wrapper, one level
-        // down: reanimated applies the entering style before React commits
-        // this subtree's layout, so on first mount the rows drew at the
-        // container origin and then dropped.
-        <DmView key={isSearching ? searchTerm : "all"} style={{ flex: 1 }}>
+        // key remounts this on every query, which is what makes the fade fire
+        // per search. entering is withheld until the push settles — see
+        // canAnimateResults.
+        <Animated.View
+          key={isSearching ? searchTerm : "all"}
+          entering={canAnimateResults ? FadeIn.duration(300) : undefined}
+          style={{ flex: 1 }}
+        >
           <FlatList
             data={listData}
             renderItem={renderItem}
@@ -209,7 +226,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
               </DmView>
             }
           />
-        </DmView>
+        </Animated.View>
       )}
       {addressModal}
     </SafeAreaView>
