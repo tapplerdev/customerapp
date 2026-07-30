@@ -125,7 +125,13 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
 
 
   return (
-    <Animated.View entering={FadeIn.duration(300)} style={{ flex: 1 }}>
+    // No entering animation on the screen ROOT. The native stack is already
+    // animating this screen in, and a reanimated `entering` applies its initial
+    // style on the UI thread before React commits the subtree's layout — so for
+    // a frame the header rendered at the container's origin, on top of itself,
+    // then snapped down. The inner FadeIn below is fine: it sits under a header
+    // whose position has already settled, and it earns its keep by re-fading
+    // the results on every query.
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
       {/* Header */}
       <DmView className="flex-row items-center px-[12] py-[10]">
@@ -206,7 +212,6 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
       )}
       {addressModal}
     </SafeAreaView>
-    </Animated.View>
   )
 }
 
