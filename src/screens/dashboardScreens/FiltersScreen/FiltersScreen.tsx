@@ -11,7 +11,7 @@ import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import NativePushBackSheet, {
-  FULL_SHEET_HEIGHT,
+  useFullSheetHeight,
 } from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
@@ -552,9 +552,6 @@ const styles = StyleSheet.create({
   },
 })
 
-// Matches the native clamp (sheet height caps at 90% of the container) so
-// the JS-laid-out content and the presented frame agree exactly.
-
 /**
  * iOS presentation: the filters inside the native push-back sheet (screen
  * behind recedes). `contentKey` should change on every open so the filter
@@ -562,11 +559,19 @@ const styles = StyleSheet.create({
  */
 export const FiltersSheet: React.FC<
   FiltersParams & { visible: boolean; contentKey: number; onClose: () => void }
-> = ({ visible, contentKey, onClose, ...contentProps }) => (
-  <NativePushBackSheet visible={visible} height={FULL_SHEET_HEIGHT} onDismissed={onClose}>
-    <FiltersContent key={contentKey} {...contentProps} onClose={onClose} />
-  </NativePushBackSheet>
-)
+> = ({ visible, contentKey, onClose, ...contentProps }) => {
+  const fullSheetHeight = useFullSheetHeight()
+
+  return (
+    <NativePushBackSheet
+      visible={visible}
+      height={fullSheetHeight}
+      onDismissed={onClose}
+    >
+      <FiltersContent key={contentKey} {...contentProps} onClose={onClose} />
+    </NativePushBackSheet>
+  )
+}
 
 // Android (and fallback) presentation: plain navigation route.
 const FiltersScreen: React.FC<Props> = ({ route, navigation }) => (

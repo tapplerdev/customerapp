@@ -11,7 +11,7 @@ import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import NativePushBackSheet, {
-  FULL_SHEET_HEIGHT,
+  useFullSheetHeight,
 } from "components/NativePushBackSheet/NativePushBackSheet"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 
@@ -516,10 +516,11 @@ export const QuestionFlowSheet: React.FC<
   // close. The content sets this ref to its handleDone; fall back to onClose
   // until the content has mounted.
   const commitRef = useRef<(() => void) | null>(null)
+  const fullSheetHeight = useFullSheetHeight()
   return (
     <NativePushBackSheet
       visible={visible}
-      height={FULL_SHEET_HEIGHT}
+      height={fullSheetHeight}
       onDismissed={() => (commitRef.current ?? onClose)()}
     >
       <QuestionFlowContent

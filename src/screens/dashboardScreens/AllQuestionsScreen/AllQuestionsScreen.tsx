@@ -11,7 +11,7 @@ import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import NativePushBackSheet, {
-  FULL_SHEET_HEIGHT,
+  useFullSheetHeight,
 } from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
@@ -277,10 +277,11 @@ export const AllQuestionsSheet: React.FC<
   AllQuestionsParams & { visible: boolean; contentKey: number; onClose: () => void }
 > = ({ visible, contentKey, onClose, ...contentProps }) => {
   const commitRef = React.useRef<() => void>(() => {})
+  const fullSheetHeight = useFullSheetHeight()
   return (
     <NativePushBackSheet
       visible={visible}
-      height={FULL_SHEET_HEIGHT}
+      height={fullSheetHeight}
       onDismissed={() => {
         commitRef.current()
         onClose()

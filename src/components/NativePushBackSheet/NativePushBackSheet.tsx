@@ -6,7 +6,9 @@ import {
   View,
   ViewStyle,
   requireNativeComponent,
+  useWindowDimensions,
 } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 interface NativeProps {
   visible: boolean
@@ -48,19 +50,28 @@ export const BOTTOM_SHEET_PUSH_BACK_SCALE = 0.985
 
 /**
  * Height for the NEAR-FULL sheets: Filters, the first-time job questions
- * (QuestionStep) and Job Details (AllQuestions). One constant because all three
- * had their own identical copy, which is how they would have drifted apart.
+ * (QuestionStep) and Job Details (AllQuestions). One hook because all three had
+ * their own identical copy of the number, which is how they drift.
  *
- * 98% of the window. Note this is taller than the safe area: the top edge lands
- * ~2% of the window height from the physical top, which on a notched device is
- * above the safe-area inset, so the sheet's rounded corners sit under the status
- * bar / Dynamic Island. Chat's More sheet takes the other approach
- * (`windowHeight - insets.top + 6`) and stops just below it — worth switching to
- * if the overlap reads badly.
+ * Sized off the safe-area inset, NOT a percentage. A percentage cannot know
+ * where the status bar ends: 98% of an iPhone 16 Pro's 874pt window is 857pt,
+ * putting the sheet top 17pt from the physical top — well above the ~62pt inset,
+ * so the header title rendered underneath the Dynamic Island. Subtracting the
+ * inset makes the top edge land exactly below it on every device, which is what
+ * chat's More sheet already does.
+ *
+ * useWindowDimensions rather than Dimensions.get so this survives rotation;
+ * the old module-level constant froze the height at import time.
+ *
+ * (Aside: the native controller caps height at 97% of the container —
+ * frameOfPresentedViewInContainerView — so the previous 98% was being clamped
+ * anyway. A comment in FiltersScreen claimed that cap was 90%; it never was.)
  */
-export const FULL_SHEET_HEIGHT = Math.round(
-  Dimensions.get("window").height * 0.98,
-)
+export const useFullSheetHeight = (): number => {
+  const insets = useSafeAreaInsets()
+  const { height } = useWindowDimensions()
+  return Math.round(height - insets.top)
+}
 
 interface Props {
   visible: boolean
