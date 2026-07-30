@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState } from "react"
 import { FlatList, TextInput } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import Animated, { FadeIn } from "react-native-reanimated"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
@@ -185,11 +184,13 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
       {showSkeleton ? (
         renderSkeleton()
       ) : (
-        <Animated.View
-          key={isSearching ? searchTerm : "all"}
-          entering={FadeIn.duration(300)}
-          style={{ flex: 1 }}
-        >
+        // key still resets the list per query; the FadeIn that used to be
+        // here is gone. It was the remaining source of the rows appearing over
+        // the search bar on entry — same race as the root wrapper, one level
+        // down: reanimated applies the entering style before React commits
+        // this subtree's layout, so on first mount the rows drew at the
+        // container origin and then dropped.
+        <DmView key={isSearching ? searchTerm : "all"} style={{ flex: 1 }}>
           <FlatList
             data={listData}
             renderItem={renderItem}
@@ -208,7 +209,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
               </DmView>
             }
           />
-        </Animated.View>
+        </DmView>
       )}
       {addressModal}
     </SafeAreaView>
