@@ -51,6 +51,7 @@ import NativePushBackSheet, {
 } from "components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
+import DetailsIcon from "assets/icons/details-icon.svg"
 import CameraIcon from "assets/icons/camera-icon.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
 import LocationIcon from "assets/icons/location-red.svg"
@@ -1106,6 +1107,44 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               <DmText className="text-11 leading-[14px] font-custom400 text-grey3">
                 {`${t("history")} ›`}
               </DmText>
+            </DmView>
+          )}
+
+          {/* Action bar — restored verbatim from 1cbacf5^, which is the commit
+              that folded these three into the More sheet AND introduced the
+              repost strip in their place. They never coexisted, so there is no
+              prior arrangement to preserve: the bar goes here and the ended
+              strip sits below it, which it only does for ended jobs anyway.
+              No border-b of its own (the original had one): the header block
+              already closes with a divider, and the ended strip carries
+              border-t, so one here would double the hairline.
+              Call and My Review are informational, exactly as before — only
+              My Request was ever tappable. It now opens the in-app request
+              sheet rather than navigating to RequestDetailsScreen; the sheet is
+              what replaced that flow (see the More sheet's card comment). */}
+          {context.hasJob && (
+            <DmView className="px-[16] pt-[8] pb-[10] flex-row justify-around items-center">
+              <DmView className="flex-row items-center">
+                <CallIcon width={22} height={22} />
+                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
+                  {t("call")}
+                </DmText>
+              </DmView>
+              <DmView className="flex-row items-center">
+                <ReviewsIcon width={32} height={20} />
+                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
+                  {t("my_review")}
+                </DmText>
+              </DmView>
+              <DmView
+                className="flex-row items-center"
+                onPress={openRequestSheet}
+              >
+                <DetailsIcon width={20} height={24} />
+                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
+                  {t("my_request")}
+                </DmText>
+              </DmView>
             </DmView>
           )}
 
