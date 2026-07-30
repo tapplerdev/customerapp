@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { BackHandler, Dimensions, Platform, ScrollView, StyleSheet } from "react-native"
+import { BackHandler, Platform, ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -10,7 +10,9 @@ import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  FULL_SHEET_HEIGHT,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
 
@@ -265,7 +267,6 @@ const styles = StyleSheet.create({
 })
 
 // Matches the native clamp (sheet height caps at 90% of the container).
-const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
 
 /**
  * iOS presentation: the job-details editor inside the native push-back sheet.
@@ -279,7 +280,7 @@ export const AllQuestionsSheet: React.FC<
   return (
     <NativePushBackSheet
       visible={visible}
-      height={SHEET_HEIGHT}
+      height={FULL_SHEET_HEIGHT}
       onDismissed={() => {
         commitRef.current()
         onClose()

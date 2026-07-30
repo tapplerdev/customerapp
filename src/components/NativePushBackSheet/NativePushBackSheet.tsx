@@ -46,6 +46,22 @@ const RCTTapplerSheet =
  */
 export const BOTTOM_SHEET_PUSH_BACK_SCALE = 0.985
 
+/**
+ * Height for the NEAR-FULL sheets: Filters, the first-time job questions
+ * (QuestionStep) and Job Details (AllQuestions). One constant because all three
+ * had their own identical copy, which is how they would have drifted apart.
+ *
+ * 98% of the window. Note this is taller than the safe area: the top edge lands
+ * ~2% of the window height from the physical top, which on a notched device is
+ * above the safe-area inset, so the sheet's rounded corners sit under the status
+ * bar / Dynamic Island. Chat's More sheet takes the other approach
+ * (`windowHeight - insets.top + 6`) and stops just below it — worth switching to
+ * if the overlap reads badly.
+ */
+export const FULL_SHEET_HEIGHT = Math.round(
+  Dimensions.get("window").height * 0.98,
+)
+
 interface Props {
   visible: boolean
   /**

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Dimensions, ScrollView, StyleSheet, TextInput } from "react-native"
+import { ScrollView, StyleSheet, TextInput } from "react-native"
 import Slider from "@react-native-community/slider"
 import RangeSlider from "components/RangeSlider/RangeSlider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
@@ -10,7 +10,9 @@ import { RootStackParamList, RootStackScreenProps } from "navigation/types"
 import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  FULL_SHEET_HEIGHT,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 
 import CloseIcon from "assets/icons/close.svg"
 import TickIcon from "assets/icons/tick.svg"
@@ -552,7 +554,6 @@ const styles = StyleSheet.create({
 
 // Matches the native clamp (sheet height caps at 90% of the container) so
 // the JS-laid-out content and the presented frame agree exactly.
-const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
 
 /**
  * iOS presentation: the filters inside the native push-back sheet (screen
@@ -562,7 +563,7 @@ const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
 export const FiltersSheet: React.FC<
   FiltersParams & { visible: boolean; contentKey: number; onClose: () => void }
 > = ({ visible, contentKey, onClose, ...contentProps }) => (
-  <NativePushBackSheet visible={visible} height={SHEET_HEIGHT} onDismissed={onClose}>
+  <NativePushBackSheet visible={visible} height={FULL_SHEET_HEIGHT} onDismissed={onClose}>
     <FiltersContent key={contentKey} {...contentProps} onClose={onClose} />
   </NativePushBackSheet>
 )

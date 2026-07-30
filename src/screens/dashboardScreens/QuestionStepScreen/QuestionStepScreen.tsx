@@ -10,7 +10,9 @@ import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  FULL_SHEET_HEIGHT,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -502,7 +504,6 @@ const styles = StyleSheet.create({
 })
 
 // Matches the native clamp (sheet height caps at 90% of the container).
-const SHEET_HEIGHT = Math.round(Dimensions.get("window").height * 0.9)
 
 /**
  * iOS presentation: the question flow inside the native push-back sheet.
@@ -518,7 +519,7 @@ export const QuestionFlowSheet: React.FC<
   return (
     <NativePushBackSheet
       visible={visible}
-      height={SHEET_HEIGHT}
+      height={FULL_SHEET_HEIGHT}
       onDismissed={() => (commitRef.current ?? onClose)()}
     >
       <QuestionFlowContent
