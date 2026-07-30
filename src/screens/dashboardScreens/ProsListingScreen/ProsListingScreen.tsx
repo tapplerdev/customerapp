@@ -27,9 +27,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ProCard, { estimateProCardHeight } from "./components/ProCard"
 import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
-// import QuestionBottomSheet from "components/QuestionBottomSheet/QuestionBottomSheet"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
-import AllQuestionsModal from "components/AllQuestionsModal/AllQuestionsModal"
 import { FiltersSheet, FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import { QuestionFlowSheet } from "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen"
 import { AllQuestionsSheet } from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
@@ -1021,17 +1019,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       {/* Question flow is now a native screen (QuestionStepScreen, formSheet) — launched via
           navigation.push and resolved via questionFlowEventBus, replacing the gorhom QuestionBottomSheet */}
 
-      {/* AllQuestionsModal — replaced with native AllQuestionsScreen (modal)
-      <AllQuestionsModal
-        isVisible={isAllQuestionsVisible}
-        categoryName={categoryName}
-        placeOfServiceOptions={placeOfServiceOptions}
-        customerQuestions={customerQuestions}
-        initialAnswers={allAnswers}
-        initialPlaceOfService={currentPlaceOfService}
-        onDismiss={handleAllQuestionsDismiss}
-      />
-      */}
 
       <SearchLocationModal
         isVisible={isSearchModalVisible}

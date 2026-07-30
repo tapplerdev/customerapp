@@ -15,7 +15,6 @@ import {
 } from "react-native"
 // Using RN's built-in KeyboardAvoidingView (react-native-keyboard-controller not installed in customer app yet)
 import { KeyboardAvoidingView } from "react-native"
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
@@ -47,9 +46,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendArrow from "assets/icons/sendArrow.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
-import NativePushBackSheet, {
-  BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import { NEAR_FULL_PUSH_BACK_SCALE } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
 import DetailsIcon from "assets/icons/details-icon.svg"
@@ -173,11 +170,9 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       hideSub.remove()
     }
   }, [])
-  // iOS uses the native push-back sheet (state-driven); Android keeps gorhom (ref-driven)
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false)
   // "More" sheet — single everything-about-this-conversation entry point
   // (replaces the old action bar + offer bar + decorative three-dot menu).
-  const moreSheetRef = useRef<BottomSheet>(null)
   const [moreSheetVisible, setMoreSheetVisible] = useState(false)
   // Lazily mount the sheet's MapView on first open — sheet content is mounted
   // with the screen (RN-Modal pattern), and a map instance per chat open
@@ -186,7 +181,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   // Stacked "full request" sheet — presents ON TOP of the More sheet
   // (Airbnb's Show-reservation pattern; the native controller presents from
   // the top-most VC, so stacking is supported by design).
-  const requestSheetRef = useRef<BottomSheet>(null)
   const [requestSheetVisible, setRequestSheetVisible] = useState(false)
   // Lazy-mount the request sheet's map hero on first open (same reasoning as
   // moreSheetOpened — don't pay a map instance for sheets never opened).
@@ -221,35 +215,15 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleOpenMoreSheet = () => {
     setMoreSheetOpened(true)
-    if (Platform.OS === "ios") {
-      setMoreSheetVisible(true)
-    } else {
-      moreSheetRef.current?.expand()
-    }
+    setMoreSheetVisible(true)
   }
-  const closeMoreSheet = () => {
-    if (Platform.OS === "ios") {
-      setMoreSheetVisible(false)
-    } else {
-      moreSheetRef.current?.close()
-    }
-  }
+  const closeMoreSheet = () => setMoreSheetVisible(false)
   // Full-request sheet stacks ON TOP — the More sheet stays open behind it.
   const openRequestSheet = () => {
     setRequestSheetOpened(true)
-    if (Platform.OS === "ios") {
-      setRequestSheetVisible(true)
-    } else {
-      requestSheetRef.current?.expand()
-    }
+    setRequestSheetVisible(true)
   }
-  const closeRequestSheet = () => {
-    if (Platform.OS === "ios") {
-      setRequestSheetVisible(false)
-    } else {
-      requestSheetRef.current?.close()
-    }
-  }
+  const closeRequestSheet = () => setRequestSheetVisible(false)
 
   const handleOpenAttachmentSheet = () => {
     Keyboard.dismiss()
@@ -291,13 +265,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     closeAttachmentSheet()
     navigation.navigate("PickAddressScreen" as any)
   }
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
-    ),
-    []
-  )
 
   // Fixed height for the native sheet (it cannot self-measure this content —
   // the camera-roll strip fills in after first layout): top pad 10 + header 28
@@ -586,8 +553,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   )
 
   // ── More sheet content ──
-  // Rendered by BOTH presentations (iOS native push-back sheet + Android
-  // gorhom), and by the native sheet's hidden measuring twin — keep it a
+  // Rendered by the sheet on both platforms, and by the native sheet's hidden
+  // measuring twin — keep it a
   // plain element with no visibility assumptions.
   const moreJob = chatPreview.chat.job
   const moreServiceName = moreJob?.serviceCategory
@@ -1343,51 +1310,27 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </DmView>
       </NativeActionSheet>
 
-      {/* More sheet: native push-back on iOS, gorhom on Android — same content */}
-      {Platform.OS === "ios" ? (
-        <NativePushBackSheet
-          visible={moreSheetVisible}
-          height={moreSheetHeight}
-          onDismissed={() => setMoreSheetVisible(false)}
-        >
-          {moreSheetContent}
-        </NativePushBackSheet>
-      ) : (
-        <BottomSheet
-          ref={moreSheetRef}
-          index={-1}
-          snapPoints={["96%"]}
-          enablePanDownToClose
-          backdropComponent={renderBackdrop}
-          handleComponent={null}
-          backgroundStyle={styles.sheetBackground}
-        >
-          <BottomSheetView style={{ flex: 1 }}>{moreSheetContent}</BottomSheetView>
-        </BottomSheet>
-      )}
+      {/* More sheet and the full-request sheet that stacks on top of it. Both
+          are NEAR-FULL (moreSheetHeight = windowHeight - insets.top), so they
+          pass NEAR_FULL_PUSH_BACK_SCALE — the native 0.92 that size was tuned
+          for — rather than the short-sheet default. */}
+      <NativeActionSheet
+        isVisible={moreSheetVisible}
+        onClose={closeMoreSheet}
+        height={moreSheetHeight}
+        pushBackScale={NEAR_FULL_PUSH_BACK_SCALE}
+      >
+        {moreSheetContent}
+      </NativeActionSheet>
 
-      {/* Stacked full-request sheet — presents on top of the More sheet */}
-      {Platform.OS === "ios" ? (
-        <NativePushBackSheet
-          visible={requestSheetVisible}
-          height={moreSheetHeight}
-          onDismissed={() => setRequestSheetVisible(false)}
-        >
-          {requestSheetContent}
-        </NativePushBackSheet>
-      ) : (
-        <BottomSheet
-          ref={requestSheetRef}
-          index={-1}
-          snapPoints={["96%"]}
-          enablePanDownToClose
-          backdropComponent={renderBackdrop}
-          handleComponent={null}
-          backgroundStyle={styles.sheetBackground}
-        >
-          <BottomSheetView style={{ flex: 1 }}>{requestSheetContent}</BottomSheetView>
-        </BottomSheet>
-      )}
+      <NativeActionSheet
+        isVisible={requestSheetVisible}
+        onClose={closeRequestSheet}
+        height={moreSheetHeight}
+        pushBackScale={NEAR_FULL_PUSH_BACK_SCALE}
+      >
+        {requestSheetContent}
+      </NativeActionSheet>
 
       {/* Violation modal (profanity / contact-info) — same UX as the proapp.
           The blocked text is already back in the input; the button dismisses. */}

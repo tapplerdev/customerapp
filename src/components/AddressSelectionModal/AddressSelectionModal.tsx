@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useRef } from "react"
 import { Platform, ScrollView } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
-import NativePushBackSheet, {
-  BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useTypedSelector } from "store"
@@ -40,32 +37,9 @@ const AddressSelectionModal: React.FC<Props> = ({
   const { t } = useTranslation()
   const { guestLocation, isAuth } = useTypedSelector((store) => store.auth)
   const { data: customerData } = useGetCustomerMeQuery(undefined, { skip: !isAuth })
-  const sheetRef = useRef<BottomSheet>(null)
 
   const lastUsedAddress = guestLocation?.address
   const savedAddresses = isAuth ? customerData?.addresses || [] : []
-
-  // Bridge isVisible prop to BottomSheet ref
-  useEffect(() => {
-    if (isVisible) {
-      sheetRef.current?.expand()
-    } else {
-      sheetRef.current?.close()
-    }
-  }, [isVisible])
-
-  const handleSheetChange = useCallback((index: number) => {
-    if (index === -1) {
-      onClose()
-    }
-  }, [onClose])
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.85} />
-    ),
-    []
-  )
 
   const handleSelectLastUsed = () => {
     if (lastUsedAddress) {
@@ -174,38 +148,20 @@ const AddressSelectionModal: React.FC<Props> = ({
     </>
   )
 
-  // iOS: native push-back presentation (house style — the screen behind
-  // recedes like the question/filters sheets). transparentBackground keeps the
-  // container clear so the header floats on the dim exactly like the gorhom
-  // original; dimOpacity matches the 0.85 backdrop below.
-  if (Platform.OS === "ios") {
-    return (
-      <NativePushBackSheet
-        visible={isVisible}
-        onDismissed={onClose}
-        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
-        dimOpacity={0.85}
-        transparentBackground
-      >
-        {sheetContent}
-      </NativePushBackSheet>
-    )
-  }
-
-  // Android keeps the gorhom sheet (house pattern: iOS-only native sheets).
+  // One shell, both platforms: native push-back on iOS, react-native-modal on
+  // Android. transparentBackground keeps the container clear so the header
+  // floats on the dim, and dimOpacity 0.85 is what makes that white header
+  // legible — the 0.4 default is not. Short/self-sizing, so it keeps the
+  // short-sheet push-back.
   return (
-    <BottomSheet
-      ref={sheetRef}
-      index={-1}
-      enableDynamicSizing
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      onChange={handleSheetChange}
-      handleComponent={null}
-      backgroundStyle={{ backgroundColor: "transparent" }}
+    <NativeActionSheet
+      isVisible={isVisible}
+      onClose={onClose}
+      transparentBackground
+      dimOpacity={0.85}
     >
-      <BottomSheetView>{sheetContent}</BottomSheetView>
-    </BottomSheet>
+      {sheetContent}
+    </NativeActionSheet>
   )
 }
 

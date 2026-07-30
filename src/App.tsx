@@ -2,7 +2,6 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native"
 import React, { useCallback, useState } from "react"
 import { Platform, StatusBar, View } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Provider } from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
@@ -59,31 +58,29 @@ function App(): JSX.Element {
         <RealtimeManager />
         <SafeAreaProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <View style={{ flex: 1 }}>
-                <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={handleNavReady}>
-                  <StatusBar
-                    barStyle={
-                      Platform.OS === "android" ? "dark-content" : "default"
-                    }
-                    backgroundColor="transparent"
-                    translucent={true}
-                  />
-                  <BootstrapScreen />
-                </NavigationContainer>
+            <View style={{ flex: 1 }}>
+              <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={handleNavReady}>
+                <StatusBar
+                  barStyle={
+                    Platform.OS === "android" ? "dark-content" : "default"
+                  }
+                  backgroundColor="transparent"
+                  translucent={true}
+                />
+                <BootstrapScreen />
+              </NavigationContainer>
 
-                {!splashDone && (
-                  <SplashOverlay
-                    isReady={navReady}
-                    onFinish={handleSplashFinish}
-                  />
-                )}
+              {!splashDone && (
+                <SplashOverlay
+                  isReady={navReady}
+                  onFinish={handleSplashFinish}
+                />
+              )}
 
-                {/* Global in-app message banner — overlays everything, above
-                    the navigator so it's visible on any screen. */}
-                <InAppMessageBanner />
-              </View>
-            </BottomSheetModalProvider>
+              {/* Global in-app message banner — overlays everything, above
+                  the navigator so it's visible on any screen. */}
+              <InAppMessageBanner />
+            </View>
           </GestureHandlerRootView>
         </SafeAreaProvider>
       </PersistGate>

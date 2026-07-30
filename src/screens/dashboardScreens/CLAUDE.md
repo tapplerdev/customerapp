@@ -56,7 +56,10 @@ Job status (`"active"`, `"ended"`, `"completed"`) does NOT affect chat visibilit
 
 ## Attachment Picker (Bottom Sheet)
 
-Uses `@gorhom/bottom-sheet` v5 with `enableDynamicSizing`.
+Uses `NativeActionSheet` — the native push-back sheet on iOS,
+`react-native-modal` on Android. Height is passed explicitly because the
+camera-roll strip populates after first layout, so the native self-measure
+lands short. (Was `@gorhom/bottom-sheet`; that dependency is gone.)
 
 Layout:
 - "Photos & videos" header with "View library" link (red, bold, opens full gallery picker)

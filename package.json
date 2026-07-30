@@ -10,7 +10,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@gorhom/bottom-sheet": "^5",
     "@notifee/react-native": "^7.8.2",
     "@react-native-camera-roll/camera-roll": "^7.10.2",
     "@react-native-community/blur": "^4.4.1",
