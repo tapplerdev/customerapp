@@ -7,7 +7,7 @@ import LottieView from "lottie-react-native"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useTypedSelector } from "store"
-import { useLazyGetCustomerMeQuery } from "services/api"
+import { useGetCustomerMeQuery } from "services/api"
 
 import LocationRedIcon from "assets/icons/location-red.svg"
 import successAnimation from "assets/animations/successful.json"
@@ -21,7 +21,12 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
   const { t } = useTranslation()
   const address = route.params?.address
   const { isAuth } = useTypedSelector((store) => store.auth)
-  const [, { data: customerData }] = useLazyGetCustomerMeQuery()
+  // useLazyGetCustomerMeQuery's trigger was discarded (`[, { data }]`), so the
+  // fetch never fired and `data` sat permanently undefined. That made
+  // isAlreadySaved always false, which made the prompt always show — the whole
+  // point of the check. Same pattern AddressSelectionModal already uses.
+  const { data: customerData, isLoading: isCustomerLoading } =
+    useGetCustomerMeQuery(undefined, { skip: !isAuth })
 
   const [isSheetVisible, setSheetVisible] = useState(false)
 
@@ -30,18 +35,25 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
   const backdropOpacity = useRef(new Animated.Value(0)).current
 
   const isAlreadySaved = useMemo(() => {
-    if (!address || !customerData?.addresses?.length) return false
+    // Hoisted: narrowing `address.coords` does not survive into the .some()
+    // callback, but a local const does.
+    const coords = address?.coords
+    if (!coords || !customerData?.addresses?.length) return false
     return customerData.addresses.some((saved) => {
       const sLat = saved.address.location.lat
       const sLng = saved.address.location.lng
       return (
-        Math.abs(sLat - address.coords.lat) < 0.0001 &&
-        Math.abs(sLng - address.coords.lon) < 0.0001
+        Math.abs(sLat - coords.lat) < 0.0001 &&
+        Math.abs(sLng - coords.lon) < 0.0001
       )
     })
   }, [address, customerData?.addresses])
 
-  const shouldPromptSave = isAuth && !!address && !isAlreadySaved
+  // Wait for /customers/me before deciding. Asking while the addresses are
+  // still in flight would read as "not saved" and prompt anyway, which is the
+  // bug all over again — the 3s timer is short enough to lose that race.
+  const shouldPromptSave =
+    isAuth && !!address && !isCustomerLoading && !isAlreadySaved
 
   const showSheet = () => {
     setSheetVisible(true)
