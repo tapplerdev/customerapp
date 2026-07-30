@@ -2,7 +2,9 @@ import React from "react"
 import { Platform } from "react-native"
 import Modal from "react-native-modal"
 
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  BOTTOM_SHEET_PUSH_BACK_SCALE,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 
 interface Props {
   isVisible: boolean
@@ -26,7 +28,11 @@ interface Props {
 const NativeActionSheet: React.FC<Props> = ({ isVisible, onClose, children }) => {
   if (Platform.OS === "ios") {
     return (
-      <NativePushBackSheet visible={isVisible} onDismissed={onClose}>
+      <NativePushBackSheet
+        visible={isVisible}
+        onDismissed={onClose}
+        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
+      >
         {children}
       </NativePushBackSheet>
     )

@@ -27,6 +27,25 @@ interface NativeProps {
 const RCTTapplerSheet =
   Platform.OS === "ios" ? requireNativeComponent<NativeProps>("TapplerSheetView") : null
 
+/**
+ * Push-back for SHORT sheets — the attachment picker, action sheets, the
+ * address picker, the small confirm modals.
+ *
+ * The native default (0.92, an 8% shrink) was tuned for the ~90%-height sheets,
+ * where a receded screen behind reads as depth. Under a 216pt sheet the same
+ * shrink just looks like the screen jumped backwards, because almost all of it
+ * is still visible while it moves.
+ *
+ * Deliberately NOT the component's default: the full-height sheets (Filters,
+ * AllQuestions, QuestionStep, and chat's More / full-request sheets) keep 0.92
+ * and must not pick this up.
+ *
+ * Note the top edge does not move with this value —
+ * pushBackTransformForView pins the scaled top to `topInset - 16` at any
+ * scale, so this changes the shrink only.
+ */
+export const BOTTOM_SHEET_PUSH_BACK_SCALE = 0.985
+
 interface Props {
   visible: boolean
   /**
@@ -39,13 +58,9 @@ interface Props {
   onDismissed: () => void
   /**
    * How far the screen behind recedes, as a scale factor. 1.0 is no recede.
-   *
-   * Defaults to 0.985 here rather than the native 0.92. An 8% shrink read as
-   * the screen behind being shoved into the distance; 3% was still a touch
-   * much. 1.5% keeps just enough recede to say "there is a layer behind this"
-   * without the content visibly getting smaller. Note the top edge lands in
-   * the same place at any scale — pushBackTransformForView pins it to
-   * `topInset - 16` — so this only changes the shrink, never the position.
+   * Omit for the native default of 0.92 (an 8% shrink), which is what the
+   * ~90%-height sheets use. Short sheets should pass
+   * BOTTOM_SHEET_PUSH_BACK_SCALE — see the note on that constant.
    */
   pushBackScale?: number
   /** Dim layer opacity behind the sheet (native default 0.4). */
@@ -60,7 +75,7 @@ const NativePushBackSheet: React.FC<Props> = ({
   visible,
   height,
   onDismissed,
-  pushBackScale = 0.985,
+  pushBackScale,
   dimOpacity,
   transparentBackground,
   children,

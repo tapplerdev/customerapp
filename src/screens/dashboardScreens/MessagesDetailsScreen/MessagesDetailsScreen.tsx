@@ -46,7 +46,9 @@ import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendArrow from "assets/icons/sendArrow.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  BOTTOM_SHEET_PUSH_BACK_SCALE,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
 import CameraIcon from "assets/icons/camera-icon.svg"
@@ -1297,6 +1299,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         <NativePushBackSheet
           visible={attachmentSheetVisible}
           height={attachmentSheetHeight}
+          pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
           onDismissed={() => setAttachmentSheetVisible(false)}
         >
           {/* No grabber — swipe-down still dismisses (pan is on the whole sheet) */}

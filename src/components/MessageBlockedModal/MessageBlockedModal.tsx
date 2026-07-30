@@ -5,7 +5,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  BOTTOM_SHEET_PUSH_BACK_SCALE,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 
@@ -48,7 +50,11 @@ const MessageBlockedModal: React.FC<Props> = ({ isVisible, description, onClose 
   // iOS: native push-back presentation, self-sizing to the content.
   if (Platform.OS === "ios") {
     return (
-      <NativePushBackSheet visible={isVisible} onDismissed={onClose}>
+      <NativePushBackSheet
+        visible={isVisible}
+        onDismissed={onClose}
+        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
+      >
         {content}
       </NativePushBackSheet>
     )

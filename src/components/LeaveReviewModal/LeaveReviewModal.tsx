@@ -4,7 +4,9 @@ import Modal from "react-native-modal"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  BOTTOM_SHEET_PUSH_BACK_SCALE,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 
 import LeaveReviewIcon from "assets/icons/leave-review.svg"
 
@@ -60,7 +62,11 @@ const LeaveReviewModal: React.FC<Props> = ({
   // No height prop — the sheet self-sizes to the content, like the old modal.
   if (Platform.OS === "ios") {
     return (
-      <NativePushBackSheet visible={isVisible} onDismissed={onClose}>
+      <NativePushBackSheet
+        visible={isVisible}
+        onDismissed={onClose}
+        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
+      >
         {content}
       </NativePushBackSheet>
     )

@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useRef } from "react"
 import { Platform, ScrollView } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
-import NativePushBackSheet from "components/NativePushBackSheet/NativePushBackSheet"
+import NativePushBackSheet, {
+  BOTTOM_SHEET_PUSH_BACK_SCALE,
+} from "components/NativePushBackSheet/NativePushBackSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useTypedSelector } from "store"
@@ -181,6 +183,7 @@ const AddressSelectionModal: React.FC<Props> = ({
       <NativePushBackSheet
         visible={isVisible}
         onDismissed={onClose}
+        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
         dimOpacity={0.85}
         transparentBackground
       >
