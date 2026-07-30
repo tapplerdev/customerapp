@@ -25,8 +25,9 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
   // fetch never fired and `data` sat permanently undefined. That made
   // isAlreadySaved always false, which made the prompt always show — the whole
   // point of the check. Same pattern AddressSelectionModal already uses.
-  const { data: customerData, isLoading: isCustomerLoading } =
-    useGetCustomerMeQuery(undefined, { skip: !isAuth })
+  const { data: customerData } = useGetCustomerMeQuery(undefined, {
+    skip: !isAuth,
+  })
 
   const [isSheetVisible, setSheetVisible] = useState(false)
 
@@ -49,11 +50,14 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
     })
   }, [address, customerData?.addresses])
 
-  // Wait for /customers/me before deciding. Asking while the addresses are
-  // still in flight would read as "not saved" and prompt anyway, which is the
-  // bug all over again — the 3s timer is short enough to lose that race.
-  const shouldPromptSave =
-    isAuth && !!address && !isCustomerLoading && !isAlreadySaved
+  // Requires the addresses to have actually ARRIVED, not merely "no first load
+  // in flight". isLoading is false on a REJECTED request too, and the api's
+  // error handling deliberately keeps the session alive on network errors and
+  // 5xx, so on flaky connectivity we'd have isAuth true, data undefined,
+  // isAlreadySaved false — and the prompt would fire for an address the
+  // customer already has, which is the exact bug this was meant to kill.
+  // Failing closed here loses a save offer; failing open re-creates the bug.
+  const shouldPromptSave = isAuth && !!address && !!customerData && !isAlreadySaved
 
   const showSheet = () => {
     setSheetVisible(true)
