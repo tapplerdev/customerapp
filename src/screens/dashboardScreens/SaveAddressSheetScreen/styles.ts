@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
 
 export default StyleSheet.create({
-  lottieSize: { width: 220, height: 220 },
+  addressPreviewBg: { backgroundColor: "#F8F8F8" },
 })

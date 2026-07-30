@@ -26,6 +26,7 @@ import ProsListingScreen from "screens/dashboardScreens/ProsListingScreen/ProsLi
 import ServiceRequestDetailsScreen from "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen"
 import RequestSummaryScreen from "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen"
 import RequestSuccessScreen from "screens/dashboardScreens/RequestSuccessScreen/RequestSuccessScreen"
+import SaveAddressSheetScreen from "screens/dashboardScreens/SaveAddressSheetScreen/SaveAddressSheetScreen"
 import JobDetailScreen from "screens/dashboardScreens/JobDetailScreen/JobDetailScreen"
 import NotificationsScreen from "screens/dashboardScreens/NotificationsScreen/NotificationsScreen"
 import NotificationDetailsScreen from "screens/dashboardScreens/NotificationDetailsScreen/NotificationDetailsScreen"
@@ -173,6 +174,28 @@ const Navigator = () => {
       <Stack.Screen name="ServiceRequestDetailsScreen" component={ServiceRequestDetailsScreen} />
       <Stack.Screen name="RequestSummaryScreen" component={RequestSummaryScreen} />
       <Stack.Screen name="RequestSuccessScreen" component={RequestSuccessScreen} />
+      <Stack.Screen
+        name="SaveAddressSheetScreen"
+        component={SaveAddressSheetScreen}
+        options={{
+          presentation: "formSheet",
+          headerShown: false,
+          gestureEnabled: true,
+          // Sized to the panel, not to a fraction of the screen — the content
+          // is fixed-height, so a hardcoded detent would break in Arabic where
+          // the copy wraps differently.
+          sheetAllowedDetents: "fitToContents",
+          // No dimming view at any detent, which is also what stops iOS pushing
+          // the screen behind back into a card. Defaults to "none" (always
+          // dimmed, always pushed back) — that default is what AuthGateScreen
+          // is on. This prop is the only control and it is on/off: there is no
+          // setting for a partial push-back.
+          sheetLargestUndimmedDetentIndex: "last",
+          // Matches the old hand-rolled panel and AuthGateScreen.
+          sheetGrabberVisible: false,
+          sheetCornerRadius: 20,
+        }}
+      />
       <Stack.Screen name="ViewAddressScreen" component={ViewAddressScreen} />
       <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} />
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />

@@ -242,6 +242,9 @@ export type RootStackParamList = {
   RequestSuccessScreen: {
     address?: AddressInfo
   } | undefined
+  SaveAddressSheetScreen: {
+    address?: AddressInfo
+  } | undefined
 }
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
