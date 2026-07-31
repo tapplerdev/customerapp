@@ -173,17 +173,15 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false)
   // "More" sheet — single everything-about-this-conversation entry point
   // (replaces the old action bar + offer bar + decorative three-dot menu).
-  const [moreSheetVisible, setMoreSheetVisible] = useState(false)
   // Lazily mount the sheet's MapView on first open — sheet content is mounted
   // with the screen (RN-Modal pattern), and a map instance per chat open
   // would be wasted cost for sheets never opened.
-  const [moreSheetOpened, setMoreSheetOpened] = useState(false)
   // Stacked "full request" sheet — presents ON TOP of the More sheet
   // (Airbnb's Show-reservation pattern; the native controller presents from
   // the top-most VC, so stacking is supported by design).
   const [requestSheetVisible, setRequestSheetVisible] = useState(false)
   // Lazy-mount the request sheet's map hero on first open (same reasoning as
-  // moreSheetOpened — don't pay a map instance for sheets never opened).
+  // don't pay a map instance for a sheet that was never opened).
   const [requestSheetOpened, setRequestSheetOpened] = useState(false)
   const flatListRef = useRef<FlatList>(null)
   const [sendMessage] = useSendMessageMutation()
@@ -213,11 +211,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   // ── Attachment handlers ──
   const closeAttachmentSheet = () => setAttachmentSheetVisible(false)
 
-  const handleOpenMoreSheet = () => {
-    setMoreSheetOpened(true)
-    setMoreSheetVisible(true)
-  }
-  const closeMoreSheet = () => setMoreSheetVisible(false)
   // Full-request sheet stacks ON TOP — the More sheet stays open behind it.
   const openRequestSheet = () => {
     setRequestSheetOpened(true)
@@ -569,7 +562,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   // Near-full-screen detent like Airbnb's Details sheet: fixed ✕ header,
   // content scrolls beneath it.
-  const moreSheetHeight = windowHeight - insets.top + 6
+  const nearFullSheetHeight = windowHeight - insets.top + 6
 
   // At-a-glance facts (area + when). Same accessors as RequestDetailsScreen,
   // incl. the "asap" fallback for undated requests.
@@ -634,221 +627,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     })
     .filter(Boolean) as { key: number; label?: string; value?: string }[]
 
-  const moreSheetContent = (
-    <DmView className="flex-1 bg-white" style={styles.sheetContentRound}>
-      {/* Fixed close header — content scrolls under it */}
-      <DmView className="items-end px-[24] pt-[16] pb-[2]">
-        <DmView onPress={closeMoreSheet} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <CloseIcon width={13} height={13} />
-        </DmView>
-      </DmView>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        // No overscroll bounce: short sheet content shouldn't rubber-band (reads
-        // as "the content is draggable"). With bounce off, a drag at the top
-        // passes to the native sheet's pan → only the whole modal drags.
-        bounces={false}
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingBottom: insets.bottom + 32,
-        }}
-      >
-        {context.hasJob && (
-          <>
-            <DmText className="mt-[4] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
-              {t("request_details")}
-            </DmText>
-
-            {/* Trip-card fusion: static map hero (RequestSummary styling —
-                pointerEvents none + gestures disabled, lazy-mounted) with the
-                service/offer/where/when meta below. ONE card, ONE tap target
-                → same prefetch-then-navigate flow as the old action bar. */}
-            <DmView
-              onPress={openRequestSheet}
-              className="mt-[16]"
-              style={styles.sheetCard}
-            >
-              <DmView style={styles.sheetCardInner}>
-                {/* 1c hero: title + offer float ON the map over a soft dark
-                    gradient (Airbnb trip-card style). Map stays static +
-                    lazy-mounted; overlays are pointerEvents-none so the card
-                    press works everywhere. */}
-                {glanceHasCoords && (
-                  <DmView style={styles.glanceHero}>
-                    <DmView pointerEvents="none" style={styles.glanceHeroFill}>
-                      {moreSheetOpened && (
-                        <MapView
-                          style={styles.glanceMap}
-                          liteMode
-                          scrollEnabled={false}
-                          zoomEnabled={false}
-                          rotateEnabled={false}
-                          pitchEnabled={false}
-                          region={{
-                            latitude: glanceLat,
-                            longitude: glanceLng,
-                            latitudeDelta: 0.005,
-                            longitudeDelta: 0.002,
-                          }}
-                        >
-                          <Marker coordinate={{ latitude: glanceLat, longitude: glanceLng }}>
-                            <MapMarkerIcon width={32} height={40} />
-                          </Marker>
-                        </MapView>
-                      )}
-                    </DmView>
-                    <LinearGradient
-                      pointerEvents="none"
-                      colors={["transparent", "rgba(0,0,0,0.15)", "rgba(0,0,0,0.62)"]}
-                      locations={[0.32, 0.6, 1]}
-                      style={styles.glanceHeroFill}
-                    />
-                    <DmView
-                      pointerEvents="none"
-                      style={[styles.glanceHeroText, { alignItems: "flex-start" }]}
-                    >
-                      <DmText
-                        numberOfLines={1}
-                        className="font-custom600"
-                        style={[styles.glanceTitleOnMap, rtlText]}
-                      >
-                        {moreServiceName}
-                      </DmText>
-                      {context.offerAmount != null && (
-                        <DmText className="font-custom500" style={[styles.glanceOfferOnMap, rtlText]}>
-                          {`${t("offer")} · `}
-                          <DmText className="font-custom600" style={styles.glanceOfferAmtOnMap}>
-                            {`${context.offerAmount} ${t("EGP")}`}
-                          </DmText>
-                        </DmText>
-                      )}
-                    </DmView>
-                  </DmView>
-                )}
-                <DmView className="px-[14] pt-[12] pb-[10]">
-                  {!glanceHasCoords && (
-                    <>
-                      <DmText className="text-15 leading-[19px] font-custom600 text-black" numberOfLines={1} style={rtlText}>
-                        {moreServiceName}
-                      </DmText>
-                      {context.offerAmount != null && (
-                        <DmText className="mt-[3] text-13 leading-[17px] font-custom600 text-black" style={rtlText}>
-                          {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
-                        </DmText>
-                      )}
-                    </>
-                  )}
-                  {!!glanceArea && (
-                    <DmView className="flex-row items-center mt-[8]">
-                      <LocationIcon width={15} height={15} />
-                      <DmText className="mx-[8] text-13 leading-[17px] font-custom400 text-grey2" style={rtlText}>
-                        {glanceArea}
-                      </DmText>
-                    </DmView>
-                  )}
-                  {!!glanceWhen && (
-                    <DmView className="flex-row items-center mt-[6]">
-                      <ClockIcon width={15} height={15} />
-                      <DmText className="mx-[8] text-13 leading-[17px] font-custom400 text-grey2" style={rtlText}>
-                        {glanceWhen}
-                      </DmText>
-                    </DmView>
-                  )}
-                  <DmView className="flex-row items-center mt-[10]">
-                    <DmText className="text-13 leading-[17px] font-custom600 text-red">
-                      {t("view_full_request")}
-                    </DmText>
-                    <DmView className={I18nManager.isRTL ? "rotate-[180deg]" : ""}>
-                      <ChevronRightIcon width={12} height={12} color={colors.red} />
-                    </DmView>
-                  </DmView>
-                </DmView>
-              </DmView>
-            </DmView>
-
-          </>
-        )}
-
-        <DmText className="mt-[22] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
-          {t("in_this_conversation")}
-        </DmText>
-        <DmView className="flex-row items-center mt-[14]">
-          {context.pro?.profilePhoto150 || context.pro?.profilePhoto ? (
-            <DmView className="w-[44] h-[44] rounded-full overflow-hidden">
-              <FastImage
-                source={{ uri: context.pro.profilePhoto150 || context.pro.profilePhoto }}
-                style={styles.sheetAvatar}
-                resizeMode={FastImage.resizeMode.cover}
-              />
-            </DmView>
-          ) : (
-            <DmView className="w-[44] h-[44] rounded-full bg-red items-center justify-center">
-              <DmText className="text-white text-15 font-custom600">
-                {context.proName.charAt(0)}
-              </DmText>
-            </DmView>
-          )}
-          <DmView className="mx-[14]">
-            <DmText className="text-15 leading-[19px] font-custom600 text-black">
-              {context.proName}
-            </DmText>
-            <DmText className="mt-[1] text-12 leading-[15px] font-custom400 text-grey3">
-              {t("pro_role")}
-            </DmText>
-          </DmView>
-        </DmView>
-        <DmView className="flex-row items-center mt-[14]">
-          <DmView className="w-[44] h-[44] rounded-full bg-grey26 items-center justify-center">
-            <DmText className="text-grey2 text-15 font-custom600">
-              {(authUser?.firstName || "").charAt(0)}
-            </DmText>
-          </DmView>
-          <DmView className="mx-[14]">
-            <DmText className="text-15 leading-[19px] font-custom600 text-black">
-              {t("you")}
-            </DmText>
-            <DmText className="mt-[1] text-12 leading-[15px] font-custom400 text-grey3">
-              {t("customer")}
-            </DmText>
-          </DmView>
-        </DmView>
-
-        {context.hasJob && (
-          <>
-            <DmText className="mt-[26] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
-              {t("conversation_actions")}
-            </DmText>
-            {/* Call / My review — informational rows, same as the old bar */}
-            <DmView className="flex-row items-center py-[14] mt-[4]">
-              <DmView className="w-[32] items-center">
-                <CallIcon
-                  width={20}
-                  height={20}
-                  style={{ transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }] }}
-                />
-              </DmView>
-              <DmText className="text-14 leading-[18px] font-custom400 text-black" style={rtlRow}>
-                {t("call")}
-              </DmText>
-            </DmView>
-            <DmView className="flex-row items-center py-[14]">
-              <DmView className="w-[32] items-center">
-                <ReviewsIcon width={32} height={20} />
-              </DmView>
-              <DmText className="text-14 leading-[18px] font-custom400 text-black" style={rtlRow}>
-                {t("my_review")}
-              </DmText>
-            </DmView>
-          </>
-        )}
-      </ScrollView>
-    </DmView>
-  )
-
-  // ── Stacked "full request" sheet content ──
-  // Airbnb's Show-reservation pattern: presents ON TOP of the More sheet.
-  // Title → date card → address → the answered questions (their own request).
   const requestSheetContent = (
     <DmView className="flex-1 bg-white" style={styles.sheetContentRound}>
       <DmView className="items-end px-[24] pt-[16] pb-[2]">
@@ -1032,18 +810,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               </DmView>
             </DmView>
 
-            {/* Single "everything else" entry point — opens the More sheet.
-                self-start keeps it level with the NAME line rather than
-                centering against the whole name/lastseen/offer block. */}
-            <DmView
-              onPress={handleOpenMoreSheet}
-              className="self-start bg-grey26 rounded-full px-[13] h-[30] items-center justify-center"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <DmText className="text-12 leading-[15px] font-custom600 text-black">
-                {t("more")}
-              </DmText>
-            </DmView>
           </DmView>
 
           {/* Offer strip (Thumbtack-style): the CURRENT price lives in chrome,
@@ -1310,23 +1076,14 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </DmView>
       </NativeActionSheet>
 
-      {/* More sheet and the full-request sheet that stacks on top of it. Both
-          are NEAR-FULL (moreSheetHeight = windowHeight - insets.top), so they
-          pass NEAR_FULL_PUSH_BACK_SCALE — the native 0.92 that size was tuned
-          for — rather than the short-sheet default. */}
-      <NativeActionSheet
-        isVisible={moreSheetVisible}
-        onClose={closeMoreSheet}
-        height={moreSheetHeight}
-        pushBackScale={NEAR_FULL_PUSH_BACK_SCALE}
-      >
-        {moreSheetContent}
-      </NativeActionSheet>
-
+      {/* Full-request sheet. Near-full (windowHeight - insets.top), so it
+          passes NEAR_FULL_PUSH_BACK_SCALE — the native 0.92 that size was
+          tuned for — rather than the short-sheet default. It used to stack on
+          top of the More sheet; now My Request opens it directly. */}
       <NativeActionSheet
         isVisible={requestSheetVisible}
         onClose={closeRequestSheet}
-        height={moreSheetHeight}
+        height={nearFullSheetHeight}
         pushBackScale={NEAR_FULL_PUSH_BACK_SCALE}
       >
         {requestSheetContent}
