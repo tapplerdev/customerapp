@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react"
+import SystemEventBubble from "components/SystemEventBubble/SystemEventBubble"
 import clsx from "clsx"
 import {
   ActivityIndicator,
@@ -128,20 +129,32 @@ const MessageComponent: React.FC<Props> = React.memo(
     if (isSystem) {
       // Structured offer revision → a real red bubble, not a grey centred note.
       const offerUpdate = parseOfferUpdate(item.text)
+          // Expiry is an EVENT, not chrome — same red-bubble treatment as an
+          // offer revision, for the same reason: the quiet red line got skimmed.
+          const isExpiryEvent = item.text === "job_expired"
       return (
         <DmView style={{ paddingBottom: isLastInGroup ? 12 : 2 }}>
           {/* Sides are PINNED (iMessage-style): own/system on the physical right,
               others on the physical left, in both languages. Native forceRTL flips
               layout in Arabic, so the isAr branch pre-flips to cancel it out. */}
           {/* The card carries its own inline time — outer stamp would double it */}
-          {showTimestamp && !offerUpdate && (
+          {showTimestamp && !offerUpdate && !isExpiryEvent && (
             <DmView className={`pb-[4] pt-[4] ${isAr ? "items-start pl-[49]" : "items-end pr-[49]"}`}>
               <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
                 {time}
               </DmText>
             </DmView>
           )}
-          {offerUpdate ? (
+          {isExpiryEvent ? (
+            <DmView
+              className={clsx(
+                "flex",
+                isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
+              )}
+            >
+              <SystemEventBubble textKey="job_expired" time={time} />
+            </DmView>
+          ) : offerUpdate ? (
             // Laid out like an OUTGOING bubble: same 49pt near gutter, same
             // 80pt far gutter capping the width. Pinned, not mirrored — the
             // isAr classes are pre-flipped so it lands on the physical right
