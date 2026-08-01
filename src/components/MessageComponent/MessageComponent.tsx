@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react"
+import clsx from "clsx"
 import {
   ActivityIndicator,
   Animated,
@@ -125,7 +126,7 @@ const MessageComponent: React.FC<Props> = React.memo(
 
     // ── System messages ──
     if (isSystem) {
-      // Structured offer revision → event card (old → new), not red text.
+      // Structured offer revision → a real red bubble, not a grey centred note.
       const offerUpdate = parseOfferUpdate(item.text)
       return (
         <DmView style={{ paddingBottom: isLastInGroup ? 12 : 2 }}>
@@ -141,11 +142,22 @@ const MessageComponent: React.FC<Props> = React.memo(
             </DmView>
           )}
           {offerUpdate ? (
-            <OfferUpdateCard
-              previous={offerUpdate.previous}
-              next={offerUpdate.next}
-              time={time}
-            />
+            // Laid out like an OUTGOING bubble: same 49pt near gutter, same
+            // 80pt far gutter capping the width. Pinned, not mirrored — the
+            // isAr classes are pre-flipped so it lands on the physical right
+            // in both languages, cancelling force-RTL.
+            <DmView
+              className={clsx(
+                "flex",
+                isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
+              )}
+            >
+              <OfferUpdateCard
+                previous={offerUpdate.previous}
+                next={offerUpdate.next}
+                time={time}
+              />
+            </DmView>
           ) : (
             <DmView className={`flex ${isAr ? "pl-[49] items-start" : "pr-[49] items-end"}`}>
               <DmText className="text-11 leading-[14px] font-custom400 text-red">
