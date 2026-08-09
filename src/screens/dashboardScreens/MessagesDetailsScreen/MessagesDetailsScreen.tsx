@@ -54,7 +54,6 @@ import CameraIcon from "assets/icons/camera-icon.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
 import LocationIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
-import TagRedIcon from "assets/icons/tag-red.svg"
 import OfferHistorySheet from "components/OfferHistorySheet/OfferHistorySheet"
 import ChevronDownIcon from "assets/icons/chevron-down.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
@@ -119,6 +118,25 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       )
     }
   }, [context.jobId, chatPreview.chat.proId, context.offerAmount])
+
+  // Warm the pro's profile too. Tapping the header awaits this same query
+  // before it navigates — deliberately, so ProProfileScreen renders from cache
+  // instead of flashing a loader — but that put the whole round trip AFTER the
+  // tap and before anything moved, which is the pause. Fetching it while the
+  // customer reads the conversation means the await resolves from cache and the
+  // push is immediate.
+  //
+  // GET /pros/:id is the heaviest read on this screen, so ifOlderThan keeps a
+  // revisited chat from refetching it every time.
+  const prefetchProProfile = api.usePrefetch("getProProfile")
+  useEffect(() => {
+    const proId = context.pro?.id
+    if (!proId) return
+    prefetchProProfile(
+      { proId, serviceCategoryId: context.serviceCategoryId || 0 },
+      { ifOlderThan: 120 }
+    )
+  }, [context.pro?.id, context.serviceCategoryId])
   // Own display name for the More sheet's "You" participant row.
   const authUser = useTypedSelector((store) => store.auth.user)
   const pagination = useMessagePagination(context.chatId)
@@ -812,25 +830,40 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
           </DmView>
 
-          {/* Offer strip (Thumbtack-style): the CURRENT price lives in chrome,
-              permanently glanceable; tap → the full negotiation trail.
-              Replaces the old red pill under "last seen". */}
+          {/* Offer pill — the same one the pro app shows, so the two sides of a
+              negotiation render the price identically: indented 70%-width pill,
+              black hairline, red label cell, amount large enough to read at a
+              glance. Tap still opens the full negotiation trail.
+
+              The inline "History ›" is gone with the slim strip it belonged to;
+              the pro app dropped it in the same move. This is CHROME, not a
+              bubble, so it mirrors naturally under force-RTL and needs no isAr
+              pre-flipping (that rule is for message bubbles).
+
+              Label is "Offer", not the pro app's "Your offer" — over here it is
+              the PRO's offer, not the reader's. */}
           {context.offerAmount != null && (
             <DmView
-              className="flex-row items-center px-[14] py-[10] border-t-0.5 border-grey4"
+              className="mt-[4] mb-[4] ml-[55] border-0.3 border-black rounded-5 h-[38] flex-row items-center overflow-hidden"
+              style={{ width: "70%" }}
               onPress={() => setOfferHistoryVisible(true)}
             >
-              <TagRedIcon width={15} height={15} />
-              <DmText
-                className="ml-[7] text-13 leading-[16px] font-custom600 text-black"
-                style={{ textAlign: "left" }}
-              >
-                {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
-              </DmText>
-              <DmView className="flex-1" />
-              <DmText className="text-11 leading-[14px] font-custom400 text-grey3">
-                {`${t("history")} ›`}
-              </DmText>
+              <DmView className="w-2/5 h-full items-center justify-center bg-red5">
+                <DmText className="text-13 leading-[16px] font-custom600 text-white tracking-[0.3]">
+                  {t("offer")}
+                </DmText>
+              </DmView>
+              <DmView className="w-3/5 h-full flex-row items-center justify-center">
+                <DmText className="text-22 leading-[27px] font-custom500">
+                  {context.offerAmount}
+                </DmText>
+                <DmText
+                  className="ml-[4] text-11 leading-[14px] font-custom400"
+                  style={{ marginTop: 4 }}
+                >
+                  {t("EGP")}
+                </DmText>
+              </DmView>
             </DmView>
           )}
 
