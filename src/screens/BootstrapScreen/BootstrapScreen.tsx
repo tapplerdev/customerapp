@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 
 // Components
 import Navigator from "navigation/Navigator"
@@ -34,15 +34,28 @@ const BootstrapScreen = (): JSX.Element => {
   // query — by then the values agree, so it settles rather than looping.
   const { data: customer } = useGetCustomerMeQuery(undefined, { skip: !isAuth })
   const [updateCustomer] = useUpdateCustomerMutation()
+  // The language this session has already tried to report. A backend that
+  // rejects the field — one deployed without it answers 400, since the global
+  // pipe forbids non-whitelisted properties — must not be asked again and
+  // again: the query object identity changes on every refetch, so without this
+  // a permanent failure retries as fast as the round trip allows. Cleared when
+  // the language actually changes, so a real toggle is always sent.
+  const attemptedLanguage = useRef<string | null>(null)
+
+  useEffect(() => {
+    attemptedLanguage.current = null
+  }, [language])
 
   useEffect(() => {
     if (!isAuth || !customer) return
     if (customer.preferredLanguage === language) return
+    if (attemptedLanguage.current === language) return
+    attemptedLanguage.current = language
     updateCustomer({ preferredLanguage: language })
       .unwrap()
-      // A failure here costs the customer nothing today — notifications stay in
-      // whatever language the backend already had — and the next launch or
-      // language change retries. Not worth surfacing.
+      // Costs the customer nothing today — notifications stay in whatever
+      // language the backend already had — and the next launch or language
+      // change retries. Not worth surfacing.
       .catch(() => {})
   }, [isAuth, customer, language, updateCustomer])
 

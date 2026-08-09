@@ -182,7 +182,13 @@ export const api = createApi({
 
     updateCustomer: builder.mutation<CustomerMeResponse, UpdateCustomerRequest>({
       query: (body) => ({ url: "/customers", method: "PATCH", body }),
-      invalidatesTags: ["Auth"],
+      // Only on success. RTK Query invalidates on isRejectedWithValue too, so a
+      // FAILED update refetched Auth as well — harmless for a form the user
+      // resubmits by hand, but BootstrapScreen PATCHes automatically whenever
+      // the server's language differs from the app's, and the refetch handed it
+      // a new object that still differed. A 400 became an unbounded PATCH/GET
+      // loop for the rest of the session.
+      invalidatesTags: (_result, error) => (error ? [] : ["Auth"]),
     }),
 
     getProsForCategory: builder.query<
