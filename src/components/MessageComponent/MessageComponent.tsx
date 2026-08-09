@@ -137,9 +137,11 @@ const MessageComponent: React.FC<Props> = React.memo(
           {/* Sides are PINNED (iMessage-style): own/system on the physical right,
               others on the physical left, in both languages. Native forceRTL flips
               layout in Arabic, so the isAr branch pre-flips to cancel it out. */}
-          {/* The card carries its own inline time — outer stamp would double it */}
+          {/* The card carries its own inline time — outer stamp would double it.
+              This stamp is only ever for the plain lines below, which now sit on
+              the incoming side, so it follows them. */}
           {showTimestamp && !offerUpdate && !isExpiryEvent && (
-            <DmView className={`pb-[4] pt-[4] ${isAr ? "items-start pl-[49]" : "items-end pr-[49]"}`}>
+            <DmView className={`pb-[4] pt-[4] ${isAr ? "items-end pr-[49]" : "items-start pl-[49]"}`}>
               <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
                 {time}
               </DmText>
@@ -155,14 +157,17 @@ const MessageComponent: React.FC<Props> = React.memo(
               <SystemEventBubble textKey="job_expired" time={time} />
             </DmView>
           ) : offerUpdate ? (
-            // Laid out like an OUTGOING bubble: same 49pt near gutter, same
-            // 80pt far gutter capping the width. Pinned, not mirrored — the
-            // isAr classes are pre-flipped so it lands on the physical right
-            // in both languages, cancelling force-RTL.
+            // Laid out like an INCOMING bubble, unlike the pro app's copy: the
+            // PRO changed the price, so on this screen it belongs on the pro's
+            // side. Pinned to the right it sat with the customer's own messages
+            // and read as if the customer had revised their own offer.
+            // Same 49pt near gutter and 80pt far gutter as a message bubble,
+            // mirrored. Pinned, not mirrored by RTL — the isAr classes are
+            // pre-flipped so it lands on the physical left in both languages.
             <DmView
               className={clsx(
                 "flex",
-                isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
+                isAr ? "items-end pr-[49] ml-[80]" : "items-start pl-[49] mr-[80]"
               )}
             >
               <OfferUpdateCard
@@ -172,7 +177,13 @@ const MessageComponent: React.FC<Props> = React.memo(
               />
             </DmView>
           ) : (
-            <DmView className={`flex ${isAr ? "pl-[49] items-start" : "pr-[49] items-end"}`}>
+            // Incoming side, like the offer card above. Every plain system line
+            // the backend writes is something the PRO did — "Pro sent you an
+            // offer" and "opportunity accepted" are the only two — so none of
+            // them belong on the customer's own side. job_expired is the one
+            // system event neither party caused, and it takes the branch above
+            // rather than this one.
+            <DmView className={`flex ${isAr ? "pr-[49] items-end" : "pl-[49] items-start"}`}>
               <DmText className="text-11 leading-[14px] font-custom400 text-red">
                 {t(item.text || "")}
               </DmText>

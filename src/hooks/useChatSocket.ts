@@ -74,7 +74,10 @@ export const useChatSocket = () => {
           typeof wsMessage?.text === "string" &&
           wsMessage.text.startsWith("offer_updated:")
         ) {
-          dispatch(api.util.invalidateTags(["Chats"]))
+          // OfferHistory too: the revision the customer is being told about is
+          // a new row in that list, and this is the only signal on this side
+          // that it changed — the customer never revises anything themselves.
+          dispatch(api.util.invalidateTags(["Chats", "OfferHistory"]))
         }
 
         // In-app banner: only for a PRO's message (incoming), and only when

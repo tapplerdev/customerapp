@@ -47,10 +47,13 @@ const connector = { fontSize: 13, lineHeight: 17, color: "rgba(255,255,255,0.9)"
  * real chat bubble in Tappler red rather than the grey centred system note it
  * used to be (which read as noise and got skimmed past).
  *
- * Positioning is owned by MessageComponent, which pins it to the own/system
- * side exactly like an outgoing bubble. The tail corner is squared on the same
- * PHYSICAL corner in both languages, so the radii are pre-flipped for Arabic —
- * native force-RTL swaps borderBottomLeft/Right underneath us.
+ * Positioning is owned by MessageComponent, which pins it to the INCOMING side
+ * here — the pro is the one who changed the price, so on the customer's screen
+ * it belongs with the pro's messages. (The pro app pins its copy to the
+ * outgoing side for the same reason, from the other direction.) The tail is
+ * squared on the same PHYSICAL corner in both languages, so the radii are
+ * pre-flipped for Arabic — native force-RTL swaps borderBottomLeft/Right
+ * underneath us.
  *
  * Bidi: every segment is its OWN Text node with unambiguous content (a digit
  * run, a lone arrow, a single word) — mixed-script strings ("→ 60 جنية") get
@@ -61,7 +64,10 @@ const connector = { fontSize: 13, lineHeight: 17, color: "rgba(255,255,255,0.9)"
 const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const tailLeft = isAr
+  // Incoming, so the tail sits on the physical LEFT — the inverse of an
+  // outgoing bubble. Written against force-RTL, which swaps these two corners
+  // in Arabic: !isAr lands on the physical left in both languages.
+  const tailLeft = !isAr
 
   return (
     <DmView

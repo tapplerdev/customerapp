@@ -148,7 +148,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Auth", "Preset", "Jobs", "Chats", "Notifications"],
+  tagTypes: ["Auth", "Preset", "Jobs", "Chats", "Notifications", "OfferHistory"],
   endpoints: (builder) => ({
     getActivePreset: builder.query<PresetType, void>({
       query: () => "/cms/presets/active",
@@ -358,6 +358,11 @@ export const api = createApi({
     >({
       query: ({ jobId, proId }) =>
         `/jobs/${jobId}/pros/${proId}/offer-history`,
+      // The customer never revises an offer, so nothing on this side could
+      // invalidate it — the socket does, when the pro's revision lands (see
+      // useChatSocket). Without that the history sheet showed whatever was true
+      // the first time it was opened for the rest of the session.
+      providesTags: ["OfferHistory"],
     }),
 
     // Stored in-app notifications (same backend table + endpoints as proapp;
