@@ -118,17 +118,20 @@ export const useChatSocket = () => {
         dispatch(api.util.invalidateTags(["Jobs"]))
       }
 
-      // Slide-down banner for everything except chat messages, which already
-      // get one from the message handler above — routing them here too would
-      // stack a second banner on top of it. Title and body come resolved and
-      // localised from the backend, so nothing is translated client-side.
-      if (
-        !event.startsWith("system.messages:") &&
-        (payload?.title || payload?.body)
-      ) {
+      // Slide-down banner for everything except chat messages, which belong to
+      // the "message:new" banner above (it has the pro's avatar and opens the
+      // thread). Title and body come resolved and localised from the backend,
+      // so nothing is translated client-side.
+      //
+      // A body is required, not just one of the two. An unseeded config row is
+      // synthesised server-side as empty strings rather than skipped, so a
+      // half-configured event arrives as a notification with nothing to say —
+      // better to drop it than to render a bold title over a blank line.
+      if (!event.startsWith("system.messages:") && payload?.body) {
         messageBannerEventBus.emit("notification:new", {
+          event,
           title: payload.title ?? "",
-          body: payload.body ?? "",
+          body: payload.body,
           jobId: typeof payload?.jobId === "number" ? payload.jobId : undefined,
         })
       }

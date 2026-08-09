@@ -6,8 +6,9 @@ import { PanGestureHandler, State } from "react-native-gesture-handler"
 import FastImage from "react-native-fast-image"
 
 import { messageBannerEventBus } from "events/messageBannerEventBus"
-import { navigateFromRef } from "navigation/navigationRef"
+import { navigateFromRef, navigationRef } from "navigation/navigationRef"
 import { setActiveChat } from "services/chatCache"
+import { useTypedSelector } from "store"
 import { ChatPreviewType } from "types/chat"
 
 const DURATION = 5000
@@ -19,7 +20,28 @@ const DURATION = 5000
 // notification landing together replace each other instead of stacking.
 type Banner =
   | { kind: "message"; chatPreview: ChatPreviewType; title: string; body: string }
-  | { kind: "notification"; title: string; body: string; jobId?: number }
+  | {
+      kind: "notification"
+      event: string
+      title: string
+      body: string
+      jobId?: number
+    }
+
+// The review reminder carries a jobId like the job events do, but the job
+// screen is not where you leave a review — send it to the pro picker instead.
+const REVIEW_EVENT = "system.account:customer.jobs.review"
+
+/** Where a notification tap should land, or null to stay put. */
+const destinationFor = (
+  banner: Extract<Banner, { kind: "notification" }>
+): { screen: "JobDetailScreen" | "ReviewProSelectionScreen"; jobId: number } | null => {
+  if (!banner.jobId) return null
+  return {
+    screen: banner.event === REVIEW_EVENT ? "ReviewProSelectionScreen" : "JobDetailScreen",
+    jobId: banner.jobId,
+  }
+}
 
 /**
  * Global in-app message banner (customer app). Renders as a slide-down toast
@@ -36,6 +58,18 @@ const InAppMessageBanner: React.FC = () => {
   const translateY = useRef(new Animated.Value(-200)).current
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const [banner, setBanner] = useState<Banner | null>(null)
+  const { isAuth } = useTypedSelector((store) => store.auth)
+
+  // This overlay is mounted outside the auth gate, so a banner already on
+  // screen when the session ends would sit there for the rest of its 5s — the
+  // previous account's text, still tappable into their job. Nothing new can
+  // arrive (the socket handler is torn down), but what is already up has to go.
+  useEffect(() => {
+    if (!isAuth) {
+      if (timer.current) clearTimeout(timer.current)
+      setBanner(null)
+    }
+  }, [isAuth])
 
   useEffect(() => {
     const handler = ({ chatPreview, body }: { chatPreview: ChatPreviewType; body: string }) => {
@@ -44,18 +78,31 @@ const InAppMessageBanner: React.FC = () => {
       setBanner({ kind: "message", chatPreview, title, body })
     }
     const notificationHandler = ({
+      event,
       title,
       body,
       jobId,
     }: {
+      event: string
       title: string
       body: string
       jobId?: number
     }) => {
-      // A body-less notification would render as a bare title with an empty
-      // second line, so drop it rather than showing a half-empty card.
-      if (!body) return
-      setBanner({ kind: "notification", title, body, jobId })
+      const next: Banner = { kind: "notification", event, title, body, jobId }
+      // Don't announce what the customer is already watching. The same socket
+      // event invalidates the Jobs cache, so a job screen live-updates in front
+      // of them — a banner on top of that is noise reporting a change they just
+      // saw happen. The chat banner suppresses the same way for the open chat.
+      const current = navigationRef.isReady() ? navigationRef.getCurrentRoute() : null
+      const destination = destinationFor(next)
+      if (
+        destination &&
+        current?.name === destination.screen &&
+        (current.params as { jobId?: number } | undefined)?.jobId === destination.jobId
+      ) {
+        return
+      }
+      setBanner(next)
     }
     messageBannerEventBus.on("message:new", handler)
     messageBannerEventBus.on("notification:new", notificationHandler)
@@ -103,13 +150,16 @@ const InAppMessageBanner: React.FC = () => {
       return
     }
     dismiss(true)
-    // Straight to the job it is about when the event named one — that is where
-    // a new or revised offer is actually acted on. Without a jobId there is no
-    // single right destination, so the notifications list is the honest one.
-    if (banner.jobId) {
-      navigateFromRef("JobDetailScreen", { jobId: banner.jobId })
-    } else {
+    // Straight to what it is about when the event named a job — that is where a
+    // new or revised offer is actually acted on. Without one there is no single
+    // right destination, so the notifications list is the honest fallback.
+    const destination = destinationFor(banner)
+    if (!destination) {
       navigateFromRef("NotificationsScreen", undefined)
+    } else if (destination.screen === "ReviewProSelectionScreen") {
+      navigateFromRef("ReviewProSelectionScreen", { jobId: destination.jobId })
+    } else {
+      navigateFromRef("JobDetailScreen", { jobId: destination.jobId })
     }
   }
 
@@ -184,7 +234,7 @@ const InAppMessageBanner: React.FC = () => {
               ) : (
                 <DmView className="w-[40] h-[40] rounded-full bg-red items-center justify-center mr-[12]">
                   <DmText className="text-white text-16 font-custom600">
-                    {banner.title.charAt(0)}
+                    {(banner.title || "Tappler").charAt(0)}
                   </DmText>
                 </DmView>
               )}
@@ -194,7 +244,10 @@ const InAppMessageBanner: React.FC = () => {
                     className="text-15 font-custom600 text-black flex-1"
                     numberOfLines={1}
                   >
-                    {banner.title}
+                    {/* A config row seeded with a body but no title is a real
+                        state (see useChatSocket) — fall back rather than
+                        rendering a blank bold line above the message. */}
+                    {banner.title || "Tappler"}
                   </DmText>
                   <DmText className="text-11 font-custom400 text-grey3 ml-[8]">now</DmText>
                 </DmView>

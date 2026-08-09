@@ -14,13 +14,16 @@ export type MessageBannerEventMap = {
   // being revised, a food order changing status. Title and body are already
   // resolved and localised server-side, so the banner just displays them.
   //
-  // Chat messages are deliberately NOT routed here: they arrive as
-  // `system.messages:*` notifications as well, and would show a second banner
-  // on top of the "message:new" one above.
+  // `system.messages:*` is filtered out before this fires. Not because it would
+  // double up — the backend sends a chat notification over the socket ONLY when
+  // the customer is disconnected, so the two can never arrive together — but
+  // because a chat message belongs to the "message:new" banner above, which
+  // knows the pro's avatar and can open the thread.
   "notification:new": {
+    event: string // the system key, e.g. "system.job:customer.job.offer.selected"
     title: string
     body: string
-    jobId?: number // present on system.job:* events — lets a tap open the job
+    jobId?: number // carried by system.job:* AND the review reminder
   }
 }
 
