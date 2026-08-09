@@ -55,6 +55,7 @@ import DocumentIcon from "assets/icons/my-documents.svg"
 import LocationIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import OfferHistorySheet from "components/OfferHistorySheet/OfferHistorySheet"
+import JobMenuSheet from "screens/dashboardScreens/JobDetailScreen/components/JobMenuSheet"
 import ChevronDownIcon from "assets/icons/chevron-down.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import ClockIcon from "assets/icons/clock-red-big.svg"
@@ -106,6 +107,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const context = useChatContext(chatPreview)
   // Offer history sheet (opened from the header's offer strip)
   const [isOfferHistoryVisible, setOfferHistoryVisible] = useState(false)
+  // Header ••• menu
+  const [isMenuVisible, setMenuVisible] = useState(false)
   // Warm the history in the background so the sheet's first open renders
   // instantly from cache (its own open-refetch still revalidates silently).
   const prefetchOfferHistory = api.usePrefetch("getOfferHistory")
@@ -828,6 +831,23 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               </DmView>
             </DmView>
 
+            {/* Three dots — three 6pt circles, same as the pro app's, drawn
+                rather than an asset (there is no dots icon in this app and the
+                pro app's "dots-vertical" is a 2x5 grid, not this).
+                self-start keeps it level with the NAME line instead of centring
+                against the whole name/last-seen block. Only for jobs: a direct
+                message has no request to show or cancel. */}
+            {context.hasJob && (
+              <DmView
+                onPress={() => setMenuVisible(true)}
+                className="self-start h-[30] flex-row items-center justify-center px-[6]"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+              </DmView>
+            )}
           </DmView>
 
           {/* Offer pill — the same one the pro app shows, so the two sides of a
@@ -1134,6 +1154,42 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         onClose={() => setOfferHistoryVisible(false)}
         jobId={context.jobId ?? undefined}
         proId={chatPreview.chat.proId ?? undefined}
+      />
+
+      {/* The same ••• menu JobDetailScreen uses, not a lookalike — that screen's
+          own comment records what happens when this menu gets reimplemented
+          (the food branch grew a copy that drifted on icon and dot sizing).
+          Details opens the in-app request sheet, the same surface the My
+          Request action opens, rather than pushing RequestDetailsScreen — two
+          entry points to two different renderings of one thing is how they
+          drift apart.
+          Cancel goes to the job screen rather than running here: the flow is
+          three chained modals (confirm, then reasons, then the mutation) that
+          live there, and an irreversible action is worth showing in full
+          context. Omitted entirely once the job is no longer active, which is
+          the rule JobDetailScreen already applies. */}
+      <JobMenuSheet
+        isVisible={isMenuVisible}
+        onClose={() => setMenuVisible(false)}
+        onShowDetails={() => {
+          setMenuVisible(false)
+          setTimeout(() => openRequestSheet(), 400)
+        }}
+        cancelLabel={t("cancel_service_request")}
+        onCancel={
+          context.jobId && !context.isJobInactive
+            ? () => {
+                setMenuVisible(false)
+                setTimeout(
+                  () =>
+                    navigation.navigate("JobDetailScreen", {
+                      jobId: context.jobId as number,
+                    }),
+                  400
+                )
+              }
+            : undefined
+        }
       />
     </SafeAreaView>
   )
