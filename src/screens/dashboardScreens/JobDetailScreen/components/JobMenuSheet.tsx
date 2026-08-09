@@ -34,6 +34,10 @@ const JobMenuSheet: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
+  // Same row style the pro app's sheet uses. marginStart is logical, so the gap
+  // lands after the icon in both directions; textAlign "left" is swapped to the
+  // right by RN under force-RTL, matching DmText's base.
+  const rtlRow = { marginStart: 12, textAlign: "left" } as const
 
   return (
     // Native sheet on iOS (the screen behind recedes), react-native-modal on
@@ -46,38 +50,48 @@ const JobMenuSheet: React.FC<Props> = ({
     // the row handlers must close the sheet themselves — both callers already
     // do, then wait out the dismissal before presenting anything else.
     <NativeActionSheet isVisible={isVisible} onClose={onClose}>
+      {/* Styled to match the pro app's block/complaint sheet exactly, so the ***
+          menu reads the same in both: padding on the container rather than the
+          rows, no grabber (swipe-down still dismisses — the pan is on the whole
+          sheet), no divider between rows, and each icon in a fixed 24pt column
+          so the labels line up whatever the glyph's intrinsic width. */}
       <DmView
-        className="bg-white rounded-t-12"
-        style={{ paddingBottom: insets.bottom + 2 }}
+        className="bg-white rounded-t-12 px-[24] pt-[20]"
+        style={{ paddingBottom: insets.bottom + 12 }}
       >
-        <DmView className="self-center w-[40] h-[4] rounded-full bg-grey19 mt-[10] mb-[14]" />
-
         <DmView
-          className="flex-row items-center px-[18] py-[14]"
+          className="flex-row items-center py-[14]"
           onPress={onShowDetails}
         >
-          <DetailsIcon width={20} height={24} />
-          <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
+          <DmView className="w-[24] items-center">
+            <DetailsIcon width={20} height={24} />
+          </DmView>
+          {/* marginStart, not ml-: logical, so it becomes a right-hand gap
+              under force-RTL without pre-flipping. textAlign left for the same
+              reason — RN swaps it in Arabic. */}
+          <DmText
+            className="text-14 leading-[18px] font-custom400 text-black"
+            style={rtlRow}
+          >
             {t("my_request_details")}
           </DmText>
         </DmView>
 
         {!!onCancel && (
-          <>
-            <DmView
-              className="h-[0.7] bg-grey19"
-              style={{ marginStart: 18 }}
-            />
-            <DmView
-              className="flex-row items-center px-[18] py-[14]"
-              onPress={onCancel}
-            >
+          <DmView
+            className="flex-row items-center py-[14]"
+            onPress={onCancel}
+          >
+            <DmView className="w-[24] items-center">
               <TrashRedIcon width={20} height={24} />
-              <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
-                {cancelLabel}
-              </DmText>
             </DmView>
-          </>
+            <DmText
+              className="text-14 leading-[18px] font-custom400 text-black"
+              style={rtlRow}
+            >
+              {cancelLabel}
+            </DmText>
+          </DmView>
         )}
       </DmView>
     </NativeActionSheet>
