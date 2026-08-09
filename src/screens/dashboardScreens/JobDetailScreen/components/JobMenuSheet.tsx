@@ -1,9 +1,10 @@
 import React from "react"
-import Modal from "react-native-modal"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
+
+import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 
 import DetailsIcon from "assets/icons/details-icon.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
@@ -35,17 +36,16 @@ const JobMenuSheet: React.FC<Props> = ({
   const insets = useSafeAreaInsets()
 
   return (
-    <Modal
-      isVisible={isVisible}
-      onBackdropPress={onClose}
-      className="m-0 justify-end"
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      hardwareAccelerated
-      statusBarTranslucent
-      backdropTransitionOutTiming={0}
-      hideModalContentWhileAnimating
-    >
+    // Native sheet on iOS (the screen behind recedes), react-native-modal on
+    // Android — the house wrapper, and what the pro app's equivalent menu uses.
+    // No explicit height: the content is static, so the native self-measure is
+    // reliable here (the attachment sheet passes one only because its
+    // camera-roll strip settles after first layout).
+    //
+    // onClose fires on a native user-dismiss only, never on isVisible=false, so
+    // the row handlers must close the sheet themselves — both callers already
+    // do, then wait out the dismissal before presenting anything else.
+    <NativeActionSheet isVisible={isVisible} onClose={onClose}>
       <DmView
         className="bg-white rounded-t-12"
         style={{ paddingBottom: insets.bottom + 2 }}
@@ -80,7 +80,7 @@ const JobMenuSheet: React.FC<Props> = ({
           </>
         )}
       </DmView>
-    </Modal>
+    </NativeActionSheet>
   )
 }
 
