@@ -1,5 +1,4 @@
 import React from "react"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
@@ -25,7 +24,6 @@ type Props = RootStackScreenProps<"SaveAddressSheetScreen">
  */
 const SaveAddressSheetScreen: React.FC<Props> = ({ route, navigation }) => {
   const { t } = useTranslation()
-  const insets = useSafeAreaInsets()
   const address = route.params?.address
 
   const handleSave = () => {
@@ -43,10 +41,13 @@ const SaveAddressSheetScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <DmView
-      className="bg-white px-[24] pt-[24]"
-      style={{ paddingBottom: insets.bottom + 24 }}
-    >
+    // Plain bottom padding, NOT insets.bottom + 24. The panel this replaced was
+    // an absolutely-positioned overlay, so it had to clear the home indicator
+    // itself; a native formSheet does not — UIKit insets it already, and adding
+    // the inset again made the sheet 34pt taller than its content on a
+    // home-indicator device. AuthGateScreen, the other fitToContents sheet in
+    // this app, has always used a plain value for the same reason.
+    <DmView className="bg-white px-[24] pt-[24] pb-[24]">
       <DmView className="flex-row items-center">
         <LocationRedIcon width={20} height={20} />
         <DmText className="mx-[8] text-16 font-custom600 text-black">
