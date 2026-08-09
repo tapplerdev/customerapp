@@ -78,6 +78,9 @@ export interface CustomerMeResponse {
   status: string
   emailVerified: boolean
   addresses?: CustomerSavedAddress[]
+  // What the backend will write notifications in. Compared against the app's
+  // own language so BootstrapScreen only PATCHes on an actual mismatch.
+  preferredLanguage?: "ar" | "en"
 }
 
 // PATCH /customers — request
@@ -88,4 +91,8 @@ export interface UpdateCustomerRequest {
   mobileNumber?: string
   email?: string
   password?: { currentPassword: string; newPassword: string }
+  // Which language the backend should write this customer's notifications in.
+  // Push bodies are built server-side and cannot be translated on arrival, so
+  // the app has to tell it. Reported by BootstrapScreen.
+  preferredLanguage?: "ar" | "en"
 }
