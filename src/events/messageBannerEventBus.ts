@@ -10,6 +10,18 @@ export type MessageBannerEventMap = {
     chatPreview: ChatPreviewType // full preview, so a tap can open the chat directly
     body: string
   }
+  // Everything else the backend notifies about — an offer arriving, an offer
+  // being revised, a food order changing status. Title and body are already
+  // resolved and localised server-side, so the banner just displays them.
+  //
+  // Chat messages are deliberately NOT routed here: they arrive as
+  // `system.messages:*` notifications as well, and would show a second banner
+  // on top of the "message:new" one above.
+  "notification:new": {
+    title: string
+    body: string
+    jobId?: number // present on system.job:* events — lets a tap open the job
+  }
 }
 
 export const messageBannerEventBus = new TypedEventBus<MessageBannerEventMap>()

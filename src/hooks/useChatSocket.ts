@@ -113,11 +113,24 @@ export const useChatSocket = () => {
     if (!isAuth) return
     const handler = (payload: any) => {
       dispatch(api.util.invalidateTags(["Notifications"]))
-      if (
-        typeof payload?.event === "string" &&
-        payload.event.startsWith("system.job:")
-      ) {
+      const event = typeof payload?.event === "string" ? payload.event : ""
+      if (event.startsWith("system.job:")) {
         dispatch(api.util.invalidateTags(["Jobs"]))
+      }
+
+      // Slide-down banner for everything except chat messages, which already
+      // get one from the message handler above — routing them here too would
+      // stack a second banner on top of it. Title and body come resolved and
+      // localised from the backend, so nothing is translated client-side.
+      if (
+        !event.startsWith("system.messages:") &&
+        (payload?.title || payload?.body)
+      ) {
+        messageBannerEventBus.emit("notification:new", {
+          title: payload.title ?? "",
+          body: payload.body ?? "",
+          jobId: typeof payload?.jobId === "number" ? payload.jobId : undefined,
+        })
       }
     }
     WebSocketService.on("notification", handler)

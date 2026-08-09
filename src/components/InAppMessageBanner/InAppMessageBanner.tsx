@@ -12,7 +12,14 @@ import { ChatPreviewType } from "types/chat"
 
 const DURATION = 5000
 
-type Banner = { chatPreview: ChatPreviewType; title: string; body: string }
+// A chat message opens the thread and shows the pro's avatar; anything else
+// (an offer arriving or being revised, a food order moving) opens the job when
+// the event carries one and falls back to the notifications list when it does
+// not. Kept as one component rather than two overlays so a message and a
+// notification landing together replace each other instead of stacking.
+type Banner =
+  | { kind: "message"; chatPreview: ChatPreviewType; title: string; body: string }
+  | { kind: "notification"; title: string; body: string; jobId?: number }
 
 /**
  * Global in-app message banner (customer app). Renders as a slide-down toast
@@ -34,11 +41,27 @@ const InAppMessageBanner: React.FC = () => {
     const handler = ({ chatPreview, body }: { chatPreview: ChatPreviewType; body: string }) => {
       const title =
         chatPreview.chat.pro?.businessName || chatPreview.chat.pro?.registeredName || "New message"
-      setBanner({ chatPreview, title, body })
+      setBanner({ kind: "message", chatPreview, title, body })
+    }
+    const notificationHandler = ({
+      title,
+      body,
+      jobId,
+    }: {
+      title: string
+      body: string
+      jobId?: number
+    }) => {
+      // A body-less notification would render as a bare title with an empty
+      // second line, so drop it rather than showing a half-empty card.
+      if (!body) return
+      setBanner({ kind: "notification", title, body, jobId })
     }
     messageBannerEventBus.on("message:new", handler)
+    messageBannerEventBus.on("notification:new", notificationHandler)
     return () => {
       messageBannerEventBus.off("message:new", handler)
+      messageBannerEventBus.off("notification:new", notificationHandler)
     }
   }, [])
 
@@ -71,11 +94,23 @@ const InAppMessageBanner: React.FC = () => {
 
   const handlePress = () => {
     if (!banner) return
-    // Pre-mark the chat active so the message the banner announced doesn't also
-    // bump the badge once the chat mounts.
-    setActiveChat(banner.chatPreview.chat.id)
+    if (banner.kind === "message") {
+      // Pre-mark the chat active so the message the banner announced doesn't
+      // also bump the badge once the chat mounts.
+      setActiveChat(banner.chatPreview.chat.id)
+      dismiss(true)
+      navigateFromRef("MessagesDetailsScreen", { chatPreview: banner.chatPreview })
+      return
+    }
     dismiss(true)
-    navigateFromRef("MessagesDetailsScreen", { chatPreview: banner.chatPreview })
+    // Straight to the job it is about when the event named one — that is where
+    // a new or revised offer is actually acted on. Without a jobId there is no
+    // single right destination, so the notifications list is the honest one.
+    if (banner.jobId) {
+      navigateFromRef("JobDetailScreen", { jobId: banner.jobId })
+    } else {
+      navigateFromRef("NotificationsScreen", undefined)
+    }
   }
 
   const onGestureEvent = Animated.event(
@@ -101,7 +136,13 @@ const InAppMessageBanner: React.FC = () => {
 
   if (!banner) return null
 
-  const photo = banner.chatPreview.chat.pro?.profilePhoto150 || banner.chatPreview.chat.pro?.profilePhoto
+  // Only a chat message has a pro to show a face for; a system notification
+  // falls through to the initial circle, which reads as the app itself.
+  const photo =
+    banner.kind === "message"
+      ? banner.chatPreview.chat.pro?.profilePhoto150 ||
+        banner.chatPreview.chat.pro?.profilePhoto
+      : undefined
 
   return (
     <PanGestureHandler
