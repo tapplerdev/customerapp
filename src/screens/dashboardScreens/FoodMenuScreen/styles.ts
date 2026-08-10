@@ -3,7 +3,11 @@ import colors from "@tappler/shared/src/styles/colors"
 
 const styles = StyleSheet.create({
   tabsWrapper: {
-    paddingVertical: 9,
+    paddingTop: 9,
+    // No bottom padding: the active underline is the LAST thing in the strip,
+    // and it should land on the divider below rather than floating above it —
+    // the red bar reads as the live segment of that line, not a second line.
+    paddingBottom: 0,
     backgroundColor: colors.white,
     position: "relative",
     borderBottomWidth: 0.5,

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 // Components
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { FlatList, I18nManager } from "react-native"
+import { FlatList } from "react-native"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import AnimatedSelectCategory from "components/AnimatedSelectCategory"
 import FoodMenuItemRow from "components/FoodMenuItemRow"
@@ -30,9 +30,7 @@ import { FoodMenuItemType, FoodMenuSectionType } from "types/food"
 
 // Styles & Assets
 import Animated, {
-  useAnimatedStyle,
   useSharedValue,
-  withTiming,
 } from "react-native-reanimated"
 import { Dimensions } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
@@ -42,7 +40,6 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 
 type Props = RootStackScreenProps<"FoodMenuScreen">
 
-const SCREEN_WIDTH = Dimensions.get("window").width
 
 // The customer-side twin of proapp's FoodMenuStoreScreen preview: same
 // section tabs + item rows, but taps go to FoodItemScreen (real add-to-cart)
@@ -56,7 +53,6 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets()
   const flatListRef = useRef<FlatList>(null)
   const [, setSelectedSectionIndex] = useState(0)
-  const leftOffset = useSharedValue(0)
 
   const { data: menu, isLoading, isError } = useGetProMenuQuery({
     proId,
@@ -102,26 +98,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     [sections]
   )
 
-  const itemWidth = useMemo(() => {
-    return SCREEN_WIDTH / Math.max(sections.length, 3)
-  }, [sections])
-
-  const animatedLineStyle = useAnimatedStyle(() => {
-    return {
-      height: 2,
-      backgroundColor: colors.red,
-      width: itemWidth - 20,
-      marginLeft: 10,
-      transform: [
-        {
-          translateX: withTiming(leftOffset.value),
-        },
-      ],
-    }
-  }, [sections])
-
+  // The underline lives in AnimatedSelectCategory now. It used to be drawn
+  // here from SCREEN_WIDTH / sections.length, which only works while every tab
+  // is the same width — and tabs are sized to their labels now so they are not.
   const handlePressTab = (idx: number) => {
-    leftOffset.value = idx * itemWidth * (I18nManager.isRTL ? -1 : 1)
     setSelectedSectionIndex(idx)
     flatListRef.current?.scrollToIndex({ index: idx, animated: true })
   }
@@ -260,11 +240,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
               categories={sectionTitles}
               setSelectedCategory={handlePressTab}
               textClassName="text-13 leading-[16px] font-custom500 text-center"
-              showLines={false}
             />
-            <DmView style={styles.tabsLine}>
-              <Animated.View style={animatedLineStyle} />
-            </DmView>
           </DmView>
           <FlatList
             ref={flatListRef}
