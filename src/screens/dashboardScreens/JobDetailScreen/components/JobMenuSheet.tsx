@@ -8,17 +8,25 @@ import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 
 import DetailsIcon from "assets/icons/details-icon.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
+import BlockIcon from "assets/icons/block.svg"
+import ComplaintIcon from "assets/icons/complaint.svg"
 
 interface Props {
   isVisible: boolean
   onClose: () => void
-  onShowDetails: () => void
+  // Optional since the chat opens this menu too, and a direct message with no
+  // job behind it has no request to show.
+  onShowDetails?: () => void
   // Omitted when cancelling is no longer self-serve. The two flows disagree on
   // both the wording and the rule — a service request is cancellable while the
   // job is active, a food order only until the kitchen starts preparing — so
   // the caller supplies both rather than this guessing.
   cancelLabel?: string
   onCancel?: () => void
+  // Chat only — the job screen is about a request, not about the person on the
+  // other end of a conversation, so it passes neither.
+  onBlock?: () => void
+  onReport?: () => void
 }
 
 // The header ••• menu, shared by the regular-service and food-order bodies of
@@ -31,6 +39,8 @@ const JobMenuSheet: React.FC<Props> = ({
   onShowDetails,
   cancelLabel,
   onCancel,
+  onBlock,
+  onReport,
 }) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
@@ -59,23 +69,25 @@ const JobMenuSheet: React.FC<Props> = ({
         className="bg-white rounded-t-12 px-[24] pt-[20]"
         style={{ paddingBottom: insets.bottom + 12 }}
       >
-        <DmView
-          className="flex-row items-center py-[14]"
-          onPress={onShowDetails}
-        >
-          <DmView className="w-[24] items-center">
-            <DetailsIcon width={20} height={24} />
-          </DmView>
-          {/* marginStart, not ml-: logical, so it becomes a right-hand gap
-              under force-RTL without pre-flipping. textAlign left for the same
-              reason — RN swaps it in Arabic. */}
-          <DmText
-            className="text-14 leading-[18px] font-custom400 text-black"
-            style={rtlRow}
+        {!!onShowDetails && (
+          <DmView
+            className="flex-row items-center py-[14]"
+            onPress={onShowDetails}
           >
-            {t("my_request_details")}
-          </DmText>
-        </DmView>
+            <DmView className="w-[24] items-center">
+              <DetailsIcon width={20} height={24} />
+            </DmView>
+            {/* marginStart, not ml-: logical, so it becomes a right-hand gap
+                under force-RTL without pre-flipping. textAlign left for the
+                same reason — RN swaps it in Arabic. */}
+            <DmText
+              className="text-14 leading-[18px] font-custom400 text-black"
+              style={rtlRow}
+            >
+              {t("my_request_details")}
+            </DmText>
+          </DmView>
+        )}
 
         {!!onCancel && (
           <DmView
@@ -90,6 +102,34 @@ const JobMenuSheet: React.FC<Props> = ({
               style={rtlRow}
             >
               {cancelLabel}
+            </DmText>
+          </DmView>
+        )}
+
+        {!!onBlock && (
+          <DmView className="flex-row items-center py-[14]" onPress={onBlock}>
+            <DmView className="w-[24] items-center">
+              <BlockIcon width={20} height={20} />
+            </DmView>
+            <DmText
+              className="text-14 leading-[18px] font-custom400 text-black"
+              style={rtlRow}
+            >
+              {t("block_pro")}
+            </DmText>
+          </DmView>
+        )}
+
+        {!!onReport && (
+          <DmView className="flex-row items-center py-[14]" onPress={onReport}>
+            <DmView className="w-[24] items-center">
+              <ComplaintIcon width={18} height={20} />
+            </DmView>
+            <DmText
+              className="text-14 leading-[18px] font-custom400 text-black"
+              style={rtlRow}
+            >
+              {t("file_a_complain_against_pro")}
             </DmText>
           </DmView>
         )}

@@ -56,6 +56,10 @@ import LocationIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import OfferHistorySheet from "components/OfferHistorySheet/OfferHistorySheet"
 import JobMenuSheet from "screens/dashboardScreens/JobDetailScreen/components/JobMenuSheet"
+import CancelJobFeedbackModal from "components/CancelJobFeedbackModal/CancelJobFeedbackModal"
+import { MainModal } from "@tappler/shared/src/components"
+import ErrorModal from "components/ErrorModal"
+import useCancelJob from "hooks/useCancelJob"
 import ChevronDownIcon from "assets/icons/chevron-down.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import ClockIcon from "assets/icons/clock-red-big.svg"
@@ -109,6 +113,29 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [isOfferHistoryVisible, setOfferHistoryVisible] = useState(false)
   // Header ••• menu
   const [isMenuVisible, setMenuVisible] = useState(false)
+  // Cancelling runs HERE rather than sending the customer to the job screen to
+  // do it — they opened this menu from the conversation, and bouncing them to
+  // another screen to finish an action they already started reads as a dead
+  // end. Same two steps the job screen uses (confirm, then reasons), on the
+  // same shared components, so the flows cannot drift.
+  const [isCancelConfirmVisible, setCancelConfirmVisible] = useState(false)
+  const [isCancelFeedbackVisible, setCancelFeedbackVisible] = useState(false)
+  const [isCancelErrorVisible, setCancelErrorVisible] = useState(false)
+  const cancel = useCancelJob({
+    jobId: context.jobId ?? 0,
+    onSuccess: () => {
+      setCancelFeedbackVisible(false)
+      // Stay in the chat. The request is cancelled and the Jobs cache is
+      // invalidated by the mutation, so the header's offer pill and the action
+      // row settle into their ended state in place — and the pro's own
+      // "cancelled by customer" system message lands in this same thread.
+      // Popping would hide exactly the screen that shows the outcome.
+    },
+    onError: () => {
+      setCancelFeedbackVisible(false)
+      setCancelErrorVisible(true)
+    },
+  })
   // Warm the history in the background so the sheet's first open renders
   // instantly from cache (its own open-refetch still revalidates silently).
   const prefetchOfferHistory = api.usePrefetch("getOfferHistory")
@@ -835,19 +862,18 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 rather than an asset (there is no dots icon in this app and the
                 pro app's "dots-vertical" is a 2x5 grid, not this).
                 self-start keeps it level with the NAME line instead of centring
-                against the whole name/last-seen block. Only for jobs: a direct
-                message has no request to show or cancel. */}
-            {context.hasJob && (
-              <DmView
-                onPress={() => setMenuVisible(true)}
-                className="self-start h-[30] flex-row items-center justify-center px-[6]"
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              >
-                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-                <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-              </DmView>
-            )}
+                against the whole name/last-seen block. Always shown: block and
+                report are about the person, not the request, so a direct
+                message with no job still has a menu worth opening. */}
+            <DmView
+              onPress={() => setMenuVisible(true)}
+              className="self-start h-[30] flex-row items-center justify-center px-[6]"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+              <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+              <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+            </DmView>
           </DmView>
 
           {/* Offer pill — the same one the pro app shows, so the two sides of a
@@ -1163,33 +1189,73 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           Request action opens, rather than pushing RequestDetailsScreen — two
           entry points to two different renderings of one thing is how they
           drift apart.
-          Cancel goes to the job screen rather than running here: the flow is
-          three chained modals (confirm, then reasons, then the mutation) that
-          live there, and an irreversible action is worth showing in full
-          context. Omitted entirely once the job is no longer active, which is
-          the rule JobDetailScreen already applies. */}
+          Cancel runs here now, on the shared confirm + reasons modals, so the
+          customer finishes in the conversation they started from. Both job
+          rows drop out once there is no active job; block and report stay, so
+          a direct message still opens a useful menu.
+
+          Every row waits out the sheet's dismissal before presenting its own
+          modal — back-to-back native presentations collide otherwise. */}
       <JobMenuSheet
         isVisible={isMenuVisible}
         onClose={() => setMenuVisible(false)}
-        onShowDetails={() => {
-          setMenuVisible(false)
-          setTimeout(() => openRequestSheet(), 400)
-        }}
+        onShowDetails={
+          context.hasJob
+            ? () => {
+                setMenuVisible(false)
+                setTimeout(() => openRequestSheet(), 400)
+              }
+            : undefined
+        }
         cancelLabel={t("cancel_service_request")}
         onCancel={
           context.jobId && !context.isJobInactive
             ? () => {
                 setMenuVisible(false)
-                setTimeout(
-                  () =>
-                    navigation.navigate("JobDetailScreen", {
-                      jobId: context.jobId as number,
-                    }),
-                  400
-                )
+                setTimeout(() => setCancelConfirmVisible(true), 400)
               }
             : undefined
         }
+        // UI only for now — the pro app's equivalents are stubs too, because
+        // there is no block endpoint and job-reports has no POST (its rows are
+        // created by a listener, not by a user). Wired as no-ops rather than
+        // omitted so the menu matches across both apps once the endpoints land.
+        onBlock={() => setMenuVisible(false)}
+        onReport={() => setMenuVisible(false)}
+      />
+
+      {/* Are you sure? — then the reasons. Same two steps, same components as
+          the job screen. */}
+      <MainModal
+        isVisible={isCancelConfirmVisible}
+        onClose={() => setCancelConfirmVisible(false)}
+        title={t("are_you_sure_cancel")}
+        isBtnsTwo
+        titleBtn={t("yes")}
+        titleBtnSecond={t("no")}
+        onPress={() => {
+          setCancelConfirmVisible(false)
+          setTimeout(() => setCancelFeedbackVisible(true), 400)
+        }}
+        onPressSecond={() => setCancelConfirmVisible(false)}
+        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+        classNameBtns="h-[40]"
+        classNameBtnsWrapper="mt-[20] mx-[15]"
+        classNameModal="px-[17]"
+      />
+
+      <CancelJobFeedbackModal
+        isVisible={isCancelFeedbackVisible}
+        onClose={() => setCancelFeedbackVisible(false)}
+        cancel={cancel}
+      />
+
+      {/* Same ErrorModal and same copy the job screen shows when a cancel
+          fails — no point inventing a second wording for one outcome. */}
+      <ErrorModal
+        isVisible={isCancelErrorVisible}
+        onClose={() => setCancelErrorVisible(false)}
+        descr={t("an_error_occurred")}
       />
     </SafeAreaView>
   )

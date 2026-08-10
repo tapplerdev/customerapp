@@ -29,7 +29,7 @@ import Modal from "react-native-modal"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import DetailsIcon from "assets/icons/details-icon.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
-import CancelFeedbackIcon from "assets/icons/cancel-feedback.svg"
+import CancelJobFeedbackModal from "components/CancelJobFeedbackModal/CancelJobFeedbackModal"
 import ClockRedIcon from "assets/icons/clock-red-big.svg"
 import UsersRedIcon from "assets/icons/users-red.svg"
 import styles from "./styles"
@@ -822,87 +822,12 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         classNameModal="px-[17]"
       />
 
-      {/* Cancel feedback modal */}
-      <Modal
+      {/* Cancel feedback modal — shared with the chat's ••• menu */}
+      <CancelJobFeedbackModal
         isVisible={isCancelFeedbackVisible}
-        onBackdropPress={() => setCancelFeedbackVisible(false)}
-        className="m-0 items-center justify-center"
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        backdropTransitionOutTiming={0}
-      >
-        <DmView className="mx-[24] self-stretch">
-          {/* Close X — outside modal card */}
-          <DmView
-            className="self-end mb-[10]"
-            onPress={() => setCancelFeedbackVisible(false)}
-          >
-            <DmText className="text-22 text-white">✕</DmText>
-          </DmView>
-
-          <DmView className="bg-white rounded-12 px-[20] pt-[24] pb-[20]">
-          {/* Icon */}
-          <DmView className="items-center">
-            <CancelFeedbackIcon width={60} height={60} />
-          </DmView>
-
-          <DmText className="mt-[12] text-16 font-custom700 text-black text-center">
-            {t("your_opinion_matters")}
-          </DmText>
-
-          <DmText className="mt-[12] text-13 font-custom600 text-black">
-            {t("what_is_reason_cancellation")}
-          </DmText>
-
-          {/* Reason options */}
-          {cancel.cancelReasons.map((reason) => (
-            <DmView
-              key={reason}
-              className="flex-row items-center mt-[12]"
-              onPress={() => cancel.toggleReason(reason)}
-            >
-              <DmView
-                className={`w-[22] h-[22] rounded-full border-1 items-center justify-center ${
-                  cancel.selectedReasons.includes(reason) ? "border-red" : "border-grey1"
-                }`}
-              >
-                {cancel.selectedReasons.includes(reason) && (
-                  <DmView className="w-[12] h-[12] rounded-full bg-red" />
-                )}
-              </DmView>
-              <DmText className="ml-[10] text-13 font-custom400 text-black flex-1">
-                {t(reason)}
-              </DmText>
-            </DmView>
-          ))}
-
-          {/* Other reason text input */}
-          {cancel.hasOtherSelected && (
-            <TextInput
-              value={cancel.otherReasonText}
-              onChangeText={cancel.setOtherReasonText}
-              placeholder={t("write_other_reason")}
-              placeholderTextColor="#999"
-              multiline
-              className="mt-[12] border-1 border-grey5 rounded-4 px-[12] py-[10] text-13 min-h-[70]"
-              style={{ textAlignVertical: "top" }}
-            />
-          )}
-
-          {/* Submit */}
-          <DmView className="mt-[16]">
-            <ActionBtn
-              title={t("submit")}
-              onPress={cancel.handleSubmitCancel}
-              disable={!cancel.canSubmit}
-              isLoading={cancel.isSubmitting}
-              className="h-[42]"
-              textClassName="text-13 font-custom600"
-            />
-          </DmView>
-          </DmView>
-        </DmView>
-      </Modal>
+        onClose={() => setCancelFeedbackVisible(false)}
+        cancel={cancel}
+      />
 
       {/* Three dots bottom sheet menu — same component the food body uses */}
       <JobMenuSheet
