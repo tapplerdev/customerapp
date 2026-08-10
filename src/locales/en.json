@@ -547,5 +547,6 @@
   "cancelling": "Cancelling...",
   "view": "View",
   "basket_at_pro": "You have a basket at {{pro}}",
-  "baskets_count": "You have {{count}} other baskets"
+  "baskets_count": "You have {{count}} other baskets",
+  "job_cancelled_descr": "Your request has been cancelled. The pros you were talking to have been told."
 }

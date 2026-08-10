@@ -72,6 +72,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isMenuVisible, setMenuVisible] = useState(false)
   const [isCancelModalVisible, setCancelModalVisible] = useState(false)
   const [isCancelFeedbackVisible, setCancelFeedbackVisible] = useState(false)
+  const [isCancelledModalVisible, setCancelledModalVisible] = useState(false)
   const [isFindProsModalVisible, setFindProsModalVisible] = useState(false)
   const [isRescueBusy, setRescueBusy] = useState(false)
   const prefetchJobDetails = api.usePrefetch("getCustomerJobDetails")
@@ -171,14 +172,23 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const cancel = useCancelJob({
     jobId,
     onSuccess: () => {
+      // Say it worked before leaving. It used to pop straight back to whatever
+      // pushed this screen, so the request just quietly changed state behind
+      // the customer with nothing to confirm an irreversible action had landed
+      // — and where they ended up depended on how they got here.
       setCancelFeedbackVisible(false)
-      navigation.goBack()
+      setTimeout(() => setCancelledModalVisible(true), 400)
     },
     onError: () => {
       setCancelFeedbackVisible(false)
       setErrorModalVisible(true)
     },
   })
+
+  const handleCancelledAcknowledged = useCallback(() => {
+    setCancelledModalVisible(false)
+    navigation.goBack()
+  }, [navigation])
 
   const activePros = activeTab === "selected" ? selectedPros : otherPros
 
@@ -755,6 +765,23 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         isVisible={isErrorModalVisible}
         onClose={() => setErrorModalVisible(false)}
         descr={t("an_error_occurred")}
+      />
+
+      {/* Cancelled confirmation. Leaving is deliberately tied to acknowledging
+          it, so the screen cannot pop out from under the message. goBack rather
+          than a reset: the Jobs cache is already invalidated, so wherever they
+          came from is showing the cancelled state by the time they land. */}
+      <MainModal
+        isVisible={isCancelledModalVisible}
+        onClose={handleCancelledAcknowledged}
+        onPress={handleCancelledAcknowledged}
+        Icon={<TrashRedIcon width={40} height={40} />}
+        title={t("job_cancelled")}
+        descr={t("job_cancelled_descr")}
+        titleBtn={t("done")}
+        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+        classNameBtn="h-[40]"
+        classNameModal="px-[17]"
       />
 
       {/* Cancel confirmation modal */}

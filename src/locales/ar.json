@@ -546,5 +546,6 @@
   "cancelling": "جاري الإلغاء...",
   "view": "عرض",
   "basket_at_pro": "لديك سلة عند {{pro}}",
-  "baskets_count": "لديك {{count}} سلات أخرى"
+  "baskets_count": "لديك {{count}} سلات أخرى",
+  "job_cancelled_descr": "تم إلغاء طلبك. المحترفين اللي كنت بتكلمهم اتبلغوا."
 }
