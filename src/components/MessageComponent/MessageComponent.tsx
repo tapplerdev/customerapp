@@ -129,32 +129,57 @@ const MessageComponent: React.FC<Props> = React.memo(
     if (isSystem) {
       // Structured offer revision → a real red bubble, not a grey centred note.
       const offerUpdate = parseOfferUpdate(item.text)
-          // Expiry is an EVENT, not chrome — same red-bubble treatment as an
-          // offer revision, for the same reason: the quiet red line got skimmed.
-          const isExpiryEvent = item.text === "job_expired"
+      // Events, not chrome — the same red-bubble treatment as an offer
+      // revision, for the same reason: the quiet red line got skimmed. The
+      // cancellation earns it most, since it ends the request outright.
+      const eventTextKey =
+        item.text === "job_expired" ||
+        item.text === "job_cancelled_by_customer"
+          ? item.text
+          : null
+      const isExpiryEvent = !!eventTextKey
+      // Which side a system row sits on is decided by WHO DID IT, not by the
+      // fact that it is a system row. The customer's own actions belong with
+      // the customer's messages; the pro's belong with the pro's. Getting this
+      // wrong reads as the other party having done something they did not.
+      const isOwnAction =
+        item.text === "job_cancelled_by_customer" ||
+        item.text === "opportunity_accepted"
       return (
         <DmView style={{ paddingBottom: isLastInGroup ? 12 : 2 }}>
           {/* Sides are PINNED (iMessage-style): own/system on the physical right,
               others on the physical left, in both languages. Native forceRTL flips
               layout in Arabic, so the isAr branch pre-flips to cancel it out. */}
-          {/* The card carries its own inline time — outer stamp would double it.
-              This stamp is only ever for the plain lines below, which now sit on
-              the incoming side, so it follows them. */}
+          {/* The card carries its own inline time — outer stamp would double
+              it. Follows whichever side its line lands on. */}
           {showTimestamp && !offerUpdate && !isExpiryEvent && (
-            <DmView className={`pb-[4] pt-[4] ${isAr ? "items-end pr-[49]" : "items-start pl-[49]"}`}>
+            <DmView
+              className={`pb-[4] pt-[4] ${
+                isOwnAction
+                  ? isAr
+                    ? "items-start pl-[49]"
+                    : "items-end pr-[49]"
+                  : isAr
+                    ? "items-end pr-[49]"
+                    : "items-start pl-[49]"
+              }`}
+            >
               <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
                 {time}
               </DmText>
             </DmView>
           )}
-          {isExpiryEvent ? (
+          {eventTextKey ? (
+            // job_expired is nobody's doing, so it stays on the own/system
+            // side where it has always been. A cancellation IS the customer's
+            // doing, so it sits with their messages — same rule as below.
             <DmView
               className={clsx(
                 "flex",
                 isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
               )}
             >
-              <SystemEventBubble textKey="job_expired" time={time} />
+              <SystemEventBubble textKey={eventTextKey} time={time} />
             </DmView>
           ) : offerUpdate ? (
             // Laid out like an INCOMING bubble, unlike the pro app's copy: the
@@ -177,13 +202,22 @@ const MessageComponent: React.FC<Props> = React.memo(
               />
             </DmView>
           ) : (
-            // Incoming side, like the offer card above. Every plain system line
-            // the backend writes is something the PRO did — "Pro sent you an
-            // offer" and "opportunity accepted" are the only two — so none of
-            // them belong on the customer's own side. job_expired is the one
-            // system event neither party caused, and it takes the branch above
-            // rather than this one.
-            <DmView className={`flex ${isAr ? "pr-[49] items-end" : "pl-[49] items-start"}`}>
+            // Side by author. "You accepted this pro's offer" is the customer
+            // speaking about themselves, so it belongs on their side — it was
+            // previously lumped in with the pro's lines and read as if the pro
+            // had accepted something. Anything else here is the pro's doing and
+            // stays on the incoming side.
+            <DmView
+              className={`flex ${
+                isOwnAction
+                  ? isAr
+                    ? "pl-[49] items-start"
+                    : "pr-[49] items-end"
+                  : isAr
+                    ? "pr-[49] items-end"
+                    : "pl-[49] items-start"
+              }`}
+            >
               <DmText className="text-11 leading-[14px] font-custom400 text-red">
                 {t(item.text || "")}
               </DmText>
