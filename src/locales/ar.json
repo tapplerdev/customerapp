@@ -518,6 +518,8 @@
   "order_out_for_delivery": "في الطريق إليك",
   "order_delivered": "تم التوصيل",
   "order_cancelled": "تم إلغاء الطلب",
+  "order_cancelled_descr": "تم إلغاء طلبك وتم إخطار المطعم.",
+  "food_order_already_preparing": "بدأ المطعم بالفعل في تحضير طلبك، لذلك لم يعد من الممكن إلغاؤه. من فضلك تواصل معهم مباشرة.",
   "food_cancel_customerNotAnswering": "لم نتمكن من الوصول إليك لتأكيد الطلب.",
   "food_cancel_missingIngredients": "بعض الأصناف غير متوفرة.",
   "food_cancel_deliveryNotPossible": "التوصيل إلى عنوانك غير ممكن.",

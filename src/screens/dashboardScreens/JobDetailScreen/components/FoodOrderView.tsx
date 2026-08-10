@@ -61,11 +61,24 @@ const detailsTransition = {
 
 // Exported so the header's ••• menu can gate its Cancel row on the same rule
 // the body used to, rather than re-deriving it and drifting.
+//
+// This is a HINT, not the decision. It runs against a cached status, so the
+// kitchen can start cooking between the cache landing and the customer tapping
+// Yes. The server enforces the same cutoff (UNCANCELLABLE_FOOD_ORDER_STATUSES)
+// and answers 409; this only decides whether to offer the button.
 export const canCancelFoodOrder = (job: JobType): boolean => {
   const status = job.pros?.[0]?.status
   const isCancelled = status === "cancelled" || job.status === "cancelled"
   return !isCancelled && STEPS.indexOf(status as (typeof STEPS)[number]) < 1
 }
+
+/**
+ * Written into the job's cancelReasons. A stable marker rather than a
+ * sentence: the previous value was English prose sent regardless of the
+ * customer's language, which left the admin dashboard with a reason it could
+ * neither translate nor tell apart from free text somebody typed.
+ */
+export const CUSTOMER_CANCELLED_FOOD_ORDER = "customer_cancelled_food_order"
 
 const STEPS = ["accepted", "preparing", "withDeliveryCourier", "delivered"] as const
 

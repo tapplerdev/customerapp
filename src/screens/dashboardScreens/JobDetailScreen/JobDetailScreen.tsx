@@ -35,6 +35,7 @@ import UsersRedIcon from "assets/icons/users-red.svg"
 import styles from "./styles"
 import FoodOrderView, {
   canCancelFoodOrder,
+  CUSTOMER_CANCELLED_FOOD_ORDER,
 } from "./components/FoodOrderView"
 import JobMenuSheet from "./components/JobMenuSheet"
 
@@ -90,6 +91,14 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState<"selected" | "other">("selected")
   const [localJob, setLocalJob] = useState(job)
   const [isErrorModalVisible, setErrorModalVisible] = useState(false)
+  // Guards a double-tap on Yes while the request is in flight, which would
+  // otherwise send a second cancel and — now that the server returns 409 for an
+  // order already being prepared — could show a "too late" error for a cancel
+  // that had in fact just succeeded.
+  const [isCancellingFood, setCancellingFood] = useState(false)
+  // Null means "use the generic copy". Only the food path sets it, so the other
+  // five callers of setErrorModalVisible keep the message they always had.
+  const [foodCancelError, setFoodCancelError] = useState<string | null>(null)
 
   // Sync local state when RTK cache updates (e.g. after mutation invalidation)
   useEffect(() => {
@@ -141,13 +150,39 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     setTimeout(() => setCancelModalVisible(true), 400)
   }
 
-  const confirmCancelFoodOrder = () => {
+  // Was fire-and-forget: the mutation was triggered, the modal closed, and
+  // nothing looked at the result. On a failure — flaky signal, 5xx, or the
+  // kitchen having started cooking in the meantime — the order stayed live
+  // while the customer walked away believing it was cancelled, and on
+  // pay-on-delivery that means food arriving to be paid for. So: await it, and
+  // say which of the three things happened.
+  const confirmCancelFoodOrder = useCallback(async () => {
+    if (isCancellingFood) return
+    setCancellingFood(true)
     setCancelModalVisible(false)
-    cancelJobForRescue({
-      jobId,
-      reasons: ["Customer cancelled the order"],
-    })
-  }
+    try {
+      await cancelJobForRescue({
+        jobId,
+        // A machine-readable marker rather than a sentence. The old string was
+        // English prose written into cancelReasons regardless of the
+        // customer's language, and the dashboard had no way to tell a customer
+        // cancellation apart from any other free-text reason.
+        reasons: [CUSTOMER_CANCELLED_FOOD_ORDER],
+      }).unwrap()
+      setTimeout(() => setCancelledModalVisible(true), 400)
+    } catch (e) {
+      // 409 is the server saying the kitchen already started — the one failure
+      // the customer can actually understand and act on, so it gets its own
+      // message instead of the generic "an error occurred".
+      const status = (e as { status?: number })?.status
+      setFoodCancelError(
+        status === 409 ? t("food_order_already_preparing") : t("an_error_occurred")
+      )
+      setErrorModalVisible(true)
+    } finally {
+      setCancellingFood(false)
+    }
+  }, [isCancellingFood, cancelJobForRescue, jobId, t])
 
   const handleConfirmFindOtherPros = useCallback(async () => {
     if (isRescueBusy) return
@@ -531,6 +566,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             titleBtnSecond={t("no")}
             onPress={confirmCancelFoodOrder}
             onPressSecond={() => setCancelModalVisible(false)}
+            isLoading={isCancellingFood}
             classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
             classNameBtns="h-[40]"
             classNameBtnsWrapper="mt-[20] mx-[15]"
@@ -560,6 +596,35 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 ? () => handleOpenChat(localJob.pros![0])
                 : undefined
             }
+          />
+
+          {/* Both of these existed only in the service branch below, so the
+              food path could set their state and have nothing render — which
+              is how a failed cancel became invisible. They live here too now.
+
+              Unlike the service confirmation, this one does NOT pop the screen:
+              the order is still worth looking at once cancelled (what was in
+              it, what the restaurant was) and FoodOrderView renders its own
+              cancelled state in place. */}
+          <MainModal
+            isVisible={isCancelledModalVisible}
+            onClose={() => setCancelledModalVisible(false)}
+            onPress={() => setCancelledModalVisible(false)}
+            Icon={<TrashRedIcon width={40} height={40} />}
+            title={t("order_cancelled")}
+            descr={t("order_cancelled_descr")}
+            titleBtn={t("done")}
+            classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+            classNameBtn="h-[40]"
+            classNameModal="px-[17]"
+          />
+          <ErrorModal
+            isVisible={isErrorModalVisible}
+            onClose={() => {
+              setErrorModalVisible(false)
+              setFoodCancelError(null)
+            }}
+            descr={foodCancelError ?? t("an_error_occurred")}
           />
         </Animated.View>
       </SafeAreaView>
@@ -763,8 +828,11 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       />
       <ErrorModal
         isVisible={isErrorModalVisible}
-        onClose={() => setErrorModalVisible(false)}
-        descr={t("an_error_occurred")}
+        onClose={() => {
+          setErrorModalVisible(false)
+          setFoodCancelError(null)
+        }}
+        descr={foodCancelError ?? t("an_error_occurred")}
       />
 
       {/* Cancelled confirmation. Leaving is deliberately tied to acknowledging
