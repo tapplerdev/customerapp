@@ -47,7 +47,18 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
   // isAlreadySaved false — and the prompt would fire for an address the
   // customer already has, which is the exact bug this was meant to kill.
   // Failing closed here loses a save offer; failing open re-creates the bug.
-  const shouldPromptSave = isAuth && !!address && !!customerData && !isAlreadySaved
+  // savedAddressId is the exact answer and is checked first: the address came
+  // off the account, so there is nothing to offer. The coordinate comparison
+  // stays as a backstop for addresses that reached here by other routes, but it
+  // is an approximation — a saved address re-geocoded, or stored at different
+  // precision, lands outside the 0.0001 window and the prompt fires for
+  // something the customer already has. Which is what it was doing.
+  const shouldPromptSave =
+    isAuth &&
+    !!address &&
+    !address.savedAddressId &&
+    !!customerData &&
+    !isAlreadySaved
 
   // Let the success animation land before the sheet slides up. clearTimeout
   // covers the case where Done is tapped first — that resets the stack, which

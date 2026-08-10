@@ -90,6 +90,12 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
                   city: item.address.city || "",
                   governorate: item.address.governorate || "",
                   coords: { lat: item.address.location.lat, lon: item.address.location.lng },
+                  // Carries the origin forward so nothing downstream has to
+                  // guess it. RequestSuccessScreen used to decide whether to
+                  // offer "save this address" by comparing coordinates, which
+                  // is only ever an approximation of the question it is really
+                  // asking: did this come from the account already.
+                  savedAddressId: item.id,
                 })
                 navigation.goBack()
               } else {
