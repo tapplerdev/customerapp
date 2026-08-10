@@ -8,10 +8,13 @@ interface Props {
   uri: string
   width?: number
   height?: number
-  /** Left-align the artwork instead of letting it sit centred in its box.
-   *  See @tappler/shared svgTrim — CMS stickers carry their own padding and
-   *  aspect ratios, so without this they indent by different amounts. */
+  /** Normalise the per-sticker offset the CMS export bakes in, so a row of
+   *  them stops looking ragged. See @tappler/shared svgTrim. */
   autoTrimLeftPadding?: boolean
+  /** Also left-ALIGN the artwork in its box, rather than leaving it centred.
+   *  Only for stickers that line up against a column of text. In a centred or
+   *  justify-around row this pushes everything off to one side. */
+  pinLeft?: boolean
 }
 
 /**
@@ -25,6 +28,7 @@ const SvgUriContainer: React.FC<Props> = ({
   width,
   height,
   autoTrimLeftPadding = false,
+  pinLeft = false,
 }) => {
   const [loaded, setLoaded] = useState<{ uri: string; xml: string } | null>(
     () => {
@@ -49,7 +53,9 @@ const SvgUriContainer: React.FC<Props> = ({
 
   if (!xml) return null
 
-  const processedXml = autoTrimLeftPadding ? autoTrimSvgLeftPadding(xml) : xml
+  const processedXml = autoTrimLeftPadding
+    ? autoTrimSvgLeftPadding(xml, { pinLeft })
+    : xml
 
   return (
     <SvgXml xml={processedXml} width={width || 100} {...(height && { height })} />

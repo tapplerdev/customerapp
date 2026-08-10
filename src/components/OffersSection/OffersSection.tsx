@@ -62,6 +62,11 @@ const OffersSection: React.FC<OffersSectionProps> = ({
               // Same fixed box for every sticker, but each SVG brings its own
               // padding and aspect ratio, so they rendered indented by
               // different amounts and the row looked ragged.
+              //
+              // Normalise only — NOT pinLeft. This row is justify-around, so
+              // each sticker owns a slot it should sit in the middle of;
+              // left-pinning put all the slack on one side of every slot and
+              // dragged the whole row off-centre inside the card.
               autoTrimLeftPadding
               uri={uri}
             />
