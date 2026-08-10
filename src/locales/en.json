@@ -505,6 +505,8 @@
   "card_on_delivery": "Card on delivery",
   "order_summary": "Order summary",
   "order_sent_to_pro": "Sent to Pro",
+  "order_declined_by_restaurant": "Declined",
+  "order_declined_descr": "Sorry, this place could not take your order. You have not been charged — try ordering from somewhere else nearby.",
   "hide_order_details": "Hide my order details",
   "show_order_details": "Show my order details",
   "order_details": "Order Details",

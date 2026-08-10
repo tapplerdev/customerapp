@@ -85,6 +85,22 @@ Each job card in the FlatList:
 ### 1. Status line
 Always the **real backend status** — never overridden with client-side labels.
 
+**One exception: a declined food order.** `isDeclinedFoodOrder(job)` shows
+"Declined" in red when `serviceCategory.hasMenu` and every pro is
+`proRejected`, while `job.status` is still `active`.
+
+This exists because the "All Pros Decline" rule below is a *service* rule. A
+service request survives a decline — other invited pros and opportunity pros
+can still take it, so `active` is honest. A food order has exactly one
+restaurant and no opportunity pros: once they decline, nothing further can
+happen, and the job sits at `active` in green until the expiry cron picks it
+up hours later.
+
+This is a stopgap. The real fix is a terminal job state when the sole
+restaurant on a food order declines — then this override, and the matching
+ones in proapp's `LeadItem` and customerapp's `FoodOrderView`, all go away.
+Until that lands, do **not** add further client-side status overrides here.
+
 ### 2. Offers badge
 Shows when `getOffersCount(job) > 0`. Counts:
 ```

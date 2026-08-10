@@ -64,7 +64,26 @@ const TalabatiScreen: React.FC = () => {
     })
   }, [prefetchJobById])
 
+  // A food order the restaurant turned down. This is the ONE case where the
+  // job's own status is not the whole truth for this list.
+  //
+  // Declining writes jobPro.selectionStatus = proRejected and leaves
+  // job.status = "active", which is right for a SERVICE request — the other
+  // invited pros, and any opportunity pro, can still take it (see this
+  // folder's CLAUDE.md). A food order has exactly one restaurant and no
+  // opportunity pros, so once they decline nothing further can happen to it,
+  // and it sat here saying "Active" in green until the expiry cron came round.
+  //
+  // Narrow on purpose: hasMenu only, and only while the job is still active,
+  // so a genuinely cancelled or expired job keeps its real status.
+  const isDeclinedFoodOrder = (job: JobType) =>
+    job.status === "active" &&
+    !!job.serviceCategory?.hasMenu &&
+    !!job.pros?.length &&
+    job.pros.every((p) => p.selectionStatus === "proRejected")
+
   const getStatusColor = (job: JobType) => {
+    if (isDeclinedFoodOrder(job)) return colors.red
     switch (job.status) {
       case "active":
         return "#00BC3A"
@@ -81,6 +100,7 @@ const TalabatiScreen: React.FC = () => {
   }
 
   const getStatusLabel = (job: JobType) => {
+    if (isDeclinedFoodOrder(job)) return t("order_declined_by_restaurant")
     switch (job.status) {
       case "active":
         return t("active")

@@ -67,9 +67,18 @@ const detailsTransition = {
 // Yes. The server enforces the same cutoff (UNCANCELLABLE_FOOD_ORDER_STATUSES)
 // and answers 409; this only decides whether to offer the button.
 export const canCancelFoodOrder = (job: JobType): boolean => {
-  const status = job.pros?.[0]?.status
+  const jobPro = job.pros?.[0]
+  const status = jobPro?.status
   const isCancelled = status === "cancelled" || job.status === "cancelled"
-  return !isCancelled && STEPS.indexOf(status as (typeof STEPS)[number]) < 1
+  // A declined order has nothing left to cancel. It used to pass this check —
+  // a decline leaves `status` unset, so indexOf returned -1 — and the ••• menu
+  // went on offering Cancel for an order the restaurant had already refused.
+  const isDeclined = jobPro?.selectionStatus === "proRejected"
+  return (
+    !isCancelled &&
+    !isDeclined &&
+    STEPS.indexOf(status as (typeof STEPS)[number]) < 1
+  )
 }
 
 /**
@@ -89,6 +98,17 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   const jobPro = job.pros?.[0]
   const status = jobPro?.status
   const isCancelled = status === "cancelled" || job.status === "cancelled"
+  // The restaurant turned the order down. This lives on selectionStatus, a
+  // different axis from `status` — `status` is the kitchen workflow
+  // (accepted → preparing → …) and is never set at all on a decline, while
+  // job.status stays `active` because the customer's request is still live as
+  // far as the job is concerned.
+  //
+  // So a declined order fell through every branch below: not cancelled, no
+  // step, and the headline read "Order sent to Pro" indefinitely. The customer
+  // got the push saying the restaurant declined, opened the order, and the
+  // screen told them it was still sitting with the restaurant.
+  const isDeclined = jobPro?.selectionStatus === "proRejected"
   const currentStep = STEPS.indexOf(status as (typeof STEPS)[number])
 
   const stepLabels: Record<(typeof STEPS)[number], string> = {
@@ -112,11 +132,15 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
 
   // The design's static "Status: Accepted by Pro" line — the timeline below
   // carries the detail, this is the one-glance answer.
+  // Declined is checked BEFORE the step lookup but after cancelled: if the
+  // order was somehow both, cancelled is the later and more final fact.
   const headlineStatus = isCancelled
     ? t("cancelled")
-    : currentStep >= 0
-      ? stepLabels[STEPS[currentStep]]
-      : t("order_sent_to_pro")
+    : isDeclined
+      ? t("order_declined_by_restaurant")
+      : currentStep >= 0
+        ? stepLabels[STEPS[currentStep]]
+        : t("order_sent_to_pro")
 
   const [isDetailsOpen, setDetailsOpen] = useState(true)
 
@@ -308,7 +332,12 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             </DmText>
             <DmText
               className="flex-1 text-14 leading-[18px] font-custom400"
-              style={{ color: isCancelled ? colors.red : colors.green }}
+              // Green is for an order that is alive and moving. Declined is
+              // neither, so it reads red like cancelled — the two are the same
+              // news to the customer: this order is not happening.
+              style={{
+                color: isCancelled || isDeclined ? colors.red : colors.green,
+              }}
               numberOfLines={1}
             >
               {headlineStatus}
@@ -378,13 +407,28 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       {/* Status */}
       <DmView className="mt-[16]" />
       {isCancelled ? (
-        !!jobPro?.foodOrderCancelReason && (
-          <DmView className="p-[14] rounded-12 bg-pink1">
-            <DmText className="text-12 leading-[16px] font-custom400 text-red">
-              {t(`food_cancel_${jobPro.foodOrderCancelReason}`)}
-            </DmText>
-          </DmView>
-        )
+        // foodOrderCancelReason is only ever written by the RESTAURANT's
+        // cancel. When the CUSTOMER cancels there is no reason, and this
+        // rendered `false` — so the whole status block collapsed and the
+        // screen went blank below the header. Say who cancelled instead.
+        <DmView className="p-[14] rounded-12 bg-pink1">
+          <DmText className="text-12 leading-[16px] font-custom400 text-red">
+            {jobPro?.foodOrderCancelReason
+              ? t(`food_cancel_${jobPro.foodOrderCancelReason}`)
+              : t("order_cancelled_descr")}
+          </DmText>
+        </DmView>
+      ) : isDeclined ? (
+        // Deliberately NOT jobPro.rejectReason. Those options are written for
+        // the restaurant to pick from and one of them is
+        // "customer has history of non-payment or abuse" — not something to
+        // show the customer about themselves. They get the fact and a way
+        // forward; the reason stays between the restaurant and the dashboard.
+        <DmView className="p-[14] rounded-12 bg-pink1">
+          <DmText className="text-12 leading-[16px] font-custom400 text-red">
+            {t("order_declined_descr")}
+          </DmText>
+        </DmView>
       ) : (
         <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
           {/* No headline here — the pro card above already states the status,

@@ -88,6 +88,10 @@ export type JobServiceCategoryType = {
   // Parent service — always on the wire (ServiceCategoryDto); needed to
   // re-enter the request flow from an existing job (repost).
   serviceId?: number
+  // Food category. On the wire from ServiceCategoryDto, and loaded by
+  // CustomerJobListRelations, so the Talabati list can tell a food ORDER from
+  // a service request without a second call.
+  hasMenu?: boolean
 }
 
 export type JobProOfferType = {

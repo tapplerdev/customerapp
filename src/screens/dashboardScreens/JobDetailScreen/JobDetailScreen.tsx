@@ -225,6 +225,14 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     navigation.goBack()
   }, [navigation])
 
+  // Fires from the food confirmation's onModalHide, so it runs only once the
+  // modal has finished tearing itself down. Guarded on the modal actually
+  // being closed: onModalHide also fires on unmount, and popping the stack
+  // from an unmounting screen throws.
+  const handleFoodCancelledAcknowledged = useCallback(() => {
+    if (navigation.isFocused()) navigation.goBack()
+  }, [navigation])
+
   const activePros = activeTab === "selected" ? selectedPros : otherPros
 
   const showBanner = useCallback((type: "new_offers" | "pro_moved") => {
@@ -606,10 +614,21 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               the order is still worth looking at once cancelled (what was in
               it, what the restaurant was) and FoodOrderView renders its own
               cancelled state in place. */}
+          {/* Leaving is tied to acknowledging, and the navigation happens in
+              onModalHide rather than in the button handler. react-native-modal
+              tears its backdrop down on its own timeline; navigating from the
+              press handler unmounted this screen mid-animation and left the
+              backdrop behind — a screen showing the right data with nothing on
+              it clickable. Waiting for the modal to actually be gone is what
+              makes the transition safe.
+
+              goBack, not a reset: the mutation already invalidated Jobs, so
+              Talabati is showing the cancelled state by the time we land. */}
           <MainModal
             isVisible={isCancelledModalVisible}
             onClose={() => setCancelledModalVisible(false)}
             onPress={() => setCancelledModalVisible(false)}
+            onModalHide={handleFoodCancelledAcknowledged}
             Icon={<TrashRedIcon width={40} height={40} />}
             title={t("order_cancelled")}
             descr={t("order_cancelled_descr")}

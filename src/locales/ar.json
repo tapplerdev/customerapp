@@ -504,6 +504,8 @@
   "card_on_delivery": "الدفع بالبطاقة عند الاستلام",
   "order_summary": "ملخص الطلب",
   "order_sent_to_pro": "اتبعت للمحترف",
+  "order_declined_by_restaurant": "مرفوض",
+  "order_declined_descr": "للأسف المكان ده مش قادر ياخد طلبك. مادفعتش حاجة — جرب تطلب من مكان تاني قريب.",
   "hide_order_details": "إخفاء تفاصيل طلبي",
   "show_order_details": "عرض تفاصيل طلبي",
   "order_details": "تفاصيل الطلب",
