@@ -2,11 +2,16 @@ import React, { useState, useEffect } from "react"
 import { SvgXml } from "react-native-svg"
 
 import { loadSvg, peekSvg } from "services/svgCache"
+import { autoTrimSvgLeftPadding } from "@tappler/shared/src/helpers/svgTrim"
 
 interface Props {
   uri: string
   width?: number
   height?: number
+  /** Left-align the artwork instead of letting it sit centred in its box.
+   *  See @tappler/shared svgTrim — CMS stickers carry their own padding and
+   *  aspect ratios, so without this they indent by different amounts. */
+  autoTrimLeftPadding?: boolean
 }
 
 /**
@@ -15,7 +20,12 @@ interface Props {
  * uri prop changes on scroll — reading peekSvg at render time means a warmed
  * sticker never flashes blank). Uncached uris fetch once, deduped globally.
  */
-const SvgUriContainer: React.FC<Props> = ({ uri, width, height }) => {
+const SvgUriContainer: React.FC<Props> = ({
+  uri,
+  width,
+  height,
+  autoTrimLeftPadding = false,
+}) => {
   const [loaded, setLoaded] = useState<{ uri: string; xml: string } | null>(
     () => {
       const hit = peekSvg(uri)
@@ -39,7 +49,11 @@ const SvgUriContainer: React.FC<Props> = ({ uri, width, height }) => {
 
   if (!xml) return null
 
-  return <SvgXml xml={xml} width={width || 100} {...(height && { height })} />
+  const processedXml = autoTrimLeftPadding ? autoTrimSvgLeftPadding(xml) : xml
+
+  return (
+    <SvgXml xml={processedXml} width={width || 100} {...(height && { height })} />
+  )
 }
 
 export default SvgUriContainer

@@ -655,12 +655,21 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [handleSelectNewAddress])
 
+  // Never for food. The tip says to select several pros and compare quotes,
+  // and a food category has no such flow — you order from one kitchen. Telling
+  // a customer to do something the screen will not let them do is worse than
+  // saying nothing, and it costs them a tap to dismiss.
   useEffect(() => {
-    if (canStart && !dontShowBestDealTooltip && data?.data?.length) {
+    if (
+      canStart &&
+      !isFoodCategory &&
+      !dontShowBestDealTooltip &&
+      data?.data?.length
+    ) {
       const timer = setTimeout(() => start(), 500)
       return () => clearTimeout(timer)
     }
-  }, [canStart, dontShowBestDealTooltip, data?.data?.length])
+  }, [canStart, isFoodCategory, dontShowBestDealTooltip, data?.data?.length])
 
   const handleGoBack = () => {
     navigation.goBack()

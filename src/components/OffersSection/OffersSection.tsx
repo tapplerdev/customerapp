@@ -59,6 +59,10 @@ const OffersSection: React.FC<OffersSectionProps> = ({
               key={sub.id || idx}
               width={STRIP_STICKER_WIDTH}
               height={STRIP_STICKER_HEIGHT}
+              // Same fixed box for every sticker, but each SVG brings its own
+              // padding and aspect ratio, so they rendered indented by
+              // different amounts and the row looked ragged.
+              autoTrimLeftPadding
               uri={uri}
             />
           ) : null
