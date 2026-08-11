@@ -132,9 +132,16 @@ const MessageComponent: React.FC<Props> = React.memo(
       // Events, not chrome — the same red-bubble treatment as an offer
       // revision, for the same reason: the quiet red line got skimmed. The
       // cancellation earns it most, since it ends the request outright.
+      // Red is for things that END a request, not for every system row. The
+      // food lifecycle writes five messages and only the last two are bad
+      // news; giving "Enjoy your meal" the same alarm treatment as a
+      // cancellation spends the colour on good news and devalues it where it
+      // matters. Accepted/preparing/on-the-way stay as quiet system notes.
       const eventTextKey =
         item.text === "job_expired" ||
-        item.text === "job_cancelled_by_customer"
+        item.text === "job_cancelled_by_customer" ||
+        item.text === "food_order_cancelled_by_pro" ||
+        item.text === "food_order_declined_by_pro"
           ? item.text
           : null
       const isExpiryEvent = !!eventTextKey
