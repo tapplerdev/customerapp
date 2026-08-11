@@ -29,16 +29,23 @@ const SystemEventBubble: React.FC<{
    *  cancelling ended up rendering on the CUSTOMER's own side — reading as
    *  though they had cancelled it themselves. */
   incoming?: boolean
-}> = ({ textKey, time, incoming = false }) => {
+  /** "alert" — solid red, for an event that ENDS the request. "progress" — a
+   *  tinted surface for a lifecycle step. Both are bubbles: the line-vs-bubble
+   *  axis is what says "you must not miss this", and every system row in this
+   *  app is already red, so colour alone carries no signal. Five stacked solid
+   *  reds for one food order would devalue the two that matter. */
+  tone?: "alert" | "progress"
+}> = ({ textKey, time, incoming = false, tone = "alert" }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const tailLeft = incoming ? !isAr : isAr
+  const isAlert = tone === "alert"
 
   return (
     <DmView
       className="overflow-hidden py-[8] px-[14]"
       style={{
-        backgroundColor: colors.red,
+        backgroundColor: isAlert ? colors.red : colors.pink5,
         borderTopLeftRadius: RADIUS,
         borderTopRightRadius: RADIUS,
         borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
@@ -46,15 +53,18 @@ const SystemEventBubble: React.FC<{
       }}
     >
       <DmText
-        className="text-13 leading-[17px] font-custom600 text-white"
-        style={{ textAlign: "left" }}
+        className="text-13 leading-[17px] font-custom600"
+        style={{ textAlign: "left", color: isAlert ? "#FFFFFF" : colors.red }}
       >
         {t(textKey)}
       </DmText>
       {time ? (
         <DmText
           className="mt-[3] text-10 leading-[13px] font-custom400"
-          style={{ color: "rgba(255,255,255,0.75)", textAlign: "left" }}
+          style={{
+            color: isAlert ? "rgba(255,255,255,0.75)" : colors.grey3,
+            textAlign: "left",
+          }}
         >
           {time}
         </DmText>

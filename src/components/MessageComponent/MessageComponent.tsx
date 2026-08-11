@@ -68,6 +68,15 @@ const FadeInImageTile: React.FC<{
   )
 }
 
+// The four lifecycle steps. They get bubble WEIGHT (see SystemEventBubble's
+// tone) but not the alarm red, which stays for the two that end the order.
+const FOOD_PROGRESS_KEYS = [
+  "food_order_accepted",
+  "food_order_preparing",
+  "food_order_with_courier",
+  "food_order_delivered",
+]
+
 const MessageComponent: React.FC<Props> = React.memo(
   ({
     item,
@@ -129,19 +138,21 @@ const MessageComponent: React.FC<Props> = React.memo(
     if (isSystem) {
       // Structured offer revision → a real red bubble, not a grey centred note.
       const offerUpdate = parseOfferUpdate(item.text)
-      // Events, not chrome — the same red-bubble treatment as an offer
-      // revision, for the same reason: the quiet red line got skimmed. The
-      // cancellation earns it most, since it ends the request outright.
-      // Red is for things that END a request, not for every system row. The
-      // food lifecycle writes five messages and only the last two are bad
-      // news; giving "Enjoy your meal" the same alarm treatment as a
-      // cancellation spends the colour on good news and devalues it where it
-      // matters. Accepted/preparing/on-the-way stay as quiet system notes.
+      // Events, not chrome — the quiet red line got skimmed.
+      //
+      // All six food keys get bubble WEIGHT, but only the two that END the
+      // order get the alarm red; the four lifecycle steps use the tinted
+      // tone. Red carries no signal by itself here — every system row in this
+      // app is already red, including good news like an offer arriving — so
+      // the axis that means anything is line-vs-bubble. Five stacked solid
+      // reds for one food order would devalue the two that matter.
+      const isFoodProgress = FOOD_PROGRESS_KEYS.includes(item.text || "")
       const eventTextKey =
         item.text === "job_expired" ||
         item.text === "job_cancelled_by_customer" ||
         item.text === "food_order_cancelled_by_pro" ||
-        item.text === "food_order_declined_by_pro"
+        item.text === "food_order_declined_by_pro" ||
+        isFoodProgress
           ? item.text
           : null
       const isExpiryEvent = !!eventTextKey
@@ -206,6 +217,7 @@ const MessageComponent: React.FC<Props> = React.memo(
                 textKey={eventTextKey}
                 time={time}
                 incoming={isProAction}
+                tone={isFoodProgress ? "progress" : "alert"}
               />
             </DmView>
           ) : offerUpdate ? (
