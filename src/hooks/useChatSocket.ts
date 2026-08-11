@@ -136,6 +136,8 @@ export const useChatSocket = () => {
           title: payload.title ?? "",
           body: payload.body,
           jobId: typeof payload?.jobId === "number" ? payload.jobId : undefined,
+          jobStatus:
+            typeof payload?.job?.status === "string" ? payload.job.status : undefined,
         })
       }
     }

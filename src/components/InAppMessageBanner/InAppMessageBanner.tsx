@@ -32,6 +32,10 @@ type Banner =
 // screen is not where you leave a review — send it to the pro picker instead.
 const REVIEW_EVENT = "system.account:customer.jobs.review"
 
+// A job in one of these is over: the customer has to act (order elsewhere),
+// and the update must never be swallowed by the on-screen suppression below.
+const ORDER_ENDED_STATUSES = ["declined", "cancelledByPro", "cancelled"]
+
 /** Where a notification tap should land, or null to stay put. */
 const destinationFor = (
   banner: Extract<Banner, { kind: "notification" }>
@@ -82,20 +86,36 @@ const InAppMessageBanner: React.FC = () => {
       title,
       body,
       jobId,
+      jobStatus,
     }: {
       event: string
       title: string
       body: string
       jobId?: number
+      jobStatus?: string
     }) => {
       const next: Banner = { kind: "notification", event, title, body, jobId }
       // Don't announce what the customer is already watching. The same socket
       // event invalidates the Jobs cache, so a job screen live-updates in front
       // of them — a banner on top of that is noise reporting a change they just
       // saw happen. The chat banner suppresses the same way for the open chat.
+      //
+      // EXCEPT when the news ends the order. "Preparing" turning into "On the
+      // way" is a status line quietly changing, and the customer watching it
+      // does not need telling twice. A cancellation is the same quiet change
+      // and must NOT be missed — it is the one update that requires them to do
+      // something, and swallowing it because they happened to be on the screen
+      // is exactly when it gets missed.
+      //
+      // Keyed on the job's own status, not on the copy. Matching words like
+      // "cancel" in the title would work in English and silently fail in
+      // Arabic, and break again the next time the wording changes.
+      const isOrderEnded = ORDER_ENDED_STATUSES.includes(jobStatus ?? "")
+
       const current = navigationRef.isReady() ? navigationRef.getCurrentRoute() : null
       const destination = destinationFor(next)
       if (
+        !isOrderEnded &&
         destination &&
         current?.name === destination.screen &&
         (current.params as { jobId?: number } | undefined)?.jobId === destination.jobId

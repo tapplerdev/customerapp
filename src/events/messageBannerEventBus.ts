@@ -24,6 +24,9 @@ export type MessageBannerEventMap = {
     title: string
     body: string
     jobId?: number // carried by system.job:* AND the review reminder
+    // The job's own status off the socket payload. Lets a consumer tell a
+    // terminal update from a progress one without parsing localized copy.
+    jobStatus?: string
   }
 }
 
