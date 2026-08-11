@@ -99,6 +99,7 @@ const TalabatiScreen: React.FC = () => {
     if (foodOrderTerminalState(job)) return colors.red
     switch (job.status) {
       case "declined":
+      case "cancelledByPro":
         return colors.red
       case "active":
         return "#00BC3A"
@@ -126,6 +127,13 @@ const TalabatiScreen: React.FC = () => {
       // are empty, since the predicate above answers every case that has them.
       case "declined":
         return t("order_declined_by_restaurant")
+      // The restaurant pulled an order it had accepted. The predicate above
+      // normally answers this first (it sees jobPro.status === "cancelled"),
+      // so this is the belt-and-braces path for a job whose pro rows are not
+      // loaded — without it, `default` would print the raw "cancelledByPro"
+      // straight into the list, in English, inside an Arabic sentence.
+      case "cancelledByPro":
+        return t("cancelled")
       case "active":
         return t("active")
       case "completed":
@@ -342,6 +350,12 @@ const TalabatiScreen: React.FC = () => {
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
+          // Opts back OUT of the app-wide alwaysBounceVertical:false default
+          // (index.js). Pull-to-refresh works by pulling PAST the top, so with
+          // the bounce suppressed a customer with only one or two orders —
+          // a list short enough to fit the screen — would have nothing to pull
+          // and no way to refresh at all.
+          alwaysBounceVertical
           viewabilityConfig={viewabilityConfig}
           onViewableItemsChanged={onViewableItemsChanged}
           refreshControl={

@@ -59,15 +59,16 @@ const OffersSection: React.FC<OffersSectionProps> = ({
               key={sub.id || idx}
               width={STRIP_STICKER_WIDTH}
               height={STRIP_STICKER_HEIGHT}
-              // Same fixed box for every sticker, but each SVG brings its own
-              // padding and aspect ratio, so they rendered indented by
-              // different amounts and the row looked ragged.
+              // No trimming here, deliberately. Each sticker gets the same box
+              // and the SVG default (xMidYMid) centres it — that is the whole
+              // requirement for this row.
               //
-              // Normalise only — NOT pinLeft. This row is justify-around, so
-              // each sticker owns a slot it should sit in the middle of;
-              // left-pinning put all the slack on one side of every slot and
-              // dragged the whole row off-centre inside the card.
-              autoTrimLeftPadding
+              // autoTrimLeftPadding used to be on, and it was the reason the
+              // row looked pushed left: it zeroes each file's group translate,
+              // and those differ per sticker (13.4 / 17.2 / 19.6 units), so it
+              // shifted every artwork left by a DIFFERENT amount. That is a
+              // fix for lining stickers up against a column of text on the pro
+              // profile; here it only broke the centring.
               uri={uri}
             />
           ) : null

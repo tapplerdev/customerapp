@@ -215,6 +215,11 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
             allNotifications.length === 0 ? { flex: 1 } : { paddingBottom: 20 }
           }
           showsVerticalScrollIndicator={false}
+          // Opts back OUT of the app-wide alwaysBounceVertical:false default
+          // (index.js). Pull-to-refresh works by pulling PAST the top, so with
+          // the bounce suppressed an empty or near-empty notification list
+          // would have nothing to pull and no way to refresh at all.
+          alwaysBounceVertical
           refreshControl={
             <RefreshControl
               refreshing={isPullRefreshing}
