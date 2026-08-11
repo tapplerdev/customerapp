@@ -27,6 +27,10 @@ export type MessageBannerEventMap = {
     // The job's own status off the socket payload. Lets a consumer tell a
     // terminal update from a progress one without parsing localized copy.
     jobStatus?: string
+    // The food ORDER's status (jobPro.status). Set unconditionally by a cancel,
+    // so it is the dependable terminal signal where job.status may not have
+    // been flipped.
+    foodStatus?: string
   }
 }
 

@@ -14,17 +14,25 @@ const TAIL = 2
  * as OfferUpdateCard, and for the same reason: as a centred grey/red note it
  * read as chrome and got skimmed past.
  *
- * Positioning is owned by MessageComponent, which pins it to the own/system
- * side exactly like an outgoing bubble. The tail corner is squared on the same
- * PHYSICAL corner in both languages, so the radii are pre-flipped for Arabic —
- * native force-RTL swaps borderBottomLeft/Right underneath us.
+ * Positioning is owned by MessageComponent. The tail corner is squared on the
+ * same PHYSICAL corner in both languages, so the radii are pre-flipped for
+ * Arabic — native force-RTL swaps borderBottomLeft/Right underneath us.
  */
-const SystemEventBubble: React.FC<{ textKey: string; time?: string }> = ({
-  textKey,
-  time,
-}) => {
+const SystemEventBubble: React.FC<{
+  textKey: string
+  time?: string
+  /** Set when the event is the OTHER party's doing, so the bubble sits on the
+   *  incoming side and its tail points that way too. A tail on the wrong
+   *  corner is what makes a correctly-placed bubble still look misattributed.
+   *
+   *  This existed in the pro app and not here, which is how a restaurant
+   *  cancelling ended up rendering on the CUSTOMER's own side — reading as
+   *  though they had cancelled it themselves. */
+  incoming?: boolean
+}> = ({ textKey, time, incoming = false }) => {
   const { t, i18n } = useTranslation()
-  const tailLeft = i18n.language === "ar"
+  const isAr = i18n.language === "ar"
+  const tailLeft = incoming ? !isAr : isAr
 
   return (
     <DmView

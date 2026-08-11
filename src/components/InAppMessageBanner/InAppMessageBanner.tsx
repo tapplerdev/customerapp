@@ -35,6 +35,10 @@ const REVIEW_EVENT = "system.account:customer.jobs.review"
 // A job in one of these is over: the customer has to act (order elsewhere),
 // and the update must never be swallowed by the on-screen suppression below.
 const ORDER_ENDED_STATUSES = ["declined", "cancelledByPro", "cancelled"]
+// The food order's own terminal status, set unconditionally by the cancel
+// itself — unlike job.status, which depends on a backend settle step that can
+// bail silently.
+const ORDER_ENDED_FOOD_STATUSES = ["cancelled"]
 
 /** Where a notification tap should land, or null to stay put. */
 const destinationFor = (
@@ -87,12 +91,14 @@ const InAppMessageBanner: React.FC = () => {
       body,
       jobId,
       jobStatus,
+      foodStatus,
     }: {
       event: string
       title: string
       body: string
       jobId?: number
       jobStatus?: string
+      foodStatus?: string
     }) => {
       const next: Banner = { kind: "notification", event, title, body, jobId }
       // Don't announce what the customer is already watching. The same socket
@@ -107,10 +113,21 @@ const InAppMessageBanner: React.FC = () => {
       // something, and swallowing it because they happened to be on the screen
       // is exactly when it gets missed.
       //
-      // Keyed on the job's own status, not on the copy. Matching words like
-      // "cancel" in the title would work in English and silently fail in
-      // Arabic, and break again the next time the wording changes.
-      const isOrderEnded = ORDER_ENDED_STATUSES.includes(jobStatus ?? "")
+      // Keyed on status, not on the copy. Matching words like "cancel" in the
+      // title would work in English and silently fail in Arabic, and break
+      // again the next time the wording changes.
+      //
+      // BOTH statuses are checked, because job.status is the less reliable of
+      // the two. It only reaches a terminal value if the backend's
+      // settleFoodJobIfUndeliverable succeeded, and that bails silently on
+      // several conditions and swallows its own errors. The food order's own
+      // status is set unconditionally by the cancel itself, so it is the
+      // dependable signal. Relying on job.status alone meant this carve-out
+      // failed CLOSED — suppressing the cancellation banner for the customer
+      // sitting on the order screen, the exact case it exists to cover.
+      const isOrderEnded =
+        ORDER_ENDED_STATUSES.includes(jobStatus ?? "") ||
+        ORDER_ENDED_FOOD_STATUSES.includes(foodStatus ?? "")
 
       const current = navigationRef.isReady() ? navigationRef.getCurrentRoute() : null
       const destination = destinationFor(next)

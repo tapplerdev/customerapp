@@ -138,6 +138,12 @@ export const useChatSocket = () => {
           jobId: typeof payload?.jobId === "number" ? payload.jobId : undefined,
           jobStatus:
             typeof payload?.job?.status === "string" ? payload.job.status : undefined,
+          // Top-level, not payload.job.pros — the backend omits `pros` from
+          // the job it sends, so digging for it there always yields undefined.
+          foodStatus:
+            typeof payload?.foodOrderStatus === "string"
+              ? payload.foodOrderStatus
+              : undefined,
         })
       }
     }

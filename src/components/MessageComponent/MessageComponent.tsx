@@ -152,6 +152,9 @@ const MessageComponent: React.FC<Props> = React.memo(
       const isOwnAction =
         item.text === "job_cancelled_by_customer" ||
         item.text === "opportunity_accepted"
+      // Every food_order_* system message is the RESTAURANT's doing, so they
+      // belong on the pro's side — the opposite of the two above.
+      const isProAction = (item.text ?? "").startsWith("food_order_")
       return (
         <DmView style={{ paddingBottom: isLastInGroup ? 12 : 2 }}>
           {/* Sides are PINNED (iMessage-style): own/system on the physical right,
@@ -177,16 +180,33 @@ const MessageComponent: React.FC<Props> = React.memo(
             </DmView>
           )}
           {eventTextKey ? (
-            // job_expired is nobody's doing, so it stays on the own/system
-            // side where it has always been. A cancellation IS the customer's
-            // doing, so it sits with their messages — same rule as below.
+            // Same rule as everywhere else in this file: the side is decided by
+            // WHO DID IT.
+            //
+            // job_expired is nobody's doing and job_cancelled_by_customer is
+            // the customer's, so both belong on the own/system side — which is
+            // why this used to be hardcoded there. The food keys were then
+            // added to the same allowlist without revisiting it, so a
+            // restaurant cancelling rendered on the CUSTOMER's side, reading
+            // as though they had cancelled their own order. The class string
+            // below was byte-identical to the customer's own bubble.
             <DmView
               className={clsx(
                 "flex",
-                isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
+                isProAction
+                  ? isAr
+                    ? "items-end pr-[49] ml-[80]"
+                    : "items-start pl-[49] mr-[80]"
+                  : isAr
+                    ? "items-start pl-[49] mr-[80]"
+                    : "items-end pr-[49] ml-[80]"
               )}
             >
-              <SystemEventBubble textKey={eventTextKey} time={time} />
+              <SystemEventBubble
+                textKey={eventTextKey}
+                time={time}
+                incoming={isProAction}
+              />
             </DmView>
           ) : offerUpdate ? (
             // Laid out like an INCOMING bubble, unlike the pro app's copy: the
