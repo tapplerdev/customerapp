@@ -73,8 +73,28 @@ export const canCancelFoodOrder = (job: JobType): boolean => {
   // A declined order has nothing left to cancel. It used to pass this check —
   // a decline leaves `status` unset, so indexOf returned -1 — and the ••• menu
   // went on offering Cancel for an order the restaurant had already refused.
-  const isDeclined = jobPro?.selectionStatus === "proRejected"
+  //
+  const isDeclined =
+    jobPro?.selectionStatus === "proRejected" || job.status === "declined"
+
+  // WHITELIST, not a blacklist.
+  //
+  // This used to be `!isCancelled && !isDeclined && step < 1`, which asks "is
+  // it one of the dead states I thought of?" — and every state nobody thought
+  // of falls through as cancellable. `ended` (the expiry cron) and
+  // `cancelledByTappler` both did: jobPro.status is unset on them, so
+  // STEPS.indexOf(undefined) is -1, and the ••• menu offered "Cancel order" on
+  // an order that had already expired or been pulled by moderation.
+  //
+  // That is not cosmetic. The cancel writes job.status = "cancelled", the one
+  // value the backend counts against the customer in its auto-suspension
+  // policy — so the customer collects a strike for cancelling something that
+  // was already dead.
+  //
+  // Asking "is it live?" cannot leak that way, and it matches how the service
+  // path has always gated the same menu (JobDetailScreen: status === "active").
   return (
+    job.status === "active" &&
     !isCancelled &&
     !isDeclined &&
     STEPS.indexOf(status as (typeof STEPS)[number]) < 1
@@ -108,7 +128,25 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   // step, and the headline read "Order sent to Pro" indefinitely. The customer
   // got the push saying the restaurant declined, opened the order, and the
   // screen told them it was still sitting with the restaurant.
-  const isDeclined = jobPro?.selectionStatus === "proRejected"
+  //
+  // job.status === "declined" is the backend's own terminal marker for a food
+  // order nobody can deliver any more. It is checked ALONGSIDE proRejected,
+  // not instead of it: historical rows carry proRejected with job.status still
+  // `active`, and dropping that limb would regress every one of them.
+  //
+  // `isCancelled` above is deliberately untouched, and it DOES win over this
+  // when a restaurant cancelled an order it had already accepted — that sets
+  // jobPro.status = "cancelled" while the job goes terminal, so both are true
+  // and `isCancelled` is evaluated first. That is the outcome we want: the
+  // cancelled branch shows the restaurant's actual reason, which is more use
+  // to the customer than generic decline copy.
+  //
+  // Do not "simplify" isCancelled by dropping its job.status limb either. That
+  // limb is the only signal for a CUSTOMER cancel — foodOrderCancelReason is
+  // written solely by the restaurant — and without it the status block
+  // collapses and the screen goes blank below the header.
+  const isDeclined =
+    jobPro?.selectionStatus === "proRejected" || job.status === "declined"
   const currentStep = STEPS.indexOf(status as (typeof STEPS)[number])
 
   const stepLabels: Record<(typeof STEPS)[number], string> = {

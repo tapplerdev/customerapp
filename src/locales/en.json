@@ -198,7 +198,7 @@
   "I hired a local pro": "I hired a local pro",
   "Other Reasons": "Other Reasons",
   "write_other_reason": "Write the other reason here",
-  "attachments_unavailable": "Attachments unavailable for ended requests",
+  "attachments_unavailable": "Attachments unavailable once a request is closed",
   "EGP": "EGP",
   "offer_updated": "Offer updated",
   "pro_declined_this_job": "Pro declined this job",

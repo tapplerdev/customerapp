@@ -64,27 +64,42 @@ const TalabatiScreen: React.FC = () => {
     })
   }, [prefetchJobById])
 
-  // A food order the restaurant turned down. This is the ONE case where the
-  // job's own status is not the whole truth for this list.
+  // A food order's real state lives on jobPro, not on job.status, and this
+  // list has to say the same thing the order screen says about the same order.
   //
-  // Declining writes jobPro.selectionStatus = proRejected and leaves
-  // job.status = "active", which is right for a SERVICE request — the other
-  // invited pros, and any opportunity pro, can still take it (see this
-  // folder's CLAUDE.md). A food order has exactly one restaurant and no
-  // opportunity pros, so once they decline nothing further can happen to it,
-  // and it sat here saying "Active" in green until the expiry cron came round.
+  // Two ways an order dies, and they are different words to the customer:
+  //   declined  — the restaurant refused it outright (selectionStatus)
+  //   cancelled — it was pulled after being accepted, by either side (status)
   //
-  // Narrow on purpose: hasMenu only, and only while the job is still active,
-  // so a genuinely cancelled or expired job keeps its real status.
-  const isDeclinedFoodOrder = (job: JobType) =>
-    job.status === "active" &&
-    !!job.serviceCategory?.hasMenu &&
-    !!job.pros?.length &&
-    job.pros.every((p) => p.selectionStatus === "proRejected")
+  // Only the second is visible in job.status, and only when the CUSTOMER did
+  // it. A restaurant refusing leaves job.status = "active", which is correct
+  // for a SERVICE request — other invited pros and opportunity pros can still
+  // take it — but a food order has one restaurant and no opportunity pros, so
+  // nothing further can happen to it.
+  //
+  // Returning the state rather than a boolean is what keeps this in step with
+  // FoodOrderView. The old boolean only recognised "declined", so a restaurant
+  // that cancelled AFTER accepting fell through to job.status and this list
+  // rendered "Active" in green while the order screen rendered "Cancelled" in
+  // red — the same order, two answers, in both languages.
+  const foodOrderTerminalState = (
+    job: JobType
+  ): "declined" | "cancelled" | null => {
+    if (!job.serviceCategory?.hasMenu) return null
+    const pros = job.pros ?? []
+    if (!pros.length) return null
+    // Checked first: an order that was accepted and then pulled reads as
+    // cancelled even though its pro row may also look refused.
+    if (pros.some((p) => p.status === "cancelled")) return "cancelled"
+    if (pros.every((p) => p.selectionStatus === "proRejected")) return "declined"
+    return null
+  }
 
   const getStatusColor = (job: JobType) => {
-    if (isDeclinedFoodOrder(job)) return colors.red
+    if (foodOrderTerminalState(job)) return colors.red
     switch (job.status) {
+      case "declined":
+        return colors.red
       case "active":
         return "#00BC3A"
       case "completed":
@@ -100,8 +115,17 @@ const TalabatiScreen: React.FC = () => {
   }
 
   const getStatusLabel = (job: JobType) => {
-    if (isDeclinedFoodOrder(job)) return t("order_declined_by_restaurant")
+    const foodState = foodOrderTerminalState(job)
+    if (foodState === "declined") return t("order_declined_by_restaurant")
+    if (foodState === "cancelled") return t("cancelled")
     switch (job.status) {
+      // Reuses the food label rather than a bare t("declined"), which does not
+      // exist in either locale file here — i18next has no missing-key handler,
+      // so it would print the literal string "declined", untranslated, inside
+      // an Arabic sentence. Reached only when the pro rows are not loaded or
+      // are empty, since the predicate above answers every case that has them.
+      case "declined":
+        return t("order_declined_by_restaurant")
       case "active":
         return t("active")
       case "completed":
