@@ -40,9 +40,20 @@ const ORDER_ENDED_STATUSES = ["declined", "cancelledByPro", "cancelled"]
 // bail silently.
 const ORDER_ENDED_FOOD_STATUSES = ["cancelled"]
 
-/** Where a notification tap should land, or null to stay put. */
-const destinationFor = (
-  banner: Extract<Banner, { kind: "notification" }>
+/**
+ * Where a notification tap should land, or null to stay put.
+ *
+ * Exported because push taps must land in the same place as banner taps. When
+ * the push handler had its own copy of this rule, a review reminder opened
+ * ReviewProSelectionScreen from a banner and NotificationsScreen from the
+ * lock screen — same notification, two destinations, depending only on whether
+ * the customer happened to have the app open.
+ */
+export const destinationFor = (
+  // Narrowed to what it actually reads, so the push handler — which has a
+  // ParsedNotification and no banner "kind" — can call the same function
+  // instead of keeping a second copy of the rule.
+  banner: { event: string; jobId?: number }
 ): { screen: "JobDetailScreen" | "ReviewProSelectionScreen"; jobId: number } | null => {
   if (!banner.jobId) return null
   return {

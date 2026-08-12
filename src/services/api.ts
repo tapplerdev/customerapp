@@ -494,10 +494,27 @@ export const api = createApi({
       }),
       invalidatesTags: ["Chats"],
     }),
+
+    // The endpoint has accepted customers since it was written —
+    // @UseAuth([AuthUserType.pro, AuthUserType.customer]) — but only the pro
+    // app ever called it, so no customer had a registration token and every
+    // push the backend tried to send them was dropped on its own side.
+    // No cache tag: this writes device state, not anything the app reads back.
+    registerNotificationsDevice: builder.mutation<
+      { id: number },
+      { registrationToken: string }
+    >({
+      query: (body) => ({
+        url: "/notifications/registration-token",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 })
 
 export const {
+  useRegisterNotificationsDeviceMutation,
   useGetActivePresetQuery,
   useLazyGetActivePresetQuery,
   useGetServicesQuery,

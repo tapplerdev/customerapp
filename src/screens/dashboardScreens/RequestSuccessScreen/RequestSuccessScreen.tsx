@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import LottieView from "lottie-react-native"
@@ -7,6 +7,7 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useTypedSelector } from "store"
 import { useGetCustomerMeQuery } from "services/api"
+import { useRequestPushPermission } from "hooks/usePushNotifications"
 
 import successAnimation from "assets/animations/successful.json"
 import styles from "./styles"
@@ -60,24 +61,65 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
     !!customerData &&
     !isAlreadySaved
 
-  // Let the success animation land before the sheet slides up. clearTimeout
-  // covers the case where Done is tapped first — that resets the stack, which
-  // unmounts this screen, and the sheet must not open onto a dead route.
+  // Let the success animation land before the sheet slides up. Held in a ref
+  // as well as cleared on unmount, because Done now has to be able to cancel it
+  // directly — see handleDone.
+  const saveSheetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (shouldPromptSave) {
-      const timer = setTimeout(
+      saveSheetTimer.current = setTimeout(
         () => navigation.navigate("SaveAddressSheetScreen", { address }),
         3000,
       )
-      return () => clearTimeout(timer)
+      return () => {
+        if (saveSheetTimer.current) clearTimeout(saveSheetTimer.current)
+        saveSheetTimer.current = null
+      }
     }
   }, [shouldPromptSave, navigation, address])
 
+  const requestPushPermission = useRequestPushPermission()
+  const isLeaving = useRef(false)
+
+  // The app's only notification-permission prompt, spent here on purpose.
+  //
+  // The customer has just submitted a request and is being told to watch
+  // Talabati for a response — which is precisely what a notification would save
+  // them from having to do. Asked on first launch instead, the same prompt is a
+  // question about nothing, and iOS gives an app exactly one chance at it.
+  //
+  // Three things this got wrong the first time, all from awaiting it here:
+  //
+  //   - Done went dead for as long as the dialog, a token fetch and a POST
+  //     with a 20s timeout took, with no spinner and nothing disabled.
+  //   - ActionBtn has no debounce, so a second tap during that dead window ran
+  //     navigation.reset twice and fired two concurrent registrations, which
+  //     the registeredToken memo cannot dedupe because both read it before
+  //     either writes.
+  //   - Worst: the screen stayed mounted, so tapping Done at t=2.9s let the
+  //     3s timer fire underneath the dialog. The save-address sheet pushed,
+  //     the dialog covered it, and answering the dialog reset the stack out
+  //     from under the sheet — it flashed up and vanished, and the customer
+  //     lost the offer to save their address.
+  //
+  // So: cancel that timer, leave immediately, and let the prompt come up over
+  // Talabati a moment later, where the customer can see the request it is
+  // about sitting in the list.
   const handleDone = () => {
+    if (isLeaving.current) return
+    isLeaving.current = true
+
+    if (saveSheetTimer.current) {
+      clearTimeout(saveSheetTimer.current)
+      saveSheetTimer.current = null
+    }
+
     navigation.reset({
       index: 0,
       routes: [{ name: "HomeTabs", params: { screen: "talabati" } }],
     })
+
+    requestPushPermission()
   }
 
   return (

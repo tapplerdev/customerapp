@@ -10,6 +10,7 @@ import BootstrapScreen from "screens/BootstrapScreen/BootstrapScreen"
 import SplashOverlay from "components/SplashOverlay/SplashOverlay"
 import { storage } from "@tappler/shared/src/store/mmkv"
 import { useChatSocket } from "hooks/useChatSocket"
+import { usePushNotifications } from "hooks/usePushNotifications"
 import { navigationRef } from "navigation/navigationRef"
 import InAppMessageBanner from "components/InAppMessageBanner/InAppMessageBanner"
 import "locales/i18n"
@@ -39,9 +40,11 @@ const shouldShowSplash = (() => {
 })()
 
 // Mounted inside the Redux Provider so it can read auth state. Renders
-// nothing — it just owns the single global chat WebSocket lifecycle.
+// nothing — it owns the two global delivery channels: the chat WebSocket for
+// a customer who has the app open, and push for one who doesn't.
 const RealtimeManager: React.FC = () => {
   useChatSocket()
+  usePushNotifications()
   return null
 }
 
