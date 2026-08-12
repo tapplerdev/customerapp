@@ -52,6 +52,7 @@ import ReviewsIcon from "assets/icons/my-reviews.svg"
 import DetailsIcon from "assets/icons/details-icon.svg"
 import CameraIcon from "assets/icons/camera-icon.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
+import OrderBill from "components/OrderBill/OrderBill"
 import LocationIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import OfferHistorySheet from "components/OfferHistorySheet/OfferHistorySheet"
@@ -648,6 +649,12 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   ]
     .filter(Boolean)
     .join(", ")
+  // A food order carries its detail in foodOrderItems, not in questionsAnswers
+  // — menu orders come from the cart/checkout flow, not the question flow,
+  // which is why this sheet looked so empty for them.
+  const glanceFoodItems: any[] = (glanceJob as any)?.foodOrderItems ?? []
+  const glanceIsPickup = (glanceJob as any)?.placeOfService === "pickup"
+
   const requestQA: any[] = (glanceJob as any)?.questionsAnswers ?? []
   // Pre-filter to renderable label/value rows so the card's dividers can key
   // off the REAL last item (a skipped tail row would leave a dangling line).
@@ -761,6 +768,58 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               </DmText>
             </DmView>
           </DmView>
+        )}
+
+        {/* A food order's "request" IS the order, and this sheet showed none of
+            it — a map, a category name and an address, then nothing. Not a
+            missing feature: RequestDetailsScreen renders the full bill and is
+            still registered, and this sheet replaced a navigation to it, so
+            the food rendering was dropped in that swap.
+
+            No data change was needed. This sheet already subscribes
+            /jobs/customer-jobs/:id/details, whose relation set includes
+            foodOrderItems — the same query, same arg, same cache entry that
+            RequestDetailsScreen reads. It was holding the whole order and
+            rendering a service-request body over it. */}
+        {!!glanceFoodItems.length && (
+          <>
+            {!!glanceJob?.paymentMethod && (
+              <DmView className="flex-row items-center mt-[10] rounded-13 bg-grey58 px-[14] py-[12]">
+                <DmView className="flex-1">
+                  <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+                    {t("payment_method")}
+                  </DmText>
+                  <DmText className="mt-[2] text-13 leading-[18px] font-custom400 text-black" style={rtlText}>
+                    {/* NOT t(paymentMethod): the stored value is "creditCard",
+                        and there is no such key — it rendered the raw string.
+                        The four keys below all exist, and this is exactly what
+                        FoodOrderView already does for the same field. */}
+                    {glanceJob.paymentMethod === "creditCard"
+                      ? t(glanceIsPickup ? "card_on_pickup" : "card_on_delivery")
+                      : t(glanceIsPickup ? "cash_on_pickup" : "cash_on_delivery")}
+                  </DmText>
+                </DmView>
+              </DmView>
+            )}
+
+            {!!glanceJob?.orderNotes && (
+              <DmView className="mt-[10] rounded-13 bg-grey58 px-[14] py-[12]">
+                <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+                  {t("order_notes")}
+                </DmText>
+                <DmText className="mt-[2] text-13 leading-[18px] font-custom400 text-black" style={rtlText}>
+                  {glanceJob.orderNotes}
+                </DmText>
+              </DmView>
+            )}
+
+            <OrderBill
+              textStyle={rtlText}
+              job={glanceJob as any}
+              isPickup={glanceIsPickup}
+              className="mt-[24]"
+            />
+          </>
         )}
 
         {requestQARows.length > 0 && (
