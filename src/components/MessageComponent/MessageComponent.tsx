@@ -74,6 +74,9 @@ const FOOD_PROGRESS_KEYS = [
   "food_order_accepted",
   "food_order_preparing",
   "food_order_with_courier",
+  // Its pickup counterpart — same stage, so the same progress tone. Without
+  // it a pickup order's "ready to collect" line rendered as an alert.
+  "food_order_ready_for_pickup",
   "food_order_delivered",
 ]
 

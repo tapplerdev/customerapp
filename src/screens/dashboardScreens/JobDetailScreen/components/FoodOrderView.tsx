@@ -97,9 +97,26 @@ export const canCancelFoodOrder = (job: JobType): boolean => {
     job.status === "active" &&
     !isCancelled &&
     !isDeclined &&
-    STEPS.indexOf(status as (typeof STEPS)[number]) < 1
+    !UNCANCELLABLE_FOOD_STATUSES.includes(status ?? "")
   )
 }
+
+/**
+ * Mirrors UNCANCELLABLE_FOOD_ORDER_STATUSES on the backend, which is the rule
+ * that actually holds — this only decides whether the Cancel item is offered.
+ *
+ * Past `preparing` the kitchen has committed ingredients, so only the
+ * restaurant can pull the order, with a reason. Written as a list rather than
+ * "index < 1" into the timeline, because that timeline is now
+ * fulfilment-dependent and its stage-two entry differs by mode, while this
+ * rule does not.
+ */
+const UNCANCELLABLE_FOOD_STATUSES: string[] = [
+  "preparing",
+  "withDeliveryCourier",
+  "readyForPickup",
+  "delivered",
+]
 
 /**
  * Written into the job's cancelReasons. A stable marker rather than a
@@ -109,7 +126,24 @@ export const canCancelFoodOrder = (job: JobType): boolean => {
  */
 export const CUSTOMER_CANCELLED_FOOD_ORDER = "customer_cancelled_food_order"
 
-const STEPS = ["accepted", "preparing", "withDeliveryCourier", "delivered"] as const
+/**
+ * The four stages of the order, worded for how it reaches the customer.
+ *
+ * Stage three differs by fulfilment: a delivery order is with a courier, a
+ * pickup order is waiting on the counter. The backend refuses whichever of the
+ * two does not match the order's placeOfService, so a given order only ever
+ * carries one of them — but the timeline has to know which one to look for, or
+ * a pickup order sits at "Preparing" through a stage it has already passed.
+ *
+ * Stage four is one status either way; only the label changes.
+ */
+const STEPS_FOR = (isPickup: boolean) =>
+  [
+    "accepted",
+    "preparing",
+    isPickup ? "readyForPickup" : "withDeliveryCourier",
+    "delivered",
+  ] as const
 
 const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) => {
   const { t, i18n } = useTranslation()
@@ -147,13 +181,18 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   // collapses and the screen goes blank below the header.
   const isDeclined =
     jobPro?.selectionStatus === "proRejected" || job.status === "declined"
-  const currentStep = STEPS.indexOf(status as (typeof STEPS)[number])
+  // Declared here rather than beside the money below, because the timeline
+  // above needs it and reads first.
+  const isPickup = job.placeOfService === "pickup"
+  const STEPS = STEPS_FOR(isPickup)
+  const currentStep = (STEPS as readonly string[]).indexOf(status ?? "")
 
-  const stepLabels: Record<(typeof STEPS)[number], string> = {
+  const stepLabels: Record<string, string> = {
     accepted: t("order_accepted"),
     preparing: t("order_preparing"),
     withDeliveryCourier: t("order_out_for_delivery"),
-    delivered: t("order_delivered"),
+    readyForPickup: t("order_ready_for_pickup"),
+    delivered: t(isPickup ? "order_picked_up" : "order_delivered"),
   }
 
   // Pro identity for the header card. Everything here already rides on the
@@ -217,7 +256,6 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     [items]
   )
   const deliveryFee = job.deliveryFee ?? 0
-  const isPickup = job.placeOfService === "pickup"
   const orderDiscount = job.orderDiscount ?? 0
   const total = subtotal + deliveryFee - orderDiscount
 
