@@ -37,7 +37,25 @@ const useChatContext = (chatPreview: ChatPreviewType) => {
 
   const hasJob = !!chat.job
   const jobStatus = chat.job?.status
-  const isJobInactive = !!jobStatus && jobStatus !== "active"
+
+  // A completed FOOD order is not a closed conversation.
+  //
+  // isJobInactive greys out every attachment — camera, gallery, files,
+  // location — and a delivered order used to leave job.status on `active`, so
+  // this never fired for food. Now that delivery settles the job to
+  // `completed`, the moment the customer most needs to send a photo (wrong
+  // item, missing item, damaged food) is the exact moment the camera would
+  // have gone dim. Text still worked, which is worse than useless when the
+  // point is to show somebody what arrived.
+  //
+  // Service requests are deliberately untouched: those complete when the work
+  // and the review are done, and locking attachments there is the existing,
+  // intended behaviour.
+  const isFoodJob = !!chat.job?.serviceCategory?.hasMenu
+  const isJobInactive =
+    !!jobStatus &&
+    jobStatus !== "active" &&
+    !(isFoodJob && jobStatus === "completed")
   const offerAmount = chat.job?.pros?.[0]?.ratePerHour
 
   return {

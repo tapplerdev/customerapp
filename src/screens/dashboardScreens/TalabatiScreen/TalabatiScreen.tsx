@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from "react"
-import { FlatList, Image, RefreshControl, ViewToken } from "react-native"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { Animated as RNAnimated, Easing, FlatList, Image, RefreshControl, ViewToken } from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -15,6 +15,13 @@ import { RootStackParamList } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
 
 import LottieView from "lottie-react-native"
+
+// lottie-react-native 7 does NOT wrap its own view in Animated — there is no
+// createAnimatedComponent anywhere in the package — so handing `progress` an
+// Animated.Value directly passes the object straight through to a native
+// Float prop and the animation sits on frame 0. Wrapping it here is what makes
+// the shared clock below actually drive it.
+const AnimatedLottieView = RNAnimated.createAnimatedComponent(LottieView)
 import leaveReviewAnimation from "assets/animations/leave-review.json"
 import LeaveReviewModal from "components/LeaveReviewModal/LeaveReviewModal"
 import TalabatiSkeleton from "./TalabatiSkeleton"
@@ -37,6 +44,38 @@ const TalabatiScreen: React.FC = () => {
   // animated the RefreshControl down on every background refresh — the 30s
   // poll and every socket-driven Jobs invalidation read as a phantom pull.
   const [isPullRefreshing, setPullRefreshing] = useState(false)
+  // One clock for every star on screen.
+  //
+  // Each LottieView was autoPlay+loop, which starts playback when that view
+  // MOUNTS — and FlatList mounts rows in separate batches, so every row began
+  // its 2.94s loop at a different moment and sat at a different frame. The
+  // result was a column of stars visibly out of step: the top one still an
+  // outline while the ones below it were filled.
+  //
+  // Driving them all from a single Animated.Value via `progress` means they
+  // render the same frame no matter when their row mounted, was recycled, or
+  // scrolled into view. useNativeDriver keeps it off the JS thread, so the
+  // stars do not stutter while the list is scrolling.
+  const starProgress = useRef(new RNAnimated.Value(0)).current
+  useEffect(() => {
+    const animation = RNAnimated.loop(
+      RNAnimated.timing(starProgress, {
+        toValue: 1,
+        // The animation's own length: 88 frames at 29.97fps.
+        duration: 2940,
+        easing: Easing.linear,
+        // JS-driven on purpose. `progress` is a codegen'd Float prop rather
+        // than a style, and the native driver refuses props it does not know,
+        // at runtime rather than at build time. Animated still updates it via
+        // setNativeProps, so this does not re-render the list — it is a prop
+        // write per frame on a 2.94s decorative loop.
+        useNativeDriver: false,
+      })
+    )
+    animation.start()
+    return () => animation.stop()
+  }, [starProgress])
+
   const handlePullRefresh = useCallback(async () => {
     setPullRefreshing(true)
     try {
@@ -268,10 +307,9 @@ const TalabatiScreen: React.FC = () => {
                   </DmText>
                 </DmView>
                 <DmView className="px-[8] py-[5] overflow-hidden items-center justify-center" style={{ width: 32, height: 26 }}>
-                  <LottieView
+                  <AnimatedLottieView
                     source={leaveReviewAnimation}
-                    autoPlay
-                    loop
+                    progress={starProgress}
                     style={{ width: 60, height: 60 }}
                   />
                 </DmView>
@@ -284,7 +322,7 @@ const TalabatiScreen: React.FC = () => {
         </DmView>
       )
     },
-    [isAr]
+    [isAr, starProgress]
   )
 
   return (

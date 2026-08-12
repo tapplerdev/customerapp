@@ -118,7 +118,12 @@ export const useChatSocket = () => {
       dispatch(api.util.invalidateTags(["Notifications"]))
       const event = typeof payload?.event === "string" ? payload.event : ""
       if (event.startsWith("system.job:")) {
-        dispatch(api.util.invalidateTags(["Jobs"]))
+        // Chats as well as Jobs: a chat preview carries its own copy of the
+        // job, and useChatContext derives isJobInactive from
+        // chat.job.status — so a food order settling to `completed` on
+        // delivery would leave the chat screen acting on a stale `active` for
+        // an indeterminate window. Same order, two screens, two answers.
+        dispatch(api.util.invalidateTags(["Jobs", "Chats"]))
       }
 
       // Slide-down banner for everything except chat messages, which belong to
