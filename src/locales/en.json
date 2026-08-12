@@ -413,6 +413,7 @@
   "opportunity_accepted": "You accepted this pro's offer",
   "offer_sent_to_customer": "Pro sent you an offer",
   "job_cancelled_by_customer": "You cancelled this request",
+  "job_cancelled_by_tappler": "This request was cancelled by Tappler",
   "block_pro": "Block Pro",
   "file_a_complain_against_pro": "File a complaint against pro",
   "you_received_a_new_offer": "You received a new offer",
