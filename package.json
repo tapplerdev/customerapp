@@ -7,6 +7,7 @@
     "ios": "react-native run-ios --simulator 'iPhone 17 Pro' --port 8082",
     "lint": "eslint .",
     "start": "react-native start --port 8082",
+    "start:local": "APP_ENV=localhost react-native start --port 8082",
     "test": "jest"
   },
   "dependencies": {

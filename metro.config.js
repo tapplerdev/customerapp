@@ -13,6 +13,12 @@ const sharedPath = path.resolve(__dirname, '../tappler-shared')
  * @type {import('metro-config').MetroConfig}
  */
 const config = {
+  // @env values are inlined at transform time, but Metro's cache key knows
+  // nothing about APP_ENV — so switching environments would serve a stale
+  // bundle built against the other API URL. Folding APP_ENV into the cache
+  // version makes each environment its own cache instead, which is what
+  // removes the --reset-cache dance the dotenv docs tell you to do.
+  cacheVersion: `app-env-${process.env.APP_ENV || 'default'}`,
   watchFolders: [sharedPath],
   transformer: {
     babelTransformerPath: require.resolve("react-native-svg-transformer"),
