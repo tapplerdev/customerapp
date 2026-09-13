@@ -11,6 +11,7 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.soloader.SoLoader
+import com.tappler.sheet.TapplerSheetPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -20,6 +21,11 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
+
+              // Native Material bottom sheet, registered as "TapplerSheetView" — the
+              // same name the iOS module uses, which is what lets the JS component
+              // resolve it without a platform check.
+              add(TapplerSheetPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
