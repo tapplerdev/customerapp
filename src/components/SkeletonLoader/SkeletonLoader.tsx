@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { View, useColorScheme } from "react-native"
+import { View } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -24,7 +24,6 @@ const SkeletonLoader: React.FC<Props> = ({
   borderRadius = 4,
   className = ""
 }) => {
-  const colorScheme = useColorScheme()
   const shimmerTranslate = useSharedValue(-200)
 
   useEffect(() => {
@@ -56,8 +55,17 @@ const SkeletonLoader: React.FC<Props> = ({
   })
 
   // Dynamic colors based on theme
-  const skeletonBackgroundColor = colorScheme === 'dark' ? '#333333' : '#E1E9EE'
-  const shimmerColor = colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)'
+  // Fixed light palette, NOT useColorScheme.
+  //
+  // The dark branch made this the only component in the app that followed the
+  // system theme, on an app whose every other surface is a hardcoded light
+  // palette. iOS never revealed it because Info.plist pins
+  // UIUserInterfaceStyle to Light, so useColorScheme always answered "light".
+  // Android has no equivalent pin, so a phone in dark mode drew near-black
+  // blocks on a white screen. Restore the branch when there is a dark theme
+  // for it to match.
+  const skeletonBackgroundColor = "#E1E9EE"
+  const shimmerColor = "rgba(255, 255, 255, 0.6)"
 
   return (
     <DmView className={className}>

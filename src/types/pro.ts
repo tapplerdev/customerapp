@@ -61,6 +61,9 @@ export type ProWorkPhotoType = {
   url: string
   url720: string
   url150: string
+  // 4:3 gallery thumbnail cut by the backend (respecting the pro's
+  // adjustment); "" for files that predate it, so tiles fall back to url720.
+  urlThumb: string
   // Distinguishes a video from an image without sniffing the URL
   mimeType: string | null
   // Poster frame uploaded with the video; null for images

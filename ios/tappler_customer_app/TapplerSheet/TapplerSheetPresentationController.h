@@ -16,6 +16,19 @@ NS_ASSUME_NONNULL_BEGIN
 /// Called when the user taps the dim layer (host decides how to dismiss).
 @property (nonatomic, copy, nullable) void (^onDimTap)(void);
 
+/// Put the presenting screen back exactly as it was found, with no animation.
+///
+/// The push-back is normally undone in dismissalTransitionWillBegin, but UIKit
+/// does not always run it: dismissing a controller that has ANOTHER controller
+/// presented on top of it tears the whole chain down at once and skips the
+/// intermediate presentation controllers. When that happens the presenting
+/// screen is left scaled, rounded and dimmed with nothing left to restore it,
+/// which reads as the app having permanently shrunk.
+///
+/// Safe to call more than once, and safe to call after a normal dismissal — it
+/// re-applies the same saved values the animated path already restored.
+- (void)restorePresentingViewImmediately;
+
 @end
 
 /// Simple slide-up / slide-down animator for the sheet itself.

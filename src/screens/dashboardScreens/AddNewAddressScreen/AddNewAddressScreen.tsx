@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react"
-import { ScrollView, TextInput } from "react-native"
+import { TextInput } from "react-native"
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -100,7 +101,18 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
-      <ScrollView
+      {/*
+        KeyboardAwareScrollView, not a plain ScrollView, and flexGrow is exactly
+        why. `flexGrow: 1` makes the content the height of the frame, so the
+        scroll range is ZERO — the spacer below pins "Add address" to the
+        physical bottom and on iOS there is no way to scroll it out from under
+        the keyboard, because a plain ScrollView adds no keyboard contentInset
+        (nothing in this app sets automaticallyAdjustKeyboardInsets). Same shape
+        and same fix as DeleteAccountScreen / RegisterScreen / SignInEmailScreen.
+        No enableOnAndroid: this app mounts no KeyboardProvider, so the
+        manifest's adjustResize already shrinks the window there.
+      */}
+      <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -228,7 +240,7 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             isLoading={isLoading}
           />
         </DmView>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   )
 }

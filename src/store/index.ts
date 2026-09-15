@@ -58,7 +58,7 @@ const reducers = combineReducers({
 
 const persistedReducer = persistReducer(persistConfig, reducers)
 
-const appStateMiddleware = createAppStateMiddleware(api as any, ["Auth"])
+const appStateMiddleware = createAppStateMiddleware(api, ["Auth"])
 
 export const store = configureStore({
   reducer: persistedReducer,

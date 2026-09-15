@@ -81,8 +81,24 @@ const AddressSelectionModal: React.FC<Props> = ({
           </DmText>
         </DmView>
 
-        {/* White Content Section */}
-        <DmView className="bg-white" style={{ paddingBottom: insets.bottom + 2, maxHeight: 550 }}>
+        {/*
+          White Content Section.
+
+          Rounds its OWN top corners, because this sheet passes
+          transparentBackground so its header can float on the dim — and that
+          makes the native container skip the outline clip that gives every
+          other sheet its rounded top (see styleSheetContainer in
+          TapplerSheetHostView.kt). Without this the panel read as a square-edged
+          white block next to the rounded Filters and question sheets.
+
+          28 to match, not a smaller number picked by eye — CORNER_RADIUS_DIP in
+          TapplerSheetHostView.kt is 28, and so is sheetContentRound on the JS
+          side.
+        */}
+        <DmView
+          className="bg-white rounded-t-28 overflow-hidden"
+          style={{ paddingBottom: insets.bottom + 2, maxHeight: 550 }}
+        >
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Last used address */}
           {!!lastUsedAddress && (
@@ -148,11 +164,15 @@ const AddressSelectionModal: React.FC<Props> = ({
     </>
   )
 
-  // One shell, both platforms: native push-back on iOS, react-native-modal on
-  // Android. transparentBackground keeps the container clear so the header
-  // floats on the dim, and dimOpacity 0.85 is what makes that white header
-  // legible — the 0.4 default is not. Short/self-sizing, so it keeps the
-  // short-sheet push-back.
+  // One shell, both platforms — the SAME native sheet on each, not a
+  // react-native-modal fallback on Android; that branch is gone from
+  // NativeActionSheet. transparentBackground keeps the container clear so the
+  // header floats on the dim, which is also why the white content section below
+  // has to round its own top corners. The 0.85 dim that makes that white header
+  // legible is one of the six redundant hand-passed values — NativeActionSheet
+  // already derives exactly that from transparentBackground; it is kept only
+  // because it states the intent where it sits.
+  // Short/self-sizing, so it keeps the short-sheet push-back.
   return (
     <NativeActionSheet
       isVisible={isVisible}

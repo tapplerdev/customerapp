@@ -36,10 +36,6 @@ import ReviewProSelectionScreen from "screens/dashboardScreens/ReviewProSelectio
 import ReviewFormScreen from "screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen"
 import SearchAnimationScreen from "screens/dashboardScreens/SearchAnimationScreen/SearchAnimationScreen"
 import ViewAddressScreen from "screens/dashboardScreens/ViewAddressScreen/ViewAddressScreen"
-import QuestionFlowScreen from "screens/dashboardScreens/QuestionFlowScreen/QuestionFlowScreen"
-import QuestionStepScreen from "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen"
-import FiltersScreen from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
-import AllQuestionsScreen from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
 import TapplyAIScreen from "screens/dashboardScreens/TapplyAIScreen/TapplyAIScreen"
 import AuthGateScreen from "screens/dashboardScreens/AuthGateScreen/AuthGateScreen"
 import FoodMenuScreen from "screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen"
@@ -133,44 +129,6 @@ const Navigator = () => {
       <Stack.Screen name="SubCategoriesScreen" component={SubCategoriesScreen} />
       <Stack.Screen name="SearchAnimationScreen" component={SearchAnimationScreen} />
       <Stack.Screen name="ProsListingScreen" component={ProsListingScreen} />
-      {/* QuestionFlowScreen — native modal approach (kept as fallback)
-      <Stack.Screen
-        name="QuestionFlowScreen"
-        component={QuestionFlowScreen}
-        options={{
-          presentation: "modal",
-          headerShown: false,
-        }}
-      />
-      */}
-      <Stack.Screen
-        name="QuestionStepScreen"
-        component={QuestionStepScreen}
-        options={{
-          presentation: "modal",
-          headerShown: false,
-          gestureEnabled: true,
-        }}
-      />
-      <Stack.Screen
-        name="AllQuestionsScreen"
-        component={AllQuestionsScreen}
-        options={{
-          presentation: "modal",
-          headerShown: false,
-          gestureEnabled: true,
-        }}
-      />
-      {/* Android-only route — iOS presents FiltersSheet natively from ProsListingScreen */}
-      <Stack.Screen
-        name="FiltersScreen"
-        component={FiltersScreen}
-        options={{
-          presentation: "modal",
-          headerShown: false,
-          gestureEnabled: true,
-        }}
-      />
       <Stack.Screen name="ServiceRequestDetailsScreen" component={ServiceRequestDetailsScreen} />
       <Stack.Screen name="RequestSummaryScreen" component={RequestSummaryScreen} />
       <Stack.Screen name="RequestSuccessScreen" component={RequestSuccessScreen} />

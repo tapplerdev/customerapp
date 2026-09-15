@@ -127,14 +127,29 @@ module.exports = {
         '48': [48, { lineHeight: '57.6px' }]
       },
       borderRadius: {
+      /*
+       * Every value a `rounded-*` class uses must exist here. NativeWind v2
+       * emits nothing for a key outside the scale — no warning, no fallback —
+       * so the corner just renders square and the class looks like it worked.
+       * Counted 2026-09-14: 21 call sites in this app and 16 in the other were
+       * silently dropped that way. If you add a `rounded-N` anywhere, add N.
+       *
+       * Keep the two apps' scales in step; they had already drifted (this one
+       * was missing 8, which the other had).
+       */
         '0': 0,
+        '2': 2,
+        '3': 3,
         '4': 4,
         '5': 5,
         '6': 6,
+        '8': 8,
         '10': 10,
         '12': 12,
         '13': 13,
+        '14': 14,
         '15': 15,
+        '16': 16,
         '20': 20,
         '21': 21,
         '28': 28,

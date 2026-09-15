@@ -46,10 +46,25 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
     <Modal
       isVisible={isVisible}
       onBackdropPress={onClose}
+      onBackButtonPress={onClose}
       className="m-0 items-center justify-center"
       animationIn="fadeIn"
       animationOut="fadeOut"
       backdropTransitionOutTiming={0}
+      /*
+       * The reason field is MULTILINE, so its return key inserts a newline
+       * rather than dismissing, and Submit sits directly beneath it — so
+       * without this the keyboard covered the button with no way to get it
+       * back, and the cancellation could not be completed.
+       *
+       * `avoidKeyboard` shifts the whole card up, which is the right tool for a
+       * short CENTRED dialog: there is room above and nothing pinned to the
+       * bottom edge to fight over. It is iOS-only in effect — react-native-modal
+       * passes behavior 'padding' on iOS and undefined on Android — and that is
+       * fine here, because this app mounts no KeyboardProvider so the manifest's
+       * adjustResize still shrinks the window on Android.
+       */
+      avoidKeyboard
     >
       <DmView className="mx-[24] self-stretch">
         {/* Close X — outside modal card */}

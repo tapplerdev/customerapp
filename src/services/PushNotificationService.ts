@@ -88,6 +88,17 @@ class PushNotificationServiceClass {
   /** The last token handed to the backend, so a refresh that isn't one is a no-op. */
   private registeredToken: string | null = null
 
+  /** A token whose registration POST is in flight, so the refresh watcher does not send it again. */
+  private pendingToken: string | null = null
+
+  /**
+   * Bumped by forgetRegisteredToken(). A registration that was in flight when
+   * the customer signed out must not re-plant the memo when it resolves:
+   * a different customer on the same phone would then short-circuit on the
+   * same token and never register it under their own account.
+   */
+  private generation = 0
+
   private isAvailable(): boolean {
     if (this.unavailable) return false
     try {
@@ -158,10 +169,16 @@ class PushNotificationServiceClass {
     try {
       const token = await messaging().getToken()
       if (!token) return false
-      if (token === this.registeredToken) return true
+      if (token === this.registeredToken || token === this.pendingToken) return true
 
-      await apiCall(token)
-      this.registeredToken = token
+      const generation = this.generation
+      this.pendingToken = token
+      try {
+        await apiCall(token)
+        if (generation === this.generation) this.registeredToken = token
+      } finally {
+        if (this.pendingToken === token) this.pendingToken = null
+      }
       return true
     } catch (error) {
       console.log("[PushNotificationService] Token registration failed:", error)
@@ -182,12 +199,19 @@ class PushNotificationServiceClass {
 
     try {
       this.tokenRefreshUnsubscribe = messaging().onTokenRefresh(async (token) => {
-        if (!token || token === this.registeredToken) return
+        // pendingToken: after a sign-out's deleteToken(), the next sign-in's
+        // getToken() mints a fresh token AND fires this — register() is
+        // already sending it.
+        if (!token || token === this.registeredToken || token === this.pendingToken) return
+        const generation = this.generation
+        this.pendingToken = token
         try {
           await apiCall(token)
-          this.registeredToken = token
+          if (generation === this.generation) this.registeredToken = token
         } catch (error) {
           console.log("[PushNotificationService] Token refresh sync failed:", error)
+        } finally {
+          if (this.pendingToken === token) this.pendingToken = null
         }
       })
     } catch {
@@ -204,6 +228,12 @@ class PushNotificationServiceClass {
    */
   public forgetRegisteredToken(): void {
     this.registeredToken = null
+    this.generation += 1
+  }
+
+  /** The last token this process successfully sent to the backend, if any. */
+  public getRegisteredToken(): string | null {
+    return this.registeredToken
   }
 
   // --- Incoming messages --------------------------------------------------

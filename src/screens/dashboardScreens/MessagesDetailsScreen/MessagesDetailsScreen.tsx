@@ -1194,10 +1194,11 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         </DmView>
       </KeyboardAvoidingView>
 
-      {/* Attachment sheet. One component for both platforms now: native
-          push-back on iOS, react-native-modal on Android — the same shell every
-          other action sheet in this app uses. Android was on gorhom, which also
-          meant it opened by REF while iOS opened by STATE; that split is gone.
+      {/* Attachment sheet. One component AND one native view for both platforms:
+          NativeActionSheet has no react-native-modal in it any more, so Android
+          gets Material's BottomSheetDialog through the same TapplerSheetView iOS
+          uses. Android was on gorhom, which also meant it opened by REF while iOS
+          opened by STATE; that split is gone.
           Height is passed because the camera-roll strip populates after first
           layout, so the native self-measure lands short. */}
       <NativeActionSheet

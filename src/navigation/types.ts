@@ -17,6 +17,77 @@ export type SelectedProInfo = {
   proType: "individual" | "company"
 }
 
+/*
+ * Params for the three surfaces that are NOT routes.
+ *
+ * Both used to be entries in RootStackParamList with an Android-only
+ * Stack.Screen behind them; both now render only as NativeActionSheet content
+ * from ProsListingScreen on both platforms, so there is no route to type. They
+ * stay here rather than moving into the screen files because ProsListingScreen
+ * builds the objects and the sheet components consume them — one shared shape,
+ * one place to change it.
+ *
+ * Keeping them OUT of RootStackParamList is also what stops `onApply` from
+ * being a function in navigation state, which react-navigation warns about.
+ */
+export type AllQuestionsParams = {
+  categoryName: string
+  placeOfServiceOptions: string[]
+  customerQuestions: import("types/cms").ServiceQuestionType[]
+  initialAnswers: import("types/job").QuestionAnswerType[]
+  initialPlaceOfService?: string
+  onApply: (result: {
+    placeOfService?: string
+    filterOptionIds: number[]
+    dataAnswers: import("types/job").QuestionAnswerType[]
+    allAnswers: import("types/job").QuestionAnswerType[]
+    filtersChanged: boolean
+    resetAll?: boolean
+  }) => void
+}
+
+export type QuestionFlowParams = {
+  categoryName: string
+  placeOfServiceOptions: string[]
+  customerQuestions: import("types/cms").ServiceQuestionType[]
+  // Repost flow: pre-fill the flow with a previous job's answers
+  initialAnswers?: QuestionAnswerType[]
+  initialPlaceOfService?: string
+}
+
+export type FiltersParams = {
+  currentPlaceOfService?: string
+  // Food only: shows a Fulfillment (All/Delivery/Pickup) section + un-gates
+  // the distance slider.
+  isFoodCategory?: boolean
+  foodMode?: "all" | "delivery" | "pickup"
+  refinementFilters?: import("types/cms").ServiceQuestionType[]
+  initialRefinementOptionIds?: number[]
+  initialRanges?: { filterId: number; min?: number; max?: number }[]
+  upfrontSelections?: {
+    questionText: string
+    questionTextAr?: string
+    options: { key: string; label: string; labelAr?: string }[]
+  }[]
+  initialFilters?: {
+    proType?: string
+    distanceKm?: number
+    minRating?: number
+    maxResponseTimeHours?: number
+    creditCardPayment?: boolean
+  }
+  onApply: (filters: {
+    proType?: string
+    distanceKm?: number
+    minRating?: number
+    maxResponseTimeHours?: number
+    creditCardPayment?: boolean
+    refinementFilterOptionIds: number[]
+    ranges: { filterId: number; min?: number; max?: number }[]
+    fulfillment?: "all" | "delivery" | "pickup"
+  }) => void
+}
+
 export type RootStackParamList = {
   WelcomeScreen: undefined
   AuthWelcomeScreen: undefined
@@ -81,13 +152,6 @@ export type RootStackParamList = {
     // placeOfService is already known — it opens pre-filled, "starting fresh".
     forceQuestionFlow?: boolean
   }
-  QuestionFlowScreen: {
-    categoryId: number
-    categoryName: string
-    serviceId: number
-    address: AddressInfo
-    placeOfServiceOptions: string[]
-  }
   // Food ordering (hasMenu categories): browse a pro's approved menu →
   // item detail (options/qty) → cart. Context params ride along so add-to-
   // cart can stamp the cart with pro/category/address without extra fetches.
@@ -125,63 +189,6 @@ export type RootStackParamList = {
     // Anchors the map: the customer's address on delivery, the pro's on
     // pickup (where it only resolves the area — it is never pinned).
     mapCoords?: { lat: number; lon: number } | null
-  }
-  AllQuestionsScreen: {
-    categoryName: string
-    placeOfServiceOptions: string[]
-    customerQuestions: import("types/cms").ServiceQuestionType[]
-    initialAnswers: import("types/job").QuestionAnswerType[]
-    initialPlaceOfService?: string
-    onApply: (result: {
-      placeOfService?: string
-      filterOptionIds: number[]
-      dataAnswers: import("types/job").QuestionAnswerType[]
-      allAnswers: import("types/job").QuestionAnswerType[]
-      filtersChanged: boolean
-      resetAll?: boolean
-    }) => void
-  }
-  FiltersScreen: {
-    currentPlaceOfService?: string
-    // Food only: shows a Fulfillment (All/Delivery/Pickup) section + un-gates
-    // the distance slider.
-    isFoodCategory?: boolean
-    foodMode?: "all" | "delivery" | "pickup"
-    refinementFilters?: import("types/cms").ServiceQuestionType[]
-    initialRefinementOptionIds?: number[]
-    initialRanges?: { filterId: number; min?: number; max?: number }[]
-    upfrontSelections?: {
-      questionText: string
-      questionTextAr?: string
-      options: { key: string; label: string; labelAr?: string }[]
-    }[]
-    initialFilters?: {
-      proType?: string
-      distanceKm?: number
-      minRating?: number
-      maxResponseTimeHours?: number
-      creditCardPayment?: boolean
-    }
-    onApply: (filters: {
-      proType?: string
-      distanceKm?: number
-      minRating?: number
-      maxResponseTimeHours?: number
-      creditCardPayment?: boolean
-      refinementFilterOptionIds: number[]
-      ranges: { filterId: number; min?: number; max?: number }[]
-      fulfillment?: "all" | "delivery" | "pickup"
-    }) => void
-  }
-  QuestionStepScreen: {
-    categoryId: number
-    categoryName: string
-    serviceId: number
-    placeOfServiceOptions: string[]
-    customerQuestions: import("types/cms").ServiceQuestionType[]
-    // Repost flow: pre-fill the flow with a previous job's answers
-    initialAnswers?: QuestionAnswerType[]
-    initialPlaceOfService?: string
   }
   ServiceRequestDetailsScreen: {
     categoryId: number

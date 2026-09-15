@@ -68,3 +68,6 @@ yarn-error.log
 # environment variables
 .env
 .env.*
+
+# Personal Claude Code notes, machine-local by design
+CLAUDE.local.md

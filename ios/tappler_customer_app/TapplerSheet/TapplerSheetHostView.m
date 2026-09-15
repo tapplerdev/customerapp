@@ -24,6 +24,7 @@
     _sheetHeight = 300;
     _pushBackScale = 0.92;
     _dimOpacity = 0.4;
+    _dismissable = YES;
 
     _sheetViewController = [UIViewController new];
     _sheetViewController.view.backgroundColor = [UIColor whiteColor];
@@ -144,6 +145,14 @@
     if (!strongSelf) return;
     // Clear any leftover drag offset so the next present starts clean.
     strongSelf->_sheetViewController.view.transform = CGAffineTransformIdentity;
+    // Belt and braces on the PRESENTING screen. If anything was presented on
+    // top of this sheet when the dismissal started — a react-native-modal
+    // confirm, an Alert — UIKit collapses the whole chain and never runs our
+    // dismissalTransitionWillBegin, so the push-back scale, the corner radius
+    // and the dark window background are all left applied with nothing to undo
+    // them. That is the "screen shrank and stayed shrunk" bug. A no-op on the
+    // normal path, since it restores the same values.
+    [strongSelf->_presentationController restorePresentingViewImmediately];
     if (notify && strongSelf.onDismissed) {
       strongSelf.onDismissed(@{});
     }
@@ -169,7 +178,9 @@
   _presentationController.dimOpacity = _dimOpacity;
   __weak TapplerSheetHostView *weakSelf = self;
   _presentationController.onDimTap = ^{
-    [weakSelf dismissSheetNotify:YES];
+    TapplerSheetHostView *strongSelf = weakSelf;
+    if (!strongSelf || !strongSelf.dismissable) return;
+    [strongSelf dismissSheetNotify:YES];
   };
   return _presentationController;
 }
@@ -194,6 +205,8 @@
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
+  // Refused outright while JS says the sheet must stay: a payment in flight.
+  if (!_dismissable) return NO;
   if (![gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) return YES;
   UIPanGestureRecognizer *pan = (UIPanGestureRecognizer *)gestureRecognizer;
   UIView *sheetView = _sheetViewController.view;
@@ -263,8 +276,12 @@
 {
   [super didMoveToWindow];
   // Host removed from the RN tree (screen unmounted) while presented — close.
+  // These teardown paths dismiss UNANIMATED, which is exactly when UIKit is
+  // most likely to skip the presentation controller's restore, so undo the
+  // push-back by hand rather than trusting the callback to arrive.
   if (!self.window && _isPresented) {
     _isPresented = NO;
+    [_presentationController restorePresentingViewImmediately];
     [_sheetViewController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
   }
 }
@@ -274,6 +291,7 @@
   dispatch_async(dispatch_get_main_queue(), ^{
     if (self->_isPresented) {
       self->_isPresented = NO;
+      [self->_presentationController restorePresentingViewImmediately];
       [self->_sheetViewController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
     }
   });

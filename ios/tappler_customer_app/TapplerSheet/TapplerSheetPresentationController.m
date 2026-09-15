@@ -76,7 +76,7 @@ static const CGFloat kRootRecedeCornerRadius = 12.0;
   _savedWindowBackground = window.backgroundColor;
   window.backgroundColor = [UIColor blackColor];
 
-  // Round the top corners of the sheet itself.
+  // Round the top corners of the sheet itself (Airbnb-scale rounding).
   UIView *presentedView = self.presentedView;
   presentedView.layer.cornerRadius = kSheetCornerRadius;
   presentedView.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
@@ -176,6 +176,22 @@ static const CGFloat kRootRecedeCornerRadius = 12.0;
   [super containerViewWillLayoutSubviews];
   self.presentedView.frame = [self frameOfPresentedViewInContainerView];
   _dimmingView.frame = self.containerView.bounds;
+}
+
+- (void)restorePresentingViewImmediately
+{
+  UIView *presentingView = self.presentingViewController.view;
+  if (presentingView) {
+    [presentingView.layer removeAnimationForKey:@"tappler.cornerRadius"];
+    presentingView.transform = CGAffineTransformIdentity;
+    presentingView.layer.cornerRadius = _hadCornerRadius;
+    presentingView.layer.masksToBounds = _hadMasksToBounds;
+    if (_savedWindowBackground) {
+      presentingView.window.backgroundColor = _savedWindowBackground;
+    }
+  }
+  [_dimmingView removeFromSuperview];
+  _dimmingView = nil;
 }
 
 - (void)animateLayerCornerRadius:(CALayer *)layer to:(CGFloat)radius duration:(NSTimeInterval)duration

@@ -6,13 +6,14 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
-import { RootStackParamList, RootStackScreenProps } from "navigation/types"
+import { FiltersParams } from "navigation/types"
 import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import NativePushBackSheet, {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"
 import TickIcon from "assets/icons/tick.svg"
@@ -25,12 +26,11 @@ export type FilterValues = {
   creditCardPayment?: boolean
 }
 
-type FiltersParams = RootStackParamList["FiltersScreen"]
 type ContentProps = FiltersParams & { onClose: () => void }
-type Props = RootStackScreenProps<"FiltersScreen">
 
-// All filter state & UI. Presentation-agnostic: rendered full-screen by the
-// FiltersScreen route (Android) or inside the native push-back sheet (iOS).
+// All filter state & UI. Only ever rendered inside FiltersSheet below — the
+// split is left in place because the content is long enough to want its own
+// unit, and because the sheet wrapper owns the height hook.
 const FiltersContent: React.FC<ContentProps> = ({
   currentPlaceOfService,
   isFoodCategory,
@@ -44,6 +44,7 @@ const FiltersContent: React.FC<ContentProps> = ({
   onClose,
 }) => {
   const insets = useSafeAreaInsets()
+  const keyboardInset = useKeyboardInset()
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
@@ -232,7 +233,22 @@ const FiltersContent: React.FC<ContentProps> = ({
     activeRanges.length
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={[]}>
+    /*
+      The keyboard inset goes on the OUTER container, not the ScrollView's
+      contentContainerStyle, because the "Show results" footer is a sibling
+      AFTER the ScrollView and nothing inside the scroll content can move it.
+      Padding here shrinks the scroller and lifts the footer in one move.
+
+      iOS only — see useKeyboardInset. Three number-pad fields live in here
+      (the two range bounds and distance), and a number pad has no Return key,
+      so before this the primary action of the sheet was simply unreachable
+      until you guessed to tap elsewhere.
+    */
+    <SafeAreaView
+      className="flex-1 bg-white"
+      edges={[]}
+      style={{ paddingBottom: keyboardInset }}
+    >
       {/* Header */}
       <DmView className="items-center pt-[12] pb-[10] px-[16]">
         <DmView className="flex-row items-center justify-center w-full">
@@ -273,6 +289,7 @@ const FiltersContent: React.FC<ContentProps> = ({
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
+        keyboardShouldPersistTaps="handled"
         bounces={false}
       >
         {/* Food: fulfillment mode (moved here from the results header) */}
@@ -553,9 +570,15 @@ const styles = StyleSheet.create({
 })
 
 /**
- * iOS presentation: the filters inside the native push-back sheet (screen
- * behind recedes). `contentKey` should change on every open so the filter
- * state re-seeds from the freshly passed initial values.
+ * The filters, inside the native push-back sheet — both platforms.
+ * `contentKey` should change on every open so the filter state re-seeds from
+ * the freshly passed initial values.
+ *
+ * There used to be an Android-only `FiltersScreen` route here as well, because
+ * NativePushBackSheet once returned null on Android. It doesn't any more, and
+ * a second presentation meant two code paths, a function in navigation state
+ * (`onApply`) and a route that looked like a full-screen page next to iOS's
+ * sheet. The file keeps its name; nothing here is a screen.
  */
 export const FiltersSheet: React.FC<
   FiltersParams & { visible: boolean; contentKey: number; onClose: () => void }
@@ -572,10 +595,3 @@ export const FiltersSheet: React.FC<
     </NativePushBackSheet>
   )
 }
-
-// Android (and fallback) presentation: plain navigation route.
-const FiltersScreen: React.FC<Props> = ({ route, navigation }) => (
-  <FiltersContent {...route.params} onClose={() => navigation.goBack()} />
-)
-
-export default FiltersScreen

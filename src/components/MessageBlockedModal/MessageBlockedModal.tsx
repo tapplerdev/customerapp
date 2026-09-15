@@ -1,13 +1,9 @@
 import React from "react"
-import { Platform } from "react-native"
-import Modal from "react-native-modal"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
-import NativePushBackSheet, {
-  BOTTOM_SHEET_PUSH_BACK_SCALE,
-} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 
@@ -21,9 +17,8 @@ interface Props {
 /**
  * Bottom sheet shown when a chat message is blocked by moderation (profanity
  * or contact-info policy). The blocked text is restored into the input by the
- * caller, so "Edit message" just dismisses. iOS uses the native push-back
- * presentation (screen behind recedes), matching LeaveReviewModal; Android
- * keeps react-native-modal.
+ * caller, so "Edit message" just dismisses. One native sheet on both platforms —
+ * push-back on iOS, Material's BottomSheetDialog on Android.
  */
 const MessageBlockedModal: React.FC<Props> = ({ isVisible, description, onClose }) => {
   const insets = useSafeAreaInsets()
@@ -47,35 +42,23 @@ const MessageBlockedModal: React.FC<Props> = ({ isVisible, description, onClose 
     </DmView>
   )
 
-  // iOS: native push-back presentation, self-sizing to the content.
-  if (Platform.OS === "ios") {
-    return (
-      <NativePushBackSheet
-        visible={isVisible}
-        onDismissed={onClose}
-        pushBackScale={BOTTOM_SHEET_PUSH_BACK_SCALE}
-      >
-        {content}
-      </NativePushBackSheet>
-    )
-  }
-
+  /*
+   * One presentation, both platforms. NativeActionSheet is the wrapper that owns
+   * the short-sheet push-back scale and derives the dim from whether the content
+   * draws its own background, so none of that is passed here any more.
+   *
+   * Android used to fork onto react-native-modal below. This and LeaveReviewModal were
+   * the last two surfaces in the app doing that, and the fork bought nothing:
+   * the native sheet presents on Android
+   * too, self-sizes the same way, and handles the drag, the dim and the back key
+   * itself. It also cost the react-native-modal back-button trap — that library
+   * swallows back unless onBackButtonPress is passed, which is the kind of thing
+   * a per-platform branch quietly gets wrong.
+   */
   return (
-    <Modal
-      isVisible={isVisible}
-      onBackdropPress={onClose}
-      className="m-0 justify-end"
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      swipeDirection="down"
-      onSwipeComplete={onClose}
-      hardwareAccelerated
-      statusBarTranslucent
-      backdropTransitionOutTiming={0}
-      hideModalContentWhileAnimating
-    >
+    <NativeActionSheet isVisible={isVisible} onClose={onClose}>
       {content}
-    </Modal>
+    </NativeActionSheet>
   )
 }
 

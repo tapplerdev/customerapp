@@ -18,6 +18,11 @@ RCT_EXPORT_VIEW_PROPERTY(sheetHeight, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(pushBackScale, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(dimOpacity, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(transparentBackground, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(dismissable, BOOL)
+// Accepted and ignored — Android only. See TapplerSheetHostView.h.
+RCT_EXPORT_VIEW_PROPERTY(interceptBackPress, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onDismissed, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onBackPress, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onSheetLayout, RCTDirectEventBlock)
 
 @end

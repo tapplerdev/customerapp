@@ -9,8 +9,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { RootStackParamList } from "navigation/types"
 import { useDispatch } from "react-redux"
 import { useTypedSelector } from "store"
-import { logout, setCurrentScreen, setLanguage } from "store/auth/slice"
-import { api } from "services/api"
+import { setCurrentScreen, setLanguage } from "store/auth/slice"
+import { signOut } from "services/session"
 import { useModalHandler } from "@tappler/shared/src/hooks/useModalHandler"
 import RNRestart from "react-native-restart"
 import LogoutModal from "components/LogoutModal"
@@ -39,14 +39,20 @@ const AccountScreen: React.FC = () => {
   const { isAuth, user } = useTypedSelector((store) => store.auth)
 
   const [isLangModalVisible, setLangModalVisible] = useState(false)
+  // Sign-out takes a network round trip now (services/session), and nothing
+  // closes the confirm on Yes — the screen re-renders into its guest branch
+  // once the auth flip lands. Until then both buttons must be dead: a No
+  // tapped in that window would look like a cancel that then signs out anyway.
+  const [isSigningOut, setSigningOut] = useState(false)
   const { modalVisible: isLogoutModalVisible, openModal: openLogoutModal, closeModal: closeLogoutModal, onModalHide: onLogoutModalHide, queueNextAction } = useModalHandler()
 
   const rootNavigation = navigation.getParent()
 
   const handleLogOut = () => {
+    setSigningOut(true)
     setTimeout(() => {
-      dispatch(logout())
-      dispatch(api.util.resetApiState())
+      // Backend + Firebase first, then the local sign-out (services/session).
+      void signOut()
     }, 300)
   }
 
@@ -310,6 +316,7 @@ const AccountScreen: React.FC = () => {
         onClose={closeLogoutModal}
         onModalHide={onLogoutModalHide}
         onPress={handleLogOut}
+        isLoading={isSigningOut}
       />
     </SafeAreaView>
   )

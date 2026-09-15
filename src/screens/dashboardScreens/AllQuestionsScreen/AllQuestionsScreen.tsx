@@ -1,18 +1,18 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
-import { BackHandler, Platform, ScrollView, StyleSheet } from "react-native"
+import React, { useEffect, useMemo, useState } from "react"
+import { ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
-import { RootStackParamList, RootStackScreenProps } from "navigation/types"
+import { AllQuestionsParams } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import NativePushBackSheet, {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"
 
@@ -24,14 +24,12 @@ const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
   fixedLocations: "at_fixed_location",
 }
 
-type AllQuestionsParams = RootStackParamList["AllQuestionsScreen"]
 type ContentProps = AllQuestionsParams & {
   onClose: () => void
   /** Lets the presenter commit answers when the sheet is dismissed natively
       (swipe/dim-tap) — every exit path commits, matching X / See matches. */
   registerCommit?: (commit: () => void) => void
 }
-type Props = RootStackScreenProps<"AllQuestionsScreen">
 
 const AllQuestionsContent: React.FC<ContentProps> = ({
   categoryName,
@@ -44,6 +42,7 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
   registerCommit,
 }) => {
   const insets = useSafeAreaInsets()
+  const keyboardInset = useKeyboardInset()
   const { t } = useTranslation()
 
   const [answers, setAnswers] = useState<QuestionAnswerType[]>(initialAnswers || [])
@@ -140,7 +139,17 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={[]}>
+    /*
+      iOS-only keyboard inset on the OUTER container — the footer button is a
+      sibling AFTER the ScrollView, so nothing in the scroll content can lift it.
+      Padding here shrinks the scroller and raises the footer together.
+      See useKeyboardInset for why Android gets 0.
+    */
+    <SafeAreaView
+      className="flex-1 bg-white"
+      edges={[]}
+      style={{ paddingBottom: keyboardInset }}
+    >
       {/* Header */}
       <DmView className="items-center pt-[16] pb-[12] px-[20]">
         <DmView className="flex-row items-center justify-center w-full">
@@ -266,12 +275,16 @@ const styles = StyleSheet.create({
   },
 })
 
-// Matches the native clamp (sheet height caps at 90% of the container).
-
 /**
- * iOS presentation: the job-details editor inside the native push-back sheet.
- * A native dismiss (swipe/dim-tap) commits answers first — same contract as
+ * The job-details editor, inside the native push-back sheet — both platforms.
+ * A native dismiss (swipe/dim-tap, or Android's back button, which Material
+ * routes to the same dismissal) commits answers first — same contract as
  * X / "See matches". `contentKey` re-seeds state on every open.
+ *
+ * There used to be an Android-only `AllQuestionsScreen` route beside this,
+ * with its own BackHandler doing by hand what the dialog does for free. See
+ * the note in FiltersScreen.tsx for why both are gone. The file keeps its
+ * name; nothing here is a screen.
  */
 export const AllQuestionsSheet: React.FC<
   AllQuestionsParams & { visible: boolean; contentKey: number; onClose: () => void }
@@ -298,30 +311,3 @@ export const AllQuestionsSheet: React.FC<
     </NativePushBackSheet>
   )
 }
-
-// Android (and fallback) presentation: plain navigation route. The hardware
-// back button commits partial answers (via the registered commit fn) before
-// leaving, matching the X / See-matches buttons.
-const AllQuestionsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const commitRef = useRef<() => void>(() => {})
-  useEffect(() => {
-    if (Platform.OS !== "android") return
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      commitRef.current()
-      navigation.goBack()
-      return true
-    })
-    return () => sub.remove()
-  }, [navigation])
-  return (
-    <AllQuestionsContent
-      {...route.params}
-      onClose={() => navigation.goBack()}
-      registerCommit={(fn) => {
-        commitRef.current = fn
-      }}
-    />
-  )
-}
-
-export default AllQuestionsScreen

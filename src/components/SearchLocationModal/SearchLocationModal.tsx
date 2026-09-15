@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, FlatList, Platform, StyleSheet, TextInput } from "react-native"
-import Modal from "react-native-modal"
+import { Animated, FlatList, Keyboard, Platform, StyleSheet, TextInput } from "react-native"
 import NativePushBackSheet, {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
@@ -42,7 +40,6 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
   onChangeLocation,
   onClose,
 }) => {
-  const insets = useSafeAreaInsets()
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const inputRef = useRef<TextInput>(null)
@@ -50,6 +47,50 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
 
   const [searchText, setSearchText] = useState(currentCategoryName)
   const [debouncedSearch, setDebouncedSearch] = useState(currentCategoryName)
+
+  /*
+   * How much of the list the keyboard is covering.
+   *
+   * The results list has to reserve this much at its bottom or its last rows
+   * are unreachable: on iOS the sheet is presented at a FIXED height and cannot
+   * shrink for the keyboard — there is no IME term in
+   * frameOfPresentedViewInContainerView — so the keys sit on top of the list
+   * and scrolling stops at the last row, which is behind them. Insetting is the
+   * only available fix here, and the right one anyway: the search field is at
+   * the top of the sheet, so nothing needs to move, only make room.
+   *
+   * ANDROID does not use this — see where it is applied. Its sheet lives in a
+   * dialog window that genuinely resizes under the keyboard, so the room is
+   * already made and padding again would overshoot by a whole keyboard.
+   *
+   * will* on iOS so the inset lands with the keyboard's own animation rather
+   * than a frame behind it; Android only emits did*. Same split as
+   * MessagesDetailsScreen's composer.
+   */
+  const [keyboardInset, setKeyboardInset] = useState(0)
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      // The FULL keyboard height, with nothing subtracted for the safe area.
+      // The keyboard's frame is measured from the physical bottom of the
+      // screen, and this list runs all the way down to it — nothing below or
+      // around the list pads insets.bottom. Netting off the inset here would
+      // leave the last row ~34pt behind the keys, which is the same bug in
+      // miniature.
+      setKeyboardInset(e.endCoordinates.height)
+    })
+    const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardInset(0))
+
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
 
   const { data: servicesData, isFetching } = useGetServicesQuery()
 
@@ -179,7 +220,8 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
         </DmView>
       </DmView>
 
-      {/* Search inputs container with bottom shadow */}
+      {/* Search inputs container — separated from the list below; see
+          modalStyles.inputsContainer for why that is per-platform. */}
       <DmView className="pb-[12] bg-white" style={modalStyles.inputsContainer}>
         {/* Service search input */}
         <DmView className="mx-[20] mb-[8] flex-row items-center bg-white rounded-full px-[14] h-[44]" style={modalStyles.inputBorder}>
@@ -239,58 +281,91 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
             data={filteredCategories}
             renderItem={renderItem}
             keyExtractor={(item) => String(item.id)}
+            // First tap SELECTS a result instead of just closing the keyboard.
+            // Load-bearing: without it every choice costs two taps.
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            /*
+             * Room for the keyboard, iOS ONLY, and the asymmetry is the point.
+             *
+             * iOS pins the sheet to the container's bottom edge with no IME term
+             * (frameOfPresentedViewInContainerView), so nothing moves when the
+             * keyboard opens and the list has to pad itself. Android's sheet lives
+             * in a dialog window with SOFT_INPUT_ADJUST_RESIZE, which genuinely
+             * shrinks — measured on a device 2026-09-14, the sheet went 2274px to
+             * 1454px — and onSheetLayout relays the content at the smaller size. So
+             * the room is already made there, and padding again would leave the last
+             * row a full keyboard-height above the keys.
+             */
+            contentContainerStyle={{
+              paddingBottom: Platform.OS === "ios" ? keyboardInset : 0,
+            }}
+            // Drag the list and the keyboard follows your finger (iOS). Android
+            // has no interactive mode, so it gets the snap-away version.
+            keyboardDismissMode={
+              Platform.OS === "ios" ? "interactive" : "on-drag"
+            }
           />
         </Animated.View>
       )}
     </DmView>
   )
 
-  if (Platform.OS === "ios") {
-    return (
-      <NativePushBackSheet
-        visible={isVisible}
-        height={fullSheetHeight}
-        onDismissed={handleDismiss}
-      >
-        {content}
-      </NativePushBackSheet>
-    )
-  }
-
-  // Android: react-native-modal, the same fallback every other native sheet in
-  // this app uses. Replaces the gorhom BottomSheetModal (and with it the
-  // FullWindowOverlay container gorhom needed to escape the RN root on iOS).
+  /*
+   * One presentation, both platforms — the native sheet.
+   *
+   * Android used to fork onto react-native-modal here, and the comment defending
+   * it said the search field "needs the window to resize under the IME, and this
+   * is the presentation that does that without argument". That turned out to be
+   * false: the native sheet's dialog window carries SOFT_INPUT_ADJUST_RESIZE and
+   * was measured shrinking 2274px -> 1454px with a docked keyboard. So the fork
+   * bought nothing and cost a bug the other sheets could not have — its container
+   * covers the status bar but stops at the navigation bar, which made every
+   * height-based attempt to position the panel wrong by a different amount on
+   * every device, and the Cancel / Search row drew under the clock.
+   *
+   * Gone with it: statusBarTranslucent, avoidKeyboard, the hand-rolled
+   * backdropOpacity, the swipe-to-dismiss wiring and the manual top inset. The
+   * native sheet does the drag, the dim and the top offset itself.
+   */
   return (
-    <Modal
-      isVisible={isVisible}
-      onBackdropPress={handleDismiss}
-      onSwipeComplete={handleDismiss}
-      swipeDirection="down"
-      className="m-0 justify-end"
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      hardwareAccelerated
-      statusBarTranslucent
-      backdropOpacity={0.5}
-      backdropTransitionOutTiming={0}
-      hideModalContentWhileAnimating
-      avoidKeyboard
+    <NativePushBackSheet
+      visible={isVisible}
+      height={fullSheetHeight}
+      onDismissed={handleDismiss}
     >
-      <DmView style={{ height: fullSheetHeight }}>{content}</DmView>
-    </Modal>
+      {content}
+    </NativePushBackSheet>
   )
 }
 
 const modalStyles = StyleSheet.create({
-  inputsContainer: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+  /**
+   * Separation under the two search fields — a DOWNWARD shadow on iOS, a hairline
+   * rule on Android, and the split is not cosmetic fussing.
+   *
+   * `elevation` is Android's only shadow control and it ignores `shadowOffset`
+   * entirely, casting on all four sides. On a container sitting directly under the
+   * Cancel / Search row, the top of that cast reads as a stray grey line across
+   * the header — visible on Android and not on iOS, which honours the offset and
+   * draws below only. The comment on this style used to just say "bottom shadow",
+   * which is what it does on exactly one of the two platforms.
+   *
+   * 0.7 / grey19 is the divider the rest of the app uses (see ProsListingScreen's
+   * header rule), so Android gets the same separation with nothing above it.
+   */
+  inputsContainer: Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+    },
+    default: {
+      borderBottomWidth: 0.7,
+      borderBottomColor: colors.grey19,
+    },
+  }),
   inputBorder: {
     borderWidth: 1,
     borderColor: "#E0E0E0",

@@ -87,8 +87,20 @@ class TapplerSheetHostView(context: ThemedReactContext) :
 
   var visible: Boolean = false
 
-  /** Height in DIP, as sent by JS. Converted at use; 0 means "not measured yet". */
+  /**
+   * Height in DIP, as sent by JS. Converted at use; 0 means "not measured yet".
+   *
+   * A CHANGE here invalidates whatever we last told JS about the room available
+   * (see lastReportedPx), so the next layout re-reports even if the room itself
+   * has not moved.
+   */
   var sheetHeight: Float = 0f
+    set(value) {
+      if (field != value) {
+        field = value
+        lastReportedPx = -1
+      }
+    }
 
   var dimOpacity: Float = DEFAULT_DIM_OPACITY
 
@@ -123,7 +135,83 @@ class TapplerSheetHostView(context: ThemedReactContext) :
       }
     }
 
+  /**
+   * Whether the back key should be handed to JS instead of dismissing the sheet.
+   *
+   * The sheet's own content sometimes has somewhere to go back TO. The first-time
+   * question flow is a stack of cards inside one sheet, and "back" there means the
+   * previous card, not the whole flow — which is what the user expects and what the
+   * iOS chevron already does. Android's BottomSheetDialog owns its own window, so a
+   * JS BackHandler registered by the content never sees the key at all: the dialog
+   * consumes it and cancels. Handing it up through this prop is the only way the
+   * content gets a say.
+   *
+   * The content is then responsible for closing: it decides between stepping back and
+   * setting visible={false}. That is why the key is swallowed here rather than passed
+   * through — a sheet that both notified JS and dismissed itself would drop a card and
+   * close in the same press.
+   *
+   * dismissable=false still wins. A sheet that refuses the drag and the outside tap
+   * refuses back too, whatever its content would like.
+   *
+   * Read live by the listener in applyDismissable, so flipping it on an open sheet
+   * takes effect on the next press with no re-registration.
+   */
+  var interceptBackPress: Boolean = false
+
   var onDismissed: (() -> Unit)? = null
+
+  /** Fired instead of dismissing when interceptBackPress is on. */
+  var onBackPress: (() -> Unit)? = null
+
+  /**
+   * Reports the height the sheet ACTUALLY got, in DIP, whenever it changes.
+   *
+   * Not the same as sheetHeight. JS computes a near-full height from the window and
+   * the safe-area insets, and on Android that number can be too big: the dialog gets
+   * its own window, and that window stops at the navigation bar. Measured on an API 35
+   * emulator, RN reports the window as 914dp (the full 2400px display) while both the
+   * activity window and the dialog end at 2337px — 890dp — and safe-area-context
+   * reports insets.bottom as 0, so nothing in JS can see the missing 24dp. The
+   * BottomSheetBehavior clamps the sheet to what it has; JS laid the content out at
+   * the number it asked for, and the last 24dp fell off the bottom edge. Which is
+   * exactly the "Show results" / "Next" footer, clipped, with no scroll container to
+   * reach it.
+   *
+   * So the sheet measures itself and JS lays the content out at whatever came back.
+   * This is what RN's own Modal does through uiManager setSize; it converges in one
+   * extra pass, because a second layout at the clamped height clamps to the same
+   * value and JS then has no new state to set.
+   */
+  var onSheetLayout: ((Float) -> Unit)? = null
+
+  /**
+   * Last room-for-the-sheet handed to onSheetLayout, in px, so a re-layout at the same
+   * size is quiet. -1 means "nothing reported for this dialog yet".
+   *
+   * Deliberately NOT a monotonic maximum, and that was measured the hard way. An
+   * earlier version only ever reported an INCREASE, on the theory that JS wants one
+   * answer — how tall can this sheet ever be — and that shrinks are transient noise
+   * from the keyboard or a dismissal drag. The keyboard half of that is simply wrong:
+   * SOFT_INPUT_ADJUST_RESIZE (set in createDialog) is honoured, and on an API 35
+   * emulator with a real docked IME the coordinator goes from 2274px to 1454px. A
+   * monotonic guard swallows that, JS keeps laying 866dp of content into a 546dp
+   * window, and the footer button is clipped clean out of the view tree — which is the
+   * exact bug this mechanism exists to prevent, reintroduced by the guard meant to
+   * protect it. Forwarding the shrink is also just correct: it is what the Android
+   * route this sheet replaced got for free from the manifest's adjustResize.
+   *
+   * (What made this hard to see: the emulator defaults to a FLOATING mini-IME, which
+   * reports no content inset and resizes nothing, so the sheet looked immune. Docking
+   * the keyboard — `adb shell pm clear com.google.android.inputmethod.latin` — is what
+   * surfaced it. Measure the keyboard with a docked keyboard.)
+   *
+   * A dismissal drag does not come through here at all: BottomSheetBehavior moves the
+   * sheet with ViewCompat.offsetTopAndBottom, which never calls layout(), and the
+   * quantity reported is the parent's height rather than the sheet's own top edge.
+   */
+  private var lastReportedPx = -1
+
 
   private var propertyRequiresNewDialog = false
 
@@ -265,6 +353,8 @@ class TapplerSheetHostView(context: ThemedReactContext) :
 
     applyDismissable(created)
 
+    watchSheetHeight(created)
+
     styleSheetContainer(created)
 
     // The content hosts text inputs (chat, search), and a dialog gets its own window,
@@ -288,6 +378,12 @@ class TapplerSheetHostView(context: ThemedReactContext) :
         dialog = null
         detachSheetRoot()
         contentFrame = null
+        // Same reason as in dismiss(): the next dialog measures itself from scratch, and
+        // a stale value here would swallow its report as "nothing new" and leave JS
+        // laying content out at the old dialog's size. This is the USER-dismissal path —
+        // swipe, dim tap, back — which is the common one, so leaving it out made the
+        // wedge permanent rather than transient.
+        lastReportedPx = -1
       }
       if (!wasProgrammatic) onDismissed?.invoke()
     }
@@ -314,10 +410,24 @@ class TapplerSheetHostView(context: ThemedReactContext) :
     target.setCanceledOnTouchOutside(dismissable)
     // Back is the third way out, and setCancelable(false) would take
     // isHideable with it, so the key is swallowed instead.
+    //
+    // Only ACTION_UP is answered. The matching ACTION_DOWN is deliberately passed
+    // through to the dialog, which is what makes Dialog.onKeyUp's isTracking check
+    // meaningful; swallowing both would work today but relies on Material never
+    // looking at the down event.
     target.setOnKeyListener { _, keyCode, event ->
-      keyCode == KeyEvent.KEYCODE_BACK &&
-          event.action == KeyEvent.ACTION_UP &&
-          !dismissable
+      if (keyCode != KeyEvent.KEYCODE_BACK || event.action != KeyEvent.ACTION_UP) {
+        false
+      } else if (!dismissable) {
+        true
+      } else if (interceptBackPress) {
+        // Swallowed on purpose — the content closes itself if that is what back
+        // means where it currently is. See interceptBackPress.
+        onBackPress?.invoke()
+        true
+      } else {
+        false
+      }
     }
   }
 
@@ -360,6 +470,57 @@ class TapplerSheetHostView(context: ThemedReactContext) :
     current.window?.setDimAmount(dimOpacity)
   }
 
+  /**
+   * Watch Material's own sheet container, NOT the content view we hand to
+   * setContentView.
+   *
+   * That distinction is the whole bug. Our FrameLayout carries an EXACT height in its
+   * LayoutParams, and FrameLayout.getChildMeasureSpec turns an exact child dimension
+   * into MeasureSpec.EXACTLY — so it measures at the height JS asked for no matter how
+   * little room the parent has, and asking it how tall it is just reads our own number
+   * back.
+   *
+   * What gets reported is the ROOM, not the sheet, and it is simply the coordinator's
+   * own height. Measured on an API 35 emulator with the diagnostic below: the
+   * coordinator is 2274px against a 2400px display, so it is ALREADY inset by both
+   * system bars (63px status + 63px nav), and the sheet's `top` inside it is 0 when
+   * expanded. 2274px is 866dp, against the 890dp JS asks for — the 24dp that used to
+   * fall off the bottom edge and take the footer button with it.
+   *
+   * Two formulas were tried and both were wrong, in opposite directions, which is why
+   * this comment is long:
+   *
+   *  - `parentHeight - v.top` was right by accident. `v.top` is 0 here, but it is moved
+   *    outside layout by ViewCompat.offsetTopAndBottom during a drag or settle, so
+   *    whether a layout pass sees the pre- or post-offset value is Material's business
+   *    and not a contract.
+   *  - `parentHeight - topInset` subtracted the status bar a SECOND time (reported
+   *    2211px), because the coordinator is inset already.
+   *
+   * Both failures are silent — too small clamps the content to a sliver, too large
+   * clamps to nothing and this whole mechanism no-ops back into the clipped footer it
+   * exists to fix. The parent's height depends on neither the drag nor the inset.
+   */
+  private fun watchSheetHeight(dialog: BottomSheetDialog) {
+    val container =
+        dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) ?: return
+    container.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+      // Only the LIVE dialog may speak. A layout pass on an outgoing dialog's container
+      // can land after a replacement exists — the same posted-callback race the dismiss
+      // listener guards against — and it would report the dead dialog's geometry
+      // against the new sheet.
+      if (this.dialog !== dialog) return@addOnLayoutChangeListener
+      val parentHeight = (v.parent as? View)?.height ?: return@addOnLayoutChangeListener
+      reportAvailableHeight(parentHeight)
+    }
+  }
+
+  private fun reportAvailableHeight(availablePx: Int) {
+    if (availablePx <= 0 || availablePx == lastReportedPx) return
+    lastReportedPx = availablePx
+    onSheetLayout?.invoke(PixelUtil.toDIPFromPixel(availablePx.toFloat()))
+  }
+
   private fun heightPx(): Int =
       if (sheetHeight > 0f) PixelUtil.toPixelFromDIP(sheetHeight).toInt()
       else ViewGroup.LayoutParams.WRAP_CONTENT
@@ -369,6 +530,9 @@ class TapplerSheetHostView(context: ThemedReactContext) :
 
     val current = dialog ?: return
     dialog = null
+    // A fresh dialog measures itself again; without this a same-size sheet would be
+    // treated as "nothing new" and JS would keep the stale value.
+    lastReportedPx = -1
 
     val hostActivity = findActivity(current.context)
     if (current.isShowing && (hostActivity == null || !hostActivity.isFinishing)) {

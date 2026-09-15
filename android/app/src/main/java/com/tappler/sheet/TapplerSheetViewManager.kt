@@ -1,5 +1,7 @@
 package com.tappler.sheet
 
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -21,11 +23,15 @@ import com.facebook.react.uimanager.events.RCTEventEmitter
  * other — which has already happened once, when transparentBackground shipped to
  * customerapp alone and proapp drew a white heading on a white sheet.
  *
- * pushBackScale is the one prop with no Android implementation, and that is a decision
- * rather than a gap. iOS gets the receding-parent effect free from
- * UISheetPresentationController; Android has no equivalent, and hand-animating the root
- * view to imitate it would look wrong next to Material's own motion. It is accepted and
- * ignored so callers can pass the same props to both platforms.
+ * Two props are deliberately one-sided, and both are declared on the other platform
+ * anyway so call sites never have to know which one they are on:
+ *
+ *  - pushBackScale does nothing HERE. iOS gets the receding-parent effect free from
+ *    UISheetPresentationController; Android has no equivalent, and hand-animating the
+ *    root view to imitate it would look wrong next to Material's own motion.
+ *  - interceptBackPress / onBackPress do nothing on IOS, which has no back key.
+ *
+ * That is a decision in both directions, not a gap.
  */
 class TapplerSheetViewManager : ViewGroupManager<TapplerSheetHostView>() {
 
@@ -34,6 +40,12 @@ class TapplerSheetViewManager : ViewGroupManager<TapplerSheetHostView>() {
 
     /** Bubbles to the onDismissed prop on the JS component. */
     private const val EVENT_DISMISSED = "topDismissed"
+
+    /** Bubbles to the onBackPress prop on the JS component. Android only. */
+    private const val EVENT_BACK_PRESS = "topBackPress"
+
+    /** Bubbles to the onSheetLayout prop on the JS component. Android only. */
+    private const val EVENT_SHEET_LAYOUT = "topSheetLayout"
   }
 
   override fun getName(): String = REACT_CLASS
@@ -66,6 +78,11 @@ class TapplerSheetViewManager : ViewGroupManager<TapplerSheetHostView>() {
     view.dismissable = dismissable
   }
 
+  @ReactProp(name = "interceptBackPress")
+  fun setInterceptBackPress(view: TapplerSheetHostView, intercept: Boolean) {
+    view.interceptBackPress = intercept
+  }
+
   @ReactProp(name = "transparentBackground")
   fun setTransparentBackground(view: TapplerSheetHostView, transparent: Boolean) {
     view.transparentBackground = transparent
@@ -85,12 +102,22 @@ class TapplerSheetViewManager : ViewGroupManager<TapplerSheetHostView>() {
       dispatcher?.dispatchEvent(
           DismissedEvent(UIManagerHelper.getSurfaceId(reactContext), view.id))
     }
+    view.onBackPress = {
+      dispatcher?.dispatchEvent(
+          BackPressEvent(UIManagerHelper.getSurfaceId(reactContext), view.id))
+    }
+    view.onSheetLayout = { heightDip ->
+      dispatcher?.dispatchEvent(
+          SheetLayoutEvent(UIManagerHelper.getSurfaceId(reactContext), view.id, heightDip))
+    }
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
     val constants: MutableMap<String, Any> =
         super.getExportedCustomDirectEventTypeConstants() ?: mutableMapOf()
     constants[EVENT_DISMISSED] = MapBuilder.of("registrationName", "onDismissed")
+    constants[EVENT_BACK_PRESS] = MapBuilder.of("registrationName", "onBackPress")
+    constants[EVENT_SHEET_LAYOUT] = MapBuilder.of("registrationName", "onSheetLayout")
     return constants
   }
 
@@ -110,6 +137,45 @@ class TapplerSheetViewManager : ViewGroupManager<TapplerSheetHostView>() {
     @Deprecated("Paper-only path; the app runs newArchEnabled=false.")
     override fun dispatch(rctEventEmitter: RCTEventEmitter) {
       rctEventEmitter.receiveEvent(viewTag, eventName, null)
+    }
+  }
+
+  private class BackPressEvent(surfaceId: Int, viewTag: Int) : Event<BackPressEvent>(surfaceId, viewTag) {
+    override fun getEventName(): String = EVENT_BACK_PRESS
+
+    /**
+     * Event coalescing defaults to ON with a coalescing key of 0, which would merge two
+     * back presses landing in the same dispatcher batch into one. For a sheet that is a
+     * STACK of cards, two presses mean two cards — dropping one is a visibly dead press.
+     * The window is ~16ms so a human will not hit it, but key-repeat and instrumented
+     * tests will.
+     */
+    override fun canCoalesce(): Boolean = false
+
+    @Deprecated("Paper-only path; the app runs newArchEnabled=false.")
+    override fun dispatch(rctEventEmitter: RCTEventEmitter) {
+      rctEventEmitter.receiveEvent(viewTag, eventName, null)
+    }
+  }
+
+  private class SheetLayoutEvent(surfaceId: Int, viewTag: Int, private val heightDip: Float) :
+      Event<SheetLayoutEvent>(surfaceId, viewTag) {
+    override fun getEventName(): String = EVENT_SHEET_LAYOUT
+
+    private fun payload(): WritableMap =
+        Arguments.createMap().apply { putDouble("height", heightDip.toDouble()) }
+
+    /**
+     * The only one of the three events carrying data, so it is the only one that breaks
+     * if the deprecated dispatch path below is ever dropped — Event.dispatchModern falls
+     * back to getEventData(), and the base implementation returns null, which throws.
+     * Overriding both makes it correct on Paper and on Fabric.
+     */
+    override fun getEventData(): WritableMap = payload()
+
+    @Deprecated("Paper path; the app runs newArchEnabled=false.")
+    override fun dispatch(rctEventEmitter: RCTEventEmitter) {
+      rctEventEmitter.receiveEvent(viewTag, eventName, payload())
     }
   }
 }

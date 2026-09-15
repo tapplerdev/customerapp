@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react"
-import { Dimensions, FlatList, Image, Modal, NativeScrollEvent, NativeSyntheticEvent, StatusBar, TouchableOpacity } from "react-native"
+import { FlatList, Image, Modal, NativeScrollEvent, NativeSyntheticEvent, StatusBar, TouchableOpacity } from "react-native"
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -19,6 +19,13 @@ import OffersSection from "components/OffersSection/OffersSection"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
+import {
+  WORK_PHOTO_GAP,
+  WORK_PHOTO_RADIUS,
+  workPhotoHeight,
+  workPhotoTileUri,
+  workPhotoWidth,
+} from "@tappler/shared/src/constants/workPhotoTile"
 import MediaViewerModal from "@tappler/shared/src/components/MediaViewer/MediaViewerModal"
 import VideoThumbnail from "@tappler/shared/src/components/MediaViewer/VideoThumbnail"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
@@ -48,9 +55,7 @@ const isVideoMedia = (media: ProWorkPhotoType) =>
 // blank tile with nothing but the play badge on it. Videos uploaded since
 // posters were added always have one; only older rows land here.
 const thumbnailUri = (media: ProWorkPhotoType) =>
-  isVideoMedia(media)
-    ? media.posterUrl || null
-    : media.url150 || media.url
+  isVideoMedia(media) ? media.posterUrl || null : workPhotoTileUri(media)
 
 type Props = RootStackScreenProps<"ProProfileScreen">
 
@@ -60,11 +65,6 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
   const scrollY = useSharedValue(0)
-  const SCREEN_WIDTH = Dimensions.get("window").width
-  // Fixed frame per slide, matching proapp's MediaViewerModal: every item
-  // fills the same box with `cover`. The native player controls handle
-  // fullscreen when someone wants to see a video uncropped.
-  const VIEWER_HEIGHT = SCREEN_WIDTH
   const [viewerVisible, setViewerVisible] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
   const carouselRef = useRef<ICarouselInstance>(null)
@@ -331,7 +331,12 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               data={workPhotos}
               keyExtractor={(item) => String(item.id)}
               renderItem={({ item, index }) => {
-                const imageSize = (SCREEN_WIDTH - 50) / 3
+                // Same 4:3 tile as the pro app's galleries: 3 across, the
+                // list's 15pt inset and a 10pt gap (ml-[15] on the first,
+                // mr-[10] on each). Was a square, which re-cropped the
+                // backend's 4:3 thumbnail a second time.
+                const tileWidth = workPhotoWidth(3, 15, WORK_PHOTO_GAP)
+                const tileHeight = workPhotoHeight(tileWidth)
                 const isVideo = isVideoMedia(item)
                 return (
                   <DmView
@@ -344,7 +349,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     {thumbnailUri(item) ? (
                       <CachedImage
                         uri={thumbnailUri(item) as string}
-                        style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
+                        style={{
+                          width: tileWidth,
+                          height: tileHeight,
+                          borderRadius: WORK_PHOTO_RADIUS,
+                        }}
                         resizeMode="cover"
                         withSkeleton
                       />
@@ -353,13 +362,17 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                       // device, exactly as the pro app's grid does.
                       <VideoThumbnail
                         videoUri={item.url}
-                        style={{ width: imageSize, height: imageSize, borderRadius: 3 }}
+                        style={{
+                          width: tileWidth,
+                          height: tileHeight,
+                          borderRadius: WORK_PHOTO_RADIUS,
+                        }}
                       />
                     )}
                     {isVideo && (
                       <DmView
                         className="absolute items-center justify-center"
-                        style={{ width: imageSize, height: imageSize, top: 10 }}
+                        style={{ width: tileWidth, height: tileHeight, top: 10 }}
                         pointerEvents="none"
                       >
                         <PlayIcon width={28} height={28} />

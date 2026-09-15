@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import clsx from "clsx"
-import { Animated, InteractionManager, Platform, View, ViewToken } from "react-native"
+import { Animated, InteractionManager, View, ViewToken } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -250,28 +250,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     if (customerQuestions.length === 0) return // wait for the (new) service's questions to load
     hasLaunchedQuestions.current = true
     relaunchQuestions.current = false
-    if (Platform.OS === "ios") {
-      // Wait out the screen's own push animation before presenting natively
-      InteractionManager.runAfterInteractions(() => {
-        setQuestionsOpenCount((c) => c + 1)
-        setQuestionsVisible(true)
-        // Gate drops only as the sheet actually presents — not at effect time,
-        // or the push-animation window would reopen.
-        setQuestionsSettled(true)
-      })
-    } else {
-      navigation.push("QuestionStepScreen", {
-        categoryId,
-        categoryName,
-        serviceId,
-        placeOfServiceOptions,
-        customerQuestions,
-        // Seeded on repost, empty otherwise — flow opens pre-filled
-        initialAnswers: allAnswers,
-        initialPlaceOfService: currentPlaceOfService,
-      })
+    // Wait out the screen's own push animation before presenting natively
+    InteractionManager.runAfterInteractions(() => {
+      setQuestionsOpenCount((c) => c + 1)
+      setQuestionsVisible(true)
+      // Gate drops only as the sheet actually presents — not at effect time,
+      // or the push-animation window would reopen.
       setQuestionsSettled(true)
-    }
+    })
   }, [customerQuestions.length, serviceId])
 
   // Gate rule-out: the service payload arrived but this category asks nothing
@@ -869,22 +855,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="flex-row items-center">
           <DmView
             onPress={() => {
-              if (Platform.OS === "ios") {
-                setFiltersOpenCount((c) => c + 1)
-                setFiltersVisible(true)
-              } else {
-                navigation.navigate("FiltersScreen", {
-                  currentPlaceOfService,
-                  isFoodCategory,
-                  foodMode: foodFulfillment,
-                  initialFilters: currentFilters,
-                  refinementFilters,
-                  initialRefinementOptionIds: refinementFilterOptionIds,
-                  initialRanges: rangeFilters,
-                  upfrontSelections,
-                  onApply: handleFiltersDismiss,
-                })
-              }
+              setFiltersOpenCount((c) => c + 1)
+              setFiltersVisible(true)
             }}
             className="w-[32] h-[32] items-center justify-center"
             hitSlop={HIT_SLOP_DEFAULT}
@@ -900,19 +872,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         {totalQuestions > 0 && !isFoodCategory && (
           <DmView
             onPress={() => {
-              if (Platform.OS === "ios") {
-                setAllQuestionsOpenCount((c) => c + 1)
-                setAllQuestionsVisible(true)
-              } else {
-                navigation.navigate("AllQuestionsScreen", {
-                  categoryName,
-                  placeOfServiceOptions,
-                  customerQuestions,
-                  initialAnswers: allAnswers,
-                  initialPlaceOfService: currentPlaceOfService,
-                  onApply: handleAllQuestionsDismiss,
-                })
-              }
+              setAllQuestionsOpenCount((c) => c + 1)
+              setAllQuestionsVisible(true)
             }}
             className="flex-row items-center mb-[12]"
           >
@@ -1025,9 +986,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         </Animated.View>
       )}
 
-      {/* Question flow is now a native screen (QuestionStepScreen, formSheet) — launched via
-          navigation.push and resolved via questionFlowEventBus, replacing the gorhom QuestionBottomSheet */}
-
 
       <SearchLocationModal
         isVisible={isSearchModalVisible}
@@ -1102,23 +1060,19 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         descr={t("an_error_occurred")}
       />
 
-      {/* First-time question flow — native push-back sheet (iOS); Android
-          uses the QuestionStepScreen route */}
+      {/* First-time question flow — native push-back sheet, both platforms */}
       <QuestionFlowSheet
         visible={questionsVisible}
         contentKey={questionsOpenCount}
         onClose={() => setQuestionsVisible(false)}
-        categoryId={categoryId}
         categoryName={categoryName}
-        serviceId={serviceId}
         placeOfServiceOptions={placeOfServiceOptions}
         customerQuestions={customerQuestions}
         initialAnswers={allAnswers}
         initialPlaceOfService={currentPlaceOfService}
       />
 
-      {/* Job-details editor — native push-back sheet (iOS); Android uses the
-          AllQuestionsScreen route */}
+      {/* Job-details editor — native push-back sheet, both platforms */}
       <AllQuestionsSheet
         visible={allQuestionsVisible}
         contentKey={allQuestionsOpenCount}
@@ -1131,7 +1085,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         onApply={handleAllQuestionsDismiss}
       />
 
-      {/* Filters — native push-back sheet (iOS); Android uses the FiltersScreen route */}
+      {/* Filters — native push-back sheet, both platforms */}
       <FiltersSheet
         visible={filtersVisible}
         contentKey={filtersOpenCount}

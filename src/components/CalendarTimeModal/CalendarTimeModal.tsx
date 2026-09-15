@@ -150,6 +150,7 @@ const CalendarTimeModal: React.FC<Props> = ({
     <Modal
       isVisible={isVisible}
       onBackdropPress={onClose}
+      onBackButtonPress={onClose}
       className="m-0 justify-end"
       animationIn="slideInUp"
       animationOut="slideOutDown"

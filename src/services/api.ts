@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
 import { API_URL } from "config"
+import messaging from "@react-native-firebase/messaging"
 import { chatReadRegistry } from "services/chatReadRegistry"
 import { RootState } from "store"
 import { setTokens, logout } from "store/auth/slice"
@@ -128,6 +129,12 @@ const baseQueryWithReauth: BaseQueryFn<
         refreshStatus === 404
       ) {
         console.log(`[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`)
+        // Kill the push token at Firebase too (services/session does the same,
+        // plus the backend call this dead session cannot make): a signed-out
+        // phone must not keep receiving the account's pushes.
+        void Promise.resolve()
+          .then(() => messaging().deleteToken())
+          .catch(() => undefined)
         apiBase.dispatch(logout())
         apiBase.dispatch(api.util.resetApiState())
       } else {
@@ -506,6 +513,18 @@ export const api = createApi({
     >({
       query: (body) => ({
         url: "/notifications/registration-token",
+        method: "POST",
+        body,
+      }),
+    }),
+    // Sign-out on this device (services/session). Names the token so a call
+    // landing after a quick re-login under a new token cannot delete it.
+    removeNotificationsDevice: builder.mutation<
+      void,
+      { registrationToken: string }
+    >({
+      query: (body) => ({
+        url: "/notifications/registration-token/remove",
         method: "POST",
         body,
       }),

@@ -13,6 +13,8 @@ interface Props {
   onClose: () => void
   onModalHide: () => void
   onPress: () => void
+  /** Sign-out in flight: both buttons disabled, Yes spinning (MainModal). */
+  isLoading?: boolean
 }
 
 const LogoutModal: React.FC<Props> = ({
@@ -20,6 +22,7 @@ const LogoutModal: React.FC<Props> = ({
   onClose,
   onModalHide,
   onPress,
+  isLoading,
 }) => {
   const { t } = useTranslation()
 
@@ -46,6 +49,7 @@ const LogoutModal: React.FC<Props> = ({
       classNameSecondBtn="border-black"
       classNameSecondBtnText="text-red"
       onPress={onPress}
+      isLoading={isLoading}
     />
   )
 }

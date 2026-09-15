@@ -4,6 +4,7 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import DeleteIcon from "assets/icons/Delete.svg"
@@ -43,6 +44,23 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
+      {/*
+        The reason field is MULTILINE, so its return key inserts a newline
+        instead of dismissing — and the Delete button below is pinned to the
+        physical bottom by the flex-1 spacer. Without a scroller the keyboard
+        covered the button with no gesture to get it back, so the flow could
+        not be completed at all.
+
+        `flexGrow: 1` is what keeps that spacer doing its job inside a scroll
+        view. Same shape as RegisterScreen and SignInEmailScreen; no
+        enableOnAndroid, because this app mounts no KeyboardProvider so the
+        manifest's adjustResize still shrinks the window on Android.
+      */}
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
       <DmView className="flex-1 px-[24] pt-[24]">
         {/* Warning text */}
         <DmView className="flex-row">
@@ -85,6 +103,7 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
           />
         </DmView>
       </DmView>
+      </KeyboardAwareScrollView>
 
       {/* Confirmation Modal */}
       <MainModal

@@ -6,9 +6,11 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios --simulator 'iPhone 17 Pro' --port 8082",
     "lint": "eslint .",
+    "prestart": "pids=$(lsof -ti:8082 2>/dev/null); [ -n \"$pids\" ] && echo \"freeing port 8082 (pid $pids)\" && kill -9 $pids; exit 0",
     "start": "react-native start --port 8082",
     "start:local": "APP_ENV=localhost react-native start --port 8082",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@notifee/react-native": "^7.8.2",
@@ -31,6 +33,7 @@
     "i18next": "23.8.2",
     "lottie-react-native": "^7.3.6",
     "nativewind": "2.0.11",
+    "patch-package": "^8.0.0",
     "react": "18.2.0",
     "react-hook-form": "^7.72.1",
     "react-i18next": "14.0.5",

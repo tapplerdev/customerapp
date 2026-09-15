@@ -56,10 +56,13 @@ Job status (`"active"`, `"ended"`, `"completed"`) does NOT affect chat visibilit
 
 ## Attachment Picker (Bottom Sheet)
 
-Uses `NativeActionSheet` — the native push-back sheet on iOS,
-`react-native-modal` on Android. Height is passed explicitly because the
-camera-roll strip populates after first layout, so the native self-measure
-lands short. (Was `@gorhom/bottom-sheet`; that dependency is gone.)
+Uses `NativeActionSheet` — one native sheet on BOTH platforms (the push-back
+presentation on iOS, Material's `BottomSheetDialog` on Android, both behind the
+same `TapplerSheetView`). There is no `react-native-modal` fallback in it any
+more, so Android geometry questions belong in `TapplerSheetHostView.kt`, not in
+react-native-modal's props. Height is passed explicitly because the camera-roll
+strip populates after first layout, so the native self-measure lands short.
+(Was `@gorhom/bottom-sheet`; that dependency is gone.)
 
 Layout:
 - "Photos & videos" header with "View library" link (red, bold, opens full gallery picker)
