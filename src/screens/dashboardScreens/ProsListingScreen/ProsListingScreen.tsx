@@ -1110,6 +1110,29 @@ const ProsListingScreen: React.FC<Props> = (props) => {
     <TourGuideProvider
       preventOutsideInteraction
       tooltipComponent={TooltipComponent}
+      /*
+       * Load-bearing, and the prop name reads backwards from what it does.
+       *
+       * rn-tourguide's Modal.js:76 runs, on Android only and by default:
+       *   if (!androidStatusBarVisible) obj.top -= StatusBar.currentHeight
+       * That is right for an app whose content starts BELOW the status bar,
+       * where measure()'s page coordinates and the overlay's origin disagree by
+       * exactly that much. This app sets `translucent={true}` in App.tsx and
+       * draws under the status bar, so the two already agree and the subtraction
+       * is pure loss: it slid the spotlight UP by one status bar.
+       *
+       * Measured on an API 35 emulator before the fix — first card
+       * [42,449][1038,864], hole y 389..796: the same HEIGHT (407 vs 415, so the
+       * mask does track the card, whatever its subscriptions/badges make it)
+       * sitting 60px high against a 63px status bar. The symptom was bare white
+       * above the photo and the card's own Chat / Select-me buttons falling
+       * outside the hole where the 0.7 backdrop dimmed them — which reads as a
+       * clipped card rather than an offset mask, and sends you looking at card
+       * sizing instead.
+       *
+       * Passing true skips the subtraction. iOS never ran that branch.
+       */
+      androidStatusBarVisible
       maskOffset={0}
       borderRadius={20}
       tooltipStyle={{ overflow: "visible", marginTop: -70 }}

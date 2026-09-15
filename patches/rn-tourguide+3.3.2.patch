@@ -1,3 +1,106 @@
+diff --git a/node_modules/rn-tourguide/lib/components/Modal.js b/node_modules/rn-tourguide/lib/components/Modal.js
+index a296031..8792060 100644
+--- a/node_modules/rn-tourguide/lib/components/Modal.js
++++ b/node_modules/rn-tourguide/lib/components/Modal.js
+@@ -19,6 +19,11 @@ export class Modal extends React.Component {
+             containerVisible: false,
+             tooltipTranslateY: new Animated.Value(400),
+             opacity: new Animated.Value(0),
++            // PATCH: one opacity over the whole overlay (mask + tooltip + the
++            // interaction blocker) so closing can fade them together. Upstream has
++            // no exit animation at all — grep the package for "toValue: 0" and you
++            // get nothing; every animation only ever runs toward 1.
++            containerOpacity: new Animated.Value(1),
+             layout: undefined,
+             size: undefined,
+             position: undefined,
+@@ -34,15 +39,49 @@ export class Modal extends React.Component {
+             this.props.prev();
+         };
+         this.handleStop = () => {
+-            this.reset();
++            // PATCH: no synchronous reset(). props.stop() flips `visible` to false
++            // (TourGuideProvider._stop), and componentDidUpdate then fades the
++            // overlay out before unmounting it. Resetting here tore the overlay
++            // down in the same frame, which is what made the backdrop vanish
++            // instead of closing.
+             this.props.stop();
+         };
+         this.renderMask = () => (React.createElement(SvgMask, { style: styles.overlayContainer, size: this.state.size, position: this.state.position, easing: this.props.easing, animationDuration: this.props.animationDuration, backdropColor: this.props.backdropColor, currentStep: this.props.currentStep, maskOffset: this.props.maskOffset, borderRadius: this.props.borderRadius, dismissOnPress: this.props.dismissOnPress, stop: this.props.stop }));
+     }
+     componentDidUpdate(prevProps) {
+         if (prevProps.visible === true && this.props.visible === false) {
+-            this.reset();
++            this.fadeOutAndReset();
++        }
++    }
++    // PATCH: the exit transition.
++    //
++    // reset() clears `layout`, and render() gates its content on `layout &&
++    // containerVisible` — so the overlay MUST stay mounted, with its layout
++    // intact, for the length of the fade. Hence: animate first, reset in the
++    // callback.
++    //
++    // The callback runs on ANY completion, not just finished === true. An
++    // interrupted fade (a re-render, a fast second tap) otherwise leaves the
++    // backdrop mounted over the screen with preventOutsideInteraction swallowing
++    // every touch — an unrecoverable overlay, much worse than a hard cut.
++    //
++    // 250ms rather than the 400ms enter duration: closing should feel quicker
++    // than opening.
++    fadeOutAndReset() {
++        if (this.exiting) {
++            return;
+         }
++        this.exiting = true;
++        Animated.timing(this.state.containerOpacity, {
++            toValue: 0,
++            duration: 250,
++            easing: Easing.out(Easing.quad),
++            useNativeDriver: true,
++        }).start(() => {
++            this.exiting = false;
++            this.state.containerOpacity.setValue(1);
++            this.reset();
++        });
+     }
+     measure() {
+         if (typeof __TEST__ !== 'undefined' && __TEST__) {
+@@ -160,6 +199,10 @@ export class Modal extends React.Component {
+     }
+     animateMove(obj = {}) {
+         return new Promise((resolve) => {
++            // PATCH: a fade may have been interrupted by a re-open; start opaque.
++            this.exiting = false;
++            this.state.containerOpacity.stopAnimation();
++            this.state.containerOpacity.setValue(1);
+             this.setState({ containerVisible: true }, () => this._animateMove(obj).then(resolve));
+         });
+     }
+@@ -170,8 +213,12 @@ export class Modal extends React.Component {
+         });
+     }
+     renderTooltip() {
+-        const { tooltipComponent: TooltipComponent, visible } = this.props;
+-        if (!visible) {
++        const { tooltipComponent: TooltipComponent } = this.props;
++        // PATCH: gated on containerVisible, not props.visible. During the exit
++        // fade `visible` is already false while the overlay is still mounted;
++        // the old gate made the tooltip disappear instantly and left the dim
++        // fading behind nothing.
++        if (!(this.state.containerVisible || this.props.visible)) {
+             return null;
+         }
+         const { opacity } = this.state;
+@@ -195,7 +242,7 @@ export class Modal extends React.Component {
+         if (!containerVisible) {
+             return null;
+         }
+-        return (React.createElement(View, { style: [StyleSheet.absoluteFill, { backgroundColor: 'transparent' }], pointerEvents: 'box-none' },
++        return (React.createElement(Animated.View, { style: [StyleSheet.absoluteFill, { backgroundColor: 'transparent', opacity: this.state.containerOpacity }], pointerEvents: 'box-none' },
+             React.createElement(View, { style: styles.container, onLayout: this.handleLayoutChange, pointerEvents: 'box-none' }, contentVisible && (React.createElement(React.Fragment, null,
+                 this.renderMask(),
+                 this.renderNonInteractionPlaceholder(),
 diff --git a/node_modules/rn-tourguide/lib/components/style.js b/node_modules/rn-tourguide/lib/components/style.js
 index 18f6cc8..49ef15f 100644
 --- a/node_modules/rn-tourguide/lib/components/style.js

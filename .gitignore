@@ -71,3 +71,6 @@ yarn-error.log
 
 # Personal Claude Code notes, machine-local by design
 CLAUDE.local.md
+
+# JVM crash dumps (a probing Gradle toolchain leaves these behind)
+hs_err_pid*.log
