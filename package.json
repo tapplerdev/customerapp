@@ -44,7 +44,6 @@
     "react-native-create-thumbnail": "^2.1.1",
     "react-native-document-picker": "^9.3.1",
     "react-native-drop-shadow": "^1.0.3",
-    "react-native-extra-dimensions-android": "^1.2.5",
     "react-native-fast-image": "^8.6.3",
     "react-native-gesture-handler": "2.18.1",
     "react-native-image-crop-picker": "^0.51.1",
