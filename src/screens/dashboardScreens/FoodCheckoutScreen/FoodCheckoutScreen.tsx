@@ -8,6 +8,7 @@ import {
   DmView,
 } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
+import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 import { ScrollView, TextInput } from "react-native"
 import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
 import AddressSelectionModal from "components/AddressSelectionModal"
@@ -53,6 +54,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
+  const keyboardInset = useKeyboardInset()
   const dispatch = useDispatch()
 
   // Checkout always submits the draft for the pro it was entered from.
@@ -552,8 +554,27 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     </DmView>
   )
 
+  /*
+   * The keyboard inset goes on the OUTER container below: the "Review order"
+   * footer is a sibling AFTER </ScrollView>, so nothing inside the scroll
+   * content can lift it. Padding there shrinks the scroller and raises the
+   * footer together.
+   *
+   * It matters more here than on most screens because the order-notes field is
+   * `multiline` — its return key inserts a newline instead of dismissing, so
+   * with the footer under the keys there was no way to finish the order short of
+   * guessing to tap elsewhere.
+   *
+   * iOS only, by construction — see useKeyboardInset. Android's activity window
+   * carries the manifest's adjustResize and this app mounts no KeyboardProvider,
+   * so the window shrinks there and padding would double-count.
+   */
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-white"
+      edges={["top"]}
+      style={{ paddingBottom: keyboardInset }}
+    >
       {/* Header */}
       <DmView className="flex-row items-center px-[12] py-[10] bg-white border-b-0.2 border-b-grey19">
         <DmView

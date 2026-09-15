@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react"
-import { Alert, Dimensions, Image, Modal, ScrollView, TextInput, TouchableOpacity } from "react-native"
+import { Alert, Dimensions, Image, Modal, TextInput, TouchableOpacity } from "react-native"
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
@@ -160,7 +161,17 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="w-[32]" />
       </DmView>
 
-      <ScrollView
+      {/*
+        KeyboardAwareScrollView, not a plain ScrollView. The Submit button lives
+        INSIDE this scroller and the review comment field is `multiline`, so its
+        return key inserts a newline rather than dismissing. A plain ScrollView
+        adds no keyboard contentInset on iOS — nothing in this app sets
+        automaticallyAdjustKeyboardInsets — so with flexGrow:1 the content is
+        exactly the frame height and that 40px tail was the entire scroll range:
+        the button stayed under the keys. Same fix as DeleteAccountScreen /
+        AddNewAddressScreen / RegisterScreen.
+      */}
+      <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -319,7 +330,7 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
             />
           </DmView>
         </DmView>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Photo viewer modal */}
       <Modal
