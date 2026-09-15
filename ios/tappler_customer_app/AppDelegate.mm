@@ -24,10 +24,14 @@
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-  return [self getBundleURL];
+  return [self bundleURL];
 }
 
-- (NSURL *)getBundleURL
+// `bundleURL`, not `getBundleURL`: RN 0.76 declares this on RCTAppDelegate and
+// its base implementation RAISES. sourceURLForBridge: above still wins on the
+// old architecture, but leaving this unimplemented means anything that does
+// reach it throws, and it is the only path once bridgeless is on.
+- (NSURL *)bundleURL
 {
 #if DEBUG
   // Metro port (8082, to avoid clashing with proapp on 8081) is set via RCT_METRO_PORT

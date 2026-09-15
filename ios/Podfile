@@ -18,20 +18,35 @@ setup_permissions([
   'Camera',
 ])
 
+# min_ios_version_supported now resolves to 15.1 — RN 0.76 raised its own floor
+# (node_modules/react-native/scripts/cocoapods/helpers.rb). Left as the helper
+# rather than hardcoded so it tracks RN automatically. proapp hardcodes '15.1';
+# either is fine, this one self-updates.
 platform :ios, min_ios_version_supported
-prepare_react_native_project!
-use_modular_headers!
 
-# If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
-# because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
-#
-# To fix this you can also exclude `react-native-flipper` using a `react-native.config.js`
-# ```js
-# module.exports = {
-#   dependencies: {
-#     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
-# ```
-flipper_config = FlipperConfiguration.disabled
+# New Architecture pinned OFF. In 0.76 the DEFAULT is ON — new_architecture.rb's
+# new_arch_enabled reads `ENV[...] == nil || == '1'`, so an UNSET var means ON.
+# The :new_arch_enabled keyword below is the authoritative switch; this env line
+# covers anything reading the flag before use_react_native! runs.
+ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+
+prepare_react_native_project!
+
+# NO global `use_modular_headers!`. RN 0.76's ReactCommon.podspec:35 sets
+# `s.header_dir = "ReactCommon"` (its own comment says "for use_frameworks!
+# compatibility"), and React-RuntimeApple shares that header dir. With a GLOBAL
+# modular-headers flag and no use_frameworks!, CocoaPods writes one modulemap
+# per pod into Pods/Headers/Public/ReactCommon/ and BOTH declare
+# `module ReactCommon`, so every target that imports it dies with:
+#   Pods/Headers/Public/ReactCommon/ReactCommon.modulemap:1:8:
+#     error: Redefinition of module 'ReactCommon'
+# and then a cascade of bogus "Could not build module 'CoreFoundation'" noise
+# that looks like a corrupt module cache but is not.
+# The pods that genuinely need modular headers (Firebase and friends) already
+# declare `:modular_headers => true` individually below, so nothing is lost.
+# proapp avoids this instead by using `use_frameworks! :linkage => :static`,
+# which gives every pod its own framework module — a valid alternative, but a
+# far larger change to linkage than this.
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -58,11 +73,10 @@ target 'tappler_customer_app' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # Enables Flipper.
-    #
-    # Note that if you have use_frameworks! enabled, Flipper will not work and
-    # you should disable the next line.
-    :flipper_configuration => flipper_config,
+    # New arch off, belt to the ENV line's braces. use_react_native! runs
+    # ENV['RCT_NEW_ARCH_ENABLED'] = compute_new_arch_enabled(...), so this
+    # keyword beats even an externally-set RCT_NEW_ARCH_ENABLED=1.
+    :new_arch_enabled => false,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -86,6 +100,14 @@ target 'tappler_customer_app' do
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings['RCT_METRO_PORT'] = '8082'
+
+        # Some pods still declare an iOS floor below ours, which Xcode 16+ warns
+        # about loudly and, for a few, errors on. Clamp anything lower up to the
+        # project's minimum.
+        target_version = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if target_version && Gem::Version.new(target_version) < Gem::Version.new('15.1')
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        end
       end
     end
   end

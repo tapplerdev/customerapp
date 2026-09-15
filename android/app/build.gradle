@@ -49,6 +49,12 @@ react {
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
+
+    // RN 0.76 autolinking. Replaces the old
+    // `apply from: ".../cli-platform-android/native_modules.gradle"` +
+    // applyNativeModulesAppBuildGradle(project) at the bottom of this file —
+    // the CLI moved out of react-native's own node_modules, so that path is gone.
+    autolinkLibrariesWithApp()
 }
 
 /**
@@ -107,7 +113,6 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    implementation("com.facebook.react:flipper-integration")
 
     // BottomSheetDialog, behind com.tappler.sheet.TapplerSheetHostView. Declared
     // explicitly rather than inherited from whichever transitive dependency happened
@@ -121,4 +126,3 @@ dependencies {
     }
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
