@@ -25,7 +25,7 @@
     "@react-navigation/native-stack": "^7.14.10",
     "@reduxjs/toolkit": "2.2.1",
     "@shopify/flash-list": "1.7.5",
-    "@tappler/shared": "file:../tappler-shared",
+    "@tappler/shared": "link:../tappler-shared",
     "arabic-digits": "^1.1.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

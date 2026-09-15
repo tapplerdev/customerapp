@@ -11,22 +11,18 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.soloader.SoLoader
-import com.tappler.sheet.TapplerSheetPackage
 
 class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
-            PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MyReactNativePackage())
-
-              // Native Material bottom sheet, registered as "TapplerSheetView" — the
-              // same name the iOS module uses, which is what lets the JS component
-              // resolve it without a platform check.
-              add(TapplerSheetPackage())
-            }
+            // Packages that cannot be autolinked yet can be added manually here.
+            // TapplerSheetPackage is NOT one of them any more: @tappler/shared ships a
+            // native module and autolinking generates it into PackageList. Adding it
+            // here too would not crash — ViewManagerRegistry collapses duplicates
+            // silently — it would just be a line that looks load-bearing and is not.
+            PackageList(this).packages
 
         override fun getJSMainModuleName(): String = "index"
 

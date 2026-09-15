@@ -1361,6 +1361,8 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
   - SocketRocket (0.6.1)
+  - TapplerShared (1.0.0):
+    - React-Core
   - TOCropViewController (2.8.0)
   - Yoga (1.14.0)
 
@@ -1453,6 +1455,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - "TapplerShared (from `../node_modules/@tappler/shared`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1638,6 +1641,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  TapplerShared:
+    :path: "../node_modules/@tappler/shared"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1742,6 +1747,7 @@ SPEC CHECKSUMS:
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
+  TapplerShared: 92032c32108b4ccaa16ee8387ad2e43bdb171e63
   TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888
   Yoga: 1b901a6d6eeba4e8a2e8f308f708691cdb5db312
 

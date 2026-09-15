@@ -14,16 +14,13 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		25F6D10275BB42918A5FECC2 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D8393FF742E449B8AC8D8D81 /* Montserrat-SemiBold.ttf */; };
-		5E896716281E27256426098E /* TapplerSheetViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 85A89820F6D1C8448496DF2B /* TapplerSheetViewManager.m */; };
 		640B34238F0A4F23BA88D2E0 /* TheSans-Plain.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 34EE60C357134CE78DB23A19 /* TheSans-Plain.ttf */; };
-		72F409CD8EC9D3556083FA7E /* TapplerSheetHostView.m in Sources */ = {isa = PBXBuildFile; fileRef = 72082CE2B2B0978D929B193E /* TapplerSheetHostView.m */; };
 		7698B04938A74F2B90DD2D8A /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 720B404128EF42F2A2684B5E /* Montserrat-Bold.ttf */; };
 		7699B88040F8A987B510C191 /* libPods-tappler_customer_app-tappler_customer_appTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-tappler_customer_app-tappler_customer_appTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		863E1A525084448F845AD21D /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5845422AB87C49E19ADA1226 /* Montserrat-Regular.ttf */; };
 		AF33D88F2FAA3E8C006E6621 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AF33D88E2FAA3E8C006E6621 /* GoogleService-Info.plist */; };
 		D38497CDDC824C9B95E42684 /* Montserrat-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 65CF59A28D324871AABA8965 /* Montserrat-Medium.ttf */; };
-		F0D59CEB04948BD27839A2C3 /* TapplerSheetPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = A2504F1EC68F4CCC7E6F1D59 /* TapplerSheetPresentationController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,15 +51,10 @@
 		5B7EB9410499542E8C5724F5 /* Pods-tappler_customer_app-tappler_customer_appTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tappler_customer_app-tappler_customer_appTests.debug.xcconfig"; path = "Target Support Files/Pods-tappler_customer_app-tappler_customer_appTests/Pods-tappler_customer_app-tappler_customer_appTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-tappler_customer_app.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-tappler_customer_app.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		65CF59A28D324871AABA8965 /* Montserrat-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Medium.ttf"; path = "../src/assets/fonts/Montserrat-Medium.ttf"; sourceTree = "<group>"; };
-		72082CE2B2B0978D929B193E /* TapplerSheetHostView.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = TapplerSheetHostView.m; sourceTree = "<group>"; };
 		720B404128EF42F2A2684B5E /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Bold.ttf"; path = "../src/assets/fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = tappler_customer_app/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8562A6E5FBF14CB40B79AC73 /* TapplerSheetHostView.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = TapplerSheetHostView.h; sourceTree = "<group>"; };
-		85A89820F6D1C8448496DF2B /* TapplerSheetViewManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = TapplerSheetViewManager.m; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-tappler_customer_app-tappler_customer_appTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-tappler_customer_app-tappler_customer_appTests.release.xcconfig"; path = "Target Support Files/Pods-tappler_customer_app-tappler_customer_appTests/Pods-tappler_customer_app-tappler_customer_appTests.release.xcconfig"; sourceTree = "<group>"; };
 		915178EE457444DFB307F36F /* TheSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TheSans-Bold.ttf"; path = "../src/assets/fonts/TheSans-Bold.ttf"; sourceTree = "<group>"; };
-		9867E02A3CD90A873308E6E4 /* TapplerSheetPresentationController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = TapplerSheetPresentationController.h; sourceTree = "<group>"; };
-		A2504F1EC68F4CCC7E6F1D59 /* TapplerSheetPresentationController.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = TapplerSheetPresentationController.m; sourceTree = "<group>"; };
 		AF33D88E2FAA3E8C006E6621 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AF8C3B513006F2020069B746 /* tappler_customer_app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = tappler_customer_app.entitlements; path = tappler_customer_app/tappler_customer_app.entitlements; sourceTree = "<group>"; };
 		D8393FF742E449B8AC8D8D81 /* Montserrat-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-SemiBold.ttf"; path = "../src/assets/fonts/Montserrat-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -116,7 +108,6 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
-				FCEA50F8AACFDE831256E943 /* TapplerSheet */,
 			);
 			name = tappler_customer_app;
 			sourceTree = "<group>";
@@ -186,19 +177,6 @@
 				34EE60C357134CE78DB23A19 /* TheSans-Plain.ttf */,
 			);
 			name = Resources;
-			sourceTree = "<group>";
-		};
-		FCEA50F8AACFDE831256E943 /* TapplerSheet */ = {
-			isa = PBXGroup;
-			children = (
-				9867E02A3CD90A873308E6E4 /* TapplerSheetPresentationController.h */,
-				A2504F1EC68F4CCC7E6F1D59 /* TapplerSheetPresentationController.m */,
-				8562A6E5FBF14CB40B79AC73 /* TapplerSheetHostView.h */,
-				72082CE2B2B0978D929B193E /* TapplerSheetHostView.m */,
-				85A89820F6D1C8448496DF2B /* TapplerSheetViewManager.m */,
-			);
-			name = TapplerSheet;
-			path = tappler_customer_app/TapplerSheet;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -469,9 +447,6 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
-				F0D59CEB04948BD27839A2C3 /* TapplerSheetPresentationController.m in Sources */,
-				72F409CD8EC9D3556083FA7E /* TapplerSheetHostView.m in Sources */,
-				5E896716281E27256426098E /* TapplerSheetViewManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
