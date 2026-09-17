@@ -24,11 +24,19 @@ setup_permissions([
 # either is fine, this one self-updates.
 platform :ios, min_ios_version_supported
 
-# New Architecture pinned OFF. In 0.76 the DEFAULT is ON — new_architecture.rb's
-# new_arch_enabled reads `ENV[...] == nil || == '1'`, so an UNSET var means ON.
-# The :new_arch_enabled keyword below is the authoritative switch; this env line
-# covers anything reading the flag before use_react_native! runs.
-ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+# New Architecture ON. In 0.76+ the DEFAULT is already ON —
+# new_architecture.rb's new_arch_enabled reads `ENV[...] == nil || == '1'`, so an
+# UNSET var means ON. We still set it explicitly so the value is visible, and so
+# anything reading the flag before use_react_native! runs sees the same answer.
+# The :new_arch_enabled keyword below is the authoritative switch.
+#
+# react-native-mmkv 3.x REQUIRES this. It is a pure C++ TurboModule, and
+# RCTTurboModuleManager is the only iOS reader of the global C++ module map its
+# +load writes into. That manager is instantiated in exactly two places, both
+# gated on new arch, so with this OFF the module is unreachable from JS (not
+# broken — just never looked up). MMKV 2.x is the old-arch version; there is no
+# single version that spans both.
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 
 prepare_react_native_project!
 
@@ -54,12 +62,24 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# RNFirebase 26.1.0 made Swift Package Manager the DEFAULT, and its
+# firebase_spm.rb RAISES (not warns) under static linkage. The non-obvious part:
+# CocoaPods' TargetDefinition#build_type defaults to :static_library when
+# use_frameworks! is absent, and the guard tests build_type.static? — so this app
+# trips it too despite using plain static libraries with no frameworks at all.
+# One line, not the linkage rework this was once feared to be.
+$RNFirebaseDisableSPM = true
+
 target 'tappler_customer_app' do
   config = use_native_modules!
 
-  # React Native Maps - Google Maps provider
+  # React Native Maps - Google Maps provider.
+  # react-native-maps 1.23.0 DELETED the separate react-native-google-maps
+  # podspec; there is now one react-native-maps.podspec with Generated/Maps/
+  # Google subspecs. The default subspec is Maps (Apple Maps only), so /Google
+  # must be named explicitly or Google Maps is silently lost.
   rn_maps_path = '../node_modules/react-native-maps'
-  pod 'react-native-google-maps', :path => rn_maps_path
+  pod 'react-native-maps/Google', :path => rn_maps_path
 
   # Firebase modular headers (required for Swift pods)
   pod 'Firebase', :modular_headers => true
@@ -73,10 +93,10 @@ target 'tappler_customer_app' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # New arch off, belt to the ENV line's braces. use_react_native! runs
+    # New arch on, belt to the ENV line's braces. use_react_native! runs
     # ENV['RCT_NEW_ARCH_ENABLED'] = compute_new_arch_enabled(...), so this
-    # keyword beats even an externally-set RCT_NEW_ARCH_ENABLED=1.
-    :new_arch_enabled => false,
+    # keyword is the authoritative switch either way.
+    :new_arch_enabled => true,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )

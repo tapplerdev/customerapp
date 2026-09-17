@@ -1,18 +1,31 @@
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
+        buildToolsVersion = "36.0.0"
         minSdkVersion = 24
-        compileSdkVersion = 35
-        targetSdkVersion = 34
-        ndkVersion = "26.1.10909125"
-        kotlinVersion = "2.0.21"
+        compileSdkVersion = 36
+        // 36, raised WITH the OnBackPressedDispatcher migration in
+        // tappler-shared/android/.../TapplerSheetHostView.kt. It was deliberately
+        // held at 34 until then: at 36 the predictive-back flag is forced on, the
+        // framework stops delivering KEYCODE_BACK to dialogs, and the sheet's old
+        // setOnKeyListener path died SILENTLY — interceptBackPress and
+        // dismissable={false} both became no-ops with nothing logged.
+        targetSdkVersion = 36
+        // Matches RN 0.86.3's @react-native/gradle-plugin libs.versions.toml.
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.1.20"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.6.1")
+        // 8.12.0 matches what RN 0.86.3's @react-native/gradle-plugin declares in
+        // gradle/libs.versions.toml. That plugin is an INCLUDED BUILD, so it puts its
+        // AGP on the classpath whatever we declare here — AGP 8.12 requires Gradle
+        // >= 8.13, which is why the wrapper went to 9.3.1 in the same change. The RN
+        // template declares the classpath with no version and lets the plugin supply
+        // it; we keep the explicit pin and just track its version.
+        classpath("com.android.tools.build:gradle:8.12.0")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }

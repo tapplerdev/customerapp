@@ -26,3 +26,8 @@ gem 'activesupport', '>= 6.1.7.5', '!= 7.1.0'
 # DON'T carry: CocoaPods 1.16+ needs xcodeproj >= 1.27, so that pin caps us at
 # CocoaPods 1.15.2 (early 2024) forever. Matches proapp.
 gem 'json', '< 3.0'
+
+# Added by RN 0.77's own template. Same shape as the json pin above — a
+# transitive gem held down to dodge an incompatibility, which is standard
+# practice here rather than a workaround.
+gem 'concurrent-ruby', '< 1.3.4'

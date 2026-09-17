@@ -3,6 +3,7 @@
 #import <React/RCTBundleURLProvider.h>
 #import <GoogleMaps/GoogleMaps.h>
 #import <Firebase.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 
 @implementation AppDelegate
 
@@ -11,6 +12,16 @@
   [FIRApp configure];
   [GMSServices provideAPIKey:@"AIzaSyDFrq76g50cFzocliIqTMl2jynZ8AjA034"];
   self.moduleName = @"tappler_customer_app";
+  // RN 0.77 template addition. RCTAppDelegate returns @{} from
+  // thirdPartyFabricComponents when this is nil, so WITHOUT it every
+  // third-party Fabric component (~50 of them: svg, screens,
+  // safe-area-context, flash-list, lottie, webview, slider, blur...)
+  // silently fails to register and renders nothing under the New
+  // Architecture. Harmless on old arch, which never consults it.
+  // We missed this at 0.76->0.77 because the upgrade-helper diff shows
+  // it only inside a whole-file AppDelegate.mm -> AppDelegate.swift
+  // rewrite, which reads as a language migration.
+  self.dependencyProvider = [RCTAppDependencyProvider new];
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
