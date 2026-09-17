@@ -64,10 +64,19 @@ const TabBar = ({
               {!!options.tabBarIcon &&
                 options.tabBarIcon({ focused, color: "", size: 24 })}
               <DmText
+                // Colours are MUTUALLY EXCLUSIVE, not layered. Listing
+                // text-grey17 in the base and text-black in the focused branch
+                // put both classes on the element at once, which NativeWind v2
+                // resolved as last-one-wins (black). v4 resolves by stylesheet
+                // emission order, and Tailwind emits colours in theme-key
+                // order where `black` precedes `grey17` — so grey17 won and the
+                // active tab label went grey. Caught by diffing screenshots
+                // against the v2 build, not by any tool.
                 className={clsx(
-                  "mt-[2] text-grey17 text-11 leading-[18px]",
-                  !focused && "font-custom500",
-                  focused && "text-black font-custom600"
+                  "mt-[2] text-11 leading-[18px]",
+                  focused
+                    ? "text-black font-custom600"
+                    : "text-grey17 font-custom500"
                 )}
               >
                 {t(route.name)}

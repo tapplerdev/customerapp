@@ -167,7 +167,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
               {d.format("MMM").toUpperCase()}
             </DmText>
           </DmView>
-          <DmText className="text-16 font-custom800 text-black leading-[18]">
+          <DmText className="text-16 font-custom800 text-black leading-[18px]">
             {d.format("D")}
           </DmText>
           <DmText className="text-8 font-custom700 text-grey3 tracking-wider">
