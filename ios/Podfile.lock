@@ -2877,6 +2877,7 @@ PODS:
     - SDWebImage/Core (~> 5.10)
   - TapplerShared (1.0.0):
     - React-Core
+    - React-RCTFabric
   - TOCropViewController (2.8.0)
   - Yoga (0.0.0)
 
@@ -3358,7 +3359,7 @@ SPEC CHECKSUMS:
   RNWorklets: 453d16f4cb680d5a4262b314519711e7765a80a1
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  TapplerShared: 92032c32108b4ccaa16ee8387ad2e43bdb171e63
+  TapplerShared: aaac77a70c40adb03c3bc793d2ce993c570f2d69
   TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888
   Yoga: 18b74b3ade30bebc1904004dfaceae1dd02a330a
 
