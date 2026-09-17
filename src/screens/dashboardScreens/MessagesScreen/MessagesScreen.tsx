@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from "react"
-import { FlatList } from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
@@ -19,6 +18,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ArchivedIcon from "assets/icons/archived.svg"
 import NoMessagesIcon from "assets/icons/no-messages.svg"
 import MessagesSkeleton from "./MessagesSkeleton"
+import { AppFlatList } from "components/scroll"
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -165,7 +165,7 @@ const MessagesScreen: React.FC = () => {
         <MessagesSkeleton />
       ) : (
         <Animated.View entering={FadeIn.duration(400)} className="flex-1">
-        <FlatList
+        <AppFlatList
           data={filteredChats}
           keyExtractor={(item) => String(item.chat.id)}
           renderItem={renderItem}

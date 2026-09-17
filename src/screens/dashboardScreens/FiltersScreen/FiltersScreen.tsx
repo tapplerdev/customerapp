@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { ScrollView, StyleSheet, TextInput } from "react-native"
+import { StyleSheet, TextInput } from "react-native"
 import Slider from "@react-native-community/slider"
 import RangeSlider from "components/RangeSlider/RangeSlider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
@@ -17,6 +17,7 @@ import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"
 import TickIcon from "assets/icons/tick.svg"
+import { AppScrollView } from "components/scroll"
 
 export type FilterValues = {
   proType?: string
@@ -285,7 +286,7 @@ const FiltersContent: React.FC<ContentProps> = ({
 
       <DmView className="h-[1] bg-grey5" />
 
-      <ScrollView
+      <AppScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
@@ -413,7 +414,7 @@ const FiltersContent: React.FC<ContentProps> = ({
                 <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
                   {filterTitle(question)}
                 </DmText>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {visibleOptions.map((o) =>
                     renderChip(
                       isAr && o.labelAr ? o.labelAr : o.label,
@@ -422,7 +423,7 @@ const FiltersContent: React.FC<ContentProps> = ({
                       o.serviceCategoryFilterOptionId!
                     )
                   )}
-                </ScrollView>
+                </AppScrollView>
               </DmView>
               <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
             </React.Fragment>
@@ -434,7 +435,7 @@ const FiltersContent: React.FC<ContentProps> = ({
           <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
             {t("pro_type")}
           </DmText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("pro_type_all"), !proType, () => setProType(undefined))}
             {renderChip(t("individual"), proType === "individual", () =>
               setProType(proType === "individual" ? undefined : "individual")
@@ -442,7 +443,7 @@ const FiltersContent: React.FC<ContentProps> = ({
             {renderChip(t("business"), proType === "company", () =>
               setProType(proType === "company" ? undefined : "company")
             )}
-          </ScrollView>
+          </AppScrollView>
         </DmView>
 
         <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
@@ -494,7 +495,7 @@ const FiltersContent: React.FC<ContentProps> = ({
           <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
             {t("minimum_rating")}
           </DmText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("any"), !minRating, () => setMinRating(undefined))}
             {renderChip("3+ ★", minRating === 3, () =>
               setMinRating(minRating === 3 ? undefined : 3)
@@ -505,7 +506,7 @@ const FiltersContent: React.FC<ContentProps> = ({
             {renderChip("4.5+ ★", minRating === 4.5, () =>
               setMinRating(minRating === 4.5 ? undefined : 4.5)
             )}
-          </ScrollView>
+          </AppScrollView>
         </DmView>
 
         <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
@@ -515,7 +516,7 @@ const FiltersContent: React.FC<ContentProps> = ({
           <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
             {t("response_time")}
           </DmText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("any"), !maxResponseTimeHours, () => setMaxResponseTimeHours(undefined))}
             {renderChip(t("under_1_hour"), maxResponseTimeHours === 1, () =>
               setMaxResponseTimeHours(maxResponseTimeHours === 1 ? undefined : 1)
@@ -526,7 +527,7 @@ const FiltersContent: React.FC<ContentProps> = ({
             {renderChip(t("under_24_hours"), maxResponseTimeHours === 24, () =>
               setMaxResponseTimeHours(maxResponseTimeHours === 24 ? undefined : 24)
             )}
-          </ScrollView>
+          </AppScrollView>
         </DmView>
 
         <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
@@ -536,12 +537,12 @@ const FiltersContent: React.FC<ContentProps> = ({
           <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
             {t("payment_method")}
           </DmText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("any"), !creditCardPayment, () => setCreditCardPayment(false))}
             {renderChip(t("credit_card"), creditCardPayment, () => setCreditCardPayment(!creditCardPayment))}
-          </ScrollView>
+          </AppScrollView>
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Bottom button */}
       <DmView

@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { useForm, Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
@@ -14,6 +13,7 @@ import colors from "@tappler/shared/src/styles/colors"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import HideIcon from "assets/icons/hide-password.svg"
+import { AppKeyboardAwareScrollView } from "components/scroll"
 
 const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navigation, parentNav }) => {
   const { t, i18n } = useTranslation()
@@ -74,7 +74,7 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={[]}>
-      <KeyboardAwareScrollView
+      <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 27, paddingHorizontal: 19 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -144,7 +144,7 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
             />
           </DmView>
         </DmView>
-      </KeyboardAwareScrollView>
+      </AppKeyboardAwareScrollView>
       <ErrorModal isVisible={isErrorModalVisible} onClose={() => setErrorModalVisible(false)} descr={errorMessage || t("invalid_credentials")} />
     </SafeAreaView>
   )

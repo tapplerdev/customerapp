@@ -7,11 +7,7 @@ import {
   DmView,
 } from "@tappler/shared/src/components/UI"
 import { SafeAreaView } from "react-native-safe-area-context"
-import {
-  Image,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native"
+import { Image, TouchableOpacity } from "react-native"
 
 // Hooks & Redux
 import { useTranslation } from "react-i18next"
@@ -37,6 +33,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import TapplerLogoIcon from "assets/icons/tappler-logo-red.svg"
 import authImg from "assets/images/auth.png"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
+import { AppScrollView } from "components/scroll"
 
 const APP_VERSION = "1.0.0"
 const APP_BUILD = "1"
@@ -106,7 +103,7 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
         </TouchableOpacity>
       </DmView>
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 22 }}
         showsVerticalScrollIndicator={false}
       >
@@ -173,7 +170,7 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
             />
           )}
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Logo + Terms & Version — pinned to bottom */}
       <DmView className="items-center pb-[16] pt-[8]" style={language === "ar" ? { paddingRight: 20 } : { paddingLeft: 10 }}>

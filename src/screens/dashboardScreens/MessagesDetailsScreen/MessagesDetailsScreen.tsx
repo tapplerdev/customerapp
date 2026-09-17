@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
-  FlatList,
   I18nManager,
   Image as RNImage,
   Keyboard,
@@ -9,17 +8,25 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  ScrollView,
   TextInput,
   useWindowDimensions,
 } from "react-native"
+import type { FlatList } from "react-native"
 // Using RN's built-in KeyboardAvoidingView (react-native-keyboard-controller not installed in customer app yet)
 import { KeyboardAvoidingView } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import FastImage from "react-native-fast-image"
-import { pick, types } from "react-native-document-picker"
+// react-native-document-picker is npm-deprecated ("the package was renamed")
+// and its Android module imports com.facebook.react.bridge.GuardedResultAsyncTask,
+// which RN 0.86 deleted — it fails to compile. This is the maintained successor.
+import {
+  errorCodes,
+  isErrorWithCode,
+  pick,
+  types,
+} from "@react-native-documents/picker"
 import {
   api,
   useGetChatsQuery,
@@ -70,6 +77,7 @@ import MapMarkerIcon from "assets/icons/location-red-solid.svg"
 import { useTypedSelector } from "store"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
+import { AppFlatList, AppScrollView } from "components/scroll"
 
 // Short, soft reflow used when the composer expands into / collapses out of its
 // focused (toolbar) layout. Opacity property fades the appearing toolbar row.
@@ -296,8 +304,11 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           filename: result.name || "file",
         })
       }
-    } catch (e: any) {
-      if (e?.code !== "DOCUMENT_PICKER_CANCELED") {
+    } catch (e) {
+      // The cancel code CHANGED with the rename: DOCUMENT_PICKER_CANCELED ->
+      // errorCodes.OPERATION_CANCELED. Comparing against the old string would
+      // have logged an error every time a user backed out of the picker.
+      if (!isErrorWithCode(e) || e.code !== errorCodes.OPERATION_CANCELED) {
         console.log("Document pick error:", e)
       }
     }
@@ -342,7 +353,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Photo strip */}
         <DmView className="px-[14] pb-[14]">
-          <FlatList
+          <AppFlatList
             horizontal
             data={attachments.recentPhotos}
             keyExtractor={(item, index) => `photo-${index}`}
@@ -689,7 +700,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           <CloseIcon width={13} height={13} />
         </DmView>
       </DmView>
-      <ScrollView
+      <AppScrollView
         showsVerticalScrollIndicator={false}
         // No overscroll bounce: short sheet content shouldn't rubber-band (reads
         // as "the content is draggable"). With bounce off, a drag at the top
@@ -852,7 +863,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             </DmView>
           </>
         )}
-      </ScrollView>
+      </AppScrollView>
     </DmView>
   )
 
@@ -1036,7 +1047,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Messages list */}
         <DmView className="flex-1" style={styles.relative}>
-          <FlatList
+          <AppFlatList
             ref={flatListRef}
             data={groups.flatData}
             keyExtractor={(item) => item.id}

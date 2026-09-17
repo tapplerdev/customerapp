@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { Image, ScrollView } from "react-native"
+import { Image } from "react-native"
 import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
@@ -27,6 +27,7 @@ import TapplerLogoIcon from "assets/icons/tappler-logo-red.svg"
 
 import authImg from "assets/images/auth.png"
 import AccountMenuItem from "./components/AccountMenuItem"
+import { AppScrollView } from "components/scroll"
 
 const APP_VERSION = "1"
 const APP_BUILD = "25"
@@ -79,7 +80,7 @@ const AccountScreen: React.FC = () => {
   if (!isAuth) {
     return (
       <SafeAreaView edges={["top"]} className="flex-1 bg-white">
-        <ScrollView
+        <AppScrollView
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
         >
@@ -158,7 +159,7 @@ const AccountScreen: React.FC = () => {
               </DmText>
             </DmView>
           </DmView>
-        </ScrollView>
+        </AppScrollView>
 
         {/* Language Modal */}
         <MainModal
@@ -190,7 +191,7 @@ const AccountScreen: React.FC = () => {
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-white">
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
@@ -283,7 +284,7 @@ const AccountScreen: React.FC = () => {
             </DmText>
           </DmView>
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Language Modal */}
       <MainModal

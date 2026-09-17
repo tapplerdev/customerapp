@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from "react"
-import { ScrollView } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
@@ -11,6 +10,7 @@ import { RootStackScreenProps } from "navigation/types"
 import { useDeleteCustomerAddressMutation } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"ViewAddressScreen">
 
@@ -64,7 +64,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingTop: 20 }}
         showsVerticalScrollIndicator={false}
       >
@@ -122,7 +122,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmText>
           <DmView className="h-[0.7] bg-grey19" />
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Delete Confirmation Modal */}
       <MainModal

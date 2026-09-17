@@ -8,7 +8,6 @@ import {
   DmView,
 } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { ScrollView } from "react-native"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 
@@ -38,6 +37,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import CloseIcon from "assets/icons/close.svg"
 import PlusIcon from "assets/icons/plus.svg"
 import MinusIcon from "assets/icons/minus.svg"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"FoodItemScreen">
 
@@ -299,7 +299,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <CloseIcon fill={colors.red} />
       </DmView>
-      <ScrollView
+      <AppScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 14 }}
       >
@@ -360,7 +360,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="px-[14]">
           {(menuItem.options || []).map(renderOption)}
         </DmView>
-      </ScrollView>
+      </AppScrollView>
       <DmView className="bg-white px-[28]" style={styles.footerShadow}>
         <DmView className="mt-[24] flex-row items-center justify-center">
           <DmView

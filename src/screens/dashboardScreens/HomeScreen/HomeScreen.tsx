@@ -1,5 +1,4 @@
 import React, { useCallback } from "react"
-import { ScrollView } from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -17,6 +16,7 @@ import { PresetSectionItemType, ServiceType } from "types/cms"
 import HomeHeader from "./components/HomeHeader"
 import PresetSection from "./components/PresetSection"
 import HomeSkeletonScreen from "screens/HomeSkeletonScreen/HomeSkeletonScreen"
+import { AppScrollView } from "components/scroll"
 
 const HomeScreen: React.FC = () => {
   const { i18n } = useTranslation()
@@ -82,7 +82,7 @@ const HomeScreen: React.FC = () => {
             </DmText>
           </DmView>
         ) : (
-          <ScrollView
+          <AppScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 24 }}
           >
@@ -94,7 +94,7 @@ const HomeScreen: React.FC = () => {
                 onItemPress={handleItemPress}
               />
             ))}
-          </ScrollView>
+          </AppScrollView>
         )}
       </SafeAreaView>
     </Animated.View>

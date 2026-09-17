@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { useForm, Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
@@ -15,6 +14,7 @@ import colors from "@tappler/shared/src/styles/colors"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import HideIcon from "assets/icons/hide-password.svg"
+import { AppKeyboardAwareScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"SignInEmailScreen">
 
@@ -107,7 +107,7 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <KeyboardAwareScrollView
+      <AppKeyboardAwareScrollView
         contentContainerStyle={{
           flexGrow: 1,
           paddingBottom: 27,
@@ -209,7 +209,7 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmText>
           </DmView>
         </DmView>
-      </KeyboardAwareScrollView>
+      </AppKeyboardAwareScrollView>
       <ErrorModal
         isVisible={isErrorModalVisible}
         onClose={() => setErrorModalVisible(false)}

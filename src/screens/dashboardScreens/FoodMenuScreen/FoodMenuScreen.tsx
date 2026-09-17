@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 // Components
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { FlatList } from "react-native"
+import type { FlatList } from "react-native"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import AnimatedSelectCategory from "components/AnimatedSelectCategory"
 import FoodMenuItemRow from "components/FoodMenuItemRow"
@@ -37,6 +37,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
+import { AppFlatList } from "components/scroll"
 
 type Props = RootStackScreenProps<"FoodMenuScreen">
 
@@ -242,7 +243,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
               textClassName="text-13 leading-[16px] font-custom500 text-center"
             />
           </DmView>
-          <FlatList
+          <AppFlatList
             ref={flatListRef}
             data={sections}
             renderItem={renderSection}

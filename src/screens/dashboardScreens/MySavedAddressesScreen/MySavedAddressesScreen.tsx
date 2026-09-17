@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react"
-import { ScrollView, I18nManager } from "react-native"
+import { I18nManager } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -12,6 +12,7 @@ import colors from "@tappler/shared/src/styles/colors"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"MySavedAddressesScreen">
 
@@ -75,7 +76,7 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ paddingTop: 4, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
@@ -151,7 +152,7 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
             {t("add_new_address")}
           </DmText>
         </DmView>
-      </ScrollView>
+      </AppScrollView>
     </SafeAreaView>
   )
 }

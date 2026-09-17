@@ -33,7 +33,6 @@ import {
   Alert,
   Animated,
   Easing,
-  FlatList,
   Keyboard,
   LayoutAnimation,
   ListRenderItemInfo,
@@ -49,6 +48,7 @@ import {
 import { isEgyptCountry } from "@tappler/shared/src/helpers/helpers"
 import { SHOULD_IGNORE_START_TEXT_ADDRESS } from "utils/constants"
 import colors from "@tappler/shared/src/styles/colors"
+import { AppFlatList } from "components/scroll"
 
 interface Props {
   initPosition?: MapPosition | undefined
@@ -610,7 +610,7 @@ const MapPickerWithSearchView: React.FC<Props> = ({
                     <ActivityIndicator color={colors.red} />
                   </DmView>
                 ) : searchResults.length > 0 ? (
-                  <FlatList
+                  <AppFlatList
                     data={searchResults}
                     renderItem={renderSearchItem}
                     keyboardShouldPersistTaps="handled"

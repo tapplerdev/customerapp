@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { FlatList, InteractionManager, TextInput } from "react-native"
+import { InteractionManager, TextInput } from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -16,6 +16,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SearchIcon from "assets/icons/search-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { useServiceAddressFlow } from "hooks/useServiceAddressFlow"
+import { AppFlatList } from "components/scroll"
 
 type Props = RootStackScreenProps<"CategoriesScreen">
 
@@ -208,7 +209,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
           entering={canAnimateResults ? FadeIn.duration(300) : undefined}
           style={{ flex: 1 }}
         >
-          <FlatList
+          <AppFlatList
             data={listData}
             renderItem={renderItem}
             keyExtractor={(item) =>

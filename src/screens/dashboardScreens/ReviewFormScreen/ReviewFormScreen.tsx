@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react"
 import { Alert, Dimensions, Image, Modal, TextInput, TouchableOpacity } from "react-native"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
@@ -20,6 +19,7 @@ import StarIcon from "assets/icons/star.svg"
 import CameraPlusIcon from "assets/icons/camera-plus.svg"
 import CloseIcon from "assets/icons/close.svg"
 import styles from "./styles"
+import { AppKeyboardAwareScrollView } from "components/scroll"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 
@@ -171,7 +171,7 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
         the button stayed under the keys. Same fix as DeleteAccountScreen /
         AddNewAddressScreen / RegisterScreen.
       */}
-      <KeyboardAwareScrollView
+      <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -330,7 +330,7 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
             />
           </DmView>
         </DmView>
-      </KeyboardAwareScrollView>
+      </AppKeyboardAwareScrollView>
 
       {/* Photo viewer modal */}
       <Modal

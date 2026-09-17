@@ -9,7 +9,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import colors from "@tappler/shared/src/styles/colors"
-import { LayoutChangeEvent, ScrollView } from "react-native"
+import { LayoutChangeEvent } from "react-native"
+import type { ScrollView } from "react-native"
+import { AppScrollView } from "components/scroll"
 
 // Ported from proapp (menu section tabs with the sliding red underline).
 //
@@ -88,7 +90,7 @@ const AnimatedSelectCategory: React.FC<Props> = ({
 
   return (
     <DmView className={clsx("", className)}>
-      <ScrollView
+      <AppScrollView
         ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -128,7 +130,7 @@ const AnimatedSelectCategory: React.FC<Props> = ({
             </DmView>
           )}
         </DmView>
-      </ScrollView>
+      </AppScrollView>
     </DmView>
   )
 }

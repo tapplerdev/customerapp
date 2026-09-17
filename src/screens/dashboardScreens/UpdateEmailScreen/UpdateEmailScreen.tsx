@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { ScrollView, TextInput } from "react-native"
+import { TextInput } from "react-native"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -13,6 +13,7 @@ import { useTypedSelector } from "store"
 import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import SuccessModal from "components/SuccessModal"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"UpdateEmailScreen">
 
@@ -86,7 +87,7 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
       >
@@ -169,7 +170,7 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
             isLoading={isLoading}
           />
         </DmView>
-      </ScrollView>
+      </AppScrollView>
       <ErrorModal
         isVisible={isErrorModalVisible}
         onClose={() => setErrorModalVisible(false)}

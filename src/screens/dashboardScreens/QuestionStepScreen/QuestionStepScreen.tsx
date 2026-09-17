@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  Animated,
-  Dimensions,
-  Easing,
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-} from "react-native"
+import { Animated, Dimensions, Easing, Keyboard, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -25,6 +18,7 @@ import { questionFlowEventBus } from "events/questionFlowEventBus"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
+import { AppScrollView } from "components/scroll"
 
 // Maps place-of-service values to their i18n label keys (same as AllQuestionsScreen)
 const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
@@ -143,7 +137,7 @@ const StepCard: React.FC<{
   return (
     <Animated.View
       style={[
-        StyleSheet.absoluteFillObject,
+        StyleSheet.absoluteFill,
         styles.stepCard,
         // Edge shadow on the leading side, like a pushed UIKit page
         { shadowOffset: { width: isAr ? 6 : -6, height: 0 } },
@@ -154,7 +148,7 @@ const StepCard: React.FC<{
       {/* Dims while a newer page covers this one (pointer-transparent) */}
       <Animated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFillObject, { backgroundColor: "#000", opacity: dim }]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: "#000", opacity: dim }]}
       />
     </Animated.View>
   )
@@ -287,7 +281,7 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
       </DmView>
 
       {/* Question content */}
-      <ScrollView
+      <AppScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 28, paddingBottom: 20, flexGrow: 1 }}
         bounces={false}
@@ -305,7 +299,7 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
             )}
           />
         )}
-      </ScrollView>
+      </AppScrollView>
 
       {/* Bottom button */}
       <DmView

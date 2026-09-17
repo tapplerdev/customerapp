@@ -7,7 +7,6 @@ import {
   Easing,
   LayoutAnimation,
   Platform,
-  ScrollView,
   UIManager,
 } from "react-native"
 
@@ -24,6 +23,7 @@ import MailIcon from "assets/icons/mail.svg"
 import ChevronDownSolidIcon from "assets/icons/chevron-down-solid.svg"
 
 import styles from "./styles"
+import { AppScrollView } from "components/scroll"
 
 interface Props {
   job: JobType
@@ -383,7 +383,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   )
 
   return (
-    <ScrollView
+    <AppScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
@@ -610,7 +610,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
         </DmView>
       )}
 
-    </ScrollView>
+    </AppScrollView>
   )
 }
 

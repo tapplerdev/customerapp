@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "react-native"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -10,6 +9,7 @@ import { RootStackScreenProps } from "navigation/types"
 import { useCreateCustomerAddressMutation } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
+import { AppKeyboardAwareScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"AddNewAddressScreen">
 
@@ -112,7 +112,7 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         No enableOnAndroid: this app mounts no KeyboardProvider, so the
         manifest's adjustResize already shrinks the window there.
       */}
-      <KeyboardAwareScrollView
+      <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -240,7 +240,7 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             isLoading={isLoading}
           />
         </DmView>
-      </KeyboardAwareScrollView>
+      </AppKeyboardAwareScrollView>
     </SafeAreaView>
   )
 }

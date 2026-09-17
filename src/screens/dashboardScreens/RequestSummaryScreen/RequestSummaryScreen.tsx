@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Image, ScrollView, StyleSheet, View } from "react-native"
+import { Image, StyleSheet, View } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import MapView, { Marker } from "react-native-maps"
@@ -21,6 +21,7 @@ import LocationIcon from "assets/icons/location-red.svg"
 import StarIcon from "assets/icons/star.svg"
 import CheckMarkIcon from "assets/icons/check-mark.svg"
 import CloseIcon from "assets/icons/close.svg"
+import { AppScrollView } from "components/scroll"
 
 const RED = "#CC0000"
 const RED_SOFT = "#FFF8F8"
@@ -318,7 +319,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="w-[44]" />
       </DmView>
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         style={{ backgroundColor: BG2 }}
@@ -458,7 +459,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           )}
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Sticky footer */}
       <DmView

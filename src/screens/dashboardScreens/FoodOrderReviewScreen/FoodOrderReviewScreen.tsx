@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react"
-import { ScrollView } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
@@ -24,6 +23,7 @@ import ErrorModal from "components/ErrorModal"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
 
 import styles from "./styles"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"FoodOrderReviewScreen">
 
@@ -142,7 +142,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="w-[32]" />
       </DmView>
 
-      <ScrollView
+      <AppScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
@@ -217,7 +217,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
             {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
           </DmView>
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       <DmView
         className="px-[16] pt-[14] bg-white"

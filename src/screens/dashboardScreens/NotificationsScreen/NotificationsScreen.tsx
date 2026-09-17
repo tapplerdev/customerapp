@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { ActivityIndicator, FlatList, RefreshControl } from "react-native"
+import { ActivityIndicator, RefreshControl } from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -20,6 +20,7 @@ import { RootStackScreenProps } from "navigation/types"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import NotificationItem from "./components/NotificationItem"
 import NotificationsSkeleton from "./NotificationsSkeleton"
+import { AppFlatList } from "components/scroll"
 
 const PER_PAGE = 20
 // Chat unread belongs to the Messages tab badge — keep system.messages rows
@@ -203,7 +204,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
         // Same smooth reveal as proapp: content fades in over 300ms once
         // the skeleton is replaced (proapp animates fadeAnim 0→1).
         <Animated.View entering={FadeIn.duration(300)} className="flex-1">
-        <FlatList
+        <AppFlatList
           data={allNotifications}
           renderItem={renderItem}
           keyExtractor={(item) => String(item.id)}
@@ -216,8 +217,8 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
           }
           showsVerticalScrollIndicator={false}
           // Opts back OUT of the app-wide alwaysBounceVertical:false default
-          // (index.js). Pull-to-refresh works by pulling PAST the top, so with
-          // the bounce suppressed an empty or near-empty notification list
+          // (components/scroll). Pull-to-refresh works by pulling PAST the
+          // top, so with the bounce suppressed an empty or near-empty notification list
           // would have nothing to pull and no way to refresh at all.
           alwaysBounceVertical
           refreshControl={

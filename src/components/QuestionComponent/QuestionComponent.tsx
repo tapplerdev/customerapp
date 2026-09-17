@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useState } from "react"
-import { I18nManager, ScrollView, TextInput } from "react-native"
+import { I18nManager, TextInput } from "react-native"
 
 import { DmChecbox, DmInput, DmText, DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
@@ -14,6 +14,7 @@ import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
 
 import CheckmarkIcon from "assets/icons/check-mark.svg"
 import styles from "./styles"
+import { AppScrollView } from "components/scroll"
 
 interface Props {
   item: ServiceQuestionType
@@ -272,9 +273,9 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
           <DmView className="flex-row" style={{ gap }}>{chips}</DmView>
-        </ScrollView>
+        </AppScrollView>
       )
     }
     if (layout === "wrap") {
@@ -302,9 +303,9 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
           <DmView className="flex-row items-center">{elements}</DmView>
-        </ScrollView>
+        </AppScrollView>
       )
     }
     if (layout === "wrap") {
@@ -332,9 +333,9 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
           <DmView className="flex-row items-center">{elements}</DmView>
-        </ScrollView>
+        </AppScrollView>
       )
     }
     if (layout === "wrap") {
@@ -361,9 +362,9 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
           <DmView className="flex-row">{elements}</DmView>
-        </ScrollView>
+        </AppScrollView>
       )
     }
     if (layout === "wrap") {

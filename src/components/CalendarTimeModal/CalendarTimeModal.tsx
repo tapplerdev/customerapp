@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react"
-import { ScrollView } from "react-native"
 import { useTranslation } from "react-i18next"
 import Modal from "react-native-modal"
 import { Calendar } from "react-native-calendars"
@@ -7,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
+import { AppScrollView } from "components/scroll"
 
 const TIME_SLOTS = [
   { start: "06:00", end: "09:00", label: "6:00 - 9:00 AM" },
@@ -170,7 +170,7 @@ const CalendarTimeModal: React.FC<Props> = ({
           </DmText>
         </DmView>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <AppScrollView showsVerticalScrollIndicator={false}>
           {/* Calendar */}
           <Calendar
             minDate={minDay}
@@ -264,7 +264,7 @@ const CalendarTimeModal: React.FC<Props> = ({
               textClassName="text-14 font-custom600"
             />
           </DmView>
-        </ScrollView>
+        </AppScrollView>
       </DmView>
     </Modal>
   )

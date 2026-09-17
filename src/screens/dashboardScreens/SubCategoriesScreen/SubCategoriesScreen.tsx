@@ -1,5 +1,4 @@
 import React from "react"
-import { FlatList } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -12,6 +11,7 @@ import { useServiceAddressFlow } from "hooks/useServiceAddressFlow"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
+import { AppFlatList } from "components/scroll"
 
 type Props = RootStackScreenProps<"SubCategoriesScreen">
 
@@ -73,7 +73,7 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
       <DmView className="h-[1] bg-grey4" />
 
       {/* Subcategories list */}
-      <FlatList
+      <AppFlatList
         data={service.categories}
         renderItem={renderItem}
         keyExtractor={(item) => String(item.id)}

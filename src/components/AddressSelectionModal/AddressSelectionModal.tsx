@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react"
-import { Platform, ScrollView } from "react-native"
+import { Platform } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -10,6 +10,7 @@ import { CustomerSavedAddress } from "types/auth"
 
 import LocationIcon from "assets/icons/location-red.svg"
 import SearchIcon from "assets/icons/search-red.svg"
+import { AppScrollView } from "components/scroll"
 
 interface AddressInfo {
   address: string
@@ -99,7 +100,7 @@ const AddressSelectionModal: React.FC<Props> = ({
           className="bg-white rounded-t-28 overflow-hidden"
           style={{ paddingBottom: insets.bottom + 2, maxHeight: 550 }}
         >
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <AppScrollView showsVerticalScrollIndicator={false}>
           {/* Last used address */}
           {!!lastUsedAddress && (
             <>
@@ -159,7 +160,7 @@ const AddressSelectionModal: React.FC<Props> = ({
               <SearchIcon width={16} height={16} />
             </DmView>
           </DmView>
-        </ScrollView>
+        </AppScrollView>
         </DmView>
     </>
   )

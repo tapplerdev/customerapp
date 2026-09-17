@@ -1,10 +1,11 @@
 import React, { useRef, useState } from "react"
-import { Dimensions, FlatList, Modal, StyleSheet } from "react-native"
+import { Dimensions, Modal, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import FastImage from "react-native-fast-image"
 import { DmView } from "@tappler/shared/src/components/UI"
 
 import CloseIcon from "assets/icons/close.svg"
+import { AppFlatList } from "components/scroll"
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window")
 
@@ -58,7 +59,7 @@ const ImageViewerModal: React.FC<Props> = ({
         </DmView>
 
         {/* Image carousel */}
-        <FlatList
+        <AppFlatList
           data={images}
           renderItem={renderItem}
           horizontal

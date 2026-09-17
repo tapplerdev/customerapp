@@ -1,10 +1,10 @@
 import React from "react"
-import { ScrollView } from "react-native"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 
 import { PresetSectionType, PresetSectionItemType } from "types/cms"
 import PresetCard from "./PresetCard"
+import { AppScrollView } from "components/scroll"
 
 interface Props {
   section: PresetSectionType
@@ -38,7 +38,7 @@ const PresetSection: React.FC<Props> = ({ section, isAr, onItemPress }) => {
           </DmText>
         )}
       </DmView>
-      <ScrollView
+      <AppScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         className="mt-[12]"
@@ -76,7 +76,7 @@ const PresetSection: React.FC<Props> = ({ section, isAr, onItemPress }) => {
                 onPress={() => onItemPress?.(item)}
               />
             ))}
-      </ScrollView>
+      </AppScrollView>
     </DmView>
   )
 }

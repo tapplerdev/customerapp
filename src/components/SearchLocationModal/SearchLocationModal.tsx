@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, FlatList, Keyboard, Platform, StyleSheet, TextInput } from "react-native"
+import {
+  Animated,
+  Keyboard,
+  Platform,
+  StyleSheet,
+  TextInput,
+} from "react-native"
 import NativePushBackSheet, {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
@@ -16,6 +22,7 @@ import SearchIcon from "assets/icons/search-black.svg"
 import LocationRedIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
+import { AppFlatList } from "components/scroll"
 
 type FlatCategory = ServiceCategoryType & {
   serviceName: string
@@ -277,7 +284,7 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
         </DmView>
       ) : (
         <Animated.View style={{ flex: 1, opacity: listFade }}>
-          <FlatList
+          <AppFlatList
             data={filteredCategories}
             renderItem={renderItem}
             keyExtractor={(item) => String(item.id)}

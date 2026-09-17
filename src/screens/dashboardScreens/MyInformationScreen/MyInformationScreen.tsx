@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { ScrollView, TextInput } from "react-native"
+import { TextInput } from "react-native"
 import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -11,6 +11,7 @@ import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { useTypedSelector } from "store"
 import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"MyInformationScreen">
 
@@ -68,7 +69,7 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
       >
@@ -164,7 +165,7 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
           disable={!hasChanges || isLoading}
           isLoading={isLoading}
         />
-      </ScrollView>
+      </AppScrollView>
       <ErrorModal
         isVisible={isErrorModalVisible}
         onClose={() => setErrorModalVisible(false)}

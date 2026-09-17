@@ -9,7 +9,7 @@ import {
 } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
-import { ScrollView, TextInput } from "react-native"
+import { TextInput } from "react-native"
 import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
 import AddressSelectionModal from "components/AddressSelectionModal"
 
@@ -42,6 +42,7 @@ import styles from "./styles"
 import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"FoodCheckoutScreen">
 
@@ -556,7 +557,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
 
   /*
    * The keyboard inset goes on the OUTER container below: the "Review order"
-   * footer is a sibling AFTER </ScrollView>, so nothing inside the scroll
+   * footer is a sibling AFTER </AppScrollView>, so nothing inside the scroll
    * content can lift it. Padding there shrinks the scroller and raises the
    * footer together.
    *
@@ -600,7 +601,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="w-[32]" />
       </DmView>
 
-      <ScrollView
+      <AppScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
       >
@@ -830,7 +831,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
           {totalsRow(t("total"), `${formatMoney(total)} ${t("EGP")}`, true)}
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Same pinned white footer as the menu basket bar and the cart, with the
           shadow cast upward onto the content it covers. The button keeps its

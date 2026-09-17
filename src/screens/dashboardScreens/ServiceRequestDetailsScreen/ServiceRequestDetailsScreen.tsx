@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { ScrollView, StyleSheet } from "react-native"
+import { StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -17,6 +17,7 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
+import { AppScrollView } from "components/scroll"
 
 type DateTypeOption = "notDecided" | "hours48" | "week" | "furtherOut" | "specificDates"
 
@@ -320,7 +321,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
       </DmView>
 
       {/* Question or date step content */}
-      <ScrollView
+      <AppScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 28, paddingBottom: 20, flexGrow: 1 }}
         bounces={false}
@@ -336,7 +337,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
             />
           )
         )}
-      </ScrollView>
+      </AppScrollView>
 
       {/* Bottom button */}
       <DmView

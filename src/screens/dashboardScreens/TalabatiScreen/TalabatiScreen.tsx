@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { Animated as RNAnimated, Easing, FlatList, Image, RefreshControl, ViewToken } from "react-native"
+import {
+  Animated as RNAnimated,
+  Easing,
+  Image,
+  RefreshControl,
+  ViewToken,
+} from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -26,6 +32,7 @@ import leaveReviewAnimation from "assets/animations/leave-review.json"
 import LeaveReviewModal from "components/LeaveReviewModal/LeaveReviewModal"
 import TalabatiSkeleton from "./TalabatiSkeleton"
 import styles from "./styles"
+import { AppFlatList } from "components/scroll"
 
 const TalabatiScreen: React.FC = () => {
   const { t, i18n } = useTranslation()
@@ -382,15 +389,15 @@ const TalabatiScreen: React.FC = () => {
         </DmView>
       ) : (
         <Animated.View entering={FadeIn.duration(400)} className="flex-1">
-        <FlatList
+        <AppFlatList
           data={jobs}
           renderItem={renderItem}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
           // Opts back OUT of the app-wide alwaysBounceVertical:false default
-          // (index.js). Pull-to-refresh works by pulling PAST the top, so with
-          // the bounce suppressed a customer with only one or two orders —
+          // (components/scroll). Pull-to-refresh works by pulling PAST the
+          // top, so with the bounce suppressed a customer with only one or two orders —
           // a list short enough to fit the screen — would have nothing to pull
           // and no way to refresh at all.
           alwaysBounceVertical

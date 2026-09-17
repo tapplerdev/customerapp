@@ -24,7 +24,7 @@ import { QuestionAnswerType } from "types/job"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
-import ProCard, { estimateProCardHeight } from "./components/ProCard"
+import ProCard from "./components/ProCard"
 import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
@@ -917,12 +917,26 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           renderItem={renderItem}
           keyExtractor={(item) => String(item.id)}
           extraData={selectedPros}
-          estimatedItemSize={250}
-          overrideItemLayout={(layout, pro) => {
-            layout.size = estimateProCardHeight(pro)
-          }}
+          // flash-list v2 removed estimatedItemSize and dropped `size` from
+          // overrideItemLayout's layout object (it is { span } now) — v2 measures
+          // item heights itself, so the old estimate is not just unnecessary, it
+          // no longer type-checks. estimateProCardHeight existed only to feed it
+          // and has been deleted with it.
           contentContainerStyle={{ paddingTop: 12, paddingBottom: 90 }}
           showsVerticalScrollIndicator={false}
+          // FlashList renders its own ScrollView, so the App* wrappers in
+          // components/scroll cannot cover it. This is a plain prop because
+          // FlashListProps extends ScrollViewProps (FlashListProps.d.ts:21) —
+          // that declaration IS the public contract, and it is type-checked.
+          // NOT overrideProps: that is typed `object` and its own doc says it is
+          // "for debugging and exception use cases".
+          // The runtime route is worth knowing though, because it is indirect:
+          // the prop is not in FlashList.js:382's destructure, so it rides
+          // restProps onto ProgressiveListView (:392) and reaches the ScrollView
+          // only because recyclerlistview spreads unknown props two levels down.
+          // RE-VERIFY THIS AT THE flash-list v2 BUMP — v2 dropped recyclerlistview
+          // entirely, so the path changes even if the declared contract does not.
+          alwaysBounceVertical={false}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
         />

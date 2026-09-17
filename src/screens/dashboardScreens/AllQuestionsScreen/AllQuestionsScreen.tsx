@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react"
-import { ScrollView, StyleSheet } from "react-native"
+import { StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -15,6 +15,7 @@ import NativePushBackSheet, {
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"
+import { AppScrollView } from "components/scroll"
 
 const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
   proToCustomer: "at_my_location",
@@ -170,7 +171,7 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
       </DmView>
 
       {/* Scrollable content */}
-      <ScrollView
+      <AppScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -247,7 +248,7 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
             {t("reset_all")}
           </DmText>
         </DmView>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Bottom button */}
       <DmView

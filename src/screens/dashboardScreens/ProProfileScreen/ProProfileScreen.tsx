@@ -1,12 +1,17 @@
 import React, { useMemo, useRef, useState } from "react"
-import { FlatList, Image, Modal, NativeScrollEvent, NativeSyntheticEvent, StatusBar, TouchableOpacity } from "react-native"
+import {
+  Image,
+  Modal,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StatusBar,
+  TouchableOpacity,
+} from "react-native"
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import Animated, { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated"
 import { parse, format } from "date-fns"
-import { BlurView } from "@react-native-community/blur"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
@@ -46,6 +51,7 @@ import WebsiteIcon from "assets/icons/website.svg"
 import MessagesWhiteIcon from "assets/icons/messages-white.svg"
 import CashIcon from "assets/icons/cash-icon.svg"
 import CreditCardIcon from "assets/icons/credit-card-icon.svg"
+import { AppFlatList, AppKeyboardAwareScrollView } from "components/scroll"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -216,7 +222,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
 
 
-      <KeyboardAwareScrollView
+      <AppKeyboardAwareScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100, backgroundColor: colors.white }}
         onScroll={scrollHandler}
@@ -324,7 +330,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 {t("photos_of_work")}
               </DmText>
             </DmView>
-            <FlatList
+            <AppFlatList
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1, paddingRight: 15 }}
@@ -462,7 +468,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           </DmView>
         )}
-      </KeyboardAwareScrollView>
+      </AppKeyboardAwareScrollView>
 
       {/* The same viewer the pro app uses, so a gallery reads identically in
           both apps — carousel, thumbnail strip, video playback and all. */}

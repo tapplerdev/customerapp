@@ -1,5 +1,4 @@
 import React from "react"
-import { ScrollView } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
@@ -18,6 +17,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 
 import CloseIcon from "assets/icons/close.svg"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"RequestDetailsScreen">
 
@@ -158,7 +158,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="w-[32]" />
       </DmView>
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
@@ -261,7 +261,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             </>
           )}
         </DmView>
-      </ScrollView>
+      </AppScrollView>
     </SafeAreaView>
   )
 }

@@ -1,11 +1,11 @@
 import React from "react"
-import { ScrollView } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { DmView } from "@tappler/shared/src/components/UI"
 
 import HomeHeader from "screens/dashboardScreens/HomeScreen/components/HomeHeader"
 import SearchBar from "components/SearchBar"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
+import { AppScrollView } from "components/scroll"
 
 const SkeletonSection: React.FC<{
   titleWidth: string
@@ -19,14 +19,14 @@ const SkeletonSection: React.FC<{
         <SkeletonLoader width={descWidth} height={13} borderRadius={6} />
       </DmView>
     </DmView>
-    <ScrollView
+    <AppScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 16 }}
       className="mt-[12]"
     >
       {children}
-    </ScrollView>
+    </AppScrollView>
   </DmView>
 )
 
@@ -37,7 +37,7 @@ const HomeSkeletonScreen: React.FC = () => {
       <SearchBar />
       <DmView className="h-[12]" />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+      <AppScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
         {/* Section 1 — squareWithOverlay (100x110) */}
         <SkeletonSection titleWidth="50%" descWidth="70%">
           {[0, 1, 2, 3].map((i) => (
@@ -85,7 +85,7 @@ const HomeSkeletonScreen: React.FC = () => {
             </DmView>
           ))}
         </SkeletonSection>
-      </ScrollView>
+      </AppScrollView>
     </SafeAreaView>
   )
 }

@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next"
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   KeyboardAvoidingView,
   ListRenderItemInfo,
 } from "react-native"
@@ -20,6 +19,7 @@ import { searchAddress, searchAddressByPosition } from "services/here-maps-api"
 import colors from "@tappler/shared/src/styles/colors"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import { isEgyptCountry } from "@tappler/shared/src/helpers/helpers"
+import { AppFlatList } from "components/scroll"
 
 interface Props {
   onClose: () => void
@@ -169,7 +169,7 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
               <ActivityIndicator color={colors.red} />
             </DmView>
           ) : (
-            <FlatList
+            <AppFlatList
               data={searchResults}
               renderItem={renderListItem}
               keyExtractor={(item) => item.id || String(item.position?.lat) + String(item.position?.lng)}

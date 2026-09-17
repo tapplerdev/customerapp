@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { Animated, FlatList, LayoutAnimation, Platform, TextInput, UIManager } from "react-native"
+import {
+  Animated,
+  LayoutAnimation,
+  Platform,
+  TextInput,
+  UIManager,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useIsFocused } from "@react-navigation/native"
@@ -37,6 +43,7 @@ import FoodOrderView, {
   CUSTOMER_CANCELLED_FOOD_ORDER,
 } from "./components/FoodOrderView"
 import JobMenuSheet from "./components/JobMenuSheet"
+import { AppFlatList } from "components/scroll"
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -817,7 +824,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       )}
 
       {/* Pro list */}
-      <FlatList
+      <AppFlatList
         data={activePros}
         renderItem={activeTab === "other" ? renderOtherProCard : renderSelectedProCard}
         keyExtractor={(item) => String(item.proId)}

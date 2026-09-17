@@ -1,5 +1,4 @@
 import React, { useCallback } from "react"
-import { FlatList } from "react-native"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -11,6 +10,7 @@ import MessagesComponent from "components/MessagesComponent/MessagesComponent"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import colors from "@tappler/shared/src/styles/colors"
+import { AppFlatList } from "components/scroll"
 
 type Props = RootStackScreenProps<"ArchivedMessagesScreen">
 
@@ -72,7 +72,7 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
       <DmView className="h-[0.7] bg-grey19" />
 
       {/* Archived list */}
-      <FlatList
+      <AppFlatList
         data={MOCK_ARCHIVED_CHATS}
         keyExtractor={(item) => String(item.chat.id)}
         renderItem={renderItem}

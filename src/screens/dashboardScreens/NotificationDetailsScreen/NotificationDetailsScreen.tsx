@@ -1,5 +1,4 @@
 import React, { useEffect } from "react"
-import { ScrollView } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -11,6 +10,7 @@ import { useTypedSelector } from "store"
 import { RootStackScreenProps } from "navigation/types"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"NotificationDetailsScreen">
 
@@ -52,7 +52,7 @@ const NotificationDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       </DmView>
       <DmView className="h-[0.7] bg-grey19" />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
@@ -73,7 +73,7 @@ const NotificationDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             {t("cheers_tappler_team")}
           </DmText>
         </DmView>
-      </ScrollView>
+      </AppScrollView>
     </SafeAreaView>
   )
 }

@@ -4,13 +4,13 @@ import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import DeleteIcon from "assets/icons/Delete.svg"
 import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
+import { AppKeyboardAwareScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"DeleteAccountScreen">
 
@@ -56,7 +56,7 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
         enableOnAndroid, because this app mounts no KeyboardProvider so the
         manifest's adjustResize still shrinks the window on Android.
       */}
-      <KeyboardAwareScrollView
+      <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -103,7 +103,7 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
           />
         </DmView>
       </DmView>
-      </KeyboardAwareScrollView>
+      </AppKeyboardAwareScrollView>
 
       {/* Confirmation Modal */}
       <MainModal

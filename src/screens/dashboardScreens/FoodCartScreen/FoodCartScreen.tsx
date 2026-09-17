@@ -3,7 +3,6 @@ import React, { useMemo } from "react"
 // Components
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import { ScrollView } from "react-native"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 
 // Hooks & Redux
@@ -31,6 +30,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import PlusIcon from "assets/icons/plus.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
+import { AppScrollView } from "components/scroll"
 
 type Props = RootStackScreenProps<"FoodCartScreen">
 
@@ -240,7 +240,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       ) : (
         <>
-          <ScrollView
+          <AppScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 24 }}
           >
@@ -274,7 +274,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
                 true
               )}
             </DmView>
-          </ScrollView>
+          </AppScrollView>
 
           {/* Same pinned footer as the Filters sheet and the menu basket bar:
               white container, shadow cast upward onto the content it covers.
