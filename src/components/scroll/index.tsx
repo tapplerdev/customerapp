@@ -91,9 +91,15 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
  * NativeWindStyleSheet regardless of whether their element was wrapped, so the
  * runtime lookup resolves them.
  *
- * AT THE NATIVEWIND v4 BUMP this becomes an explicit
- * `cssInterop(AppScrollView, { className: "style" })` — the same registration the
- * migration plan already budgets for Animated.View. Re-verify then.
+ * AT THE NATIVEWIND v4 BUMP: no cssInterop is needed here, contrary to what
+ * this comment used to say. NativeWind's own guidance is that a custom
+ * component forwarding className never needs cssInterop or remapProps — those
+ * are for third-party components — and react-native-css-interop's
+ * runtime/components.js registers RN's ScrollView (cssInterop) and FlatList
+ * (remapProps) out of the box. Since these wrappers hand className to those
+ * components, v4 resolves it with no registration. What DOES need registering
+ * is reanimated's Animated.View / Animated.Text, and RN's own Animated.*,
+ * which are distinct component objects.
  *
  * PULL-TO-REFRESH IS THE EXCEPTION. RefreshControl needs the bounce to reveal its
  * spinner, so on a list short enough to fit there would be nothing to pull.
