@@ -999,13 +999,13 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             <DmView className="px-[16] pt-[8] pb-[10] flex-row justify-around items-center">
               <DmView className="flex-row items-center">
                 <CallIcon width={22} height={22} />
-                <DmText className="mx-[5] text-13 leading-[16px] font-custom400">
+                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
                   {t("call")}
                 </DmText>
               </DmView>
               <DmView className="flex-row items-center">
                 <ReviewsIcon width={32} height={20} />
-                <DmText className="mx-[5] text-13 leading-[16px] font-custom400">
+                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
                   {t("my_review")}
                 </DmText>
               </DmView>
@@ -1014,7 +1014,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 onPress={openRequestSheet}
               >
                 <DetailsIcon width={20} height={24} />
-                <DmText className="mx-[5] text-13 leading-[16px] font-custom400">
+                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
                   {t("my_request")}
                 </DmText>
               </DmView>

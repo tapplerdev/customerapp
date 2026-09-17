@@ -1,9 +1,3 @@
-// NativeWind v4 entry point. This import is what makes the compiled
-// Tailwind output reachable at runtime; without it every className
-// resolves to nothing and the whole app renders unstyled.
-import "../global.css"
-// Must run before the first render — see the file for why.
-import "./nativewind/register"
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native"
 import React, { useCallback, useState } from "react"
 import { Platform, StatusBar, View } from "react-native"

@@ -32,7 +32,7 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
     return (
       <DmView onPress={() => openAddressFor(item, service)}>
         <DmView className="flex-row items-center justify-between px-[19] py-[17]">
-          <DmText className="flex-1 text-12 font-custom500 text-black leading-[15px]">
+          <DmText className="flex-1 text-12 font-custom500 text-black leading-[15]">
             {name}
           </DmText>
           <ChevronRightIcon
@@ -64,7 +64,7 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         </DmView>
         <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black leading-[19px]">
+          <DmText className="text-16 font-custom600 text-black leading-[19]">
             {serviceName}
           </DmText>
         </DmView>

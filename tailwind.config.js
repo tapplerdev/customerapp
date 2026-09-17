@@ -1,11 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{jsx,tsx}", "../tappler-shared/src/**/*.{jsx,tsx}"],
-  // NativeWind v4 requires its preset. It swaps Tailwind's web-oriented core
-  // plugins for the native-capable subset and sets the theme defaults the
-  // runtime understands. Without it, utilities compile to CSS that
-  // react-native-css-interop cannot translate.
-  presets: [require("nativewind/preset")],
   theme: {
     extend: {
       fontFamily: {
