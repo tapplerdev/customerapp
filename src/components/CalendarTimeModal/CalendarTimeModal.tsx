@@ -194,7 +194,7 @@ const CalendarTimeModal: React.FC<Props> = ({
             <DmText className="text-14 font-custom600 text-black mb-[10]">
               {t("select_time")}
             </DmText>
-            <DmView className="flex-row flex-wrap gap-[8px]">
+            <DmView className="flex-row flex-wrap gap-[8]">
               {TIME_SLOTS.map((slot, index) => {
                 const isSelected = selectedSlotIndex === index
                 const tooEarly = isSlotTooEarly(slot)
@@ -221,7 +221,7 @@ const CalendarTimeModal: React.FC<Props> = ({
 
             {/* Special options */}
             {!hideSpecialOptions && (
-              <DmView className="mt-[16] gap-[8px]">
+              <DmView className="mt-[16] gap-[8]">
                 <DmView
                   className={`px-[14] py-[12] rounded-8 border-1 ${
                     specialOption === "any_time" ? "border-red bg-red/10" : "border-grey1"

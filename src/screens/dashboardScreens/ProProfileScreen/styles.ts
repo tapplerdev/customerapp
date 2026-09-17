@@ -1,21 +1,7 @@
 import { StyleSheet } from "react-native"
-import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   headerZIndex: { zIndex: 3 },
-  // Was a className on an Animated.View. NativeWind v4 cannot style an
-  // Animated component — the interop takes over the `style` prop and flattens
-  // the useAnimatedStyle output the animation depends on — so these live here
-  // instead. See the call site.
-  animatedHeader: {
-    position: "absolute",
-    width: "100%",
-    backgroundColor: colors.white,
-    borderBottomWidth: 0.3,
-    borderColor: colors.grey2,
-    overflow: "hidden",
-  },
-  animatedHeaderInner: { paddingBottom: 12, paddingHorizontal: 16 },
   heroZIndex: { zIndex: 5 },
   featuredMarginLeft: { marginLeft: -5 },
   fullSize: { width: "100%", height: "100%" },

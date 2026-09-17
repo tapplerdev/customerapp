@@ -170,12 +170,13 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       />
 
       {/* Animated header — fades in when scrolled past photo */}
-      {/* Styles live in styles.ts, not className: NativeWind v4 cannot style an
-          Animated component — it intercepts `style` and flattens the animated
-          value, which blanks the subtree. */}
-      <Animated.View style={[styles.headerZIndex, styles.animatedHeader, animatedStyle]}>
+      <Animated.View
+        style={[styles.headerZIndex, animatedStyle]}
+        className="absolute w-full bg-white border-b-0.3 border-grey2 overflow-hidden"
+      >
         <Animated.View
-          style={[styles.animatedHeaderInner, { paddingTop: (insets.top || 35) + 4 }]}
+          style={[{ paddingTop: (insets.top || 35) + 4 }]}
+          className="pb-[12] px-[16]"
         >
           <DmView className="flex-row items-center">
             <DmView

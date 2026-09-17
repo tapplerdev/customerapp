@@ -27,7 +27,7 @@ const ImageWithCheckmarkButton: React.FC<ImageWithCheckmarkButtonProps> = ({
         )}
         style={[styles.borderBase, { borderColor: isSelected ? "#CC0000" : "#D9D9D9" }]}
       >
-        <DmView className="flex-row items-center gap-[8px]">
+        <DmView className="flex-row items-center gap-[8]">
           {isSelected && (
             <DmText style={styles.checkmarkText}>✓</DmText>
           )}

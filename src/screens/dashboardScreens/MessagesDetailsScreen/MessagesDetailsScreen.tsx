@@ -965,7 +965,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               onPress={() => setOfferHistoryVisible(true)}
             >
               <DmView className="w-2/5 h-full items-center justify-center bg-red5">
-                <DmText className="text-13 leading-[16px] font-custom600 text-white tracking-[0.3px]">
+                <DmText className="text-13 leading-[16px] font-custom600 text-white tracking-[0.3]">
                   {t("offer")}
                 </DmText>
               </DmView>

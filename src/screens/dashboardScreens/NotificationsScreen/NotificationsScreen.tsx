@@ -203,7 +203,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
       ) : (
         // Same smooth reveal as proapp: content fades in over 300ms once
         // the skeleton is replaced (proapp animates fadeAnim 0→1).
-        <Animated.View entering={FadeIn.duration(300)} style={{ flex: 1 }}>
+        <Animated.View entering={FadeIn.duration(300)} className="flex-1">
         <AppFlatList
           data={allNotifications}
           renderItem={renderItem}
