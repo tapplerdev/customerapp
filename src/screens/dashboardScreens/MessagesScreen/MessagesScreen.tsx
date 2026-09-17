@@ -164,7 +164,7 @@ const MessagesScreen: React.FC = () => {
       {isLoading ? (
         <MessagesSkeleton />
       ) : (
-        <Animated.View entering={FadeIn.duration(400)} className="flex-1">
+        <Animated.View entering={FadeIn.duration(400)} style={{ flex: 1 }}>
         <AppFlatList
           data={filteredChats}
           keyExtractor={(item) => String(item.chat.id)}

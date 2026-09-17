@@ -201,14 +201,21 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmText>
           <DmView
             className={clsx(
-              "py-[3] px-[15] rounded-14 bg-pink1",
-              !option.isRequired && "bg-grey36"
+              "py-[3] px-[15] rounded-14",
+              // Mutually exclusive. Layering bg-grey36 over a base bg-pink1 put
+              // both on the element; v2 took the later one, v4 takes whichever
+              // Tailwind emits later and `grey36` precedes `pink1` in the
+              // theme, so the optional pill kept the required (pink) styling.
+              option.isRequired ? "bg-pink1" : "bg-grey36"
             )}
           >
             <DmText
               className={clsx(
-                "text-11 leading-[16px] font-custom400 text-red",
-                !option.isRequired && "text-black"
+                "text-11 leading-[16px] font-custom400",
+                // Same conflict on the label: `black` is declared before `red`,
+                // so the base red won and "optional" rendered red like
+                // "required".
+                option.isRequired ? "text-red" : "text-black"
               )}
             >
               {t(option.isRequired ? "required" : "optional")}

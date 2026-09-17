@@ -48,7 +48,7 @@ const TapplyAIScreen: React.FC<Props> = ({ navigation }) => {
         {/* Logo + greeting — centered */}
         <Animated.View
           entering={FadeInUp.duration(400).delay(100)}
-          className="items-center"
+          style={{ alignItems: "center" }}
         >
           <TapplerLogo width={80} height={80} />
 
