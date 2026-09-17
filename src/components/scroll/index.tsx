@@ -91,15 +91,34 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
  * NativeWindStyleSheet regardless of whether their element was wrapped, so the
  * runtime lookup resolves them.
  *
- * AT THE NATIVEWIND v4 BUMP: no cssInterop is needed here, contrary to what
- * this comment used to say. NativeWind's own guidance is that a custom
- * component forwarding className never needs cssInterop or remapProps — those
- * are for third-party components — and react-native-css-interop's
- * runtime/components.js registers RN's ScrollView (cssInterop) and FlatList
- * (remapProps) out of the box. Since these wrappers hand className to those
- * components, v4 resolves it with no registration. What DOES need registering
- * is reanimated's Animated.View / Animated.Text, and RN's own Animated.*,
- * which are distinct component objects.
+ * NATIVEWIND v4 WAS TRIED AND REVERTED. Do not re-attempt it without
+ * reading this, because the failure mode is silent.
+ *
+ * v2 is a BABEL transform: its visitor rewrites any JSX element carrying a
+ * className into <StyledComponent component={X}>, keying on the element NAME
+ * (getElementName returns `.property.name`, so `Animated.View` reads as
+ * "View"). That means it styles third-party components and member
+ * expressions alike, which is why everything in these apps works today.
+ *
+ * v4 replaces that with a RUNTIME registry: react-native-css-interop keeps a
+ * map of registered components and drops className on anything absent from
+ * it. Registered out of the box are RN core primitives only. Everything else
+ * silently renders unstyled — no error, no warning. Measured on device with a
+ * paired probe: a registered DmView with bg-red painted 825k pixels while an
+ * unregistered Animated.View with bg-green painted 0.
+ *
+ * And registering the gap is not a workaround: cssInterop and the lighter
+ * remapProps, applied to reanimated Animated or RN Animated, each rendered
+ * the whole app blank. The interop takes over the `style` prop and flattens
+ * the useAnimatedStyle output the animation depends on.
+ *
+ * The bill on this codebase was 104 <MainModal> sites (react-native-modal
+ * hands className to react-native-animatable`s createComponent wrapper, so
+ * the m-0 that cancels its 5%-of-width margin was dropped), 11 MapView sites
+ * losing flex-1, plus DropShadow, LinearGradient and 29 Animated.* sites.
+ *
+ * The plan is to remove NativeWind entirely in favour of a real token layer
+ * in tappler-shared, not to move to v4.
  *
  * PULL-TO-REFRESH IS THE EXCEPTION. RefreshControl needs the bounce to reveal its
  * spinner, so on a list short enough to fit there would be nothing to pull.
