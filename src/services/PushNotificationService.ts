@@ -40,11 +40,25 @@
  *    starts working the moment those native files land, with no JS change.
  */
 
-import messaging, { FirebaseMessagingTypes } from "@react-native-firebase/messaging"
+// Firebase 26 DELETED the namespaced API (messaging(), messaging.X) and the
+// FirebaseMessagingTypes namespace. These are the modular equivalents; each
+// takes the Messaging instance as its first argument. hasPermission is aliased
+// because this class has a method of the same name.
+import {
+  AuthorizationStatus,
+  getInitialNotification,
+  getMessaging,
+  getToken,
+  hasPermission as fbHasPermission,
+  onMessage,
+  onNotificationOpenedApp,
+  onTokenRefresh,
+  requestPermission as fbRequestPermission,
+  type RemoteMessage,
+} from "@react-native-firebase/messaging"
 import { destinationFor } from "components/InAppMessageBanner/InAppMessageBanner"
 import { navigateFromRef } from "navigation/navigationRef"
 
-type RemoteMessage = FirebaseMessagingTypes.RemoteMessage
 
 /**
  * Exactly the shape useChatSocket emits on "notification:new", so a
@@ -102,7 +116,7 @@ class PushNotificationServiceClass {
   private isAvailable(): boolean {
     if (this.unavailable) return false
     try {
-      messaging()
+      getMessaging()
       return true
     } catch {
       // Android until google-services.json exists. Logged once, not per event.
@@ -120,10 +134,10 @@ class PushNotificationServiceClass {
   public async hasPermission(): Promise<boolean> {
     if (!this.isAvailable()) return false
     try {
-      const status = await messaging().hasPermission()
+      const status = await fbHasPermission(getMessaging())
       return (
-        status === messaging.AuthorizationStatus.AUTHORIZED ||
-        status === messaging.AuthorizationStatus.PROVISIONAL
+        status === AuthorizationStatus.AUTHORIZED ||
+        status === AuthorizationStatus.PROVISIONAL
       )
     } catch {
       return false
@@ -138,10 +152,10 @@ class PushNotificationServiceClass {
   public async requestPermissionWithPrompt(): Promise<boolean> {
     if (!this.isAvailable()) return false
     try {
-      const status = await messaging().requestPermission()
+      const status = await fbRequestPermission(getMessaging())
       return (
-        status === messaging.AuthorizationStatus.AUTHORIZED ||
-        status === messaging.AuthorizationStatus.PROVISIONAL
+        status === AuthorizationStatus.AUTHORIZED ||
+        status === AuthorizationStatus.PROVISIONAL
       )
     } catch {
       return false
@@ -167,7 +181,7 @@ class PushNotificationServiceClass {
     if (!(await this.hasPermission())) return false
 
     try {
-      const token = await messaging().getToken()
+      const token = await getToken(getMessaging())
       if (!token) return false
       if (token === this.registeredToken || token === this.pendingToken) return true
 
@@ -198,7 +212,7 @@ class PushNotificationServiceClass {
     if (this.tokenRefreshUnsubscribe) return
 
     try {
-      this.tokenRefreshUnsubscribe = messaging().onTokenRefresh(async (token) => {
+      this.tokenRefreshUnsubscribe = onTokenRefresh(getMessaging(), async (token: string) => {
         // pendingToken: after a sign-out's deleteToken(), the next sign-in's
         // getToken() mints a fresh token AND fires this — register() is
         // already sending it.
@@ -255,7 +269,8 @@ class PushNotificationServiceClass {
     if (this.foregroundUnsubscribe) return
 
     try {
-      this.foregroundUnsubscribe = messaging().onMessage(
+      this.foregroundUnsubscribe = onMessage(
+        getMessaging(),
         async (remoteMessage: RemoteMessage) => {
           const parsed = this.parse(remoteMessage)
           if (!parsed) return
@@ -291,13 +306,12 @@ class PushNotificationServiceClass {
     if (this.tapUnsubscribe) return
 
     try {
-      this.tapUnsubscribe = messaging().onNotificationOpenedApp(
-        (remoteMessage: RemoteMessage) => this.routeTap(remoteMessage)
+      this.tapUnsubscribe = onNotificationOpenedApp(getMessaging(), (remoteMessage: RemoteMessage) =>
+        this.routeTap(remoteMessage)
       )
 
       // Cold start: the app was not running when the notification was tapped.
-      messaging()
-        .getInitialNotification()
+      getInitialNotification(getMessaging())
         .then((remoteMessage: RemoteMessage | null) => {
           if (remoteMessage) this.routeTap(remoteMessage)
         })

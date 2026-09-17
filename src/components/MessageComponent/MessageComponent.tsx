@@ -504,7 +504,7 @@ const MessageComponent: React.FC<Props> = React.memo(
                   {renderDocuments()}
                   {renderLocation()}
                 </DmView>
-                <DmView style={StyleSheet.absoluteFillObject} className="items-center justify-center">
+                <DmView style={StyleSheet.absoluteFill} className="items-center justify-center">
                   <ActivityIndicator size="small" color={isMyMessage ? "#FFFFFF" : "#000000"} />
                 </DmView>
               </DmView>

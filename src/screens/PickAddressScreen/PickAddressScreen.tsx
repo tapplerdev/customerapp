@@ -4,10 +4,10 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import {
   Animated,
   I18nManager,
-  ScrollView,
   useWindowDimensions,
   ViewStyle,
 } from "react-native"
+import type { ScrollView } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 

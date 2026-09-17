@@ -74,7 +74,7 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
             {!!imgUrl && (
               <FadeInImage
                 source={{ uri: imgUrl }}
-                style={StyleSheet.absoluteFillObject}
+                style={StyleSheet.absoluteFill}
                 resizeMode={FastImage.resizeMode.cover}
               />
             )}
@@ -98,7 +98,7 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
             {!!imgUrl && (
               <FadeInImage
                 source={{ uri: imgUrl }}
-                style={StyleSheet.absoluteFillObject}
+                style={StyleSheet.absoluteFill}
                 resizeMode={FastImage.resizeMode.cover}
               />
             )}

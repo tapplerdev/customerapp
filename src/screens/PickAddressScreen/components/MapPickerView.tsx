@@ -127,7 +127,7 @@ const MapPickerView: React.FC<Props> = ({
                   toolbarEnabled={false}
                   showsUserLocation={false}
                   showsBuildings={true}
-                  showsPointsOfInterest={false}
+                  showsPointsOfInterests={false}
                   showsCompass={false}
                   mapType="standard"
                 />

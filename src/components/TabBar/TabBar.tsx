@@ -14,7 +14,7 @@ const TabBar = ({
   descriptors,
   insets,
   t,
-}: BottomTabBarProps & { t: TFunction }): JSX.Element => {
+}: BottomTabBarProps & { t: TFunction }): React.JSX.Element => {
   return (
     /*
       DropShadow, not a bare `elevation`, because the elevation never rendered

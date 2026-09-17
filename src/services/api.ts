@@ -1,7 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
 import { API_URL } from "config"
-import messaging from "@react-native-firebase/messaging"
+// Firebase 26 deleted the namespaced API; deleteToken is now modular and takes
+// the Messaging instance.
+import { deleteToken, getMessaging } from "@react-native-firebase/messaging"
 import { chatReadRegistry } from "services/chatReadRegistry"
 import { RootState } from "store"
 import { setTokens, logout } from "store/auth/slice"
@@ -133,7 +135,7 @@ const baseQueryWithReauth: BaseQueryFn<
         // plus the backend call this dead session cannot make): a signed-out
         // phone must not keep receiving the account's pushes.
         void Promise.resolve()
-          .then(() => messaging().deleteToken())
+          .then(() => deleteToken(getMessaging()))
           .catch(() => undefined)
         apiBase.dispatch(logout())
         apiBase.dispatch(api.util.resetApiState())

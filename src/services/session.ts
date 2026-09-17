@@ -1,4 +1,6 @@
-import messaging from "@react-native-firebase/messaging"
+// Firebase 26 deleted the namespaced API; deleteToken is now modular and takes
+// the Messaging instance.
+import { deleteToken, getMessaging } from "@react-native-firebase/messaging"
 import { api } from "services/api"
 import { PushNotifications } from "services/PushNotificationService"
 import { store } from "store"
@@ -71,7 +73,7 @@ export const signOut = async (): Promise<void> => {
       ).catch(() => undefined)
     }
     await withTimeout(
-      Promise.resolve().then(() => messaging().deleteToken()),
+      Promise.resolve().then(() => deleteToken(getMessaging())),
       REMOVE_TOKEN_TIMEOUT_MS
     ).catch(() => undefined)
   } finally {

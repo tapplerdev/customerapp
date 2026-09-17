@@ -75,7 +75,9 @@ export const destinationFor = (
 const InAppMessageBanner: React.FC = () => {
   const insets = useSafeAreaInsets()
   const translateY = useRef(new Animated.Value(-200)).current
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  // React 19 made useRef's argument required — an argument-less call is now
+  // TS2554. Passing undefined explicitly is the documented equivalent.
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [banner, setBanner] = useState<Banner | null>(null)
   const { isAuth } = useTypedSelector((store) => store.auth)
 

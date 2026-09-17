@@ -48,7 +48,7 @@ const RealtimeManager: React.FC = () => {
   return null
 }
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   const [navReady, setNavReady] = useState(false)
   const [splashDone, setSplashDone] = useState(!shouldShowSplash)
 

@@ -13,7 +13,7 @@ import { useGetCustomerMeQuery, useUpdateCustomerMutation } from "services/api"
 // Libs & Utils
 import { I18nManager } from "react-native"
 
-const BootstrapScreen = (): JSX.Element => {
+const BootstrapScreen = (): React.JSX.Element => {
   const { language, isAuth } = useTypedSelector((state) => state.auth)
   const { i18n } = useTranslation()
   const dispatch = useDispatch()
