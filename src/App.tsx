@@ -13,6 +13,7 @@ import { useChatSocket } from "hooks/useChatSocket"
 import { usePushNotifications } from "hooks/usePushNotifications"
 import { navigationRef } from "navigation/navigationRef"
 import InAppMessageBanner from "components/InAppMessageBanner/InAppMessageBanner"
+import SheetDim from "@tappler/shared/src/components/NativeSheet/SheetDim"
 import "locales/i18n"
 import "react-native-gesture-handler"
 
@@ -72,6 +73,11 @@ function App(): React.JSX.Element {
                 />
                 <BootstrapScreen />
               </NavigationContainer>
+
+              {/* One per app. Draws the dim for every native sheet -- see
+                  tappler-shared/src/components/NativeSheet/dimStore.ts. Sits here, above
+                  the app content but below the splash and the in-app banner. */}
+              <SheetDim />
 
               {!splashDone && (
                 <SplashOverlay

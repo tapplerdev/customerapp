@@ -10,7 +10,8 @@ import { FiltersParams } from "navigation/types"
 import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import NativePushBackSheet, {
+import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
+import {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
@@ -587,12 +588,12 @@ export const FiltersSheet: React.FC<
   const fullSheetHeight = useFullSheetHeight()
 
   return (
-    <NativePushBackSheet
+    <NativeSheet
       visible={visible}
       height={fullSheetHeight}
       onDismissed={onClose}
     >
       <FiltersContent key={contentKey} {...contentProps} onClose={onClose} />
-    </NativePushBackSheet>
+    </NativeSheet>
   )
 }

@@ -6,7 +6,8 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native"
-import NativePushBackSheet, {
+import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
+import {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import { useTranslation } from "react-i18next"
@@ -336,13 +337,13 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
    * native sheet does the drag, the dim and the top offset itself.
    */
   return (
-    <NativePushBackSheet
+    <NativeSheet
       visible={isVisible}
       height={fullSheetHeight}
       onDismissed={handleDismiss}
     >
       {content}
-    </NativePushBackSheet>
+    </NativeSheet>
   )
 }
 

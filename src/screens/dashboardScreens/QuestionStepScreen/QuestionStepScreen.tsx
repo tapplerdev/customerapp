@@ -10,7 +10,8 @@ import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
-import NativePushBackSheet, {
+import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
+import {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
@@ -617,7 +618,7 @@ export const QuestionFlowSheet: React.FC<
   const backRef = useRef<(() => void) | null>(null)
   const fullSheetHeight = useFullSheetHeight()
   return (
-    <NativePushBackSheet
+    <NativeSheet
       visible={visible}
       height={fullSheetHeight}
       onDismissed={() => (commitRef.current ?? onClose)()}
@@ -635,6 +636,6 @@ export const QuestionFlowSheet: React.FC<
           backRef.current = action
         }}
       />
-    </NativePushBackSheet>
+    </NativeSheet>
   )
 }

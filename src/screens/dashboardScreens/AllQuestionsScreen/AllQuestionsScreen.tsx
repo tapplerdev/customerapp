@@ -9,7 +9,8 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
-import NativePushBackSheet, {
+import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
+import {
   useFullSheetHeight,
 } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
@@ -293,7 +294,7 @@ export const AllQuestionsSheet: React.FC<
   const commitRef = React.useRef<() => void>(() => {})
   const fullSheetHeight = useFullSheetHeight()
   return (
-    <NativePushBackSheet
+    <NativeSheet
       visible={visible}
       height={fullSheetHeight}
       onDismissed={() => {
@@ -309,6 +310,6 @@ export const AllQuestionsSheet: React.FC<
           commitRef.current = fn
         }}
       />
-    </NativePushBackSheet>
+    </NativeSheet>
   )
 }
