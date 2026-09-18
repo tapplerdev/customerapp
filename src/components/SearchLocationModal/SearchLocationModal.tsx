@@ -202,9 +202,9 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
   // is the same intent expressed off the safe area, so the top edge lands below
   // the status bar on every device instead of at a fixed fraction.
   //
-  // No pushBackScale override: this is a NEAR-FULL sheet, and the native 0.92
-  // default is what that size was tuned for. BOTTOM_SHEET_PUSH_BACK_SCALE is
-  // for the short ones.
+  // No pushBackScale override: this is a NEAR-FULL sheet, and NativeSheet's own
+  // 0.92 default is what that size was tuned for. BOTTOM_SHEET_PUSH_BACK_SCALE
+  // is for the short ones. (That default used to live in the native view.)
   const fullSheetHeight = useFullSheetHeight()
 
   const content = (
