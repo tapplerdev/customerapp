@@ -11,9 +11,7 @@ import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
-import {
-  useFullSheetHeight,
-} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"

@@ -7,9 +7,7 @@ import {
   TextInput,
 } from "react-native"
 import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
-import {
-  useFullSheetHeight,
-} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import { useTranslation } from "react-i18next"
 
 import { DmText, DmView } from "@tappler/shared/src/components/UI"

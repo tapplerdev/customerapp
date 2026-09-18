@@ -10,9 +10,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
-import {
-  useFullSheetHeight,
-} from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
+import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"

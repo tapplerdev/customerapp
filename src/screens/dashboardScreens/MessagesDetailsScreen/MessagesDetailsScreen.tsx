@@ -53,7 +53,6 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendArrow from "assets/icons/sendArrow.svg"
 import MessageBlockedModal from "components/MessageBlockedModal/MessageBlockedModal"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
-import { NEAR_FULL_PUSH_BACK_SCALE } from "@tappler/shared/src/components/NativePushBackSheet/NativePushBackSheet"
 import CallIcon from "assets/icons/call.svg"
 import ReviewsIcon from "assets/icons/my-reviews.svg"
 import DetailsIcon from "assets/icons/details-icon.svg"
@@ -1234,7 +1233,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         isVisible={requestSheetVisible}
         onClose={closeRequestSheet}
         height={nearFullSheetHeight}
-        pushBackScale={NEAR_FULL_PUSH_BACK_SCALE}
       >
         {requestSheetContent}
       </NativeActionSheet>

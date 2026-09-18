@@ -2897,9 +2897,6 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - TapplerShared (1.0.0):
-    - React-Core
-    - React-RCTFabric
   - TOCropViewController (2.8.0)
   - Yoga (0.0.0)
 
@@ -3018,7 +3015,6 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - "RNTrueSheet (from `../node_modules/@lodev09/react-native-true-sheet`)"
   - RNWorklets (from `../node_modules/react-native-worklets`)
-  - "TapplerShared (from `../node_modules/@tappler/shared`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -3255,8 +3251,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@lodev09/react-native-true-sheet"
   RNWorklets:
     :path: "../node_modules/react-native-worklets"
-  TapplerShared:
-    :path: "../node_modules/@tappler/shared"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -3385,7 +3379,6 @@ SPEC CHECKSUMS:
   RNWorklets: 453d16f4cb680d5a4262b314519711e7765a80a1
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  TapplerShared: aaac77a70c40adb03c3bc793d2ce993c570f2d69
   TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888
   Yoga: 18b74b3ade30bebc1904004dfaceae1dd02a330a
 
