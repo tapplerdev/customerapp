@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState, useRef } from "react"
 import { StyleSheet } from "react-native"
+import type { ScrollView } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -25,6 +26,7 @@ const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
 }
 
 type ContentProps = AllQuestionsParams & {
+  scrollRef: React.RefObject<ScrollView | null>
   onClose: () => void
   /** Lets the presenter commit answers when the sheet is dismissed natively
       (swipe/dim-tap) — every exit path commits, matching X / See matches. */
@@ -32,6 +34,7 @@ type ContentProps = AllQuestionsParams & {
 }
 
 const AllQuestionsContent: React.FC<ContentProps> = ({
+  scrollRef,
   categoryName,
   placeOfServiceOptions,
   customerQuestions,
@@ -171,6 +174,7 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
 
       {/* Scrollable content */}
       <AppScrollView
+        ref={scrollRef}
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -289,12 +293,14 @@ const styles = StyleSheet.create({
 export const AllQuestionsSheet: React.FC<
   AllQuestionsParams & { visible: boolean; contentKey: number; onClose: () => void }
 > = ({ visible, contentKey, onClose, ...contentProps }) => {
+  const scrollRef = useRef<ScrollView>(null)
   const commitRef = React.useRef<() => void>(() => {})
   const fullSheetHeight = useFullSheetHeight()
   return (
     <NativeSheet
       visible={visible}
       height={fullSheetHeight}
+      scrollableRef={scrollRef}
       onDismissed={() => {
         commitRef.current()
         onClose()
@@ -307,6 +313,7 @@ export const AllQuestionsSheet: React.FC<
         registerCommit={(fn) => {
           commitRef.current = fn
         }}
+        scrollRef={scrollRef}
       />
     </NativeSheet>
   )

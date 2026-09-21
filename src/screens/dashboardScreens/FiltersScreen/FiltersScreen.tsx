@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import { StyleSheet, TextInput } from "react-native"
+import type { ScrollView } from "react-native"
 import Slider from "@react-native-community/slider"
 import RangeSlider from "components/RangeSlider/RangeSlider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
@@ -26,12 +27,13 @@ export type FilterValues = {
   creditCardPayment?: boolean
 }
 
-type ContentProps = FiltersParams & { onClose: () => void }
+type ContentProps = FiltersParams & { onClose: () => void; scrollRef: React.RefObject<ScrollView | null> }
 
 // All filter state & UI. Only ever rendered inside FiltersSheet below — the
 // split is left in place because the content is long enough to want its own
 // unit, and because the sheet wrapper owns the height hook.
 const FiltersContent: React.FC<ContentProps> = ({
+  scrollRef,
   currentPlaceOfService,
   isFoodCategory,
   foodMode,
@@ -286,6 +288,7 @@ const FiltersContent: React.FC<ContentProps> = ({
       <DmView className="h-[1] bg-grey5" />
 
       <AppScrollView
+        ref={scrollRef}
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
@@ -583,15 +586,17 @@ const styles = StyleSheet.create({
 export const FiltersSheet: React.FC<
   FiltersParams & { visible: boolean; contentKey: number; onClose: () => void }
 > = ({ visible, contentKey, onClose, ...contentProps }) => {
+  const scrollRef = useRef<ScrollView>(null)
   const fullSheetHeight = useFullSheetHeight()
 
   return (
     <NativeSheet
       visible={visible}
       height={fullSheetHeight}
+      scrollableRef={scrollRef}
       onDismissed={onClose}
     >
-      <FiltersContent key={contentKey} {...contentProps} onClose={onClose} />
+      <FiltersContent key={contentKey} {...contentProps} onClose={onClose} scrollRef={scrollRef} />
     </NativeSheet>
   )
 }
