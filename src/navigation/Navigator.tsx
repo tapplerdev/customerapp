@@ -1,4 +1,5 @@
 import React, { useEffect } from "react"
+import { SafeAreaProvider } from "react-native-safe-area-context"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { useDispatch } from "react-redux"
 import { RootStackParamList } from "./types"
@@ -47,6 +48,19 @@ import { useTypedSelector } from "store"
 import { setCurrentScreen } from "store/auth/slice"
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
+
+/**
+ * Every fullScreenModal gets its own SafeAreaProvider. A presented screen sits
+ * in UIKit's presentation container, outside the root provider's view, so the
+ * Fabric SafeAreaView falls back to reading its own insets once, on attach,
+ * with no way to read again — on a cold start that read can land at zero and
+ * the screen keeps a zero top inset for its whole life (X in the status bar,
+ * untappable). A provider inside the presentation re-reads on layout. Found on
+ * proapp's send-offer screen 2026-09-21; rationale on modalLayout there.
+ */
+const modalLayout = ({ children }: { children: React.ReactNode }) => (
+  <SafeAreaProvider>{children}</SafeAreaProvider>
+)
 
 const Navigator = () => {
   const dispatch = useDispatch()
@@ -99,6 +113,7 @@ const Navigator = () => {
           animation: "slide_from_bottom",
           headerShown: false,
         }}
+        layout={modalLayout}
       />
       <Stack.Screen name="HomeTabs" component={HomeTabs} />
       <Stack.Screen name="AccountDetailsScreen" component={AccountDetailsScreen} />
@@ -158,13 +173,28 @@ const Navigator = () => {
       <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} />
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="NotificationDetailsScreen" component={NotificationDetailsScreen} />
-      <Stack.Screen name="RequestDetailsScreen" component={RequestDetailsScreen} options={{ presentation: "fullScreenModal" }} />
-      <Stack.Screen name="ProProfileScreen" component={ProProfileScreen} options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen
+        name="RequestDetailsScreen"
+        component={RequestDetailsScreen}
+        options={{ presentation: "fullScreenModal" }}
+        layout={modalLayout}
+      />
+      <Stack.Screen
+        name="ProProfileScreen"
+        component={ProProfileScreen}
+        options={{ presentation: "fullScreenModal" }}
+        layout={modalLayout}
+      />
       <Stack.Screen name="ReviewProSelectionScreen" component={ReviewProSelectionScreen} />
       <Stack.Screen name="ReviewFormScreen" component={ReviewFormScreen} />
       {/* Food ordering (hasMenu categories) */}
       <Stack.Screen name="FoodMenuScreen" component={FoodMenuScreen} />
-      <Stack.Screen name="FoodItemScreen" component={FoodItemScreen} options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen
+        name="FoodItemScreen"
+        component={FoodItemScreen}
+        options={{ presentation: "fullScreenModal" }}
+        layout={modalLayout}
+      />
       <Stack.Screen name="FoodCartScreen" component={FoodCartScreen} />
       <Stack.Screen name="FoodCheckoutScreen" component={FoodCheckoutScreen} />
       <Stack.Screen name="FoodOrderReviewScreen" component={FoodOrderReviewScreen} />

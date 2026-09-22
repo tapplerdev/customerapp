@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { InteractionManager, TextInput } from "react-native"
+import React, { useCallback, useMemo, useRef, useState } from "react"
+import { TextInput } from "react-native"
 import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -9,6 +9,7 @@ import { RootStackScreenProps } from "navigation/types"
 import { useGetServicesQuery } from "services/api"
 import { ServiceCategoryType, ServiceType } from "types/cms"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
+import { useAfterTransition } from "@tappler/shared/src/hooks/useAfterTransition"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import colors from "@tappler/shared/src/styles/colors"
@@ -43,16 +44,10 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
   // native stack is still animating this screen in there is no committed
   // layout for reanimated to enter FROM, so it draws the subtree at the
   // container origin for a frame — the rows over the search bar. Gating on
-  // InteractionManager means the FIRST mount never animates, and every
-  // remount after it (each new search key) does. That is the split we want:
-  // no fade arriving on the screen, fade on every result change.
-  const [canAnimateResults, setCanAnimateResults] = useState(false)
-  useEffect(() => {
-    const handle = InteractionManager.runAfterInteractions(() =>
-      setCanAnimateResults(true),
-    )
-    return () => handle.cancel()
-  }, [])
+  // the screen's transitionEnd means the FIRST mount never animates, and
+  // every remount after it (each new search key) does. That is the split we
+  // want: no fade arriving on the screen, fade on every result change.
+  const canAnimateResults = useAfterTransition()
 
   // Search goes to the server (full-text over service + category names and
   // keywords — same contract the pro app uses); the plain list stays on the

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import clsx from "clsx"
-import { Animated, InteractionManager, View, ViewToken } from "react-native"
+import { Animated, View, ViewToken } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -27,6 +27,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ProCard from "./components/ProCard"
 import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
+import { useAfterTransition } from "@tappler/shared/src/hooks/useAfterTransition"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 import { FiltersSheet, FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import { QuestionFlowSheet } from "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen"
@@ -235,6 +236,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Launch native question flow on first mount + whenever the service changes
   // (replaces gorhom QuestionBottomSheet)
+  const hasScreenSettled = useAfterTransition()
   useEffect(() => {
     if (isFoodCategory) {
       // Food flow: never present questions; release the list immediately.
@@ -243,6 +245,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setQuestionsSettled(true)
       return
     }
+    // Wait out the screen's own push animation before presenting natively.
+    if (!hasScreenSettled) return
     const firstLaunch =
       !hasLaunchedQuestions.current &&
       (!initialPlaceOfService || !!forceQuestionFlow)
@@ -250,15 +254,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     if (customerQuestions.length === 0) return // wait for the (new) service's questions to load
     hasLaunchedQuestions.current = true
     relaunchQuestions.current = false
-    // Wait out the screen's own push animation before presenting natively
-    InteractionManager.runAfterInteractions(() => {
-      setQuestionsOpenCount((c) => c + 1)
-      setQuestionsVisible(true)
-      // Gate drops only as the sheet actually presents — not at effect time,
-      // or the push-animation window would reopen.
-      setQuestionsSettled(true)
-    })
-  }, [customerQuestions.length, serviceId])
+    setQuestionsOpenCount((c) => c + 1)
+    setQuestionsVisible(true)
+    // Gate drops only as the sheet actually presents — not at effect time,
+    // or the push-animation window would reopen.
+    setQuestionsSettled(true)
+  }, [customerQuestions.length, serviceId, hasScreenSettled])
 
   // Gate rule-out: the service payload arrived but this category asks nothing
   // (also covers a categoryId missing from the payload) — there is no flow to
