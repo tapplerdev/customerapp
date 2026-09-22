@@ -1,4 +1,6 @@
 {
+  "sheet_grabber_label": "Sheet handle",
+  "sheet_grabber_hint": "Swipe down to close",
   "details": "Details",
   "when_do_you_need_job": "When do you need this job to start?",
   "havent_decided_yet": "I haven't decided yet",
