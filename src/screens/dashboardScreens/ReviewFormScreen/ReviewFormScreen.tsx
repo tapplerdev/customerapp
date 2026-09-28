@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
 import ImageCropPicker, { ImageOrVideo } from "react-native-image-crop-picker"
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel"
-import { useRequestGallery } from "@tappler/shared/src/hooks/permissionHooks"
+import { requestGalleryPermission } from "@tappler/shared/src/hooks/permissionHooks"
 
 import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { openPermissionAlert } from "utils/openPermissionAlert"
@@ -60,7 +60,7 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
       Alert.alert(t("error"), t("max_4_photos"))
       return
     }
-    const hasPermission = await useRequestGallery()
+    const hasPermission = await requestGalleryPermission()
     if (!hasPermission) {
       openPermissionAlert()
       return

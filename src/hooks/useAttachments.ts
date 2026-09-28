@@ -3,8 +3,8 @@ import { CameraRoll } from "@react-native-camera-roll/camera-roll"
 import ImageCropPicker from "react-native-image-crop-picker"
 import FastImage from "react-native-fast-image"
 import {
-  useRequestCameraPermissions,
-  useRequestGallery,
+  requestCameraPermission,
+  requestGalleryPermission,
 } from "@tappler/shared/src/hooks/permissionHooks"
 import {
   useSendMessageMutation,
@@ -52,7 +52,7 @@ const useAttachments = (params: {
 
   const loadRecentPhotos = useCallback(async () => {
     try {
-      const hasPermission = await useRequestGallery()
+      const hasPermission = await requestGalleryPermission()
       if (!hasPermission) {
         openPermissionAlert()
         return
@@ -89,7 +89,7 @@ const useAttachments = (params: {
   }, [pending])
 
   const addFromCamera = useCallback(async () => {
-    const hasPermission = await useRequestCameraPermissions()
+    const hasPermission = await requestCameraPermission()
     if (!hasPermission) {
       openPermissionAlert()
       return
@@ -106,7 +106,7 @@ const useAttachments = (params: {
   }, [add])
 
   const addFromGallery = useCallback(async () => {
-    const hasPermission = await useRequestGallery()
+    const hasPermission = await requestGalleryPermission()
     if (!hasPermission) {
       openPermissionAlert()
       return
