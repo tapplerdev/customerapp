@@ -82,7 +82,14 @@ target 'tappler_customer_app' do
   pod 'react-native-maps/Google', :path => rn_maps_path
 
   # Firebase modular headers (required for Swift pods)
-  pod 'Firebase', :modular_headers => true
+  # 'Firebase/CoreOnly', not the umbrella 'Firebase': the umbrella equals
+  # Firebase/Core, which pulls FirebaseAnalytics + GoogleAppMeasurement into a
+  # binary that never imports Analytics. Those pods crash the app whenever
+  # Google's experiments endpoint serves a malformed payload (firebase-ios-sdk
+  # issue 16728, 2026-09-29: every launch, all released builds, nothing
+  # shipped). RNFBApp depends on Firebase/CoreOnly anyway; this line only
+  # keeps its modular headers.
+  pod 'Firebase/CoreOnly', :modular_headers => true
   pod 'FirebaseCore', :modular_headers => true
   pod 'FirebaseCoreInternal', :modular_headers => true
   pod 'FirebaseCoreExtension', :modular_headers => true
