@@ -1,5 +1,7 @@
 import React, { useEffect } from "react"
 import { SafeAreaProvider } from "react-native-safe-area-context"
+import { Platform } from "react-native"
+import SheetDim from "@tappler/shared/src/components/NativeSheet/SheetDim"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { useDispatch } from "react-redux"
 import { RootStackParamList } from "./types"
@@ -57,9 +59,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
  * the screen keeps a zero top inset for its whole life (X in the status bar,
  * untappable). A provider inside the presentation re-reads on layout. Found on
  * proapp's send-offer screen 2026-09-21; rationale on modalLayout there.
+ *
+ * On iOS it also gets its own sheet dim: the root's <SheetDim/> sits under the
+ * presentation, so a sheet opened from one of these screens would dim nothing
+ * the user can see (proapp's quote screen, 2026-10-03; rationale on its
+ * modalLayout). None of these routes opens a sheet today. Android draws the
+ * root dim over these screens already; a second one there would double it.
  */
 const modalLayout = ({ children }: { children: React.ReactNode }) => (
-  <SafeAreaProvider>{children}</SafeAreaProvider>
+  <SafeAreaProvider>
+    {children}
+    {Platform.OS === "ios" && <SheetDim />}
+  </SafeAreaProvider>
 )
 
 const Navigator = () => {

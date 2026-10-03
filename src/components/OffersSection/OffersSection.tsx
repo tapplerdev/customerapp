@@ -12,8 +12,8 @@ interface OffersSectionProps {
   /**
    * "banner" (default) — the red OFFERS tab treatment (BannerContainer).
    * "strip" — flush tinted footer band on the pro card: no tab, no border,
-   * every sticker at the SAME fixed size, evenly spaced. The caller supplies
-   * any negative margins needed to bleed to the card's edges.
+   * every sticker at the SAME fixed size, from the band's start edge. The
+   * caller supplies any negative margins needed to bleed to the card's edges.
    */
   variant?: "banner" | "strip"
 }
@@ -23,8 +23,14 @@ const SCREEN_WIDTH = Dimensions.get("window").width
 // Strip stickers are FIXED (not width-distributed) so every sticker renders at
 // an identical size regardless of how many a pro has.
 const STRIP_STICKER_WIDTH = 112
-const STRIP_STICKER_HEIGHT = 40
-const STRIP_BACKGROUND = "#FFF8F8"
+// The sticker art is drawn at 118.33 x 31.31, so at 112 wide it is 30 tall;
+// a 40pt box left 5pt of empty band above and below every sticker.
+const STRIP_STICKER_HEIGHT = 30
+// The band's tint, and the stickers from its start edge (left in English,
+// right in Arabic) whatever their count, wrapping when they do not fit.
+// No gap between them: the art carries its own side margins, and three
+// 112pt boxes only just fit a 390pt phone's band (336 of 338pt).
+const STRIP_STYLE = { backgroundColor: "#FFF8F8", rowGap: 6 }
 
 const OffersSection: React.FC<OffersSectionProps> = ({
   subscriptions,
@@ -49,8 +55,8 @@ const OffersSection: React.FC<OffersSectionProps> = ({
   if (variant === "strip") {
     return (
       <DmView
-        className={`flex-row items-center justify-around py-[8] px-[10] ${className}`}
-        style={{ backgroundColor: STRIP_BACKGROUND }}
+        className={`flex-row flex-wrap items-center py-[8] px-[10] ${className}`}
+        style={STRIP_STYLE}
       >
         {stickerProducts.map((sub: any, idx: number) => {
           const uri = stickerUri(sub)
@@ -60,15 +66,17 @@ const OffersSection: React.FC<OffersSectionProps> = ({
               width={STRIP_STICKER_WIDTH}
               height={STRIP_STICKER_HEIGHT}
               // No trimming here, deliberately. Each sticker gets the same box
-              // and the SVG default (xMidYMid) centres it — that is the whole
-              // requirement for this row.
+              // and the SVG default (xMidYMid) places its art the same way
+              // inside it; the boxes themselves start at the band's start edge
+              // (product's call, 2026-10-03: stickers sit to the left however
+              // many there are; they were centred before).
               //
               // autoTrimLeftPadding used to be on, and it was the reason the
               // row looked pushed left: it zeroes each file's group translate,
               // and those differ per sticker (13.4 / 17.2 / 19.6 units), so it
               // shifted every artwork left by a DIFFERENT amount. That is a
               // fix for lining stickers up against a column of text on the pro
-              // profile; here it only broke the centring.
+              // profile; here it only made the stickers uneven.
               uri={uri}
             />
           ) : null
