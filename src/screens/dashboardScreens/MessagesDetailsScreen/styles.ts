@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native"
+import { Platform, StyleSheet } from "react-native"
 
 export default StyleSheet.create({
   textCenter: { textAlign: "center" },
@@ -7,20 +7,25 @@ export default StyleSheet.create({
   italic: { fontStyle: "italic" },
   plusHorizontal: { width: 14, height: 1.5 },
   plusVertical: { height: 14, width: 1.5 },
+  // The + / field / send row (WhatsApp-style). 4 above and below keeps the bar
+  // as tall as the old 30-pt single row was: 4 + 36 + 4 = 7 + 30 + 7.
   composerCard: {
-    paddingVertical: 7,
+    paddingVertical: 4,
   },
-  composerCardFocused: {
-    paddingTop: 14,
-    paddingBottom: 4,
-  },
-  toolbarRow: {
-    marginTop: 18,
+  // The buttons are 32 against the field's 36-pt single line; 2 under them
+  // centres them on it, and the bottom-aligned row keeps them on the last line
+  // as the field grows.
+  plusButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginBottom: 2,
   },
   sendButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginBottom: 2,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -28,17 +33,20 @@ export default StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 21,
-    maxHeight: 100,
+    // WhatsApp's field: one line tall while the text fits (21 + 2 × 6.5
+    // padding + 2 × 1 border = 36), a line taller per wrapped line, and
+    // scrolling once it holds six. Android rounds every line up to whole
+    // pixels, so six lines need a few dp more there than the exact sum.
+    minHeight: 36,
+    maxHeight: 21 * 6 + 2 * 6.5 + 2 + (Platform.OS === "android" ? 4 : 0),
     marginHorizontal: 8,
-    paddingTop: 0,
-    paddingBottom: 0,
+    paddingHorizontal: 14,
+    paddingTop: 6.5,
+    paddingBottom: 6.5,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#E3E3E3", // grey32
     textAlignVertical: "center",
-  },
-  // Focused layout: the text row has no sibling circles, so drop the gap
-  // margins — the text's left edge lines up flush with the + button below it
-  // (the Airbnb alignment).
-  textInputFocused: {
-    marginHorizontal: 0,
   },
   photoStripItem: {
     width: 70,

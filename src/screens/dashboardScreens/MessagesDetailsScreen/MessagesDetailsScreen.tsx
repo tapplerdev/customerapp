@@ -78,8 +78,8 @@ import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 import { AppFlatList, AppScrollView } from "components/scroll"
 
-// Short, soft reflow used when the composer expands into / collapses out of its
-// focused (toolbar) layout. Opacity property fades the appearing toolbar row.
+// Short, soft reflow when the input bar swaps its bottom padding as the
+// keyboard comes and goes. Kept in lockstep with proapp.
 // Scheduled via scheduleLayoutAnimation (helpers/layoutAnimation), which also
 // owns the Android experimental flag and coalesces same-frame schedules.
 const COMPOSER_ANIM = LayoutAnimation.create(
@@ -192,9 +192,10 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [blockedModalText, setBlockedModalText] = useState<string | null>(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  // Composer focus drives the Airbnb-style reflow: idle = single row, focused =
-  // text on top + a toolbar row below (see the input-bar JSX for the mechanics).
-  const [isInputFocused, setIsInputFocused] = useState(false)
+  // The composer's input, so Edit message on the blocked-message sheet can put
+  // the customer back in it once the sheet is gone.
+  const inputRef = useRef<TextInput>(null)
+  const refocusAfterSheetRef = useRef(false)
   // Tracks the KEYBOARD, not focus — they differ (simulator with hardware
   // keyboard, external keyboards): the bar only swaps its safe-area padding
   // for the compact 12pt when the keyboard actually covers the bottom inset.
@@ -422,27 +423,54 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     </>
   )
 
+  // The blocked-message sheet opens from a send, so usually with the keyboard
+  // up, and a native sheet presented then opens BEHIND the keyboard: the sheet
+  // only moves for an input inside it. All the customer saw was the screen
+  // dimming. The typed text stays in the composer. Only this screen's
+  // keyboard: a server reject can land after the customer has moved on.
+  const showBlockedModal = useCallback(
+    (description: string) => {
+      refocusAfterSheetRef.current = false
+      if (navigation.isFocused()) Keyboard.dismiss()
+      setBlockedModalText(description)
+    },
+    [navigation]
+  )
+
+  // Edit message: close the sheet, and once it has gone (onClosed) put the
+  // customer back in the composer, keyboard up and their text still there. A
+  // swipe or dim-tap close leaves the keyboard down.
+  const editBlockedMessage = useCallback(() => {
+    refocusAfterSheetRef.current = true
+    setBlockedModalText(null)
+  }, [])
+  const refocusComposerAfterSheet = useCallback(() => {
+    const refocus = refocusAfterSheetRef.current
+    refocusAfterSheetRef.current = false
+    if (refocus && navigation.isFocused()) inputRef.current?.focus()
+  }, [navigation])
+
   // Route a send failure to the right UI. The backend returns a stable code
   // in validationErrors.text; VIOLATIONS (profanity / contact-info) get the
   // proapp-style bottom modal — the blocked text is already restored into the
-  // input by the caller, so "Edit message" just dismisses. Non-violations
-  // (couldn't-verify / network) keep the lightweight banner.
+  // input by the caller, so "Edit message" puts the customer back in it.
+  // Non-violations (couldn't-verify / network) keep the lightweight banner.
   const handleSendFailure = useCallback(
     (e: any) => {
       const code = e?.data?.validationErrors?.text?.[0]
       if (code === "CHAT_BLOCK_PROFANITY") {
-        setBlockedModalText(t("message_violates_community_standards"))
+        showBlockedModal(t("message_violates_community_standards"))
         return
       }
       if (code === "CHAT_BLOCK_CONTACT_INFO") {
-        setBlockedModalText(t("chat_block_contact_info"))
+        showBlockedModal(t("chat_block_contact_info"))
         return
       }
       setSendError(
         code === "CHAT_BLOCK_UNVERIFIED" ? t("chat_block_unverified") : t("failed_to_send")
       )
     },
-    [t]
+    [t, showBlockedModal]
   )
 
   // ── Send handler ──
@@ -455,7 +483,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     // CHAT_BLOCK_PROFANITY reject — indistinguishable to the user. The typed
     // text stays in the input so they can edit; the server re-checks on send.
     if (text && checkProfanity(text).blocked) {
-      setBlockedModalText(t("message_violates_community_standards"))
+      showBlockedModal(t("message_violates_community_standards"))
       return
     }
 
@@ -489,7 +517,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         handleSendFailure(e)
       }
     }
-  }, [messageText, attachments, context.chatId, sendMessage, pagination, t, handleSendFailure])
+  }, [messageText, attachments, context.chatId, sendMessage, pagination, t, handleSendFailure, showBlockedModal])
 
   // ── Scroll handlers ──
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -575,13 +603,12 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     )
   }
 
-  // Composer controls — shared between the idle (single-row) and focused
-  // (toolbar-row) layouts so their look/behaviour can't drift. Only one layout
-  // renders at a time, so reusing the same element in both is safe.
+  // Composer controls.
   const plusButton = (
     <DmView
       onPress={handleOpenAttachmentSheet}
-      className="w-[30] h-[30] rounded-full bg-grey26 items-center justify-center"
+      className="bg-grey26 items-center justify-center"
+      style={styles.plusButton}
     >
       <DmView className="absolute bg-grey2" style={styles.plusHorizontal} />
       <DmView className="absolute bg-grey2" style={styles.plusVertical} />
@@ -1122,52 +1149,31 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           ]}
         >
           <DmView className="px-[20] pt-[12]">
-            {/* Rounded, soft-bordered composer card. Idle = single row; focusing
-                expands it — the text jumps to the top and the +/send controls
-                drop to a toolbar row below (Airbnb-style). The TextInput never
-                unmounts across the reflow, so focus/keyboard is preserved. */}
-            <DmView
-              style={[
-                styles.composerCard,
-                isInputFocused && styles.composerCardFocused,
-              ]}
-            >
-              <DmView className="flex-row items-center">
-                {!isInputFocused && plusButton}
+            {/* WhatsApp-style: + / field / send on one row, focused or not.
+                The field is one line tall until the text fills it, then grows
+                a line at a time and scrolls after six (styles). The row is
+                bottom-aligned, so the buttons ride the last line. This
+                replaced the focus reflow that dropped + and send to a toolbar
+                row under the text (2026-10-06 ticket). */}
+            <DmView style={styles.composerCard}>
+              <DmView className="flex-row items-end">
+                {plusButton}
                 <TextInput
+                  ref={inputRef}
                   value={messageText}
                   onChangeText={setMessageText}
-                  onFocus={() => {
-                    scheduleLayoutAnimation(COMPOSER_ANIM)
-                    setIsInputFocused(true)
-                  }}
-                  onBlur={() => {
-                    scheduleLayoutAnimation(COMPOSER_ANIM)
-                    setIsInputFocused(false)
-                  }}
                   placeholder={t("type_a_message")}
                   placeholderTextColor={colors.greyPlaceholder}
                   multiline
                   maxLength={1000}
                   style={[
                     styles.textInput,
-                    isInputFocused && styles.textInputFocused,
                     takeFontStyles("font-custom400", i18n.language),
                     { textAlign: isAr ? "right" : "left" },
                   ]}
                 />
-                {!isInputFocused && sendButton}
+                {sendButton}
               </DmView>
-
-              {isInputFocused && (
-                <DmView
-                  className="flex-row items-center justify-between"
-                  style={styles.toolbarRow}
-                >
-                  {plusButton}
-                  {sendButton}
-                </DmView>
-              )}
             </DmView>
           </DmView>
 
@@ -1238,11 +1244,14 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       </NativeActionSheet>
 
       {/* Violation modal (profanity / contact-info) — same UX as the proapp.
-          The blocked text is already back in the input; the button dismisses. */}
+          The blocked text is already back in the input; Edit message closes
+          the sheet and refocuses it. */}
       <MessageBlockedModal
         isVisible={!!blockedModalText}
         description={blockedModalText ?? ""}
         onClose={() => setBlockedModalText(null)}
+        onEdit={editBlockedMessage}
+        onClosed={refocusComposerAfterSheet}
       />
       <OfferHistorySheet
         isVisible={isOfferHistoryVisible}

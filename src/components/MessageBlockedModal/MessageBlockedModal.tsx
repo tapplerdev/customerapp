@@ -11,16 +11,27 @@ interface Props {
   isVisible: boolean
   /** Localized explanation of why the message was blocked. */
   description: string
+  /** Swipe-down, dim tap or Android back. */
   onClose: () => void
+  /** The Edit message button. Falls back to onClose. */
+  onEdit?: () => void
+  /** Once the sheet has fully left the screen, after any close. */
+  onClosed?: () => void
 }
 
 /**
  * Bottom sheet shown when a chat message is blocked by moderation (profanity
  * or contact-info policy). The blocked text is restored into the input by the
- * caller, so "Edit message" just dismisses. One native sheet on both platforms —
- * push-back on iOS, Material's BottomSheetDialog on Android.
+ * caller, which can use onEdit + onClosed to put the user back in it. One
+ * native sheet (NativeActionSheet) on both platforms.
  */
-const MessageBlockedModal: React.FC<Props> = ({ isVisible, description, onClose }) => {
+const MessageBlockedModal: React.FC<Props> = ({
+  isVisible,
+  description,
+  onClose,
+  onEdit,
+  onClosed,
+}) => {
   const insets = useSafeAreaInsets()
   const { t } = useTranslation()
 
@@ -35,7 +46,7 @@ const MessageBlockedModal: React.FC<Props> = ({ isVisible, description, onClose 
       </DmText>
       <ActionBtn
         title={t("edit_message")}
-        onPress={onClose}
+        onPress={onEdit ?? onClose}
         className="w-full mt-[20] bg-black rounded-5 h-[47]"
         textClassName="font-custom600"
       />
@@ -56,7 +67,7 @@ const MessageBlockedModal: React.FC<Props> = ({ isVisible, description, onClose 
    * a per-platform branch quietly gets wrong.
    */
   return (
-    <NativeActionSheet isVisible={isVisible} onClose={onClose}>
+    <NativeActionSheet isVisible={isVisible} onClose={onClose} onClosed={onClosed}>
       {content}
     </NativeActionSheet>
   )
