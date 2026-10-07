@@ -56,17 +56,17 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
     // repeat searches; only the first search pays the fetch (well under 3s).
     const fetchService = getService(serviceId, true).unwrap().catch(() => null)
 
-    Promise.all([minDelay, fetchPros, fetchService]).then(() => {
-      if (!hasNavigated.current) {
-        hasNavigated.current = true
-        navigation.replace("ProsListingScreen", nextParams)
-      }
-    }).catch(() => {
-      if (!hasNavigated.current) {
-        hasNavigated.current = true
-        navigation.replace("ProsListingScreen", nextParams)
-      }
-    })
+    // Only while this screen is still on top: a replace without a target
+    // replaces whatever IS on top, so after a back (Android's button; the iOS
+    // swipe is off for this route) it would swap out the screen underneath.
+    const goToListing = () => {
+      if (hasNavigated.current || !navigation.isFocused()) return
+      hasNavigated.current = true
+      navigation.replace("ProsListingScreen", nextParams)
+    }
+    Promise.all([minDelay, fetchPros, fetchService])
+      .then(goToListing)
+      .catch(goToListing)
   }, [])
 
   return (

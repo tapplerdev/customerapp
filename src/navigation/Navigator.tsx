@@ -2,7 +2,10 @@ import React, { useEffect } from "react"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Platform } from "react-native"
 import SheetDim from "@tappler/shared/src/components/NativeSheet/SheetDim"
-import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from "@react-navigation/native-stack"
 import { useDispatch } from "react-redux"
 import { RootStackParamList } from "./types"
 import WelcomeScreen from "screens/onboardingScreens/WelcomeScreen/WelcomeScreen"
@@ -50,6 +53,15 @@ import { useTypedSelector } from "store"
 import { setCurrentScreen } from "store/auth/slice"
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
+
+/**
+ * The back swipe kept to the screen edge. On iOS 26 it otherwise starts
+ * anywhere on the screen, and takes sideways gestures that are not scroll
+ * views: swipeable rows, gesture-handler carousels.
+ */
+const edgeSwipeOnly: NativeStackNavigationOptions = {
+  fullScreenGestureEnabled: false,
+}
 
 /**
  * Every fullScreenModal gets its own SafeAreaProvider. A presented screen sits
@@ -106,7 +118,16 @@ const Navigator = () => {
   return (
     <Stack.Navigator
       initialRouteName={initialRouteName}
-      screenOptions={{ headerShown: false, gestureEnabled: false }}
+      screenOptions={{
+        headerShown: false,
+        // Swipe back, the way every iOS app does (it was off app-wide). As in
+        // proapp, fullScreenGestureEnabled stays unset: on iOS 26 that is
+        // Apple's swipe-from-anywhere, which yields to horizontal scroll
+        // views, and on iOS 18 and earlier it is edge-only. Sideways gestures
+        // that are NOT scroll views get edgeSwipeOnly below; screens that must
+        // not be left by a swipe turn it off. (Android has the system back.)
+        gestureEnabled: true,
+      }}
     >
       <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
       <Stack.Screen name="AuthWelcomeScreen" component={AuthWelcomeScreen} />
@@ -134,9 +155,24 @@ const Navigator = () => {
       <Stack.Screen name="UpdateEmailScreen" component={UpdateEmailScreen} />
       <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
       <Stack.Screen name="MySavedAddressesScreen" component={MySavedAddressesScreen} />
-      <Stack.Screen name="AddNewAddressScreen" component={AddNewAddressScreen} />
+      {/* Opened from the request-success sheet, its way out is a reset to
+          Talabati (its own back does that); a swipe would go back to the
+          success screen instead. */}
+      <Stack.Screen
+        name="AddNewAddressScreen"
+        component={AddNewAddressScreen}
+        options={({ route }) => ({
+          gestureEnabled: !route.params?.fromSuccess,
+        })}
+      />
       <Stack.Screen name="AboutAppScreen" component={AboutAppScreen} />
-      <Stack.Screen name="ArchivedMessagesScreen" component={ArchivedMessagesScreen} />
+      {/* Swipeable rows: a swipe from anywhere would take the swipe that
+          closes a row (gesture-handler #4104). */}
+      <Stack.Screen
+        name="ArchivedMessagesScreen"
+        component={ArchivedMessagesScreen}
+        options={edgeSwipeOnly}
+      />
       <Stack.Screen name="MessagesDetailsScreen" component={MessagesDetailsScreen} />
       <Stack.Screen name="TapplyAIScreen" component={TapplyAIScreen} />
       <Stack.Screen
@@ -153,11 +189,23 @@ const Navigator = () => {
       />
       <Stack.Screen name="CategoriesScreen" component={CategoriesScreen} />
       <Stack.Screen name="SubCategoriesScreen" component={SubCategoriesScreen} />
-      <Stack.Screen name="SearchAnimationScreen" component={SearchAnimationScreen} />
+      {/* It REPLACES itself with the listing after ~3 s; swiped away first,
+          the replace would land on the screen underneath instead. */}
+      <Stack.Screen
+        name="SearchAnimationScreen"
+        component={SearchAnimationScreen}
+        options={{ gestureEnabled: false }}
+      />
       <Stack.Screen name="ProsListingScreen" component={ProsListingScreen} />
       <Stack.Screen name="ServiceRequestDetailsScreen" component={ServiceRequestDetailsScreen} />
       <Stack.Screen name="RequestSummaryScreen" component={RequestSummaryScreen} />
-      <Stack.Screen name="RequestSuccessScreen" component={RequestSuccessScreen} />
+      {/* The request is sent: the way out is Done, which resets to Talabati.
+          A swipe would go back into the summary of a request already made. */}
+      <Stack.Screen
+        name="RequestSuccessScreen"
+        component={RequestSuccessScreen}
+        options={{ gestureEnabled: false }}
+      />
       <Stack.Screen
         name="SaveAddressSheetScreen"
         component={SaveAddressSheetScreen}
@@ -197,7 +245,12 @@ const Navigator = () => {
         layout={modalLayout}
       />
       <Stack.Screen name="ReviewProSelectionScreen" component={ReviewProSelectionScreen} />
-      <Stack.Screen name="ReviewFormScreen" component={ReviewFormScreen} />
+      {/* The photo carousel is gesture-handler, not a scroll view. */}
+      <Stack.Screen
+        name="ReviewFormScreen"
+        component={ReviewFormScreen}
+        options={edgeSwipeOnly}
+      />
       {/* Food ordering (hasMenu categories) */}
       <Stack.Screen name="FoodMenuScreen" component={FoodMenuScreen} />
       <Stack.Screen
