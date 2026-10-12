@@ -3,7 +3,9 @@ import { StyleSheet } from "react-native"
 export default StyleSheet.create({
   headerZIndex: { zIndex: 3 },
   heroZIndex: { zIndex: 5 },
-  featuredMarginLeft: { marginLeft: -5 },
+  // A view inside text sits ON the baseline; this drops the Featured
+  // sticker so it centres on the name's letters instead.
+  featuredAfterName: { transform: [{ translateY: 3 }] },
   fullSize: { width: "100%", height: "100%" },
   modalOverlay: { backgroundColor: "#000000A6" },
   thumbnailSize: { width: 60, height: 60 },

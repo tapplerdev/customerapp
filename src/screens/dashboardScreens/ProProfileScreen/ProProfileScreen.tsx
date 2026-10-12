@@ -23,6 +23,7 @@ import RateComponent from "components/RateComponent/RateComponent"
 import OffersSection from "components/OffersSection/OffersSection"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
+import FeaturedSticker from "components/FeaturedSticker/FeaturedSticker"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 import {
   WORK_PHOTO_GAP,
@@ -115,6 +116,9 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     subscriptions: proServiceCat?.subscriptions,
     documents: pro?.documents,
   })
+  const featuredUri = isAr
+    ? featureSubscription?.product?.pictureAr
+    : featureSubscription?.product?.pictureEn
 
   const closeViewStyle = useMemo(() => {
     return { top: insets.top || 35, zIndex: 10 }
@@ -186,9 +190,18 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <CloseIcon fill={colors.red} />
             </DmView>
             <DmView className="flex-1">
-              <DmText className="text-16 font-custom700" numberOfLines={1}>
-                {displayName}
-              </DmText>
+              {/* One line here: the name gives way ("...") before the
+                  sticker does. */}
+              <DmView className="flex-row items-center">
+                <DmText className="flex-shrink text-16 font-custom700" numberOfLines={1}>
+                  {displayName}
+                </DmText>
+                {featuredUri && (
+                  <DmView className="ml-[6]">
+                    <FeaturedSticker uri={featuredUri} height={14} />
+                  </DmView>
+                )}
+              </DmView>
               <DmView className="flex-row items-center">
                 <RateComponent
                   rate={overallScore}
@@ -196,15 +209,6 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                   itemSize={12}
                   showFullReviewText
                 />
-                {featureSubscription && (
-                  <DmView style={styles.featuredMarginLeft}>
-                    <SvgUriContainer
-                      width={120}
-                      height={30}
-                      uri={isAr ? featureSubscription.product?.pictureAr : featureSubscription.product?.pictureEn}
-                    />
-                  </DmView>
-                )}
               </DmView>
             </DmView>
           </DmView>
@@ -249,8 +253,21 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Name + Type + Rating + Featured */}
         <DmView style={{ marginTop: 275 + (insets.top || 0), gap: 10 }} className="px-[12] py-[16]">
+          {/* The sticker rides at the end of the name as part of its text,
+              so a name that wraps carries it onto its last line. The
+              no-break space keeps it with the last word. */}
           <DmText className="text-22 leading-[29px] font-custom700">
-            {displayName}
+            {/* Trimmed: a trailing space would open a line break before the
+                no-break space that keeps the sticker with the last word. */}
+            {displayName?.trim()}
+            {featuredUri && (
+              <>
+                {"\u00A0"}
+                <DmView style={styles.featuredAfterName}>
+                  <FeaturedSticker uri={featuredUri} height={18} />
+                </DmView>
+              </>
+            )}
           </DmText>
 
           {/* Type badge */}
@@ -272,15 +289,6 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               itemSize={14}
               showFullReviewText
             />
-            {featureSubscription && (
-              <DmView style={styles.featuredMarginLeft}>
-                <SvgUriContainer
-                  width={120}
-                  height={30}
-                  uri={isAr ? featureSubscription.product?.pictureAr : featureSubscription.product?.pictureEn}
-                />
-              </DmView>
-            )}
           </DmView>
 
           {/* Trust badges */}
