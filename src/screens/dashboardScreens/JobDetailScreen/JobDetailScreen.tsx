@@ -162,9 +162,25 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   // while the customer walked away believing it was cancelled, and on
   // pay-on-delivery that means food arriving to be paid for. So: await it, and
   // say which of the three things happened.
+  // The outcome opens only once the "are you sure" card is gone: the request
+  // can come back while it is still fading out (a fast 409, offline), and a
+  // card presented then never shows on iOS.
+  const foodConfirmGoneRef = useRef(true)
+  const afterFoodConfirmGoneRef = useRef<(() => void) | null>(null)
+  const runAfterFoodConfirmGone = (next: () => void) => {
+    if (foodConfirmGoneRef.current) next()
+    else afterFoodConfirmGoneRef.current = next
+  }
+  const handleFoodConfirmHidden = () => {
+    foodConfirmGoneRef.current = true
+    const next = afterFoodConfirmGoneRef.current
+    afterFoodConfirmGoneRef.current = null
+    next?.()
+  }
   const confirmCancelFoodOrder = useCallback(async () => {
     if (isCancellingFood) return
     setCancellingFood(true)
+    foodConfirmGoneRef.current = false
     setCancelModalVisible(false)
     try {
       await cancelJobForRescue({
@@ -175,21 +191,32 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         // cancellation apart from any other free-text reason.
         reasons: [CUSTOMER_CANCELLED_FOOD_ORDER],
       }).unwrap()
-      setTimeout(() => setCancelledModalVisible(true), 400)
+      runAfterFoodConfirmGone(() => setCancelledModalVisible(true))
     } catch (e) {
       // 409 is the server saying the kitchen already started — the one failure
       // the customer can actually understand and act on, so it gets its own
       // message instead of the generic "an error occurred".
       const status = (e as { status?: number })?.status
-      setFoodCancelError(
+      const message =
         status === 409 ? t("food_order_already_preparing") : t("an_error_occurred")
-      )
-      setErrorModalVisible(true)
+      runAfterFoodConfirmGone(() => {
+        setFoodCancelError(message)
+        setErrorModalVisible(true)
+      })
     } finally {
       setCancellingFood(false)
     }
   }, [isCancellingFood, cancelJobForRescue, jobId, t])
 
+  // What follows the find-pros card (the prefilled flow, or the error) runs
+  // once the card is gone (its onModalHide), never in the same tick as the
+  // close: an error card presented then never shows on iOS.
+  const afterFindProsHiddenRef = useRef<(() => void) | null>(null)
+  const handleFindProsHidden = () => {
+    const next = afterFindProsHiddenRef.current
+    afterFindProsHiddenRef.current = null
+    next?.()
+  }
   const handleConfirmFindOtherPros = useCallback(async () => {
     if (isRescueBusy) return
     setRescueBusy(true)
@@ -200,16 +227,23 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         jobId,
         reasons: ["All selected pros declined — customer restarted the request"],
       }).unwrap()
+      afterFindProsHiddenRef.current = () => repostFromJob(jobId)
       setFindProsModalVisible(false)
-      repostFromJob(jobId)
     } catch {
+      afterFindProsHiddenRef.current = () => setErrorModalVisible(true)
       setFindProsModalVisible(false)
-      setErrorModalVisible(true)
     } finally {
       setRescueBusy(false)
     }
   }, [isRescueBusy, cancelJobForRescue, jobId, repostFromJob])
 
+  // The cancel flow's handoffs wait for each card to be GONE (its
+  // onModalHide): a modal presented while another is still fading out can
+  // fail to show on iOS, or leave an invisible window over the screen. The
+  // feedback card cannot be closed while the request is in flight, so it is
+  // still up when the result lands.
+  const openFeedbackAfterConfirmHideRef = useRef(false)
+  const afterFeedbackHideRef = useRef<(() => void) | null>(null)
   const cancel = useCancelJob({
     jobId,
     onSuccess: () => {
@@ -217,25 +251,30 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       // pushed this screen, so the request just quietly changed state behind
       // the customer with nothing to confirm an irreversible action had landed
       // — and where they ended up depended on how they got here.
+      afterFeedbackHideRef.current = () => setCancelledModalVisible(true)
       setCancelFeedbackVisible(false)
-      setTimeout(() => setCancelledModalVisible(true), 400)
     },
     onError: () => {
+      afterFeedbackHideRef.current = () => setErrorModalVisible(true)
       setCancelFeedbackVisible(false)
-      setErrorModalVisible(true)
     },
   })
+  const handleCancelFeedbackHide = () => {
+    const next = afterFeedbackHideRef.current
+    afterFeedbackHideRef.current = null
+    next?.()
+  }
 
   const handleCancelledAcknowledged = useCallback(() => {
     setCancelledModalVisible(false)
-    navigation.goBack()
-  }, [navigation])
+  }, [])
 
-  // Fires from the food confirmation's onModalHide, so it runs only once the
-  // modal has finished tearing itself down. Guarded on the modal actually
-  // being closed: onModalHide also fires on unmount, and popping the stack
-  // from an unmounting screen throws.
-  const handleFoodCancelledAcknowledged = useCallback(() => {
+  // Leaving fires from the cancelled confirmation's onModalHide (both the
+  // food and the regular one), so it runs only once the card has finished
+  // tearing itself down: popping the screen while it is still fading out
+  // pulls its window out from under the dismissal. Guarded on focus, since
+  // popping the stack from a screen that is already leaving throws.
+  const handleCancelledHidden = useCallback(() => {
     if (navigation.isFocused()) navigation.goBack()
   }, [navigation])
 
@@ -580,6 +619,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             titleBtnSecond={t("no")}
             onPress={confirmCancelFoodOrder}
             onPressSecond={() => setCancelModalVisible(false)}
+            onModalHide={handleFoodConfirmHidden}
             isLoading={isCancellingFood}
             classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
             classNameBtns="h-[40]"
@@ -614,19 +654,13 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Both of these existed only in the service branch below, so the
               food path could set their state and have nothing render — which
-              is how a failed cancel became invisible. They live here too now.
-
-              Unlike the service confirmation, this one does NOT pop the screen:
-              the order is still worth looking at once cancelled (what was in
-              it, what the restaurant was) and FoodOrderView renders its own
-              cancelled state in place. */}
+              is how a failed cancel became invisible. They live here too now. */}
           {/* Leaving is tied to acknowledging, and the navigation happens in
-              onModalHide rather than in the button handler. react-native-modal
-              tears its backdrop down on its own timeline; navigating from the
-              press handler unmounted this screen mid-animation and left the
-              backdrop behind — a screen showing the right data with nothing on
-              it clickable. Waiting for the modal to actually be gone is what
-              makes the transition safe.
+              onModalHide rather than in the button handler. Navigating from
+              the press handler unmounted this screen mid-fade and once left
+              the backdrop behind — a screen showing the right data with
+              nothing on it clickable. Waiting for the modal to actually be
+              gone is what makes the transition safe.
 
               goBack, not a reset: the mutation already invalidated Jobs, so
               Talabati is showing the cancelled state by the time we land. */}
@@ -634,7 +668,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             isVisible={isCancelledModalVisible}
             onClose={() => setCancelledModalVisible(false)}
             onPress={() => setCancelledModalVisible(false)}
-            onModalHide={handleFoodCancelledAcknowledged}
+            onModalHide={handleCancelledHidden}
             Icon={<TrashRedIcon width={40} height={40} />}
             title={t("order_cancelled")}
             descr={t("order_cancelled_descr")}
@@ -868,6 +902,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         isVisible={isCancelledModalVisible}
         onClose={handleCancelledAcknowledged}
         onPress={handleCancelledAcknowledged}
+        onModalHide={handleCancelledHidden}
         Icon={<TrashRedIcon width={40} height={40} />}
         title={t("job_cancelled")}
         descr={t("job_cancelled_descr")}
@@ -887,10 +922,16 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         titleBtn={t("yes")}
         titleBtnSecond={t("no")}
         onPress={() => {
+          openFeedbackAfterConfirmHideRef.current = true
           setCancelModalVisible(false)
-          setTimeout(() => setCancelFeedbackVisible(true), 400)
         }}
         onPressSecond={() => setCancelModalVisible(false)}
+        onModalHide={() => {
+          if (openFeedbackAfterConfirmHideRef.current) {
+            openFeedbackAfterConfirmHideRef.current = false
+            setCancelFeedbackVisible(true)
+          }
+        }}
         classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
         classNameBtns="h-[40]"
         classNameBtnsWrapper="mt-[20] mx-[15]"
@@ -909,6 +950,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         titleBtnSecond={t("no")}
         onPress={handleConfirmFindOtherPros}
         onPressSecond={() => !isRescueBusy && setFindProsModalVisible(false)}
+        onModalHide={handleFindProsHidden}
         classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
         classNameBtns="h-[40]"
         classNameBtnsWrapper="mt-[20] mx-[15]"
@@ -919,6 +961,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       <CancelJobFeedbackModal
         isVisible={isCancelFeedbackVisible}
         onClose={() => setCancelFeedbackVisible(false)}
+        onModalHide={handleCancelFeedbackHide}
         cancel={cancel}
       />
 
