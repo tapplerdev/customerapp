@@ -2,7 +2,8 @@ import React, { useState } from "react"
 import { Image, StyleSheet, View } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import MapView, { Marker } from "react-native-maps"
+import MapView from "react-native-maps"
+import MapPinMarker from "@tappler/shared/src/components/MapPinMarker"
 import LinearGradient from "react-native-linear-gradient"
 import moment from "moment"
 
@@ -16,7 +17,6 @@ import ErrorModal from "components/ErrorModal"
 import { CreateJobRequest } from "types/job"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
-import MapMarkerIcon from "assets/icons/location-red-solid.svg"
 import LocationIcon from "assets/icons/location-red.svg"
 import StarIcon from "assets/icons/star.svg"
 import CheckMarkIcon from "assets/icons/check-mark.svg"
@@ -340,14 +340,12 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                 longitudeDelta: 0.002,
               }}
             >
-              <Marker
+              <MapPinMarker
                 coordinate={{
                   latitude: address.coords.lat,
                   longitude: address.coords.lon,
                 }}
-              >
-                <MapMarkerIcon width={32} height={40} />
-              </Marker>
+              />
             </MapView>
             {/* Fade overlay at bottom */}
             <LinearGradient
