@@ -21,6 +21,18 @@ import { AppScrollView } from "components/scroll"
 
 type DateTypeOption = "notDecided" | "hours48" | "week" | "furtherOut" | "specificDates"
 
+// Whether a row really answers a question of that type. A bare row
+// ({questionId}: an un-ticked choice, a cleared date) does not, and a job sent
+// with one fails the backend's answer validation.
+const ANSWER_CHECKS: Partial<Record<string, (answer: QuestionAnswerType) => boolean>> = {
+  shortAnswer: (a) => !!a.answer,
+  paragraph: (a) => !!a.answer,
+  oneChoice: (a) => !!a.optionId,
+  multipleChoice: (a) => !!a.optionsIds?.length,
+  dateTime: (a) => !!a.date || !!a.startDate,
+  files: (a) => !!a.files?.length,
+}
+
 type Props = RootStackScreenProps<"ServiceRequestDetailsScreen">
 
 const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
@@ -38,11 +50,18 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   const category = service?.categories?.find((c) => c.id === categoryId)
   const customerQuestions = category?.customerQuestions || []
 
-  // Use initial answered IDs (from ProsListingScreen) to determine the fixed question list
-  // This stays stable across pushes — we don't re-filter as new answers accumulate
-  const fixedAnsweredIds = new Set(
-    initialAnsweredIds || (answeredQuestions || []).map((a) => a.questionId)
-  )
+  // The questions answered before this flow started (carried over from
+  // ProsListingScreen) are skipped. Only rows that really answer their
+  // question count, so a bare row is asked here instead of reaching the job.
+  const answeredIds = (answeredQuestions || [])
+    .filter((answer) => {
+      const question = customerQuestions.find((q) => q.id === answer.questionId)
+      const check = question && ANSWER_CHECKS[question.type]
+      return !check || check(answer)
+    })
+    .map((answer) => answer.questionId)
+  // Stays stable across pushes — we don't re-filter as new answers accumulate
+  const fixedAnsweredIds = new Set(initialAnsweredIds || answeredIds)
   const unansweredQuestions = customerQuestions.filter((q) => !fixedAnsweredIds.has(q.id))
 
   // Only show date step if category has dateTypes configured
@@ -91,7 +110,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   }
 
   // Compute once on first mount: the IDs that were answered before we started
-  const stableInitialIds = initialAnsweredIds || (answeredQuestions || []).map((a) => a.questionId)
+  const stableInitialIds = initialAnsweredIds || answeredIds
 
   // ── Mismatch guard ───────────────────────────────────────────────────────
   // The only filter questions asked here are ones the customer SKIPPED before
@@ -226,13 +245,8 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
     }
     if (!currentQuestion) return true
     const answer = questionsAnswers.find((a) => a.questionId === currentQuestion.id)
-    if (!answer) return false
-    if (currentQuestion.type === "shortAnswer" || currentQuestion.type === "paragraph") return !!answer.answer
-    if (currentQuestion.type === "oneChoice") return !!answer.optionId
-    if (currentQuestion.type === "multipleChoice") return !!answer.optionsIds?.length
-    if (currentQuestion.type === "dateTime") return !!answer.date || !!answer.startDate
-    if (currentQuestion.type === "files") return !!answer.files?.length
-    return false
+    const check = ANSWER_CHECKS[currentQuestion.type]
+    return !!answer && !!check && check(answer)
   })()
 
   // Filter date options based on what the category supports

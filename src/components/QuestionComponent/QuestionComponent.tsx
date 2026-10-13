@@ -222,11 +222,19 @@ const QuestionComponent: React.FC<Props> = ({
   }
 
   // The picker is inline, so an answer is saved the moment a day and a time
-  // are picked, and nothing is written before that: an empty row for a date
-  // question counts as answered upstream and then fails the job's validation.
+  // are picked. Taking the time away (tapping it again, or a day where it is
+  // over) clears a saved answer, so the old day and time never stand behind
+  // what the picker shows; with nothing saved yet, nothing is written.
   // Questions offer no ASAP: an answer has no field for it.
   const handleDateSelection = (selection: CalendarSelection | null) => {
-    if (!selection) return
+    if (!selection) {
+      if (answer?.date || answer?.startDate) {
+        const cleared: QuestionAnswerType = { questionId: item.id }
+        setAnswer(cleared)
+        onChangeAnswer(cleared)
+      }
+      return
+    }
     const newAnswer: QuestionAnswerType = { questionId: item.id }
     if (item.dateType === "dateRange") {
       newAnswer.startDate = selection.date
