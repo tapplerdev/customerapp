@@ -20,7 +20,8 @@ import MapView, {
 } from "react-native-maps"
 import CloseIcon from "assets/icons/close.svg"
 import MyLocationIcon from "assets/icons/my-location-red.svg"
-import MapMarkerIcon from "assets/icons/location-red-solid.svg"
+import MapMarkerIcon from "@tappler/shared/src/assets/icons/map-pin.svg"
+import { MAP_PIN_SIZE } from "@tappler/shared/src/components/MapPinMarker"
 import SearchIcon from "assets/icons/search-black.svg"
 import LocationRedIcon from "assets/icons/location-red.svg"
 import LocationIcon from "assets/icons/location.svg"
@@ -471,7 +472,10 @@ const MapPickerWithSearchView: React.FC<Props> = ({
               <Animated.View
                 style={{
                   alignItems: "center",
-                  marginBottom: 34,
+                  // Puts the pin's tip on the map centre (2pt above it,
+                  // where it has always sat): this column (pin + 2 + 4
+                  // shadow) is centred, then lifted by half this margin.
+                  marginBottom: MAP_PIN_SIZE.height - 2,
                 }}
               >
                 <Animated.View
@@ -479,7 +483,10 @@ const MapPickerWithSearchView: React.FC<Props> = ({
                     transform: [{ translateY: pinTranslateY }],
                   }}
                 >
-                  <MapMarkerIcon width={28} height={36} />
+                  <MapMarkerIcon
+                    width={MAP_PIN_SIZE.width}
+                    height={MAP_PIN_SIZE.height}
+                  />
                 </Animated.View>
                 <Animated.View
                   style={{

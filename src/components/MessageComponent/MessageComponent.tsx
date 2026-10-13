@@ -18,7 +18,8 @@ import OfferUpdateCard, {
 import moment from "moment"
 import "moment/locale/ar"
 import Autolink from "react-native-autolink"
-import MapView, { Marker } from "react-native-maps"
+import MapView from "react-native-maps"
+import MapPinMarker from "@tappler/shared/src/components/MapPinMarker"
 import FastImage from "react-native-fast-image"
 
 import { ChatMessageType, ChatFileType } from "types/chat"
@@ -427,7 +428,7 @@ const MessageComponent: React.FC<Props> = React.memo(
               longitudeDelta: 0.005,
             }}
           >
-            <Marker coordinate={{ latitude: item.location.latitude, longitude: item.location.longitude }} />
+            <MapPinMarker coordinate={{ latitude: item.location.latitude, longitude: item.location.longitude }} />
           </MapView>
           <DmView className="px-[14] py-[6]">
             <DmText className="text-12 font-custom500" style={{ color: linkColor }}>

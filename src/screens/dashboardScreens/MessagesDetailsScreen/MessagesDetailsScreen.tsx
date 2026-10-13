@@ -70,9 +70,9 @@ import useCancelJob from "hooks/useCancelJob"
 import ChevronDownIcon from "assets/icons/chevron-down.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import ClockIcon from "assets/icons/clock-red-big.svg"
-import MapView, { Marker } from "react-native-maps"
+import MapView from "react-native-maps"
+import MapPinMarker from "@tappler/shared/src/components/MapPinMarker"
 import LinearGradient from "react-native-linear-gradient"
-import MapMarkerIcon from "assets/icons/location-red-solid.svg"
 import { useTypedSelector } from "store"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
@@ -754,9 +754,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 longitudeDelta: 0.002,
               }}
             >
-              <Marker coordinate={{ latitude: glanceLat, longitude: glanceLng }}>
-                <MapMarkerIcon width={32} height={40} />
-              </Marker>
+              <MapPinMarker coordinate={{ latitude: glanceLat, longitude: glanceLng }} />
             </MapView>
           </DmView>
         )}
