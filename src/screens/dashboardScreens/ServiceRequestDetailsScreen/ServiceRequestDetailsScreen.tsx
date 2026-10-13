@@ -12,7 +12,7 @@ import { QuestionAnswerType } from "types/job"
 import { MainModal } from "@tappler/shared/src/components"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
-import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
+import CalendarTimeSheet from "components/CalendarTimeSheet/CalendarTimeSheet"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -216,7 +216,14 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
 
   // Check if current step is answered
   const isCurrentAnswered = (() => {
-    if (isDateStep) return !!selectedDateOption
+    if (isDateStep) {
+      // These two are answered by the calendar, not by ticking the option:
+      // closing the calendar without a date leaves the step open.
+      if (selectedDateOption === "furtherOut" || selectedDateOption === "specificDates") {
+        return !!selectedDate
+      }
+      return !!selectedDateOption
+    }
     if (!currentQuestion) return true
     const answer = questionsAnswers.find((a) => a.questionId === currentQuestion.id)
     if (!answer) return false
@@ -354,8 +361,8 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         />
       </DmView>
 
-      {/* Calendar modal */}
-      <CalendarTimeModal
+      {/* Calendar sheet */}
+      <CalendarTimeSheet
         isVisible={isCalendarVisible}
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleCalendarConfirm}
