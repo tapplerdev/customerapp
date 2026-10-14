@@ -1,34 +1,6 @@
-import React from "react"
-import { DmText } from "@tappler/shared/src/components/UI"
-import { useTranslation } from "react-i18next"
-import colors from "@tappler/shared/src/styles/colors"
-import BannerContainer from "components/BannerContainer/BannerContainer"
+import PromoLine from "@tappler/shared/src/components/PromoLine"
 
-interface PromoLineProps {
-  promoMessage: string
-  className?: string
-}
-
-const PromoLine: React.FC<PromoLineProps> = ({
-  promoMessage,
-  className = "",
-}) => {
-  const { t } = useTranslation()
-
-  return (
-    <BannerContainer
-      bannerText={t("offer")}
-      className={className}
-      borderRadius={6}
-      containerStyle={{
-        backgroundColor: colors.pink5,
-      }}
-    >
-      <DmText className="text-black text-12 leading-[16px] font-custom600 text-center">
-        {promoMessage}
-      </DmText>
-    </BannerContainer>
-  )
-}
-
+// The promo line banner is tappler-shared's, the one copy the pro app draws
+// too, so the pro's previews of their card match what customers see here. It
+// has no margins of its own, as this one didn't: callers place it.
 export default PromoLine
