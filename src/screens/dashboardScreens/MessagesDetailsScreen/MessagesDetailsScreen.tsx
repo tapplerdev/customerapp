@@ -129,6 +129,13 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [isCancelConfirmVisible, setCancelConfirmVisible] = useState(false)
   const [isCancelFeedbackVisible, setCancelFeedbackVisible] = useState(false)
   const [isCancelErrorVisible, setCancelErrorVisible] = useState(false)
+  // The handoffs wait for each card to be GONE (its onModalHide): a modal
+  // presented while another is still fading out can fail to show on iOS, or
+  // leave an invisible window over the screen. The feedback card cannot be
+  // closed while the request is in flight, so it is still up when the result
+  // lands.
+  const openFeedbackAfterConfirmHideRef = useRef(false)
+  const showErrorAfterFeedbackHideRef = useRef(false)
   const cancel = useCancelJob({
     jobId: context.jobId ?? 0,
     onSuccess: () => {
@@ -140,8 +147,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       // Popping would hide exactly the screen that shows the outcome.
     },
     onError: () => {
+      showErrorAfterFeedbackHideRef.current = true
       setCancelFeedbackVisible(false)
-      setCancelErrorVisible(true)
     },
   })
   // Warm the history in the background so the sheet's first open renders
@@ -1310,10 +1317,16 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         titleBtn={t("yes")}
         titleBtnSecond={t("no")}
         onPress={() => {
+          openFeedbackAfterConfirmHideRef.current = true
           setCancelConfirmVisible(false)
-          setTimeout(() => setCancelFeedbackVisible(true), 400)
         }}
         onPressSecond={() => setCancelConfirmVisible(false)}
+        onModalHide={() => {
+          if (openFeedbackAfterConfirmHideRef.current) {
+            openFeedbackAfterConfirmHideRef.current = false
+            setCancelFeedbackVisible(true)
+          }
+        }}
         classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
         classNameBtns="h-[40]"
         classNameBtnsWrapper="mt-[20] mx-[15]"
@@ -1323,6 +1336,12 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       <CancelJobFeedbackModal
         isVisible={isCancelFeedbackVisible}
         onClose={() => setCancelFeedbackVisible(false)}
+        onModalHide={() => {
+          if (showErrorAfterFeedbackHideRef.current) {
+            showErrorAfterFeedbackHideRef.current = false
+            setCancelErrorVisible(true)
+          }
+        }}
         cancel={cancel}
       />
 

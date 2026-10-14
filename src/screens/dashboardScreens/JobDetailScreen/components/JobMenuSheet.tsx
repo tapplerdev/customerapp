@@ -50,8 +50,8 @@ const JobMenuSheet: React.FC<Props> = ({
   const rtlRow = { marginStart: 12, textAlign: "left" } as const
 
   return (
-    // Native sheet on iOS (the screen behind recedes), react-native-modal on
-    // Android — the house wrapper, and what the pro app's equivalent menu uses.
+    // The native sheet on both platforms (on iOS the screen behind recedes) —
+    // the house wrapper, and what the pro app's equivalent menu uses.
     // No explicit height: the content is static, so the native self-measure is
     // reliable here (the attachment sheet passes one only because its
     // camera-roll strip settles after first layout).

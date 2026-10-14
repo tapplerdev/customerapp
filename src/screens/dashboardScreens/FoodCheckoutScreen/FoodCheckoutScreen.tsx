@@ -10,7 +10,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 import { TextInput } from "react-native"
-import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
+import CalendarTimeSheet from "components/CalendarTimeSheet/CalendarTimeSheet"
 import AddressSelectionModal from "components/AddressSelectionModal"
 
 // Hooks & Redux
@@ -47,7 +47,7 @@ import { AppScrollView } from "components/scroll"
 type Props = RootStackScreenProps<"FoodCheckoutScreen">
 
 // Checkout: delivery address (with out-of-zone guard), delivery time
-// (now / scheduled via CalendarTimeModal), payment on delivery, and the
+// (now / scheduled via CalendarTimeSheet), payment on delivery, and the
 // Gathers and validates, then hands a built payload to Review, which owns
 // the actual submit.
 const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
@@ -866,7 +866,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         }}
       />
 
-      <CalendarTimeModal
+      <CalendarTimeSheet
         isVisible={isCalendarVisible}
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleConfirmSchedule}

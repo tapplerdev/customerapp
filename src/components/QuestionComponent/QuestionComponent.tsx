@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useState } from "react"
-import { I18nManager, TextInput } from "react-native"
+import { I18nManager, Keyboard, TextInput } from "react-native"
 
 import { DmChecbox, DmInput, DmText, DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
@@ -10,7 +10,10 @@ import ChipButton from "components/ChipButton/ChipButton"
 import ImageWithTextButton from "components/ImageWithTextButton/ImageWithTextButton"
 import ImageWithCheckmarkButton from "components/ImageWithCheckmarkButton/ImageWithCheckmarkButton"
 import TextWithCheckmarkButton from "components/TextWithCheckmarkButton/TextWithCheckmarkButton"
-import CalendarTimeModal from "components/CalendarTimeModal/CalendarTimeModal"
+import CalendarTimePicker, {
+  type CalendarSelection,
+  isAnyTimeSlot,
+} from "components/CalendarTimePicker/CalendarTimePicker"
 
 import CheckmarkIcon from "assets/icons/check-mark.svg"
 import styles from "./styles"
@@ -40,7 +43,7 @@ const QuestionComponent: React.FC<Props> = ({
   compact,
   allQuestions,
 }) => {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
   // Fall back to the En columns when Ar is missing — CMS content often has
@@ -54,14 +57,8 @@ const QuestionComponent: React.FC<Props> = ({
   const currentAnswer = answers?.find((a) => a.questionId === item.id)
   const [answer, setAnswer] = useState<QuestionAnswerType | undefined>(currentAnswer)
   const [inputValue, setInputValue] = useState(currentAnswer?.answer || "")
-  const [isCalendarVisible, setCalendarVisible] = useState(false)
-  const [dateDisplayText, setDateDisplayText] = useState(() => {
-    if (currentAnswer?.startTime && currentAnswer?.endTime) {
-      return `${currentAnswer.startTime} - ${currentAnswer.endTime}`
-    }
-    if (currentAnswer?.date) return currentAnswer.date
-    return ""
-  })
+  // Compact list only: the date picker opens in place under the answer.
+  const [isDatePickerOpen, setDatePickerOpen] = useState(false)
 
   useLayoutEffect(() => {
     if (answers?.length) {
@@ -224,35 +221,48 @@ const QuestionComponent: React.FC<Props> = ({
     return false
   }
 
-  const handleCalendarConfirm = (
-    date: string,
-    timeSlot?: { start: string; end: string },
-    type?: string
-  ) => {
-    setCalendarVisible(false)
+  // The picker is inline, so an answer is saved the moment a day and a time
+  // are picked. Taking the time away (tapping it again, or a day where it is
+  // over) clears a saved answer, so the old day and time never stand behind
+  // what the picker shows; with nothing saved yet, nothing is written.
+  // Questions offer no ASAP: an answer has no field for it.
+  const handleDateSelection = (selection: CalendarSelection | null) => {
+    if (!selection) {
+      if (answer?.date || answer?.startDate) {
+        const cleared: QuestionAnswerType = { questionId: item.id }
+        setAnswer(cleared)
+        onChangeAnswer(cleared)
+      }
+      return
+    }
     const newAnswer: QuestionAnswerType = { questionId: item.id }
-
     if (item.dateType === "dateRange") {
-      newAnswer.startDate = date
-      newAnswer.endDate = date
+      newAnswer.startDate = selection.date
+      newAnswer.endDate = selection.date
     } else {
-      newAnswer.date = date
+      newAnswer.date = selection.date
     }
-
-    if (timeSlot) {
-      newAnswer.startTime = timeSlot.start
-      newAnswer.endTime = timeSlot.end
-    }
-
-    if (date && timeSlot) {
-      setDateDisplayText(`${date}  •  ${timeSlot.start} - ${timeSlot.end}`)
-    } else if (date) {
-      setDateDisplayText(date)
-    }
-
+    newAnswer.startTime = selection.timeSlot.start
+    newAnswer.endTime = selection.timeSlot.end
+    if (compact) setDatePickerOpen(false)
     setAnswer(newAnswer)
     onChangeAnswer(newAnswer)
   }
+
+  const answeredDay = answer?.date || answer?.startDate
+  const answeredSlot =
+    answer?.startTime && answer?.endTime
+      ? { start: answer.startTime, end: answer.endTime }
+      : undefined
+  const dateAnswerText = !answeredDay
+    ? ""
+    : answeredSlot
+      ? `${answeredDay}  •  ${
+          isAnyTimeSlot(answeredSlot)
+            ? t("any_time")
+            : `${answeredSlot.start} - ${answeredSlot.end}`
+        }`
+      : answeredDay
 
   // --- Render helpers for choice styles ---
 
@@ -496,18 +506,36 @@ const QuestionComponent: React.FC<Props> = ({
       )}
       {item.type === "dateTime" && (
         <>
-          <DmView onPress={() => setCalendarVisible(true)}>
+          <DmText className={compact ? "text-15 leading-[19px] font-custom700 mb-[12]" : "text-15 leading-[19px] font-custom600 mb-[12]"}>
+            {getQuestionText()}
+          </DmText>
+          {/* A question's own card always shows the picker. The compact Job
+              Details list shows the answer and opens the picker in place on
+              a tap, rather than stacking a sheet on top of its sheet. */}
+          {compact && (
+            // DmInput's tap mode (no TextInput inside to swallow the touch).
+            // A focused text answer above would leave the keyboard over the
+            // calendar, so it goes first.
             <DmInput
-              placeholder="Write something here..."
-              value={dateDisplayText}
-              editable={false}
+              placeholder={t("select_date_time")}
+              value={dateAnswerText}
+              onPress={() => {
+                Keyboard.dismiss()
+                setDatePickerOpen((open) => !open)
+              }}
             />
-          </DmView>
-          <CalendarTimeModal
-            isVisible={isCalendarVisible}
-            onClose={() => setCalendarVisible(false)}
-            onConfirm={handleCalendarConfirm}
-          />
+          )}
+          {(!compact || isDatePickerOpen) && (
+            <DmView className={compact ? "mt-[8]" : undefined}>
+              <CalendarTimePicker
+                initialDate={answeredDay}
+                initialTimeSlot={answeredSlot}
+                showAnyTime
+                inset={0}
+                onSelectionChange={handleDateSelection}
+              />
+            </DmView>
+          )}
         </>
       )}
     </DmView>

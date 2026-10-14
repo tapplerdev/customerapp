@@ -25,7 +25,7 @@ import FastImage from "react-native-fast-image"
 import { ChatMessageType, ChatFileType } from "types/chat"
 import colors from "@tappler/shared/src/styles/colors"
 import ImageViewerModal from "components/ImageViewerModal/ImageViewerModal"
-import DocumentViewerModal from "components/DocumentViewerModal/DocumentViewerModal"
+import DocumentViewerModal from "@tappler/shared/src/components/DocumentViewerModal"
 
 import DocumentIcon from "assets/icons/job-details.svg"
 
@@ -101,6 +101,9 @@ const MessageComponent: React.FC<Props> = React.memo(
     const [isViewerVisible, setViewerVisible] = useState(false)
     const [viewerIndex, setViewerIndex] = useState(0)
     const [docViewerFile, setDocViewerFile] = useState<ChatFileType | null>(null)
+    // The viewer mounts on this row's first document tap (every message would
+    // otherwise carry its own Modal) and then stays, so its close can slide.
+    const [isDocViewerMounted, setDocViewerMounted] = useState(false)
 
     // Locale-set per instance so timestamps read in Arabic ("١٢:٤٧ ص") when the
     // app is Arabic and English ("12:47 AM") otherwise — mirrors proapp (moment).
@@ -135,6 +138,7 @@ const MessageComponent: React.FC<Props> = React.memo(
 
     const handleDocPress = (file: ChatFileType) => {
       if (isUploading) return
+      setDocViewerMounted(true)
       setDocViewerFile(file)
     }
 
@@ -562,13 +566,18 @@ const MessageComponent: React.FC<Props> = React.memo(
           />
         )}
 
-        {/* Document viewer — per message */}
-        {docViewerFile && (
+        {/* Document viewer — per message. Stays mounted once opened, so
+            closing slides it down. */}
+        {isDocViewerMounted && (
           <DocumentViewerModal
             isVisible={!!docViewerFile}
             onClose={() => setDocViewerFile(null)}
-            uri={docViewerFile.url}
-            fileName={docViewerFile.originalName || docViewerFile.fileName}
+            uri={docViewerFile?.url ?? ""}
+            fileName={
+              docViewerFile
+                ? docViewerFile.originalName || docViewerFile.fileName
+                : ""
+            }
           />
         )}
       </DmView>
