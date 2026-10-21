@@ -289,7 +289,7 @@ it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => 
 | `platform` | `ios` | The registry the render loads in. |
 | `route` | `{ name: "parity-screen" }` | Name and params of the screen's route (`ROUTE_PARAMS` has every param route's). |
 | `state` | initial state | The store's slices, over each slice's initial state (`auth`, `cart`). |
-| `api` | `{}` | The backend's answers by endpoint name: `{ data }`, `{ error: { status, data } }`, `"loading"`, or a function of the request. An unlisted endpoint stays loading. `authRefresh` answers the refresh a 401 sends. |
+| `api` | `{}` | The backend's answers by endpoint name: `{ data }`, `{ error: { status, data } }`, `"loading"`, or a function of the request. An unlisted endpoint stays loading. `authRefresh` answers the refresh a 401 sends; a refresh nothing answers fails the row (Traps). |
 | `http` | `{}` | The app's plain fetches (HERE's geocoding, the SVG art cache), by URL with HERE's `apiKey` taken out (`httpKey`): `{ json }` or `{ text }` with an optional `status`, or `"loading"`; or a function of the key. An unlisted URL never answers. |
 | `permissions` | all granted | The device's answers by react-native-permissions name (`ios.permission.LOCATION_WHEN_IN_USE`...) or `notifications` (notifee and Firebase messaging read it too): `granted`, `limited`, `denied`, `blocked`, `unavailable`. |
 | `location` | `"pending"` | What a location request answers: no fix ever, a `{ latitude, longitude }`, or `{ error: { code, message } }`. |
@@ -403,11 +403,17 @@ proxy answers it 503) and Home still draws.
   them without an answer.
 - A new native library a screen imports needs a stand-in in `nativeMocks.ts` and a line in
   `setup.ts`. A new ESM package needs a line in `jest.parity.config.js`'s allowlist.
-- **A 401 needs its refresh answered.** baseQueryWithReauth sends `/auth/refresh/<token>` through
-  the 401'd endpoint's own call; the kit answers it as `authRefresh`. services/api.ts keeps
-  `isRefreshing` and the refresh's promise at module scope (the store holds that module, so the
-  per-row reset can't renew it): a refresh left unanswered keeps every later 401 in the file
-  waiting on it. Answer `authRefresh` in any row that answers a 401.
+- **A 401 needs its refresh answered, or the row fails.** baseQueryWithReauth sends
+  `/auth/refresh/<token>` through the 401'd endpoint's own call; the kit answers it as
+  `authRefresh` (`AUTH_REFRESH`): `{ data: { token, refreshToken } }` (the request is retried),
+  `{ error: { status: 401 } }` (the app signs out), `REFRESH_TIMED_OUT` (unreachable: the session
+  stays and the 401 stands) or `"loading"` (in flight). services/api.ts keeps `isRefreshing` and
+  the refresh's promise at module scope, and the store holds that module, so the per-row reset
+  can't renew it: a refresh left pending used to hold every later 401 in the registry, which then
+  drew a stuck skeleton that the same-order compare passed (review H1). So a row whose refresh
+  nothing answers fails (at the open, the first `tree()` or `unmount()`), and a refresh still in
+  flight when its row ends is ended the way the device's ends (fetchBaseQuery's 20 s timeout,
+  `REFRESH_TIMED_OUT`), so the next row starts clean (`screenKit/__tests__/refresh.parity.tsx`).
 - **Ids from a counter or a random source compare stable.** `expectParity` numbers gesture
   handler's `handlerTag`s by appearance (the library's counter runs on across a registry's renders,
   so a row inserted mid-file shifted every later row's tags: proapp's B7), trims a native stack's

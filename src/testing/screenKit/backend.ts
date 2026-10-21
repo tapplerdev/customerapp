@@ -22,6 +22,17 @@
  * baseQuery call) is answered by the `authRefresh` fixture, not the
  * endpoint's.
  *
+ * The refresh is the one request that can't simply stay in flight:
+ * services/api.ts keeps `isRefreshing` and the refresh's promise at module
+ * scope, the store holds that module (so rowState can't renew it), and every
+ * later 401 in the registry waits on that promise instead of sending its own
+ * (review H1: a correct row drew a stuck skeleton, and the same-order
+ * compare passed it). So a refresh no fixture answers fails its row
+ * (engine.tsx, unansweredRefresh), and a refresh still in flight when its row
+ * ends, unanswered or "loading" on purpose, is settled then (endRefreshes)
+ * the way the device's ends: fetchBaseQuery's 20 s timeout, which api.ts
+ * takes as "unreachable", keeping the session and clearing its refresh.
+ *
  * The app's other way out is plain `fetch`: HERE's geocoding
  * (services/here-maps-api.ts) and the SVG art cache (services/svgCache.ts).
  * A render's `http` answers them by URL (httpKey: HERE's `apiKey` taken out,
@@ -83,6 +94,18 @@ type BaseQueryApi = {
 let fixtures: BackendFixtures = {}
 let log: BackendRequest[] = []
 let inFlight = 0
+/** Refreshes in flight, each with what ends it (endRefreshes). */
+let refreshes: ((answer: unknown) => void)[] = []
+
+/**
+ * What fetchBaseQuery gives a request its `timeout` (services/api.ts: 20 s)
+ * cut off: the device's end for a refresh nothing answers. baseQueryWithReauth
+ * reads it as an unreachable backend: it keeps the session, clears
+ * `isRefreshing` and `refreshPromise`, and returns the 401.
+ */
+export const REFRESH_TIMED_OUT = {
+  error: { status: "TIMEOUT_ERROR", error: "AbortError: Aborted" },
+} as const
 
 const plain = (value: unknown) => {
   if (value === undefined) return undefined
@@ -106,11 +129,25 @@ const http = (): HttpState => {
   return scope[HTTP] as HttpState
 }
 
+/**
+ * End every refresh still in flight as the device's would end
+ * (REFRESH_TIMED_OUT), so none outlives its row. The engine calls it when a
+ * row ends, and again before the next one opens. Returns how many it ended;
+ * api.ts clears its refresh state a few promise turns later.
+ */
+export const endRefreshes = () => {
+  const ending = refreshes
+  refreshes = []
+  ending.forEach((end) => end(plain(REFRESH_TIMED_OUT)))
+  return ending.length
+}
+
 /** The fixtures the next render answers with (the kit calls this per render). */
 export const configureBackend = (
   next: BackendFixtures = {},
   nextHttp: HttpFixtures = {}
 ) => {
+  endRefreshes()
   fixtures = next
   log = []
   inFlight = 0
@@ -121,6 +158,13 @@ export const configureBackend = (
 
 /** Every request since configureBackend, in order. */
 export const backendLog = () => log.slice()
+
+/**
+ * The refresh since configureBackend that no fixture answered, if any: a 401
+ * whose row has no `authRefresh`. The engine fails such a row.
+ */
+export const unansweredRefresh = () =>
+  log.find((request) => request.endpoint === AUTH_REFRESH && request.unanswered)
 
 /** Every plain fetch since configureBackend, in order. */
 export const httpLog = () => http().log.slice()
@@ -167,6 +211,12 @@ export const fetchBaseQuery =
         : typeof fixture === "function"
           ? fixture(plain(args), request)
           : fixture
+    if (answer === "loading" && endpoint === AUTH_REFRESH) {
+      // In flight until its row ends (endRefreshes), never past it.
+      return new Promise((resolve) => {
+        refreshes.push(resolve)
+      })
+    }
     if (answer === "loading") return never()
     request.answer = "data" in answer ? "data" : "error"
     inFlight += 1

@@ -23,7 +23,9 @@ import {
   backendBusy,
   backendLog,
   configureBackend,
+  endRefreshes,
   httpLog,
+  unansweredRefresh,
   type BackendFixtures,
   type BackendRequest,
   type HttpFixtures,
@@ -360,6 +362,25 @@ const awaitSettled = async (
   await result
 }
 
+/**
+ * Why a row whose 401 sent a refresh nothing answers fails (review H1): what
+ * it draws hangs on an answer nobody chose, and the refresh's promise lives
+ * at services/api.ts's module scope, beyond the per-row reset.
+ */
+const unansweredRefreshError = (request: BackendRequest) =>
+  new Error(
+    `screenKit: this row's 401 sent the app's token refresh (${String(
+      (request.args as { url?: unknown } | null)?.url ?? "/auth/refresh/<token>"
+    ).replace(/\/auth\/refresh\/.+$/, "/auth/refresh/<token>")}, baseQueryWithReauth in services/api.ts), and the row has no \`authRefresh\` answer.\n` +
+      "Answer it in the row's `api`, with AUTH_REFRESH from testing/screenKit:\n" +
+      "  { data: { token, refreshToken } }: the refresh works and the 401'd request is retried\n" +
+      "  { error: { status: 401 } } (or 403, 404): the session is dead and the app signs out\n" +
+      "  REFRESH_TIMED_OUT: the backend unreachable; the session is kept and the 401 stands\n" +
+      '  "loading": the refresh still in flight (the kit ends it with the row)\n' +
+      "services/api.ts keeps the refresh in flight at module scope (isRefreshing, refreshPromise), which the per-row " +
+      "reset can't renew: left unanswered, it would hold every later 401 in this registry."
+  )
+
 export type ScreenSession = {
   /** The normalized host tree right now (hostTreeParity's). */
   tree: () => HostNode | null
@@ -384,7 +405,11 @@ export type ScreenSession = {
   /** Every plain fetch the screen made (HERE, SVG art), answered or not. */
   fetches: () => HttpRequest[]
   navigation: NavigationRecord
-  /** Unmount, put the clock, the language and the platform switches back. */
+  /**
+   * Unmount, put the clock, the language and the platform switches back, and
+   * end a refresh still in flight (backend.ts). Throws if the row's 401 sent
+   * a refresh nothing answered and nothing has said so yet.
+   */
   unmount: () => void
 }
 
@@ -401,6 +426,10 @@ export const openScreen = async (
   const insets = { ...DEFAULT_INSETS[options.platform], ...options.insets }
   const now = new Date(options.now ?? DEFAULT_NOW)
 
+  // A refresh an earlier row left in flight (one that never unmounted) ends
+  // first, and services/api.ts has cleared it before this row's 401s arrive.
+  if (endRefreshes() > 0) await flushTurns()
+
   jest.useFakeTimers({
     now,
     doNotFake: ["nextTick", "setImmediate", "queueMicrotask"],
@@ -411,8 +440,19 @@ export const openScreen = async (
       session?.unmount()
     } finally {
       setCurrentStore(null)
+      // No refresh outlives its row (backend.ts, review H1).
+      endRefreshes()
       jest.useRealTimers()
     }
+  }
+  // A refresh nothing answered fails the row, once: after the open, at the
+  // first read of the tree, or at the latest when it unmounts.
+  let refreshReported = false
+  const refreshAnswered = () => {
+    const request = unansweredRefresh()
+    if (!request || refreshReported) return
+    refreshReported = true
+    throw unansweredRefreshError(request)
   }
   try {
     // Module state the app kept from an earlier row is gone (rowState.ts).
@@ -474,9 +514,13 @@ export const openScreen = async (
       insets,
     })
     await settle(options.settleMs ?? 1000)
+    refreshAnswered()
     const live = session
     return {
-      tree: () => live.tree(),
+      tree: () => {
+        refreshAnswered()
+        return live.tree()
+      },
       settle: (ms = 500) => settle(ms),
       act: async (fn, settleMs = 500, what) => {
         await act(async () => {
@@ -489,7 +533,10 @@ export const openScreen = async (
       requests: backendLog,
       fetches: httpLog,
       navigation: record,
-      unmount: restore,
+      unmount: () => {
+        restore()
+        refreshAnswered()
+      },
     }
   } catch (error) {
     restore()
