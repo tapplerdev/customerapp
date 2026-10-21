@@ -13,6 +13,9 @@
  *   Deleted           (only in before/): passes
  *   myAccount/Strict  className fell with px/legacy added: passes the
  *                     ratchet, and is what --strict looks at
+ * The app-only counts (className keys, className prop types,
+ * nativewind/clsx imports, DmText/ActionBtn imports) have rows of their
+ * own, on sources written in the test.
  */
 const fs = require("fs")
 const os = require("os")
@@ -20,12 +23,14 @@ const path = require("path")
 
 const {
   countSource,
+  classNamePropTypes,
   scan,
   compare,
   toBaseline,
   formatReport,
   isColourLiteral,
   CLASSNAME_ATTR,
+  APP_ONLY,
   DEFAULT_BASELINE,
   main,
 } = require("../style-ratchet")
@@ -83,6 +88,11 @@ describe("counting", () => {
       colorLiteral: 5, // "#fff", rgba(), "white", "#000000", `#CC0000`
       primitives: 3, // the three <DmText> elements
       bridge: 0, // no <LegacyText> (style-ratchet-bridge has them)
+      // the app-only counts have rows of their own (below)
+      classKey: 0,
+      classProp: 0,
+      classImport: 0,
+      primitiveImport: 0,
     })
     expect(
       occurrences.filter((o) => o.metric === "className").map((o) => o.owner)
@@ -101,17 +111,84 @@ describe("counting", () => {
     ])
   })
 
-  it("matches className and both slot forms", () => {
+  it("matches className, both slot forms and tw", () => {
     for (const name of [
       "className",
       "classNameTitle",
       "classNameModal",
       "textClassName",
       "containerClassName",
+      // NativeWind's other class prop: its wrapper strips it like className
+      "tw",
     ])
       expect(CLASSNAME_ATTR.test(name)).toBe(true)
-    for (const name of ["style", "class", "name", "classname"])
+    for (const name of [
+      "style",
+      "class",
+      "name",
+      "classname",
+      "twin",
+      "twinStyle",
+      "tween",
+    ])
       expect(CLASSNAME_ATTR.test(name)).toBe(false)
+  })
+
+  it("counts a tw attribute as a className", () => {
+    const code = [
+      'import React from "react"',
+      'import { View } from "react-native"',
+      'export const X = () => <View tw="mt-[2]" twinStyle={{}} />',
+    ].join("\n")
+    expect(countSource(code, "X.tsx").counts.className).toBe(1)
+  })
+
+  it("lists the className-family props a type declares, apart from the counts", () => {
+    const code = [
+      "type Props = {",
+      "  className?: string",
+      "  titleClassName?: string",
+      '  "classNameDescr"?: string',
+      "  tw?: string",
+      "  style?: object",
+      "  twinStyle?: object",
+      "}",
+      "interface More { containerClassName?: string; label: string }",
+      "export const X = (props: Props & More) => null",
+    ].join("\n")
+    const { counts, classNameProps } = countSource(code, "X.tsx")
+    expect(classNameProps).toEqual([
+      { name: "className", line: 2 },
+      { name: "titleClassName", line: 3 },
+      { name: "classNameDescr", line: 4 },
+      { name: "tw", line: 5 },
+      { name: "containerClassName", line: 9 },
+    ])
+    // a declaration is not a className handed to anything; it is a
+    // className prop type (the classProp metric)
+    expect(counts.className).toBe(0)
+    expect(counts.classProp).toBe(5)
+    // app code's only: src/testing is jest's
+    const result = {
+      files: {
+        "src/components/X/X.tsx": { classNameProps },
+        "src/testing/harness.ts": { classNameProps },
+        "src/Y.tsx": { classNameProps: [] },
+      },
+    }
+    expect(classNamePropTypes(result)).toEqual({
+      props: 5,
+      files: 1,
+      byFile: {
+        "src/components/X/X.tsx": [
+          "className:2",
+          "titleClassName:3",
+          "classNameDescr:4",
+          "tw:5",
+          "containerClassName:9",
+        ],
+      },
+    })
   })
 
   it("knows a colour literal from a token name", () => {
@@ -189,6 +266,7 @@ describe("the ratchet", () => {
     expect(totals.from.className).toBe(17)
     expect(totals.to.className).toBe(9)
     const screens = dirsChanged.find((d) => d.dir === "src/screens")
+    const appOnly = Object.fromEntries(APP_ONLY.map((m) => [m, 0]))
     expect(screens.from).toEqual({
       className: 17,
       px: 0,
@@ -197,6 +275,7 @@ describe("the ratchet", () => {
       colorLiteral: 0,
       primitives: 7,
       bridge: 0,
+      ...appOnly,
     })
     expect(screens.to).toEqual({
       className: 9,
@@ -206,6 +285,7 @@ describe("the ratchet", () => {
       colorLiteral: 0,
       primitives: 2,
       bridge: 0,
+      ...appOnly,
     })
   })
 
@@ -409,6 +489,10 @@ describe("--update", () => {
       colorLiteral: 1,
       primitives: 7,
       bridge: 0,
+      classKey: 0,
+      classProp: 0,
+      classImport: 0,
+      primitiveImport: 0,
     })
   })
 
@@ -594,6 +678,157 @@ describe("CLI", () => {
     expect(cmp.violations).toEqual([])
     expect(formatReport(cmp)).toContain("style-ratchet: OK")
   })
+
+  // proapp's W3.4 checks the className, DmText/ActionBtn and app-only
+  // totals are 0 here, from the tree rather than the baseline. customerapp
+  // is in pass 1 (W0): the app-only counts are metrics that may only fall,
+  // and its own W3.4 brings the absolute check (customerapp-plan.md W3,
+  // skeptic H5).
+
+  it("never counts a LegacyText as a primitive, so an absolute primitives check leaves it alone", () => {
+    const code = [
+      'import React from "react"',
+      'import LegacyText from "@tappler/shared/src/components/LegacyText"',
+      'import { LegacyText as L } from "@tappler/shared/src/components/UI"',
+      "export const X = () => <><LegacyText>a</LegacyText><L>b</L></>",
+    ].join("\n")
+    expect(countSource(code, "X.tsx").counts).toMatchObject({
+      bridge: 2,
+      primitives: 0,
+    })
+  })
+})
+
+describe("the app-only counts: what hands a class or a DmText over with no attribute or element to count", () => {
+  const counts = (code, filename = "X.tsx") =>
+    countSource(code, filename).counts
+  const UI = "@tappler/shared/src/components/UI"
+
+  it("counts a className-family key in an object literal, not in a pattern or a type", () => {
+    const code = [
+      'import React from "react"',
+      'import { View } from "react-native"',
+      'type Keys = Omit<Props, "className" | "classNameBtn">',
+      "const { className, titleClassName: t, ...rest } = props",
+      'const a = { className: "mt-[4]", style: {}, twinStyle: {}, classname: "x" }',
+      'const b = { "classNameDescr": "x", ["tw"]: "x", [key]: "x", nested: { textClassName: "x" } }',
+      'export const X = () => React.createElement(View, { ...rest, containerClassName: "x" })',
+      'export const Y = () => <View {...{ className: "x" }} />',
+    ].join("\n")
+    // className, "classNameDescr", ["tw"], textClassName, containerClassName,
+    // and the spread's className
+    expect(counts(code).classKey).toBe(6)
+    expect(counts(code).className).toBe(0)
+  })
+
+  it("counts an import, re-export, require or import() of nativewind or clsx", () => {
+    // Spelled through a constant, so the W3.4 gate's grep for a nativewind
+    // import in src and scripts finds none here.
+    const NW = "nativewind"
+    const code = [
+      'import clsx from "clsx"',
+      'import type { ClassValue } from "clsx"',
+      `import { styled } from "${NW}"`,
+      `import "${NW}/types"`,
+      'export { default as cx } from "clsx"',
+      `export * from "${NW}/dist/style-sheet"`,
+      'const c = require("clsx")',
+      `const n = import("${NW}")`,
+      'import x = require("clsx")',
+      'import a from "clsx-like"',
+      `import b from "./${NW}"`,
+      `import d from "my-${NW}"`,
+    ].join("\n")
+    expect(counts(code, "X.ts").classImport).toBe(9)
+  })
+
+  it("counts DmText and ActionBtn brought in from shared, under any name, and nothing else", () => {
+    const code = [
+      `import { DmText, ActionBtn as Btn, DmView, ActionBtnSmall } from "${UI}"`,
+      `import { type DmText as T } from "${UI}"`,
+      `import type { ActionBtn as B } from "${UI}"`,
+      `import Own from "${UI}/DmText"`,
+      `import { default as Own2 } from "@tappler/shared/src/components/UI/ActionBtn/ActionBtn"`,
+      `import * as Ns from "${UI}/DmText"`,
+      `import * as Barrel from "${UI}"`,
+      `export { DmText as Label } from "${UI}"`,
+      `export * from "${UI}"`,
+      `const R = require("${UI}/ActionBtn")`,
+      `const S = require("${UI}").DmText`,
+      `const { ActionBtn: Q, DmView: V } = require("${UI}")`,
+      'import Look from "./DmText"',
+      'import Small from "@tappler/shared/src/components/UI/ActionBtnSmall"',
+    ].join("\n")
+    // DmText, Btn, Own, Own2, Ns, the re-export, export *, R, S, Q
+    expect(counts(code, "X.ts").primitiveImport).toBe(10)
+    // an import is not an element
+    expect(counts(code, "X.ts").primitives).toBe(0)
+  })
+
+  it("leaves src/testing out of them: its harnesses build classes and DmTexts on purpose", () => {
+    const root = path.join(tmp, "tree")
+    const source = [
+      'import React from "react"',
+      'import clsx from "clsx"',
+      `import { DmText } from "${UI}"`,
+      "type P = { className?: string }",
+      'export const props = { className: clsx("mt-[4]") }',
+      "",
+    ].join("\n")
+    for (const file of ["src/testing/harness.ts", "src/screens/Screen.ts"]) {
+      fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true })
+      fs.writeFileSync(path.join(root, file), source)
+    }
+    const { files } = scan({ root, dirs: ["src"] })
+    const pick = (file) =>
+      Object.fromEntries(APP_ONLY.map((m) => [m, files[file].counts[m]]))
+    expect(pick("src/screens/Screen.ts")).toEqual({
+      classKey: 1,
+      classProp: 1,
+      classImport: 1,
+      primitiveImport: 1,
+    })
+    expect(pick("src/testing/harness.ts")).toEqual({
+      classKey: 0,
+      classProp: 0,
+      classImport: 0,
+      primitiveImport: 0,
+    })
+    expect(
+      files["src/testing/harness.ts"].occurrences.filter((o) =>
+        APP_ONLY.includes(o.metric)
+      )
+    ).toEqual([])
+  })
+
+  it("may each only fall, file by file", () => {
+    const before = 'import React from "react"\nexport const a = 1\n'
+    const after = [
+      'import React from "react"',
+      'import clsx from "clsx"',
+      `import { DmText } from "${UI}"`,
+      "type P = { className?: string }",
+      "export const a = { className: clsx() }",
+      "",
+    ].join("\n")
+    const cmp = compare(
+      { files: { "src/A.ts": countSource(before, "A.ts").counts } },
+      { files: { "src/A.ts": countSource(after, "A.ts") } }
+    )
+    expect(cmp.violations.map((v) => [v.metric, v.rule])).toEqual([
+      ["classKey", "className keys may only fall"],
+      ["classProp", "className prop types may only fall"],
+      ["classImport", "nativewind/clsx imports may only fall"],
+      ["primitiveImport", "DmText/ActionBtn imports may only fall"],
+    ])
+    // and falling is fine
+    expect(
+      compare(
+        { files: { "src/A.ts": countSource(after, "A.ts").counts } },
+        { files: { "src/A.ts": countSource(before, "A.ts") } }
+      ).violations
+    ).toEqual([])
+  })
 })
 
 describe("LegacyText (bridge): it may rise only where DmText/ActionBtn falls as much", () => {
@@ -764,8 +999,10 @@ describe("DmText/ActionBtn (primitives): under any name, and only falling, file 
       "src/A.tsx": [dmTexts(2), legacyTexts(2)],
       "src/New.tsx": [null, dmTexts(2)],
     })
+    // and its DmText import, which is new too
     expect(fresh.violations.map((v) => [v.file, v.metric])).toEqual([
       ["src/New.tsx", "primitives"],
+      ["src/New.tsx", "primitiveImport"],
     ])
     // a fall alone, or a swap in the same file, is fine
     expect(ratchet({ "src/A.tsx": [dmTexts(2), legacyTexts(2)] }).violations).toEqual([])

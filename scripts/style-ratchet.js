@@ -7,8 +7,9 @@
  * per file (and adds up per directory), from the AST:
  *
  *   className        JSX attributes named className, className* (the
- *                    classNameTitle-style slot props) or *ClassName
- *                    (textClassName)
+ *                    classNameTitle-style slot props), *ClassName
+ *                    (textClassName) or tw (NativeWind's other class prop,
+ *                    which its wrapper strips like className)
  *   px()             calls to px, the off-scale escape of the token layer
  *   legacy           leading="legacy", pass 1's "today's line height", and
  *                    its object forms: Text's unscaled leading={{ fixed:
@@ -29,6 +30,25 @@
  *                    express yet, under its name or any local name the file
  *                    gives it (namesOf)
  *
+ * and, in app code only (not src/testing, whose harnesses build classes and
+ * DmTexts on purpose, as controls), what would let a class or a DmText back
+ * in without a JSX attribute or element to count (W3 plan §5.1, skeptic S9):
+ *
+ *   className keys   className-family keys in an object literal
+ *                    (`{ className: "mt-[4]" }` handed to createElement, a
+ *                    spread or a props object), named like the className
+ *                    metric; not a destructuring pattern
+ *   className prop types  className-family property signatures
+ *                    (`className?: string` in a Props type or interface):
+ *                    each lets a call site hand over a class that draws
+ *                    nothing
+ *   nativewind/clsx imports  an import, re-export, require() or import() of
+ *                    `nativewind` (or a subpath) or `clsx`
+ *   DmText/ActionBtn imports  DmText or ActionBtn brought in from
+ *                    tappler-shared: by name from a barrel, or its own
+ *                    module's default (also re-exported, or required); a
+ *                    type-only import is none
+ *
  * and compares against scripts/style-ratchet-baseline.json:
  *
  * - className may only fall, file by file.
@@ -41,6 +61,11 @@
  *   another file can't pay for anything there).
  * - LegacyText may rise only in a file whose DmText/ActionBtn count falls by
  *   at least as much (each one replaces a DmText), and nowhere else.
+ * - className keys, className prop types, nativewind/clsx imports and
+ *   DmText/ActionBtn imports may only fall, file by file. (proapp's W3.4
+ *   added them with an absolute check that all six class totals are 0;
+ *   customerapp takes the metrics now, in pass 1, and the absolute check at
+ *   its own W3.4.)
  * - --strict <glob> (repeatable): in matching files className, px() and
  *   legacy must be 0, except on the components named by --allow, the legacy
  *   ones a converted screen still has to hand a className (MainModal, DmInput,
@@ -74,8 +99,12 @@ const ROOT = path.resolve(__dirname, "..")
 const DEFAULT_BASELINE = path.join(__dirname, "style-ratchet-baseline.json")
 const DEFAULT_DIRS = ["src"]
 
-// className, a className* slot (classNameTitle) or a *ClassName slot.
-const CLASSNAME_ATTR = /^className|ClassName$/
+// className, a className* slot (classNameTitle), a *ClassName slot, or tw.
+const CLASSNAME_ATTR = /^className|^tw$|ClassName$/
+
+// src/testing is jest's: its harnesses build classes and DmTexts on purpose
+// (the no-NativeWind controls), so the app-only counts leave it out.
+const JEST_ONLY = /^src\/testing\//
 
 const METRICS = [
   "className",
@@ -85,6 +114,10 @@ const METRICS = [
   "colorLiteral",
   "primitives",
   "bridge",
+  "classKey",
+  "classProp",
+  "classImport",
+  "primitiveImport",
 ]
 const LABEL = {
   className: "className",
@@ -94,7 +127,15 @@ const LABEL = {
   colorLiteral: "colour literals",
   primitives: "DmText/ActionBtn",
   bridge: "LegacyText",
+  classKey: "className keys",
+  classProp: "className prop types",
+  classImport: "nativewind/clsx imports",
+  primitiveImport: "DmText/ActionBtn imports",
 }
+// Counted in app code only (JEST_ONLY), and may only fall.
+const APP_ONLY = ["classKey", "classProp", "classImport", "primitiveImport"]
+// `nativewind` (or a subpath) and `clsx`.
+const CLASS_MODULE = /^(?:nativewind|clsx)(?:\/|$)/
 // What pass 1 writes in place of a className or a bare DmText/ActionBtn.
 const BRIDGES = ["px", "legacy", "familySystem"]
 const STRICT_METRICS = ["className", "px", "legacy"]
@@ -151,6 +192,51 @@ const namesOf = (ast, component) => {
     }
   }
   return names
+}
+
+/** Is `source` a shared barrel, or DmText's or ActionBtn's own module? */
+const primitiveSource = (source) => {
+  if (SHARED_BARRELS.has(source)) return { barrel: true, own: null }
+  for (const component of PRIMITIVES)
+    if (ownModule(component).test(source))
+      return { barrel: false, own: component }
+  return null
+}
+
+/**
+ * How many DmText/ActionBtn bindings an import or re-export brings in from
+ * tappler-shared: a barrel's `DmText`/`ActionBtn` by name, or its own
+ * module's default (named `default`, or a namespace of it). A type-only one
+ * brings in nothing that renders.
+ */
+const primitiveBindings = (node) => {
+  if (!node.source || node.importKind === "type" || node.exportKind === "type")
+    return 0
+  const from = primitiveSource(node.source.value)
+  if (!from) return 0
+  if (node.type === "ExportAllDeclaration") return 1
+  return (node.specifiers || []).filter((sp) => {
+    if (sp.importKind === "type" || sp.exportKind === "type") return false
+    if (
+      sp.type === "ImportNamespaceSpecifier" ||
+      sp.type === "ExportNamespaceSpecifier"
+    )
+      return !!from.own
+    if (sp.type === "ImportDefaultSpecifier") return !!from.own
+    // ImportSpecifier's `imported`, ExportSpecifier's `local`
+    const named = sp.imported || sp.local
+    const name = named && (named.name || named.value)
+    return from.barrel
+      ? PRIMITIVES.has(name)
+      : name === "default" || name === from.own
+  }).length
+}
+
+/** A key's name: `className`, `"className"`, `["className"]`; else null. */
+const keyName = (node) => {
+  const k = node.key
+  if (k.type === "StringLiteral") return k.value
+  return !node.computed && k.type === "Identifier" ? k.name : null
 }
 
 /** `const Y = X` pairs anywhere in the file, as [Y, X]. */
@@ -338,6 +424,8 @@ const countSource = (code, filename = "file.tsx") => {
     plugins: parserPlugins(filename),
   })
   const occurrences = []
+  // className?: string in a Props type or interface: reported, not gated.
+  const classNameProps = []
   const add = (metric, node, owner) =>
     occurrences.push({
       metric,
@@ -421,6 +509,35 @@ const countSource = (code, filename = "file.tsx") => {
         })
       }
     },
+    TSPropertySignature(p) {
+      const name = keyName(p.node)
+      if (name && CLASSNAME_ATTR.test(name)) {
+        classNameProps.push({ name, line: p.node.loc.start.line })
+        add("classProp", p.node, null)
+      }
+    },
+    // { className: "mt-[4]" }: a class that reaches an element with no
+    // attribute to count (createElement, a spread, a props object).
+    ObjectProperty(p) {
+      if (p.parentPath.isObjectPattern()) return
+      const name = keyName(p.node)
+      if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, ownerOf(p))
+    },
+    "ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration"(p) {
+      const { node } = p
+      if (!node.source) return
+      if (CLASS_MODULE.test(node.source.value)) add("classImport", node, null)
+      for (let i = primitiveBindings(node); i > 0; i--)
+        add("primitiveImport", node, null)
+    },
+    TSImportEqualsDeclaration(p) {
+      const ref = p.node.moduleReference
+      if (
+        ref.type === "TSExternalModuleReference" &&
+        CLASS_MODULE.test(ref.expression.value)
+      )
+        add("classImport", p.node, null)
+    },
     CallExpression(p) {
       const c = p.node.callee
       if (
@@ -430,6 +547,38 @@ const countSource = (code, filename = "file.tsx") => {
           c.property.name === "px")
       )
         add("px", p.node, ownerOf(p))
+      // require("clsx"), import("nativewind"), require() of DmText's or
+      // ActionBtn's own module, and `{ DmText } = require(<barrel>)`
+      const arg = p.node.arguments[0]
+      if (
+        !(
+          (c.type === "Identifier" && c.name === "require") ||
+          c.type === "Import"
+        ) ||
+        !arg ||
+        arg.type !== "StringLiteral"
+      )
+        return
+      if (CLASS_MODULE.test(arg.value)) add("classImport", p.node, null)
+      const from = primitiveSource(arg.value)
+      if (!from) return
+      if (from.own) {
+        add("primitiveImport", p.node, null)
+        return
+      }
+      const parent = p.parentPath
+      if (
+        parent.isMemberExpression({ object: p.node }) &&
+        PRIMITIVES.has(parent.node.property.name || parent.node.property.value)
+      )
+        add("primitiveImport", p.node, null)
+      if (
+        parent.isVariableDeclarator({ init: p.node }) &&
+        parent.node.id.type === "ObjectPattern"
+      )
+        for (const prop of parent.node.id.properties)
+          if (prop.type === "ObjectProperty" && PRIMITIVES.has(keyName(prop)))
+            add("primitiveImport", p.node, null)
     },
     StringLiteral(p) {
       literal(p, p.node.value)
@@ -441,7 +590,23 @@ const countSource = (code, filename = "file.tsx") => {
   })
   const counts = Object.fromEntries(METRICS.map((m) => [m, 0]))
   for (const o of occurrences) counts[o.metric]++
-  return { counts, occurrences }
+  return { counts, occurrences, classNameProps }
+}
+
+/**
+ * The className-family props app code declares (property signatures named
+ * like the className metric, outside src/testing), by file: the
+ * `classProp` metric's occurrences by name, for the --json report (0 in
+ * proapp since its W3.3 strip).
+ */
+const classNamePropTypes = (result) => {
+  const byFile = {}
+  for (const [file, r] of Object.entries(result.files)) {
+    if (JEST_ONLY.test(file) || !(r.classNameProps || []).length) continue
+    byFile[file] = r.classNameProps.map((p) => `${p.name}:${p.line}`)
+  }
+  const props = Object.values(byFile).reduce((n, list) => n + list.length, 0)
+  return { props, files: Object.keys(byFile).length, byFile }
 }
 
 // ---------------------------------------------------------------------------
@@ -465,6 +630,20 @@ const walk = (dir) =>
 
 const posix = (p) => p.split(path.sep).join("/")
 
+// A file's counts with the app-only metrics left out where jest's code is.
+const appOnly = (rel, counted) => {
+  if (!JEST_ONLY.test(rel)) return counted
+  const counts = { ...counted.counts }
+  for (const m of APP_ONLY) counts[m] = 0
+  return {
+    ...counted,
+    counts,
+    occurrences: counted.occurrences.filter(
+      (o) => !APP_ONLY.includes(o.metric)
+    ),
+  }
+}
+
 // { files: { "src/a.tsx": { counts, occurrences } }, errors: [...] }
 const scan = ({ root = ROOT, dirs = DEFAULT_DIRS } = {}) => {
   const files = {}
@@ -478,7 +657,10 @@ const scan = ({ root = ROOT, dirs = DEFAULT_DIRS } = {}) => {
     for (const file of walk(abs).sort()) {
       const rel = posix(path.relative(root, file))
       try {
-        files[rel] = countSource(fs.readFileSync(file, "utf8"), file)
+        files[rel] = appOnly(
+          rel,
+          countSource(fs.readFileSync(file, "utf8"), file)
+        )
       } catch (error) {
         errors.push({ file: rel, error: error.message.split("\n")[0] })
       }
@@ -602,6 +784,14 @@ const compare = (
           to: to[m],
           rule: "className may only fall",
         })
+      else if (APP_ONLY.includes(m))
+        violations.push({
+          file,
+          metric: m,
+          from: from[m],
+          to: to[m],
+          rule: `${LABEL[m]} may only fall`,
+        })
       else if (m === "colorLiteral")
         violations.push({
           file,
@@ -663,6 +853,7 @@ const compare = (
     improved,
     totals,
     dirsChanged,
+    classNameProps: classNamePropTypes(result),
   }
 }
 
@@ -881,6 +1072,7 @@ const main = (argv) => {
 
 module.exports = {
   countSource,
+  classNamePropTypes,
   scan,
   compare,
   toBaseline,
@@ -888,6 +1080,7 @@ module.exports = {
   isColourLiteral,
   CLASSNAME_ATTR,
   METRICS,
+  APP_ONLY,
   DEFAULT_BASELINE,
   main,
 }

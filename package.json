@@ -21,6 +21,7 @@
     "ds:paths": "node scripts/shared-tsconfig-paths.js",
     "ds:resolve": "node scripts/nw-resolve.js",
     "ds:probe": "node scripts/nw-wrap-probe.js",
+    "ds:ratchet": "node scripts/style-ratchet.js",
     "ds:colors": "node scripts/ds-colors.js",
     "postinstall": "patch-package"
   },

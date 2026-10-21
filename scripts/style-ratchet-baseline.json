@@ -1,0 +1,1215 @@
+{
+  "version": 1,
+  "note": "Written by `yarn ds:ratchet --update`. Counts per file; directories are their sums.",
+  "scanned": [
+    "src"
+  ],
+  "metrics": [
+    "className",
+    "px",
+    "legacy",
+    "familySystem",
+    "colorLiteral",
+    "primitives",
+    "bridge",
+    "classKey",
+    "classProp",
+    "classImport",
+    "primitiveImport"
+  ],
+  "totals": {
+    "className": 1872,
+    "px": 0,
+    "legacy": 0,
+    "familySystem": 0,
+    "colorLiteral": 149,
+    "primitives": 591,
+    "bridge": 0,
+    "classKey": 0,
+    "classProp": 16,
+    "classImport": 15,
+    "primitiveImport": 129
+  },
+  "directories": {
+    "src": {
+      "className": 1872,
+      "colorLiteral": 149,
+      "primitives": 591,
+      "classProp": 16,
+      "classImport": 15,
+      "primitiveImport": 129
+    },
+    "src/components": {
+      "className": 356,
+      "colorLiteral": 61,
+      "primitives": 115,
+      "classProp": 16,
+      "classImport": 8,
+      "primitiveImport": 38
+    },
+    "src/components/AddressSelectionModal": {
+      "className": 20,
+      "primitives": 10,
+      "primitiveImport": 1
+    },
+    "src/components/AnimatedSelectCategory": {
+      "className": 5,
+      "primitives": 1,
+      "classProp": 2,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/BannerContainer": {
+      "className": 5,
+      "primitives": 1,
+      "classProp": 2,
+      "primitiveImport": 1
+    },
+    "src/components/CalendarTimePicker": {
+      "className": 7,
+      "primitives": 3,
+      "primitiveImport": 1
+    },
+    "src/components/CalendarTimeSheet": {
+      "className": 8,
+      "primitives": 2,
+      "primitiveImport": 2
+    },
+    "src/components/CancelJobFeedbackModal": {
+      "className": 16,
+      "primitives": 5,
+      "primitiveImport": 2
+    },
+    "src/components/ChipButton": {
+      "className": 2,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/ErrorModal": {
+      "className": 1,
+      "primitiveImport": 2
+    },
+    "src/components/FoodMenuItemRow": {
+      "className": 21,
+      "colorLiteral": 1,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/components/ImageViewerModal": {
+      "className": 4,
+      "colorLiteral": 2
+    },
+    "src/components/ImageWithCheckmarkButton": {
+      "className": 4,
+      "colorLiteral": 3,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/ImageWithTextButton": {
+      "className": 3,
+      "colorLiteral": 2,
+      "classProp": 1,
+      "classImport": 1
+    },
+    "src/components/InAppMessageBanner": {
+      "className": 10,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/components/LeaveReviewModal": {
+      "className": 9,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/components/LoadingOverlay": {
+      "colorLiteral": 3
+    },
+    "src/components/LogoutModal": {
+      "className": 7
+    },
+    "src/components/MapPinPicker": {
+      "className": 11,
+      "primitives": 1,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/MessageBlockedModal": {
+      "className": 4,
+      "primitives": 2,
+      "primitiveImport": 2
+    },
+    "src/components/MessageComponent": {
+      "className": 24,
+      "colorLiteral": 7,
+      "primitives": 8,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/MessagesComponent": {
+      "className": 24,
+      "primitives": 8,
+      "primitiveImport": 1
+    },
+    "src/components/OfferHistorySheet": {
+      "className": 14,
+      "colorLiteral": 11,
+      "primitives": 7,
+      "primitiveImport": 1
+    },
+    "src/components/OfferUpdateCard": {
+      "className": 8,
+      "colorLiteral": 5,
+      "primitives": 6,
+      "primitiveImport": 1
+    },
+    "src/components/OffersSection": {
+      "className": 3,
+      "colorLiteral": 1,
+      "classProp": 1
+    },
+    "src/components/OrderBill": {
+      "className": 11,
+      "primitives": 6,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/OrderLocationMap": {
+      "className": 1
+    },
+    "src/components/ProCardBase": {
+      "className": 36,
+      "colorLiteral": 8,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/components/PromoLine": {
+      "className": 1,
+      "classProp": 1
+    },
+    "src/components/QuestionComponent": {
+      "className": 37,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/components/RateComponent": {
+      "className": 11,
+      "primitives": 6,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/RenderTabBarIcon": {
+      "className": 3,
+      "primitives": 1,
+      "primitiveImport": 1
+    },
+    "src/components/ScaleableDistinctLabelComponent": {
+      "className": 3,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/SearchBar": {
+      "className": 4,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/SearchLocationModal": {
+      "className": 14,
+      "colorLiteral": 3,
+      "primitives": 5,
+      "primitiveImport": 1
+    },
+    "src/components/SearchMessagesComponent": {
+      "className": 3,
+      "colorLiteral": 1
+    },
+    "src/components/SkeletonLoader": {
+      "className": 1,
+      "colorLiteral": 1,
+      "classProp": 1
+    },
+    "src/components/SplashOverlay": {
+      "colorLiteral": 1
+    },
+    "src/components/SuccessModal": {
+      "className": 7,
+      "colorLiteral": 1,
+      "primitives": 3,
+      "primitiveImport": 2
+    },
+    "src/components/SystemEventBubble": {
+      "className": 3,
+      "colorLiteral": 2,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/components/TabBar": {
+      "className": 5,
+      "colorLiteral": 1,
+      "primitives": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/TextWithCheckmarkButton": {
+      "className": 3,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/scroll": {
+      "className": 3
+    },
+    "src/screens": {
+      "className": 1516,
+      "colorLiteral": 88,
+      "primitives": 476,
+      "classImport": 7,
+      "primitiveImport": 91
+    },
+    "src/screens/HomeSkeletonScreen": {
+      "className": 14
+    },
+    "src/screens/PickAddressScreen": {
+      "className": 53,
+      "colorLiteral": 3,
+      "primitives": 8,
+      "primitiveImport": 4
+    },
+    "src/screens/PickAddressScreen/components": {
+      "className": 51,
+      "colorLiteral": 1,
+      "primitives": 8,
+      "primitiveImport": 4
+    },
+    "src/screens/dashboardScreens": {
+      "className": 1355,
+      "colorLiteral": 84,
+      "primitives": 434,
+      "classImport": 6,
+      "primitiveImport": 78
+    },
+    "src/screens/dashboardScreens/AboutAppScreen": {
+      "className": 11,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AccountDetailsScreen": {
+      "className": 7,
+      "primitives": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AccountScreen": {
+      "className": 41,
+      "primitives": 11,
+      "primitiveImport": 3
+    },
+    "src/screens/dashboardScreens/AccountScreen/components": {
+      "className": 6,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AddNewAddressScreen": {
+      "className": 33,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/AllQuestionsScreen": {
+      "className": 27,
+      "colorLiteral": 1,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ArchivedMessagesScreen": {
+      "className": 9,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AuthGateScreen": {
+      "className": 65,
+      "colorLiteral": 4,
+      "primitives": 15,
+      "primitiveImport": 6
+    },
+    "src/screens/dashboardScreens/CategoriesScreen": {
+      "className": 11,
+      "colorLiteral": 2,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ChangePasswordScreen": {
+      "className": 24,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/DeleteAccountScreen": {
+      "className": 22,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FiltersScreen": {
+      "className": 56,
+      "colorLiteral": 8,
+      "primitives": 18,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodCartScreen": {
+      "className": 35,
+      "colorLiteral": 1,
+      "primitives": 14,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodCheckoutScreen": {
+      "className": 58,
+      "colorLiteral": 1,
+      "primitives": 25,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodItemScreen": {
+      "className": 37,
+      "colorLiteral": 2,
+      "primitives": 17,
+      "classImport": 1,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodMenuScreen": {
+      "className": 20,
+      "colorLiteral": 1,
+      "primitives": 7,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/FoodOrderReviewScreen": {
+      "className": 27,
+      "colorLiteral": 1,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/HomeScreen": {
+      "className": 33,
+      "colorLiteral": 2,
+      "primitives": 9,
+      "classImport": 1,
+      "primitiveImport": 4
+    },
+    "src/screens/dashboardScreens/HomeScreen/components": {
+      "className": 28,
+      "colorLiteral": 2,
+      "primitives": 7,
+      "classImport": 1,
+      "primitiveImport": 3
+    },
+    "src/screens/dashboardScreens/JobDetailScreen": {
+      "className": 162,
+      "colorLiteral": 9,
+      "primitives": 46,
+      "primitiveImport": 4
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/components": {
+      "className": 61,
+      "primitives": 25,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/MessagesDetailsScreen": {
+      "className": 105,
+      "colorLiteral": 16,
+      "primitives": 34,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/MessagesScreen": {
+      "className": 25,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/MyInformationScreen": {
+      "className": 32,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/MySavedAddressesScreen": {
+      "className": 18,
+      "primitives": 7,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/NotificationDetailsScreen": {
+      "className": 11,
+      "primitives": 5,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/NotificationsScreen": {
+      "className": 24,
+      "primitives": 7,
+      "classImport": 1,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/NotificationsScreen/components": {
+      "className": 5,
+      "primitives": 3,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ProProfileScreen": {
+      "className": 50,
+      "colorLiteral": 3,
+      "primitives": 14,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ProsListingScreen": {
+      "className": 70,
+      "colorLiteral": 14,
+      "primitives": 26,
+      "classImport": 2,
+      "primitiveImport": 5
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components": {
+      "className": 42,
+      "colorLiteral": 7,
+      "primitives": 16,
+      "classImport": 1,
+      "primitiveImport": 3
+    },
+    "src/screens/dashboardScreens/QuestionStepScreen": {
+      "className": 16,
+      "colorLiteral": 4,
+      "primitives": 3,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/RequestDetailsScreen": {
+      "className": 22,
+      "primitives": 10,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/RequestSuccessScreen": {
+      "className": 7,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/RequestSummaryScreen": {
+      "className": 63,
+      "colorLiteral": 3,
+      "primitives": 27,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ReviewFormScreen": {
+      "className": 46,
+      "colorLiteral": 4,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ReviewProSelectionScreen": {
+      "className": 15,
+      "primitives": 5,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/SaveAddressSheetScreen": {
+      "className": 14,
+      "colorLiteral": 1,
+      "primitives": 6,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/SearchAnimationScreen": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ServiceRequestDetailsScreen": {
+      "className": 21,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/SubCategoriesScreen": {
+      "className": 10,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/TalabatiScreen": {
+      "className": 41,
+      "colorLiteral": 3,
+      "primitives": 17,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/TapplyAIScreen": {
+      "className": 10,
+      "colorLiteral": 2,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/UpdateEmailScreen": {
+      "className": 26,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/UpdateMobileNumberScreen": {
+      "className": 20,
+      "primitives": 7,
+      "classImport": 1,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ViewAddressScreen": {
+      "className": 31,
+      "primitives": 12,
+      "primitiveImport": 1
+    },
+    "src/screens/onboardingScreens": {
+      "className": 94,
+      "colorLiteral": 1,
+      "primitives": 34,
+      "classImport": 1,
+      "primitiveImport": 9
+    },
+    "src/screens/onboardingScreens/AuthWelcomeScreen": {
+      "className": 25,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/screens/onboardingScreens/GuestLocationScreen": {
+      "className": 9,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/screens/onboardingScreens/RegisterScreen": {
+      "className": 36,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/onboardingScreens/SignInEmailScreen": {
+      "className": 14,
+      "primitives": 5,
+      "primitiveImport": 2
+    },
+    "src/screens/onboardingScreens/WelcomeScreen": {
+      "className": 10,
+      "primitives": 6,
+      "classImport": 1,
+      "primitiveImport": 2
+    }
+  },
+  "files": {
+    "src/components/AddressSelectionModal/AddressSelectionModal.tsx": {
+      "className": 20,
+      "primitives": 10,
+      "primitiveImport": 1
+    },
+    "src/components/AnimatedSelectCategory/AnimatedSelectCategory.tsx": {
+      "className": 5,
+      "primitives": 1,
+      "classProp": 2,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/BannerContainer/BannerContainer.tsx": {
+      "className": 5,
+      "primitives": 1,
+      "classProp": 2,
+      "primitiveImport": 1
+    },
+    "src/components/CalendarTimePicker/CalendarTimePicker.tsx": {
+      "className": 7,
+      "primitives": 3,
+      "primitiveImport": 1
+    },
+    "src/components/CalendarTimeSheet/CalendarTimeSheet.tsx": {
+      "className": 8,
+      "primitives": 2,
+      "primitiveImport": 2
+    },
+    "src/components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx": {
+      "className": 16,
+      "primitives": 5,
+      "primitiveImport": 2
+    },
+    "src/components/ChipButton/ChipButton.tsx": {
+      "className": 2,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/ErrorModal/ErrorModal.tsx": {
+      "className": 1,
+      "primitiveImport": 2
+    },
+    "src/components/FoodMenuItemRow/FoodMenuItemRow.tsx": {
+      "className": 21,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/components/FoodMenuItemRow/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/ImageViewerModal/ImageViewerModal.tsx": {
+      "className": 4,
+      "colorLiteral": 2
+    },
+    "src/components/ImageWithCheckmarkButton/ImageWithCheckmarkButton.tsx": {
+      "className": 4,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/ImageWithCheckmarkButton/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/ImageWithTextButton/ImageWithTextButton.tsx": {
+      "className": 3,
+      "colorLiteral": 2,
+      "classProp": 1,
+      "classImport": 1
+    },
+    "src/components/InAppMessageBanner/InAppMessageBanner.tsx": {
+      "className": 10,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/components/LeaveReviewModal/LeaveReviewModal.tsx": {
+      "className": 9,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/components/LoadingOverlay/styles.ts": {
+      "colorLiteral": 3
+    },
+    "src/components/LogoutModal/LogoutModal.tsx": {
+      "className": 7
+    },
+    "src/components/MapPinPicker/MapPinPicker.tsx": {
+      "className": 11,
+      "primitives": 1,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/MessageBlockedModal/MessageBlockedModal.tsx": {
+      "className": 4,
+      "primitives": 2,
+      "primitiveImport": 2
+    },
+    "src/components/MessageComponent/MessageComponent.tsx": {
+      "className": 24,
+      "colorLiteral": 7,
+      "primitives": 8,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/MessagesComponent/MessagesComponent.tsx": {
+      "className": 24,
+      "primitives": 8,
+      "primitiveImport": 1
+    },
+    "src/components/OfferHistorySheet/OfferHistorySheet.tsx": {
+      "className": 14,
+      "colorLiteral": 11,
+      "primitives": 7,
+      "primitiveImport": 1
+    },
+    "src/components/OfferUpdateCard/OfferUpdateCard.tsx": {
+      "className": 8,
+      "colorLiteral": 5,
+      "primitives": 6,
+      "primitiveImport": 1
+    },
+    "src/components/OffersSection/OffersSection.tsx": {
+      "className": 3,
+      "colorLiteral": 1,
+      "classProp": 1
+    },
+    "src/components/OrderBill/OrderBill.tsx": {
+      "className": 11,
+      "primitives": 6,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/OrderLocationMap/OrderLocationMap.tsx": {
+      "className": 1
+    },
+    "src/components/ProCardBase/ProCardBase.tsx": {
+      "className": 36,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/components/ProCardBase/styles.ts": {
+      "colorLiteral": 8
+    },
+    "src/components/PromoLine/PromoLine.tsx": {
+      "className": 1,
+      "classProp": 1
+    },
+    "src/components/QuestionComponent/QuestionComponent.tsx": {
+      "className": 37,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/components/QuestionComponent/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/RateComponent/RateComponent.tsx": {
+      "className": 11,
+      "primitives": 6,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/RenderTabBarIcon/RenderTabBarIcon.tsx": {
+      "className": 3,
+      "primitives": 1,
+      "primitiveImport": 1
+    },
+    "src/components/ScaleableDistinctLabelComponent/ScaleableDistinctLabelComponent.tsx": {
+      "className": 3,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/SearchBar/SearchBar.tsx": {
+      "className": 4,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "primitiveImport": 1
+    },
+    "src/components/SearchLocationModal/SearchLocationModal.tsx": {
+      "className": 14,
+      "colorLiteral": 3,
+      "primitives": 5,
+      "primitiveImport": 1
+    },
+    "src/components/SearchMessagesComponent/SearchMessagesComponent.tsx": {
+      "className": 3,
+      "colorLiteral": 1
+    },
+    "src/components/SkeletonLoader/SkeletonLoader.tsx": {
+      "className": 1,
+      "classProp": 1
+    },
+    "src/components/SkeletonLoader/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/SplashOverlay/SplashOverlay.tsx": {
+      "colorLiteral": 1
+    },
+    "src/components/SuccessModal/SuccessModal.tsx": {
+      "className": 7,
+      "colorLiteral": 1,
+      "primitives": 3,
+      "primitiveImport": 2
+    },
+    "src/components/SystemEventBubble/SystemEventBubble.tsx": {
+      "className": 3,
+      "colorLiteral": 2,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/components/TabBar/TabBar.tsx": {
+      "className": 5,
+      "primitives": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/TabBar/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/TextWithCheckmarkButton/TextWithCheckmarkButton.tsx": {
+      "className": 3,
+      "colorLiteral": 2,
+      "primitives": 1,
+      "classProp": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/components/scroll/index.tsx": {
+      "className": 3
+    },
+    "src/screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx": {
+      "className": 14
+    },
+    "src/screens/PickAddressScreen/PickAddressScreen.tsx": {
+      "className": 2
+    },
+    "src/screens/PickAddressScreen/components/MapPickerView.tsx": {
+      "className": 12,
+      "primitives": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/PickAddressScreen/components/MapPickerWithSearchView.tsx": {
+      "className": 25,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/PickAddressScreen/components/SearchView.tsx": {
+      "className": 14,
+      "primitives": 3,
+      "primitiveImport": 1
+    },
+    "src/screens/PickAddressScreen/styles.ts": {
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/AboutAppScreen/AboutAppScreen.tsx": {
+      "className": 11,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AccountDetailsScreen/AccountDetailsScreen.tsx": {
+      "className": 7,
+      "primitives": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx": {
+      "className": 35,
+      "primitives": 9,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/AccountScreen/components/AccountMenuItem.tsx": {
+      "className": 6,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx": {
+      "className": 33,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen.tsx": {
+      "className": 27,
+      "colorLiteral": 1,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ArchivedMessagesScreen/ArchivedMessagesScreen.tsx": {
+      "className": 9,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/AuthGateScreen/AuthGateScreen.tsx": {
+      "className": 22,
+      "colorLiteral": 4,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx": {
+      "className": 34,
+      "primitives": 6,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx": {
+      "className": 9,
+      "primitives": 2,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx": {
+      "className": 11,
+      "colorLiteral": 2,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx": {
+      "className": 24,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/DeleteAccountScreen/DeleteAccountScreen.tsx": {
+      "className": 22,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx": {
+      "className": 56,
+      "colorLiteral": 8,
+      "primitives": 18,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodCartScreen/FoodCartScreen.tsx": {
+      "className": 35,
+      "primitives": 14,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodCartScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx": {
+      "className": 58,
+      "primitives": 25,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodCheckoutScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx": {
+      "className": 37,
+      "primitives": 17,
+      "classImport": 1,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodItemScreen/styles.ts": {
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen.tsx": {
+      "className": 20,
+      "primitives": 7,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/FoodMenuScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx": {
+      "className": 27,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/FoodOrderReviewScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/HomeScreen/HomeScreen.tsx": {
+      "className": 5,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/HomeScreen/components/HomeHeader.tsx": {
+      "className": 5,
+      "primitives": 1,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/HomeScreen/components/PresetCard.tsx": {
+      "className": 16,
+      "colorLiteral": 2,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/HomeScreen/components/PresetSection.tsx": {
+      "className": 7,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx": {
+      "className": 101,
+      "colorLiteral": 3,
+      "primitives": 21,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/components/FoodOrderView.tsx": {
+      "className": 48,
+      "primitives": 21,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/components/JobMenuSheet.tsx": {
+      "className": 13,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/styles.ts": {
+      "colorLiteral": 6
+    },
+    "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx": {
+      "className": 105,
+      "primitives": 34,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/MessagesDetailsScreen/styles.ts": {
+      "colorLiteral": 16
+    },
+    "src/screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx": {
+      "className": 16,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx": {
+      "className": 9
+    },
+    "src/screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx": {
+      "className": 32,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/MySavedAddressesScreen/MySavedAddressesScreen.tsx": {
+      "className": 18,
+      "primitives": 7,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/NotificationDetailsScreen/NotificationDetailsScreen.tsx": {
+      "className": 11,
+      "primitives": 5,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/NotificationsScreen/NotificationsScreen.tsx": {
+      "className": 14,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx": {
+      "className": 5
+    },
+    "src/screens/dashboardScreens/NotificationsScreen/components/NotificationItem.tsx": {
+      "className": 5,
+      "primitives": 3,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx": {
+      "className": 50,
+      "primitives": 14,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ProProfileScreen/styles.ts": {
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx": {
+      "className": 28,
+      "colorLiteral": 2,
+      "primitives": 10,
+      "classImport": 1,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx": {
+      "className": 33,
+      "colorLiteral": 2,
+      "primitives": 11,
+      "classImport": 1,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components/TooltipComponent.tsx": {
+      "className": 9,
+      "colorLiteral": 1,
+      "primitives": 5,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components/styles.ts": {
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/styles.ts": {
+      "colorLiteral": 5
+    },
+    "src/screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen.tsx": {
+      "className": 16,
+      "colorLiteral": 4,
+      "primitives": 3,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/RequestDetailsScreen/RequestDetailsScreen.tsx": {
+      "className": 22,
+      "primitives": 10,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/RequestSuccessScreen/RequestSuccessScreen.tsx": {
+      "className": 7,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx": {
+      "className": 63,
+      "colorLiteral": 3,
+      "primitives": 27,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx": {
+      "className": 46,
+      "colorLiteral": 1,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ReviewFormScreen/styles.ts": {
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ReviewProSelectionScreen/ReviewProSelectionScreen.tsx": {
+      "className": 15,
+      "primitives": 5,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/SaveAddressSheetScreen/SaveAddressSheetScreen.tsx": {
+      "className": 14,
+      "primitives": 6,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/SaveAddressSheetScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/SearchAnimationScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx": {
+      "className": 21,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx": {
+      "className": 10,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx": {
+      "className": 34,
+      "colorLiteral": 2,
+      "primitives": 17,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx": {
+      "className": 7
+    },
+    "src/screens/dashboardScreens/TalabatiScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/TapplyAIScreen/TapplyAIScreen.tsx": {
+      "className": 10,
+      "colorLiteral": 2,
+      "primitives": 2,
+      "primitiveImport": 1
+    },
+    "src/screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx": {
+      "className": 26,
+      "primitives": 8,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx": {
+      "className": 20,
+      "primitives": 7,
+      "classImport": 1,
+      "primitiveImport": 2
+    },
+    "src/screens/dashboardScreens/ViewAddressScreen/ViewAddressScreen.tsx": {
+      "className": 31,
+      "primitives": 12,
+      "primitiveImport": 1
+    },
+    "src/screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx": {
+      "className": 25,
+      "primitives": 12,
+      "primitiveImport": 2
+    },
+    "src/screens/onboardingScreens/GuestLocationScreen/GuestLocationScreen.tsx": {
+      "className": 9,
+      "colorLiteral": 1,
+      "primitives": 4,
+      "primitiveImport": 1
+    },
+    "src/screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx": {
+      "className": 36,
+      "primitives": 7,
+      "primitiveImport": 2
+    },
+    "src/screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx": {
+      "className": 14,
+      "primitives": 5,
+      "primitiveImport": 2
+    },
+    "src/screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx": {
+      "className": 10,
+      "primitives": 6,
+      "classImport": 1,
+      "primitiveImport": 2
+    }
+  }
+}
