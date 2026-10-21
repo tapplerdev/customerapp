@@ -40,15 +40,26 @@ resets, a refresh that outlived its row) matches it in file order and passed for
 compares (a capture run is refused), and a test must not lean on the order of the tests before it
 (the coverage sweep runs once per platform, in whichever of its two tests comes first).
 
+`yarn test:parity:fresh` is `jest.parity.fresh.config.js`: the same suite with every row in a
+module registry of its own (`screenKit/freshEnvironment.js`), as if it ran alone. Reversing can't
+see a leak with a source on both sides of a row: with dimProgress off the reset list, a FoodCheckout
+idle row between two open-sheet rows follows an open sheet in either order, so its leaky capture
+passed 12/12 forward and reversed and failed 4/4 alone (the K re-check). Here it fails.
+`freshRegistry.parity.tsx` pins that. A row's renders still share its registry; what lives outside
+the registry (the globals, jest's timers, a module the test file imports at its top) the reverse
+pass covers. It only compares, and it is for the wave merges (it costs about one app load per row).
+
 A parity row gets 120 s (`testTimeout`), not jest's 5 s: a file's first render in each registry
 loads the app, which on a cold transform cache is slow. A row needs no timeout of its own.
 
-All three are gates. Run jest with your own cache and two workers:
+All four are gates (the fresh pass at the wave merges). Run jest with your own cache and two
+workers:
 
 ```
 node_modules/.bin/jest --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
 node_modules/.bin/jest -c jest.parity.config.js --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
 node_modules/.bin/jest -c jest.parity.reverse.config.js --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
+node_modules/.bin/jest -c jest.parity.fresh.config.js --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
 ```
 
 **`@env` is stubbed in both.** react-native-dotenv inlines `@env` when a file is transformed, and
@@ -388,8 +399,9 @@ editing them in an area branch.
   open chat, useAttachments' optimistic ids, layoutAnimation's frame flag, the event buses'
   listeners and shared's sheet dim. Each is the module's own code, evaluated again from its source
   for every row (`PER_ROW`, mocked in setup.ts and pinned against it). A module that keeps state
-  and isn't listed still leaks: add it. `yarn test:parity:reverse` is what finds one (the pin
-  can't see a module taken off both lists).
+  and isn't listed still leaks: add it. `yarn test:parity:reverse` and `yarn test:parity:fresh`
+  are what find one (the pin can't see a module taken off both lists): reversed, a leak shows when
+  the rows before a row change; fresh, whatever is on both sides of it.
 - **Real**: the store (the app's reducers and middleware, fresh per render; a test pins the reducer
   list and the app-state middleware's tags against `src/store/index.ts`), React Navigation,
   i18next, NativeWind, tappler-shared, react-native-safe-area-context, react-native-screens,

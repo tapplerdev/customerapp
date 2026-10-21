@@ -896,6 +896,42 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     expect(r.code).toContain('<Card title="t" style={a.mt_4} />')
   })
 
+  // review-ca-w0, the T re-check's L1: a wrapped component's className was
+  // written as one style object, where NativeWind hands over an array, so a
+  // component that spreads `style` into an object would start drawing it.
+  it("writes a wrapped component's className as a style array where the component reads style as an object, and leaves it where its style takes no array", () => {
+    const file = path.join(SLOTS, "Unit.tsx")
+    const at = (from, props = "") =>
+      lines(
+        'import React from "react"',
+        `import Part from "${from}"`,
+        "",
+        `export const X = () => <Part${props} className="mt-[4]" />`
+      )
+    const options = { wraps: [{ line: 4, component: "Part" }], deadSites: [] }
+    const typedObject = convertSource(at("./Spreads/SpreadsStyle"), file, options)
+    expect(typedObject.sites.map((x) => [x.attr, x.status, x.reason])).toEqual([
+      ["className", "left", "waiting-on-component"],
+    ])
+    expect(typedObject.sites[0].detail).toBe(
+      "NativeWind hands <Part> its className as a style array, and SpreadsStyle spreads `style` into an object, so the classes draw nothing there today; written as an object they would draw, and its `style` takes no array"
+    )
+    expect(typedObject.changed).toBe(false)
+    const typedProp = convertSource(at("./Spreads/SpreadsStyleProp"), file, options)
+    expect(typedProp.sites.map((x) => x.status)).toEqual(["converted"])
+    expect(typedProp.code).toContain("<Part style={[a.mt_4]} />")
+    // the control: a component that lets React Native flatten its style
+    // (SkeletonTwinned's [{ width, height }, style]) keeps the plain object
+    const flattened = convertSource(
+      at("./Skeleton/SkeletonTwinned", " width={1} height={1}"),
+      file,
+      options
+    )
+    expect(flattened.code).toContain(
+      "<Part width={1} height={1} style={a.mt_4} />"
+    )
+  })
+
   it("files only a wrapped component's className as dead: a class prop it gets raw still draws (OffersSection.tsx:97)", () => {
     // OffersSection's BannerContainer, imported by file path: the wrap turns
     // className (:95) into a style BannerContainer never reads, and hands
@@ -974,6 +1010,61 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     expect(control.sites[0].status).toBe("converted")
     expect(control.code).toContain(
       "<Skeleton width={90} height={11} style={a.mt_6} />"
+    )
+  })
+
+  it("keeps refusing a frozen class with the twin in place after a token changes or is added, it becomes an expression, or its import is renamed", () => {
+    // review-ca-w0, the T re-check's L2: the list wanted the exact tag and
+    // classes, so with a twin each of these converted, and drew.
+    const file = path.join(SLOTS, "Unit.tsx")
+    const at = (local, classAttr) =>
+      lines(
+        'import React from "react"',
+        `import ${local} from "./Skeleton/SkeletonTwinned"`,
+        "",
+        `export const X = () => <${local} width={90} height={11} ${classAttr} />`
+      )
+    const deadSites = [
+      {
+        file: path.relative(ROOT, file),
+        component: "SkeletonTwinned",
+        attr: "className",
+        classes: "mt-[6]",
+      },
+    ]
+    const variants = [
+      ["as frozen", "SkeletonTwinned", 'className="mt-[6]"', "dead at e30b19a: delete"],
+      ["a token changed", "SkeletonTwinned", 'className="mt-[7]"', "dead at e30b19a, changed since: delete"],
+      ["a token added", "SkeletonTwinned", 'className="mt-[6] mb-[2]"', "dead at e30b19a, changed since: delete"],
+      ["an expression", "SkeletonTwinned", 'className={"mt-[6]"}', "dead at e30b19a, changed since: delete"],
+      ["the import renamed", "Skel", 'className="mt-[6]"', "dead at e30b19a: delete"],
+    ]
+    for (const [name, local, classAttr, says] of variants) {
+      const r = convertSource(at(local, classAttr), file, {
+        wraps: [{ line: 4, component: local }],
+        deadSites,
+      })
+      expect({
+        name,
+        sites: r.sites.map((x) => [x.attr, x.status, x.reason]),
+        changed: r.changed,
+        says: (r.sites[0].detail || "").startsWith(says),
+      }).toEqual({
+        name,
+        sites: [["className", "left", "wrapped-ignores-style"]],
+        changed: false,
+        says: true,
+      })
+    }
+    // the control: off the list, the twin makes the changed class convert
+    const control = convertSource(
+      at("SkeletonTwinned", 'className="mt-[7]"'),
+      file,
+      { wraps: [{ line: 4, component: "SkeletonTwinned" }], deadSites: [] }
+    )
+    expect(control.sites[0].status).toBe("converted")
+    expect(control.code).toMatch(
+      /<SkeletonTwinned width=\{90\} height=\{11\} style=\{styles\.\w+\} \/>/
     )
   })
 
@@ -1842,6 +1933,64 @@ describe("re-running", () => {
       expect(fs.readdirSync(dir)).toEqual(["Dry.tsx"])
     } finally {
       log.mockRestore()
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  // review-ca-w0, the T re-check's L4: any hex `customerapp` stamp passed,
+  // so proapp's 84f2287c proof stamped `deadbeef` converted.
+  it("--proven takes a customerapp-stamped proof only when it checks out (a commit of this history, every look's sites in files customerapp had then), and a fixture's drawnIn one only with no sites", async () => {
+    const dir = fs.mkdtempSync(
+      path.join(ROOT, "scripts", "__fixtures__", "ds-codemod-stamp-")
+    )
+    const file = path.join(dir, "Stamped.tsx")
+    fs.writeFileSync(
+      file,
+      `import React from "react"\n${UI}\nexport const X = ({ cb }: any) => <ActionBtn title="Go" onPress={cb} className="h-[48]" />\n`
+    )
+    const props = { className: "h-[48]", onPress: true }
+    const AT_E30B19A = "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:128"
+    const PROAPPS = "components/ModalButtons/ModalButtons.tsx:114"
+    const proofs = {
+      // B's harvest's shape: a customerapp commit, every look's sites
+      harvest: { customerapp: "e30b19a", looks: { a: { props, sites: [AT_E30B19A] } } },
+      deadbeef: { customerapp: "deadbeef", looks: { a: { props, sites: [AT_E30B19A] } } },
+      zeros: { customerapp: "0000000", looks: { a: { props, sites: [AT_E30B19A] } } },
+      unsited: { customerapp: "e30b19a", looks: { a: { props } } },
+      proapps: { customerapp: "e30b19a", looks: { a: { props, sites: [PROAPPS] } } },
+      // a fixture's marker on looks that name sites, as a harvest's do
+      drawnSited: { drawnIn: "customerapp", looks: { a: { props, sites: [PROAPPS] } } },
+    }
+    const report = path.join(dir, "report.json")
+    const log = jest.spyOn(console, "log").mockImplementation(() => undefined)
+    const error = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined)
+    try {
+      const outcome = async (name) => {
+        const looks = path.join(dir, `${name}.json`)
+        fs.writeFileSync(looks, JSON.stringify(proofs[name]))
+        error.mockClear()
+        const status = await run([file, "--dry", "--no-probe", "--quiet", "--report", report, "--proven", looks])
+        return status === 0
+          ? JSON.parse(fs.readFileSync(report, "utf8")).sites[0].status
+          : `${status}: ${error.mock.calls.map((c) => c[0]).join(" ")}`
+      }
+      expect(await outcome("harvest")).toBe("converted")
+      expect(await outcome("deadbeef")).toMatch(
+        /^2: .*deadbeef\.json says its looks were harvested from customerapp deadbeef, but customerapp deadbeef is no commit of this checkout's history/
+      )
+      expect(await outcome("zeros")).toMatch(/^2: .*customerapp 0000000 is no commit/)
+      expect(await outcome("unsited")).toMatch(/^2: .*1 of its looks name no site/)
+      expect(await outcome("proapps")).toMatch(
+        /^2: .*its sites name 1 file\(s\) customerapp's src didn't have at e30b19a \(src\/components\/ModalButtons\/ModalButtons\.tsx\)/
+      )
+      expect(await outcome("drawnSited")).toMatch(
+        /^2: .*says "drawnIn": "customerapp", but its looks name sites, as a harvest's do, and no customerapp commit/
+      )
+    } finally {
+      log.mockRestore()
+      error.mockRestore()
       fs.rmSync(dir, { recursive: true, force: true })
     }
   })

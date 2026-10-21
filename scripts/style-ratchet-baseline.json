@@ -22,7 +22,7 @@
     "px": 0,
     "legacy": 0,
     "familySystem": 0,
-    "colorLiteral": 149,
+    "colorLiteral": 161,
     "primitives": 591,
     "bridge": 0,
     "classKey": 0,
@@ -33,7 +33,7 @@
   "directories": {
     "src": {
       "className": 1872,
-      "colorLiteral": 149,
+      "colorLiteral": 161,
       "primitives": 591,
       "classProp": 16,
       "classImport": 15,
@@ -41,7 +41,7 @@
     },
     "src/components": {
       "className": 356,
-      "colorLiteral": 61,
+      "colorLiteral": 69,
       "primitives": 115,
       "classProp": 16,
       "classImport": 8,
@@ -77,6 +77,7 @@
     },
     "src/components/CancelJobFeedbackModal": {
       "className": 16,
+      "colorLiteral": 1,
       "primitives": 5,
       "primitiveImport": 2
     },
@@ -100,7 +101,7 @@
     },
     "src/components/ImageViewerModal": {
       "className": 4,
-      "colorLiteral": 2
+      "colorLiteral": 3
     },
     "src/components/ImageWithCheckmarkButton": {
       "className": 4,
@@ -146,7 +147,7 @@
     },
     "src/components/MessageComponent": {
       "className": 24,
-      "colorLiteral": 7,
+      "colorLiteral": 13,
       "primitives": 8,
       "classImport": 1,
       "primitiveImport": 1
@@ -273,7 +274,7 @@
     },
     "src/screens": {
       "className": 1516,
-      "colorLiteral": 88,
+      "colorLiteral": 92,
       "primitives": 476,
       "classImport": 7,
       "primitiveImport": 91
@@ -295,7 +296,7 @@
     },
     "src/screens/dashboardScreens": {
       "className": 1355,
-      "colorLiteral": 84,
+      "colorLiteral": 88,
       "primitives": 434,
       "classImport": 6,
       "primitiveImport": 78
@@ -466,7 +467,7 @@
     },
     "src/screens/dashboardScreens/ProsListingScreen": {
       "className": 70,
-      "colorLiteral": 14,
+      "colorLiteral": 15,
       "primitives": 26,
       "classImport": 2,
       "primitiveImport": 5
@@ -496,13 +497,13 @@
     },
     "src/screens/dashboardScreens/RequestSummaryScreen": {
       "className": 63,
-      "colorLiteral": 3,
+      "colorLiteral": 4,
       "primitives": 27,
       "primitiveImport": 2
     },
     "src/screens/dashboardScreens/ReviewFormScreen": {
       "className": 46,
-      "colorLiteral": 4,
+      "colorLiteral": 6,
       "primitives": 12,
       "primitiveImport": 2
     },
@@ -625,6 +626,7 @@
     },
     "src/components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx": {
       "className": 16,
+      "colorLiteral": 1,
       "primitives": 5,
       "primitiveImport": 2
     },
@@ -650,7 +652,7 @@
     },
     "src/components/ImageViewerModal/ImageViewerModal.tsx": {
       "className": 4,
-      "colorLiteral": 2
+      "colorLiteral": 3
     },
     "src/components/ImageWithCheckmarkButton/ImageWithCheckmarkButton.tsx": {
       "className": 4,
@@ -699,7 +701,7 @@
     },
     "src/components/MessageComponent/MessageComponent.tsx": {
       "className": 24,
-      "colorLiteral": 7,
+      "colorLiteral": 13,
       "primitives": 8,
       "classImport": 1,
       "primitiveImport": 1
@@ -1068,7 +1070,7 @@
     },
     "src/screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx": {
       "className": 28,
-      "colorLiteral": 2,
+      "colorLiteral": 3,
       "primitives": 10,
       "classImport": 1,
       "primitiveImport": 2
@@ -1110,13 +1112,13 @@
     },
     "src/screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx": {
       "className": 63,
-      "colorLiteral": 3,
+      "colorLiteral": 4,
       "primitives": 27,
       "primitiveImport": 2
     },
     "src/screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx": {
       "className": 46,
-      "colorLiteral": 1,
+      "colorLiteral": 3,
       "primitives": 12,
       "primitiveImport": 2
     },

@@ -20,15 +20,21 @@
  *                    font class, also as a *Type's family
  *   colour literals  "#hex", rgb()/hsl() and named colours in the value of a
  *                    *color/*Color key of an object (style objects,
- *                    StyleSheet.create, inline style={{...}}): each literal
+ *                    StyleSheet.create, inline style={{...}}) or of a
+ *                    *color/*Color JSX attribute (`color="#999"`,
+ *                    placeholderTextColor, backdropColor): each literal
  *                    anywhere in that value, with no function or statement
  *                    between, so every branch of a ternary or && counts on
  *                    its own (`color: on ? "#fff" : "#000"` is two), and
  *                    `transparent` never (it is no colour anyone would
- *                    tokenise). That is how src comes to 149.
+ *                    tokenise). That is how src comes to 161 (149 in objects,
+ *                    12 in attributes, which counted nothing before
+ *                    review-ca-w0's T re-check, L5).
  *   DmText/ActionBtn <DmText> and <ActionBtn> elements, with or without a
  *                    className, under any local name the file gives them
- *                    (namesOf), and createElement(DmText, ...) calls
+ *                    (namesOf, a `const Y = memo(DmText)` and a
+ *                    `const { DmText: Y } = NS` included), and
+ *                    createElement(DmText, ...) and jsx(DmText, ...) calls
  *   LegacyText       <LegacyText> elements (`bridge`): tappler-shared's
  *                    LegacyText (src/components/LegacyText, a default
  *                    export), the pass-1 stand-in for a DmText ds Text can't
@@ -42,8 +48,10 @@
  *   className keys   className-family keys in an object literal
  *                    (`{ className: "mt-[4]" }` handed to createElement, a
  *                    spread or a props object), named like the className
- *                    metric; not a destructuring pattern; and the same key
- *                    set as a member (`extra.className = "mt-[4]"`)
+ *                    metric, as a name, a string or a template with nothing
+ *                    in it (`[\`className\`]`); not a destructuring pattern;
+ *                    and the same key set as a member
+ *                    (`extra.className = "mt-[4]"`)
  *   className prop types  className-family property signatures
  *                    (`className?: string` in a Props type or interface):
  *                    each lets a call site hand over a class that draws
@@ -272,30 +280,57 @@ const primitiveBindings = (node, filename) => {
   }).length
 }
 
-/** A key's name: `className`, `"className"`, `["className"]`; else null. */
+/** A key's name: `className`, `"className"`, `["className"]`, `[\`className\`]`; else null. */
 const keyName = (node) => {
   const k = node.key
   if (k.type === "StringLiteral") return k.value
+  if (k.type === "TemplateLiteral" && k.expressions.length === 0)
+    return k.quasis[0].value.cooked
   return !node.computed && k.type === "Identifier" ? k.name : null
 }
 
-/** `const Y = X` pairs anywhere in the file, as [Y, X]. */
+/** `X` or `NS.X` as namesOf spells a name, or null. */
+const nameOf = (n) =>
+  n.type === "Identifier"
+    ? n.name
+    : n.type === "MemberExpression" &&
+        !n.computed &&
+        n.object.type === "Identifier"
+      ? `${n.object.name}.${n.property.name}`
+      : null
+
+/**
+ * Re-bindings anywhere in the file, as [Y, X]: `const Y = X`; `const Y =
+ * memo(X)` or any call that takes X first (a component wrapped, as
+ * React.memo(DmText) is); and `const { X: Y } = NS`, which is `NS.X`
+ * (review-ca-w0, the T re-check's L5: a destructured namespace and a
+ * memo'd DmText counted nothing).
+ */
 const rebindingsOf = (ast) => {
   const traverse = require("@babel/traverse").default
   const pairs = []
   traverse(ast, {
     VariableDeclarator(p) {
       const { id, init } = p.node
-      if (id.type !== "Identifier" || !init) return
-      const name =
-        init.type === "Identifier"
-          ? init.name
-          : init.type === "MemberExpression" &&
-              !init.computed &&
-              init.object.type === "Identifier"
-            ? `${init.object.name}.${init.property.name}`
-            : null
-      if (name) pairs.push([id.name, name])
+      if (!init) return
+      if (id.type === "Identifier") {
+        const name =
+          nameOf(init) ||
+          (init.type === "CallExpression" &&
+            init.arguments[0] &&
+            nameOf(init.arguments[0]))
+        if (name) pairs.push([id.name, name])
+        return
+      }
+      if (id.type !== "ObjectPattern" || init.type !== "Identifier") return
+      for (const prop of id.properties) {
+        if (prop.type !== "ObjectProperty") continue
+        const key = keyName(prop)
+        const value =
+          prop.value.type === "AssignmentPattern" ? prop.value.left : prop.value
+        if (key && value.type === "Identifier")
+          pairs.push([value.name, `${init.name}.${key}`])
+      }
     },
   })
   return pairs
@@ -425,7 +460,9 @@ const ownerOf = (p) => {
 }
 
 // A colour-literal string counts when it is (inside) the VALUE of a
-// *color/*Color object property, without a function or statement between.
+// *color/*Color object property or JSX attribute (`<ActivityIndicator
+// color="#CC0000" />`, which counted nothing: review-ca-w0, the T re-check's
+// L5), without a function or statement between.
 const colourProperty = (p) => {
   const stop = p.findParent(
     (q) =>
@@ -434,6 +471,12 @@ const colourProperty = (p) => {
       q.isStatement() ||
       q.isJSXAttribute()
   )
+  if (stop && stop.isJSXAttribute()) {
+    const attr = stop.node.name
+    return attr.type === "JSXIdentifier" && /color$/i.test(attr.name)
+      ? stop
+      : null
+  }
   if (!stop || !stop.isObjectProperty() || stop.parentPath.isObjectPattern())
     return null
   const { key, computed } = stop.node
@@ -448,6 +491,11 @@ const colourProperty = (p) => {
   const value = stop.get("value")
   return p === value || p.isDescendant(value) ? stop : null
 }
+
+// What makes an element without JSX: React's createElement, and the JSX
+// runtime's functions (react/jsx-runtime, react/jsx-dev-runtime), however
+// imported (`_jsx` as compiled).
+const ELEMENT_CALLS = /^(createElement|_?jsxs?|_?jsxDEV)$/
 
 const parserPlugins = (filename) =>
   /\.tsx$/.test(filename)
@@ -580,11 +628,14 @@ const countSource = (code, filename = "file.tsx") => {
     AssignmentExpression(p) {
       const left = p.node.left
       if (left.type !== "MemberExpression") return
+      const prop = left.property
       const name = left.computed
-        ? left.property.type === "StringLiteral"
-          ? left.property.value
-          : null
-        : left.property.name
+        ? prop.type === "StringLiteral"
+          ? prop.value
+          : prop.type === "TemplateLiteral" && prop.expressions.length === 0
+            ? prop.quasis[0].value.cooked
+            : null
+        : prop.name
       if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, null)
     },
     "ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration"(p) {
@@ -639,12 +690,13 @@ const countSource = (code, filename = "file.tsx") => {
           c.property.name === "px")
       )
         add("px", p.node, ownerOf(p))
-      // React.createElement(DmText, ...): a DmText with no JSX to count
+      // React.createElement(DmText, ...), and react/jsx-runtime's jsx(DmText,
+      // ...) (jsxs, jsxDEV): a DmText with no JSX to count
       const created =
-        (c.type === "Identifier" && c.name === "createElement") ||
+        (c.type === "Identifier" && ELEMENT_CALLS.test(c.name)) ||
         (c.type === "MemberExpression" &&
           !c.computed &&
-          c.property.name === "createElement")
+          ELEMENT_CALLS.test(c.property.name))
       if (created && p.node.arguments[0]) {
         const tag = tagName(p.node.arguments[0])
         if (tag && primitiveOf.has(tag))

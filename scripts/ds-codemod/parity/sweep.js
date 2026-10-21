@@ -16,7 +16,9 @@
  * A load failure or a file with no component is never "needs props": each
  * fails the run unless sweep-gaps.js lists it, with its cause (a render
  * failure the list names is a known gap too, not needProps). A listed gap
- * that no longer happens fails as well, so the list stays true.
+ * that no longer happens fails as well, so the list stays true. A gap is its
+ * cause on both sides: a gap file that fails another way once converted is
+ * a problem, not the known gap (review-ca-w0, the T re-check's L6).
  */
 
 const kindOf = (rows) => {
@@ -57,6 +59,23 @@ const sweepVerdict = ({
     const platforms = hit.get(gap) || []
     if (!platforms.includes(platform)) hit.set(gap, [...platforms, platform])
   }
+  // The gap `before` is, noted; and a problem when `after` isn't it too.
+  const knownGap = (file, platform, kind, before, after, lang) => {
+    const gap = listed(file, kind, before)
+    if (!gap) return false
+    noted(gap, platform)
+    if (!gap.match.test(after || ""))
+      v.problems.push({
+        file,
+        platform,
+        ...(lang ? { lang } : {}),
+        problem: "a known gap before, another failure after",
+        cause: gap.cause,
+        before,
+        after: after || "drew",
+      })
+    return true
+  }
   const noComponent = new Set()
   for (const platform of Object.keys(before)) {
     for (const file of files) {
@@ -82,9 +101,8 @@ const sweepVerdict = ({
           })
           continue
         }
-        const gap = listed(file, kx, xs[0].error)
-        if (gap) noted(gap, platform)
-        else if (kx === "load")
+        if (knownGap(file, platform, kx, xs[0].error, ys[0].error)) continue
+        if (kx === "load")
           v.loadFailures.push({ file, platform, error: xs[0].error })
         else noComponent.add(file)
         continue
@@ -92,9 +110,8 @@ const sweepVerdict = ({
       xs.forEach((x, i) => {
         const y = ys[i] || {}
         if (x.error && y.error) {
-          const gap = listed(file, "render", x.error)
-          if (gap) noted(gap, platform)
-          else v.needProps++
+          if (!knownGap(file, platform, "render", x.error, y.error, x.lang))
+            v.needProps++
           return
         }
         if (x.error || y.error) {

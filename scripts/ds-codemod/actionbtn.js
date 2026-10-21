@@ -28,6 +28,7 @@
  * only while loading). The layout classes become the style, through atoms
  * and entries like any other.
  */
+const { execFileSync } = require("child_process")
 const fs = require("fs")
 const path = require("path")
 
@@ -184,12 +185,58 @@ const lookKey = (look) => {
 }
 
 /**
- * A looks proof's looks (props), once the proof says they were drawn in
+ * Why a proof stamped with customerapp commit `stamp` isn't one of
+ * customerapp's harvests, or null: the commit must be in this checkout's
+ * history, and every look must name its sites, each a file customerapp's
+ * src had at that commit. Any hex once passed: proapp's 84f2287c proof
+ * stamped `deadbeef` converted (review-ca-w0, the T re-check's L4); its
+ * sites are proapp's files, 102 of its 107 never in customerapp's src.
+ */
+const stampProblem = (stamp, looks) => {
+  const git = (...args) =>
+    execFileSync("git", args, {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      maxBuffer: 1 << 26,
+    })
+  let commit
+  try {
+    commit = git("rev-parse", "--verify", "--quiet", `${stamp}^{commit}`).trim()
+  } catch {
+    return `customerapp ${stamp} is no commit of this checkout's history`
+  }
+  const unsited = looks.filter(
+    (l) => !Array.isArray(l.sites) || l.sites.length === 0
+  ).length
+  if (unsited)
+    return `${unsited} of its looks name no site, and a harvest of customerapp names each look's sites`
+  const files = new Set(
+    git("ls-tree", "-r", "--name-only", commit, "--", "src").split("\n")
+  )
+  const missing = [
+    ...new Set(
+      looks.flatMap((l) =>
+        l.sites
+          .map((s) => `src/${String(s).replace(/:\d+$/, "")}`)
+          .filter((f) => !files.has(f))
+      )
+    ),
+  ]
+  if (missing.length)
+    return `its sites name ${missing.length} file(s) customerapp's src didn't have at ${stamp} (${missing.slice(0, 3).join(", ")}${missing.length > 3 ? ", ..." : ""})`
+  return null
+}
+
+/**
+ * A looks proof's looks (props), once the proof shows they were drawn in
  * customerapp's config: a `customerapp` commit (CA-W0-B's harvest of
- * e30b19a's sites), or `drawnIn: "customerapp"` (a run that draws its own,
- * as the fixture parity does). Any other proof, proapp's above all (drawn
- * in Poppins under proapp's config, it once converted 13 attributes here
- * by luck: review-ca-w0), is refused.
+ * e30b19a's sites) that checks out (stampProblem), or `drawnIn:
+ * "customerapp"` (a run that draws its own, as the fixture parity does: the
+ * marker of a fixture's proof, which nothing but drawing it again can
+ * check). Any other proof, proapp's above all (drawn in Poppins under
+ * proapp's config, it once converted 13 attributes here by luck:
+ * review-ca-w0), is refused.
  */
 const readProof = (file) => {
   const where = path.relative(ROOT, file)
@@ -205,7 +252,20 @@ const readProof = (file) => {
     throw new Error(
       `ds-codemod: ${where} has no looks ({ looks: { id: { props } } })`
     )
-  return Object.values(proof.looks).map((l) => l.props)
+  const looks = Object.values(proof.looks)
+  if (commit) {
+    const problem = stampProblem(proof.customerapp, looks)
+    if (problem)
+      throw new Error(
+        `ds-codemod: ${where} says its looks were harvested from customerapp ${proof.customerapp}, but ${problem}: a proof from another app proves nothing here`
+      )
+  } else if (looks.some((l) => Array.isArray(l.sites) && l.sites.length))
+    // A fixture's looks name no site; looks that do were harvested from an
+    // app's source, and a harvest of customerapp's says its commit.
+    throw new Error(
+      `ds-codemod: ${where} says "drawnIn": "customerapp", but its looks name sites, as a harvest's do, and no customerapp commit: a harvest of customerapp says the commit it read ("customerapp"), and a proof from another app proves nothing here`
+    )
+  return looks.map((l) => l.props)
 }
 
 let proven

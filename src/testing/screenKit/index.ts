@@ -21,7 +21,8 @@
  * (FoodCheckoutScreen/styles.ts:15) draws its Arabic branch, which proapp's
  * kit never could. Rows of one platform, one direction and one window share
  * a registry; switching any resets it (rowsByPlatform orders a table so that
- * happens once per platform and direction). A row's `window` is applied
+ * happens once per platform and direction). Under `yarn test:parity:fresh`
+ * every row gets its own (freshEnvironment.js). A row's `window` is applied
  * before anything loads too, so a module that reads Dimensions as it loads
  * (shared's isSmallPhone) reads the row's; a row without one loads as it
  * always has (LOADED_AS_BEFORE).
@@ -116,8 +117,21 @@ let loaded: {
   platform: KitPlatform
   direction: KitDirection
   window: string
+  /** The row it was made for under `yarn test:parity:fresh`, else null. */
+  row: number | null
   engine: typeof Engine
 } | null = null
+
+/**
+ * The row `yarn test:parity:fresh` is on (freshEnvironment.js counts them),
+ * or null under any other config: there each row gets a registry of its
+ * own, made at its first render and kept for the rest of the row.
+ */
+const freshRow = (): number | null => {
+  const row = (globalThis as { __screenKitFreshRow?: unknown })
+    .__screenKitFreshRow
+  return typeof row === "number" ? row : null
+}
 
 /**
  * The registry a row without a `window` loads in: as it always has, with
@@ -139,11 +153,12 @@ const applyDirection = (direction: KitDirection) => {
 
 /**
  * The engine in the registry of the platform, the direction and the window:
- * the current one, or a fresh one. The direction is applied before anything
- * loads, so a module that reads I18nManager.isRTL as it loads reads the
- * row's. A row that gives `window` gets it applied before anything loads, so
- * a module that reads Dimensions as it loads (shared's isSmallPhone,
- * SCREEN_WIDTH) reads the row's; one that doesn't loads LOADED_AS_BEFORE.
+ * the current one, or a fresh one (and under `yarn test:parity:fresh`, a
+ * fresh one for each row). The direction is applied before anything loads,
+ * so a module that reads I18nManager.isRTL as it loads reads the row's. A
+ * row that gives `window` gets it applied before anything loads, so a module
+ * that reads Dimensions as it loads (shared's isSmallPhone, SCREEN_WIDTH)
+ * reads the row's; one that doesn't loads LOADED_AS_BEFORE.
  */
 const engineFor = (
   platform: KitPlatform,
@@ -151,11 +166,13 @@ const engineFor = (
   window: Partial<ScreenWindow> | undefined
 ): typeof Engine => {
   const key = window ? windowKey(windowOf(window)) : LOADED_AS_BEFORE
+  const row = freshRow()
   if (
     loaded &&
     loaded.platform === platform &&
     loaded.direction === direction &&
-    loaded.window === key
+    loaded.window === key &&
+    loaded.row === row
   ) {
     return loaded.engine
   }
@@ -168,7 +185,7 @@ const engineFor = (
   // It stays the registry's: every row in it has this direction, the engine
   // asserts it before the screen's modules load, and hostTreeParity's render
   // sets it again and puts it back.
-  loaded = { platform, direction, window: key, engine }
+  loaded = { platform, direction, window: key, row, engine }
   return engine
 }
 
