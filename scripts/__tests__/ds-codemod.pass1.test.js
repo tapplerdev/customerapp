@@ -1846,6 +1846,64 @@ describe("re-running", () => {
     }
   })
 
+  // review-ca-w0, the T re-check's L4: any hex `customerapp` stamp passed,
+  // so proapp's 84f2287c proof stamped `deadbeef` converted.
+  it("--proven takes a customerapp-stamped proof only when it checks out (a commit of this history, every look's sites in files customerapp had then), and a fixture's drawnIn one only with no sites", async () => {
+    const dir = fs.mkdtempSync(
+      path.join(ROOT, "scripts", "__fixtures__", "ds-codemod-stamp-")
+    )
+    const file = path.join(dir, "Stamped.tsx")
+    fs.writeFileSync(
+      file,
+      `import React from "react"\n${UI}\nexport const X = ({ cb }: any) => <ActionBtn title="Go" onPress={cb} className="h-[48]" />\n`
+    )
+    const props = { className: "h-[48]", onPress: true }
+    const AT_E30B19A = "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:128"
+    const PROAPPS = "components/ModalButtons/ModalButtons.tsx:114"
+    const proofs = {
+      // B's harvest's shape: a customerapp commit, every look's sites
+      harvest: { customerapp: "e30b19a", looks: { a: { props, sites: [AT_E30B19A] } } },
+      deadbeef: { customerapp: "deadbeef", looks: { a: { props, sites: [AT_E30B19A] } } },
+      zeros: { customerapp: "0000000", looks: { a: { props, sites: [AT_E30B19A] } } },
+      unsited: { customerapp: "e30b19a", looks: { a: { props } } },
+      proapps: { customerapp: "e30b19a", looks: { a: { props, sites: [PROAPPS] } } },
+      // a fixture's marker on looks that name sites, as a harvest's do
+      drawnSited: { drawnIn: "customerapp", looks: { a: { props, sites: [PROAPPS] } } },
+    }
+    const report = path.join(dir, "report.json")
+    const log = jest.spyOn(console, "log").mockImplementation(() => undefined)
+    const error = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined)
+    try {
+      const outcome = async (name) => {
+        const looks = path.join(dir, `${name}.json`)
+        fs.writeFileSync(looks, JSON.stringify(proofs[name]))
+        error.mockClear()
+        const status = await run([file, "--dry", "--no-probe", "--quiet", "--report", report, "--proven", looks])
+        return status === 0
+          ? JSON.parse(fs.readFileSync(report, "utf8")).sites[0].status
+          : `${status}: ${error.mock.calls.map((c) => c[0]).join(" ")}`
+      }
+      expect(await outcome("harvest")).toBe("converted")
+      expect(await outcome("deadbeef")).toMatch(
+        /^2: .*deadbeef\.json says its looks were harvested from customerapp deadbeef, but customerapp deadbeef is no commit of this checkout's history/
+      )
+      expect(await outcome("zeros")).toMatch(/^2: .*customerapp 0000000 is no commit/)
+      expect(await outcome("unsited")).toMatch(/^2: .*1 of its looks name no site/)
+      expect(await outcome("proapps")).toMatch(
+        /^2: .*its sites name 1 file\(s\) customerapp's src didn't have at e30b19a \(src\/components\/ModalButtons\/ModalButtons\.tsx\)/
+      )
+      expect(await outcome("drawnSited")).toMatch(
+        /^2: .*says "drawnIn": "customerapp", but its looks name sites, as a harvest's do, and no customerapp commit/
+      )
+    } finally {
+      log.mockRestore()
+      error.mockRestore()
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it("--proven takes the proven ActionBtn looks from a file (the fixture parity run's own)", async () => {
     const dir = fs.mkdtempSync(
       path.join(ROOT, "scripts", "__fixtures__", "ds-codemod-proven-")
