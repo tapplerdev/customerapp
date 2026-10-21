@@ -1058,6 +1058,50 @@ describe("the ways round it review-ca-w0 found: each one counts now", () => {
     ).toMatchObject({ primitives: 2 })
   })
 
+  // The T re-check's L5: five more ways that counted nothing.
+  it("counts a DmText destructured from a namespace, or wrapped by memo, as a DmText", () => {
+    expect(
+      counts(
+        `import React from "react"\nimport * as UI from "${UI}"\nconst { DmText: T, ActionBtn } = UI\nexport const X = () => <UI.DmView><T>hi</T><ActionBtn title="b" /></UI.DmView>\n`
+      ).primitives
+    ).toBe(2)
+    for (const wrap of ["React.memo(DmText)", "memo(DmText)"])
+      expect(
+        counts(
+          `import React, { memo } from "react"\nimport { DmText, DmView } from "${UI}"\nconst T = ${wrap}\nexport const X = () => <DmView><T>hi</T></DmView>\n`
+        ).primitives
+      ).toBe(1)
+  })
+
+  it("counts jsx(DmText) from the JSX runtime as a DmText", () => {
+    expect(
+      counts(
+        `import React from "react"\nimport { jsx, jsxs } from "react/jsx-runtime"\nimport { DmText, DmView } from "${UI}"\nexport const X = () => <DmView>{jsx(DmText, { children: "a" })}{jsxs(DmText, { children: ["b"] })}</DmView>\n`
+      ).primitives
+    ).toBe(2)
+  })
+
+  it("counts a colour literal in a *color JSX attribute's value, each branch on its own", () => {
+    const colours = (jsx) =>
+      counts(
+        `import React from "react"\nimport { ActivityIndicator, TextInput, View } from "react-native"\nexport const X = ({ on, colors }: any) => (\n  <View>${jsx}</View>\n)\n`
+      ).colorLiteral
+    expect(colours('<ActivityIndicator color="#CC0000" />')).toBe(1)
+    expect(colours('<ActivityIndicator color={on ? "#FFFFFF" : "#000000"} />')).toBe(2)
+    expect(colours('<TextInput placeholderTextColor="#999" />')).toBe(1)
+    expect(colours('<ActivityIndicator color={colors.red} />')).toBe(0)
+    expect(colours('<View testID="#CC0000" />')).toBe(0)
+    expect(colours('<ActivityIndicator color="transparent" />')).toBe(0)
+  })
+
+  it("counts a className key written as a template with nothing in it", () => {
+    expect(
+      counts(
+        'import React from "react"\nimport { View } from "react-native"\nconst extra: any = {}\nextra[`textClassName`] = "x"\nexport const X = () => <View {...{ [`className`]: "mt-[4]" }} />\n'
+      ).classKey
+    ).toBe(2)
+  })
+
   it("counts a className-family key set as a member", () => {
     expect(
       counts(
