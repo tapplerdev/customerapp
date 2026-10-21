@@ -78,7 +78,11 @@ The order matters. The fixture has to come from the code before your change, or 
 
    - `buttonHeight`: Button's `minHeight` where ActionBtn had the same `height`.
    - `buttonAccessibility`: Button's `accessibilityLabel`, `accessibilityRole` and
-     `accessibilityState`, which ActionBtn never set.
+     `accessibilityState`, which ActionBtn never set, and only Button's own values: the label is
+     what its label box draws (title, second title, description, joined with ", "; while it
+     loads, any non-empty name, as only the spinner is drawn), the role `button`, the state
+     ActionBtn's touchable had plus `busy` while it loads. Anything else on a Button's root
+     throws, naming the prop (busy while disabled, disabled while enabled, a wrong label).
    - `buttonDisabledView`: the `disabled` flag ActionBtn hands its View when there is no onPress.
 
    Each one applies only on a button's root (a node holding Button's label box or its spinner),
