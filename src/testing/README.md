@@ -18,17 +18,18 @@ rule); what differs from proapp is called out where it matters.
 | `trueSheet.tsx` | The stand-in for `@lodev09/react-native-true-sheet` in both jest configs (see "What the kit mocks"). |
 | `nativewind.ts`, `svgStub.ts` | NativeWind's output for a class string with customerapp's tailwind.config.js; an SVG icon as a host element named after it. |
 
-## The two jest configs
+## The jest configs
 
 `yarn test` is the default config. Component parity tests live there (`*.test.tsx`). It ignores
-`*.parity.tsx` and `*.pass1.test.*` (the class-era tools' suites, `jest.pass1.config.js`).
+`*.parity.tsx` and `*.pass1.test.*` (the class-era tools' suites, `jest.pass1.config.js`). It, and
+so every config built on it, refuses to run with `../tappler-shared` a symlink or missing (jest
+then drew shared's components without their NativeWind styles: `yarn test` failed 17 tests, and a
+capture would have baked in uncompiled classes, so parity passed for the wrong reason).
 
 `yarn test:parity` is `jest.parity.config.js`, which runs every `*.parity.tsx` under `src` (and the
 App smoke test, `__tests__/App.parity.tsx`) and nothing else. Screen parity tests live here,
 because a screen needs the kit's setup: every native module mocked, the network shut, a real store,
-a real navigator, Egypt's time zone, and a module registry per platform and direction. It refuses to
-run with `../tappler-shared` a symlink or missing (jest then drew shared's components without their
-NativeWind styles, and parity passed for the wrong reason).
+a real navigator, Egypt's time zone, and a module registry per platform and direction.
 
 `yarn test:parity:reverse` is `jest.parity.reverse.config.js`: the same suite with every file's
 rows run in reverse order, in every describe block (`screenKit/reverseEnvironment.js`). A fixture
