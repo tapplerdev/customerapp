@@ -45,6 +45,9 @@ import {
   renderParity,
   resolveSafeArea,
   safeAreaEdgeValue,
+  withStableHandlerTags,
+  withStableIds,
+  withStableScreenIds,
   withStableShadowIds,
   type HostNode,
 } from "../hostTreeParity"
@@ -120,7 +123,7 @@ describe("the environment is the one asked for", () => {
     const en = hostTree(before(), { language: "en" })
     const ar = hostTree(before(), { language: "ar" })
     expect(text(en)).toMatchObject({
-      fontFamily: "Poppins-SemiBold",
+      fontFamily: "Montserrat-SemiBold",
       lineHeight: 19,
     })
     expect(text(ar)).toMatchObject({
@@ -178,18 +181,45 @@ describe("the environment is the one asked for", () => {
     expect([Platform.OS, I18nManager.isRTL]).toEqual(["ios", false])
   })
 
-  it("registers the Latin faces index.js registers", () => {
-    const entry = fs.readFileSync(path.join(ROOT, "index.js"), "utf8")
-    const call = entry.match(/setLatinFontWeights\(\{([\s\S]*?)\}\)/)
-    expect(call).not.toBeNull()
-    const registered = Object.fromEntries(
-      [...call![1].matchAll(/(\d{3}):\s*"([^"]+)"/g)].map((m) => [m[1], m[2]])
+  // customerapp registers no Latin faces (proapp's index.js registers
+  // Poppins), so it draws tappler-shared's default. Both halves are pinned:
+  // any other table in APP_LATIN_FONT_WEIGHTS (Poppins, say) fails the
+  // first, and a registration added to the app fails the second, which is
+  // the day the kit's table has to follow it.
+  it("draws shared's default Latin faces, Montserrat, as an app that registers none does", () => {
+    let defaults: unknown
+    jest.isolateModules(() => {
+      // A fresh copy of the helpers: the faces before anything registered.
+      // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+      const helpers = require("@tappler/shared/src/helpers/helpers") as {
+        getLatinFontWeights: () => Record<string, string>
+      }
+      defaults = { ...helpers.getLatinFontWeights() }
+    })
+    expect(defaults).toEqual({
+      400: "Montserrat-Regular",
+      500: "Montserrat-Medium",
+      600: "Montserrat-SemiBold",
+      700: "Montserrat-Bold",
+    })
+    expect({ ...APP_LATIN_FONT_WEIGHTS }).toEqual(defaults)
+  })
+
+  it("index.js and the app's sources register no Latin faces", () => {
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          return full === path.join(ROOT, "src", "testing") ? [] : walk(full)
+        }
+        return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [full] : []
+      })
+    const files = [path.join(ROOT, "index.js"), ...walk(path.join(ROOT, "src"))]
+    expect(files.length).toBeGreaterThan(100)
+    const registering = files.filter((file) =>
+      /setLatinFontWeights\s*\(/.test(fs.readFileSync(file, "utf8"))
     )
-    expect(registered).toEqual(
-      Object.fromEntries(
-        Object.entries(APP_LATIN_FONT_WEIGHTS).map(([k, v]) => [k, v])
-      )
-    )
+    expect(registering.map((file) => path.relative(ROOT, file))).toEqual([])
   })
 })
 
@@ -221,6 +251,105 @@ describe("normalizing", () => {
       children: [{ type: "Text", props: {}, children: ["Hello world"] }],
     })
     expect(Object.keys(tree!.props)).toEqual(["hitSlop", "style", "testID"])
+  })
+
+  // proapp's W3.1b rule. Without the plugin no wrapper strips className or
+  // rebuilds style, so a passthrough's "" and a `style={cond && x}` reach the
+  // host. Neither draws anything with NativeWind or without it, so each
+  // compares as absent, on the stored side too (it is normalized again at
+  // compare time).
+  const storedAs = (props: Record<string, unknown>, type = "View") => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "parity-absent-"))
+    const file = path.join(dir, "stored.json")
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        cases: { it: { capturedAt: "x", tree: "h", a11y: true } },
+        trees: { h: { type, props, children: [] } },
+      })
+    )
+    return file
+  }
+  const bare = (props: Record<string, unknown> = {}, type = "View") =>
+    ({ type, props, children: [] }) as HostNode
+
+  it("reads a falsy style (false, null, undefined) as no style, on both sides", () => {
+    expect(
+      normalizeHostTree({
+        type: "View",
+        props: {
+          style: false,
+          contentContainerStyle: null,
+          imageStyle: undefined,
+          testID: "row",
+        },
+        children: [],
+      } as never)!.props
+    ).toEqual({ testID: "row" })
+    // a stored false or null style against none, and none against them
+    expectParity("it", bare(), { file: storedAs({ style: false }) })
+    expectParity("it", bare(), { file: storedAs({ style: null }) })
+    expectParity(
+      "it",
+      normalizeHostTree({
+        type: "View",
+        props: { style: false },
+        children: [],
+      } as never),
+      { file: storedAs({}) }
+    )
+    // a string style-named prop is no style object: kept as it is
+    expect(
+      normalizeHostTree({
+        type: "RCTScrollView",
+        props: { indicatorStyle: "" },
+        children: [],
+      } as never)!.props
+    ).toEqual({ indicatorStyle: "" })
+  })
+
+  it('reads className: "" (any className-family prop, blank) as no className, on both sides', () => {
+    expect(
+      normalizeHostTree({
+        type: "View",
+        props: {
+          className: "",
+          textClassName: "  ",
+          classNameTitle: "",
+          tw: "",
+          testID: "row",
+        },
+        children: [],
+      } as never)!.props
+    ).toEqual({ testID: "row" })
+    expectParity("it", bare(), { file: storedAs({ className: "" }) })
+    expectParity(
+      "it",
+      normalizeHostTree({
+        type: "View",
+        props: { className: "" },
+        children: [],
+      } as never),
+      { file: storedAs({}) }
+    )
+  })
+
+  it("still tells a non-empty className on a host apart, both ways", () => {
+    expect(
+      normalizeHostTree({
+        type: "View",
+        props: { className: "px-[4]", tw: "mt-[2]" },
+        children: [],
+      } as never)!.props
+    ).toEqual({ className: "px-[4]", tw: "mt-[2]" })
+    expect(() =>
+      expectParity("it", bare({ className: "px-[4]" }), {
+        file: storedAs({ className: "" }),
+      })
+    ).toThrow(/className/)
+    expect(() =>
+      expectParity("it", bare(), { file: storedAs({ className: "px-[4]" }) })
+    ).toThrow(/className/)
   })
 
   it("flattens every style prop, and keeps a string one as it is", () => {
@@ -393,8 +522,8 @@ describe("fixtures", () => {
   })
 })
 
-describe("react-native-shadow-2's gradient ids, numbered by appearance", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "parity-shadow-"))
+describe("ids from a counter or a random source, made stable on both sides", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "parity-ids-"))
   let count = 0
   const captured = (stored: HostNode) => {
     count += 1
@@ -409,81 +538,116 @@ describe("react-native-shadow-2's gradient ids, numbered by appearance", () => {
     return file
   }
 
-  // One side of a Shadow as react-native-svg draws it (as in My Account's
-  // verify screens): the gradient named in its defs, the rect filled with it.
-  const side = (gradient: string, filled = gradient): HostNode => ({
-    type: "RNSVGSvgView",
-    props: { bbWidth: 6 },
-    children: [
-      {
-        type: "RNSVGDefs",
-        props: {},
-        children: [
-          {
-            type: "RNSVGLinearGradient",
-            props: { name: gradient, x1: "0" },
-            children: [],
-          },
-        ],
-      },
-      {
-        type: "RNSVGRect",
-        props: { fill: { brushRef: filled, type: 1 }, width: 5 },
-        children: [],
-      },
-    ],
+  // proapp's shadow-2 cases need the library to read its id shape from;
+  // customerapp has none, so nothing can draw one. The day it is installed
+  // this fails, and proapp's cases (84f2287c, hostTreeParity.test.tsx) come
+  // back with it.
+  it("renames nothing for react-native-shadow-2, which customerapp doesn't install", () => {
+    expect(() =>
+      require.resolve("react-native-shadow-2/package.json")
+    ).toThrow()
+    const tree: HostNode = {
+      type: "RNSVGLinearGradient",
+      props: { name: "start.24", fill: "url(#start.24)" },
+      children: [],
+    }
+    expect(withStableShadowIds(tree)).toBe(tree)
   })
-  // Two Shadows whose suffixes the counter gave as `first` and `first + 1`;
-  // `crossed` points the first one's rect at the second one's gradient. The
-  // label is a text that reads like an id: drawn, so never renamed.
-  const twoShadows = (first: number, crossed = false): HostNode => ({
+
+  // Gesture handler's wrapped views as they reach a host under jest: each
+  // carries the tag the library's counter gave its handler, or -1 before
+  // one was made. `first` is where the counter stood for this row.
+  const scrollers = (first: number, crossed = false): HostNode => ({
     type: "View",
     props: {},
     children: [
-      side(`start.${first}`, `start.${crossed ? first + 1 : first}`),
-      side(`end.${first}`),
-      side(`start.${first + 1}`),
-      { type: "Text", props: {}, children: ["start.24"] },
+      {
+        type: "RCTScrollView",
+        props: { handlerTag: first, handlerType: "NativeViewGestureHandler" },
+        children: [],
+      },
+      {
+        type: "RCTScrollView",
+        props: {
+          handlerTag: crossed ? first : first + 1,
+          handlerType: "NativeViewGestureHandler",
+        },
+        children: [],
+      },
+      { type: "View", props: { handlerTag: -1 }, children: [] },
+      { type: "Text", props: {}, children: ["7"] },
     ],
   })
 
-  it("two trees that differ only in the counter compare equal", () => {
-    const early = twoShadows(0)
-    const late = twoShadows(24)
-    expect(late).not.toEqual(early)
-    expect(withStableShadowIds(late)).toEqual(withStableShadowIds(early))
-    // a fixture captured with raw ids, compared with another run's
-    expectParity("it", late, { file: captured(early) })
-    expectParity("it", early, { file: captured(late) })
+  it("numbers gesture handler's tags by appearance, keeping -1 and texts as they are", () => {
+    const stable = withStableHandlerTags(scrollers(7))!
+    expect(
+      (stable.children as HostNode[]).map((child) => child.props.handlerTag)
+    ).toEqual(["#1", "#2", -1, undefined])
+    expect((stable.children[3] as HostNode).children).toEqual(["7"])
+    expect(withStableHandlerTags(scrollers(31))).toEqual(stable)
   })
 
-  it("numbers each Shadow's sides and corners alike, and leaves texts and other ids alone", () => {
-    const stable = withStableShadowIds({
-      ...twoShadows(24),
-      props: { mask: "maskInside.31", fill: "url(#topStart.31)", id: "paint0.31" },
-    })!
-    expect(stable.props).toEqual({
-      fill: "url(#topStart.#1)",
-      id: "paint0.31",
-      mask: "maskInside.#1",
-    })
-    const [startSide, endSide, second, label] = stable.children as HostNode[]
-    expect(JSON.stringify(startSide)).toContain('"name":"start.#2"')
-    expect(JSON.stringify(startSide)).toContain('"brushRef":"start.#2"')
-    expect(JSON.stringify(endSide)).toContain('"name":"end.#2"')
-    expect(JSON.stringify(second)).toContain('"name":"start.#3"')
-    expect(label.children).toEqual(["start.24"])
-  })
-
-  it("a tree whose rect points at another Shadow's gradient than its fixture's still fails", () => {
-    const file = captured(twoShadows(0))
-    expect(() => expectParity("it", twoShadows(24, true), { file })).toThrow(
-      /brushRef/
+  it("compares a row whose counter stood elsewhere as the captured one, and still tells two handlers from one", () => {
+    const file = captured(scrollers(3))
+    expectParity("it", scrollers(40), { file })
+    expect(() => expectParity("it", scrollers(40, true), { file })).toThrow(
+      /#2/
     )
-    // and so does one with a side's gradient swapped for another side's
-    const swapped = twoShadows(24)
-    swapped.children[1] = side("start.24")
-    expect(() => expectParity("it", swapped, { file })).toThrow(/end\.#1/)
+  })
+
+  // A native stack's screens as react-native-screens draws them: screenId
+  // is the route's key, the name and a fresh 21-character nanoid.
+  const stack = (keys: string[]): HostNode => ({
+    type: "RNSScreenStack",
+    props: {},
+    children: keys.map((screenId) => ({
+      type: "RNSScreen",
+      props: { activityState: 2, screenId },
+      children: [],
+    })),
+  })
+
+  it("cuts a native stack's screen ids back to the route name", () => {
+    const first = stack([
+      "HomeTabs-6PjhPrDyFXkMzD0rRM-4t",
+      "JobDetailScreen-a_9x-Lq3RkTn0pWs2eYuV",
+    ])
+    const again = stack([
+      "HomeTabs-Zx81Lmq0-pQrStUvWxYzA",
+      "JobDetailScreen-0000000000000000000ab",
+    ])
+    expect(again).not.toEqual(first)
+    expect(
+      (withStableScreenIds(first)!.children as HostNode[]).map(
+        (screen) => screen.props.screenId
+      )
+    ).toEqual(["HomeTabs", "JobDetailScreen"])
+    expect(withStableScreenIds(again)).toEqual(withStableScreenIds(first))
+    expectParity("it", again, { file: captured(first) })
+  })
+
+  it("still fails on another route, and keeps an id that isn't a route key", () => {
+    const file = captured(stack(["HomeTabs-6PjhPrDyFXkMzD0rRM-4t"]))
+    expect(() =>
+      expectParity("it", stack(["AccountScreen-6PjhPrDyFXkMzD0rRM-4t"]), {
+        file,
+      })
+    ).toThrow(/AccountScreen/)
+    expect(
+      withStableScreenIds(stack(["home"]))!.children[0] as HostNode
+    ).toMatchObject({ props: { screenId: "home" } })
+  })
+
+  it("withStableIds is all of them, and what expectParity applies", () => {
+    const tree: HostNode = {
+      type: "View",
+      props: {},
+      children: [scrollers(9), stack(["HomeTabs-6PjhPrDyFXkMzD0rRM-4t"])],
+    }
+    expect(withStableIds(tree)).toEqual(
+      withStableScreenIds(withStableHandlerTags(tree))
+    )
   })
 })
 

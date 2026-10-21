@@ -4,9 +4,10 @@
  *
  * Host-tree parity: what a component hands React Native's native views,
  * compared against a JSON fixture captured from the code BEFORE a change. It
- * is the pass-1 proof of the design-system pilot: a screen converted from
+ * is the pass-1 proof of the design-system migration: a screen converted from
  * class names to tokens has to give the native views exactly what it gave
- * them before, in English and Arabic, on iOS and Android.
+ * them before, in English and Arabic, on iOS and Android. customerapp's copy
+ * of proapp's (84f2287c, with archive/ds-pass1-tools' normaliser rule).
  *
  * The render is the real one: jest runs NativeWind's Babel step and its
  * runtime, so a className resolves to the style the app gets. What the
@@ -17,8 +18,10 @@
  * - I18nManager.isRTL for Arabic, as BootstrapScreen's forceRTL does
  * - Platform.OS and Platform.select for iOS or Android. Only values read at
  *   render time follow: a module that captured Platform.OS at import keeps
- *   the platform it was loaded under (none in My Account; see the build notes)
- * - the Latin faces index.js registers (Poppins)
+ *   the platform it was loaded under (the screen kit loads each platform in
+ *   a registry of its own for those)
+ * - the Latin faces customerapp draws: shared's default, Montserrat, because
+ *   its index.js registers none (APP_LATIN_FONT_WEIGHTS, pinned by a test)
  * - safe-area insets through the library's own contexts, so useSafeAreaInsets
  *   works with no provider view in the tree
  *
@@ -32,10 +35,12 @@
  * default into the padding its native view lays out with (see
  * resolveSafeArea below), so a screen that moves from today's inset formula
  * to `bottom: 'maximum'` compares by the gap it draws rather than by the
- * props that produce it. At compare time both sides also get
- * react-native-shadow-2's gradient ids numbered by appearance
- * (withStableShadowIds below): the library takes them from a counter that
- * runs on across a module registry's renders.
+ * props that produce it. At compare time both sides also get the ids a
+ * library takes from a counter or a random source numbered or trimmed
+ * (withStableIds below), so a row's tree doesn't depend on the rows before it:
+ * react-native-shadow-2's gradient ids (when it is installed; customerapp has
+ * none today), gesture handler's `handlerTag`, and react-native-screens'
+ * `screenId` (a native stack's random route key).
  *
  * jest's ScrollView is React Native's own mock: it hands every prop to the
  * RCTScrollView host and puts the children in a plain View, so a content
@@ -51,7 +56,7 @@
  * that module exports AppFlashList too, and FlashList ships ESM jest doesn't
  * transform. SVG icons: `testing/svgStub`.
  *
- * HOW A CONVERSION USES IT (pass 1 of the pilot)
+ * HOW A CONVERSION USES IT (pass 1)
  * 1. On the commit BEFORE the conversion, write the screen's parity test:
  *    render each state worth keeping (loaded, loading, disabled, a modal
  *    open, long Arabic copy) for every entry of PARITY_MATRIX and call
@@ -126,12 +131,18 @@ export type HostNode = {
 }
 export type HostChild = HostNode | string
 
-/** What index.js registers before AppRegistry (pinned by a test). */
+/**
+ * The Latin faces customerapp draws `font-custom###` and ds Text in:
+ * tappler-shared's default (helpers.ts), because customerapp's index.js
+ * registers none (proapp's registers Poppins). Pinned by a test against both:
+ * shared's untouched default, and no setLatinFontWeights call in index.js or
+ * src, so a Poppins table here fails.
+ */
 export const APP_LATIN_FONT_WEIGHTS = {
-  400: "Poppins-Regular",
-  500: "Poppins-Medium",
-  600: "Poppins-SemiBold",
-  700: "Poppins-Bold",
+  400: "Montserrat-Regular",
+  500: "Montserrat-Medium",
+  600: "Montserrat-SemiBold",
+  700: "Montserrat-Bold",
 } as const
 
 const ZERO_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 }
@@ -436,7 +447,16 @@ export const normalizeHostTree = (
 // ---------------------------------------------------------------------------
 // react-native-shadow-2's gradient ids
 
-let shadowIdPattern: RegExp | null = null
+let shadowIdPattern: RegExp | null | undefined
+
+/** Where react-native-shadow-2 is installed, or null: customerapp has none today. */
+const shadowPackage = (): string | null => {
+  try {
+    return path.dirname(require.resolve("react-native-shadow-2/package.json"))
+  } catch {
+    return null
+  }
+}
 
 /**
  * The ids react-native-shadow-2 gives a Shadow's gradients and mask, read
@@ -445,13 +465,17 @@ let shadowIdPattern: RegExp | null = null
  * in a host tree as a gradient's `name` and a rect's `fill.brushRef` and
  * `mask` (react-native-svg's own hosts), or as `id` and `url(#…)` where the
  * svg components are stand-ins. A library that names them some other way
- * fails here, loudly, rather than leaving them to the counter.
+ * fails here, loudly, rather than leaving them to the counter. With the
+ * library not installed (customerapp, today) no tree can hold one, and the
+ * pattern is null: nothing is renamed.
  */
-const shadowIds = (): RegExp => {
-  if (!shadowIdPattern) {
-    const pkg = path.dirname(
-      require.resolve("react-native-shadow-2/package.json")
-    )
+const shadowIds = (): RegExp | null => {
+  if (shadowIdPattern === undefined) {
+    const pkg = shadowPackage()
+    if (pkg === null) {
+      shadowIdPattern = null
+      return shadowIdPattern
+    }
     const { main } = JSON.parse(
       fs.readFileSync(path.join(pkg, "package.json"), "utf8")
     ) as { main: string }
@@ -492,6 +516,7 @@ export const withStableShadowIds = (
 ): HostNode | null => {
   if (tree === null) return null
   const pattern = shadowIds()
+  if (pattern === null) return tree
   const order = new Map<string, number>()
   const rename = (value: string) => {
     const match = value.match(pattern)
@@ -526,6 +551,80 @@ export const withStableShadowIds = (
         }
   return node(tree) as HostNode
 }
+
+// ---------------------------------------------------------------------------
+// Gesture handler's handler tags, react-native-screens' screen ids
+
+/** Each host's props through `change`, the tree's shape and texts untouched. */
+const mapHostProps = (
+  tree: HostNode,
+  change: (node: HostNode) => Record<string, unknown>
+): HostNode => {
+  const node = (child: HostChild): HostChild =>
+    typeof child === "string"
+      ? child
+      : {
+          type: child.type,
+          props: change(child),
+          children: child.children.map(node),
+        }
+  return node(tree) as HostNode
+}
+
+/**
+ * The tree with gesture handler's `handlerTag`s numbered in order of first
+ * appearance (`7` → `"#1"`). Under jest the library hands each wrapped view
+ * (its ScrollView, FlatList, Switch, TextInput, a button) the tag it gave the
+ * view's handler, from a module-level counter (getNextHandlerTag) that runs
+ * on across a registry's renders: a row inserted earlier in a file shifted
+ * every later row's tags (proapp's B7). A tag of -1 (a handler not created
+ * yet) is kept as it is. Two hosts holding one tag still hold one after.
+ * expectParity applies it to both sides at compare time.
+ */
+export const withStableHandlerTags = (
+  tree: HostNode | null
+): HostNode | null => {
+  if (tree === null) return null
+  const order = new Map<number, string>()
+  return mapHostProps(tree, ({ props }) => {
+    const tag = props.handlerTag
+    if (typeof tag !== "number" || tag < 1) return props
+    if (!order.has(tag)) order.set(tag, `#${order.size + 1}`)
+    return { ...props, handlerTag: order.get(tag) }
+  })
+}
+
+/** React Navigation's route key: the route's name, `-`, a 21-character nanoid. */
+const ROUTE_KEY = /^(.+)-[\w-]{21}$/
+
+/**
+ * The tree with react-native-screens' `screenId`s cut back to the route's
+ * name. A native stack hands each screen its route's key as `screenId`
+ * (NativeStackView), and React Navigation makes every key with a fresh random
+ * tail (`JobDetailScreen-<nanoid>`), so two renders of the same stack never
+ * drew the same tree (proapp's B3 trimmed it in its own test). The name is
+ * the part that says which screen it is; a screen id that isn't a route key
+ * is kept as it is. expectParity applies it to both sides at compare time.
+ */
+export const withStableScreenIds = (
+  tree: HostNode | null
+): HostNode | null => {
+  if (tree === null) return null
+  return mapHostProps(tree, ({ props }) => {
+    const { screenId } = props
+    if (typeof screenId !== "string") return props
+    const match = screenId.match(ROUTE_KEY)
+    return match ? { ...props, screenId: match[1] } : props
+  })
+}
+
+/**
+ * Every id a library takes from a counter or a random source, made stable:
+ * shadow-2's gradient ids, gesture handler's tags, a native stack's screen
+ * ids. What expectParity compares, on both sides.
+ */
+export const withStableIds = (tree: HostNode | null): HostNode | null =>
+  withStableScreenIds(withStableHandlerTags(withStableShadowIds(tree)))
 
 // ---------------------------------------------------------------------------
 // Rendering
@@ -1005,12 +1104,12 @@ export const expectParity = (
       ? null
       : normalizeHostTree(raw as never, { resolveSafeArea: false })
   // A case from before the accessibility props were kept compares without
-  // them on either side, as it was captured. Shadow ids are numbered by
-  // appearance on both sides (withStableShadowIds).
-  const stored = withStableShadowIds(
+  // them on either side, as it was captured. Counter and random ids are
+  // numbered or trimmed on both sides (withStableIds).
+  const stored = withStableIds(
     captured.a11y ? normalized : withoutAccessibility(normalized)
   )
-  const current = withStableShadowIds(
+  const current = withStableIds(
     captured.a11y ? tree : withoutAccessibility(tree)
   )
   const { tree: compared, accepted } = applyAllowances(
