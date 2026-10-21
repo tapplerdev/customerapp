@@ -13,22 +13,25 @@
  * Animated.View), which read `style`, and for DmView, which forwards `style`.
  * It is the bug for a component that reads className itself: DmText derives
  * its font family and Arabic line height from it, ActionBtn and MainModal
- * size and round themselves from it. Two ways in, both seen in this app:
+ * size and round themselves from it. Two ways in, both seen in proapp:
  * - an import NativeWind can't trace to a folder index, such as a file path
- *   (`.../UI/ActionBtn/ActionBtn`, the confirm cards on 2026-10-15), or a
- *   component defined in the same file;
+ *   (`.../UI/ActionBtn/ActionBtn`, proapp's confirm cards on 2026-10-15), or
+ *   a component defined in the same file;
  * - a React Compiler temporary: compiled, `<ActionBtn>` can become
- *   `const T0 = ActionBtn; <T0 ...>`, and T0 is on no block list (the expiry
- *   card's Remind Me Later, 2026-10-15, now `"use no memo"` in ModalButtons).
- * So the rule (design-system plan, Revision 2 item 6): no wrap whose
- * component, directly or through a temporary, is a className-consuming
- * component. Converted files should show no wraps on them at all.
+ *   `const T0 = ActionBtn; <T0 ...>`, and T0 is on no block list.
+ * customerapp has no React Compiler (babel.config.js), so only the first way
+ * exists here, and it does: at e30b19a seven of the app's own components are
+ * imported by file path at twelve call sites, and wrapped there (`review`
+ * below; none of the seven reads `style`, so on device those classes draw
+ * nothing). So the rule
+ * (design-system plan, Revision 2 item 6): no wrap whose component, directly
+ * or through a temporary, is a className-consuming component. Converted
+ * files should show no wraps on them at all.
  *
  * Each wrap is one of:
  *   BUG     a known className consumer (DmText, ActionBtn, MainModal,
- *           DmInput, DmChecbox, HeaderOnboarding, plus --consumer), wherever
- *           it was imported from, or a same-file component that reads
- *           `className`
+ *           DmInput, DmChecbox, plus --consumer), wherever it was imported
+ *           from, or a same-file component that reads `className`
  *   review  our own component (src or tappler-shared) that isn't known to
  *           forward `style`: it now gets style instead of className; or
  *           anything the probe can't pin down
@@ -47,21 +50,24 @@
  * through a compiler temporary say so (`via T0`); the compiler's memo-cache
  * reads (`T0 = $[3]`) count as whatever was stored in that slot.
  *
- * How: the real config is loaded per file (babel.loadPartialConfig, so the
- * src/ override that puts the compiler in infer mode applies), and a
+ * How: the real config is loaded per file (babel.loadPartialConfig, so any
+ * per-directory override applies, as proapp's compiler one did), and a
  * read-only plugin goes in right after nativewind/babel. Babel runs Program
- * `enter` in plugin order and both the compiler and NativeWind do all their
- * work there, so the probe sees exactly NativeWind's output, before the
- * preset compiles the JSX away. Each file is then checked against itself:
+ * `enter` in plugin order and NativeWind (and a compiler, where there is one)
+ * does all its work there, so the probe sees exactly NativeWind's output,
+ * before the preset compiles the JSX away. Each file is then checked against itself:
  * the number of wraps the probe saw must equal the number of
  * `StyledComponent` references in the final output.
  *
  * NativeWind does nothing to a file outside tailwind `content`, so a probe
  * that is looking in the wrong place reports a clean file. Every run first
  * probes scripts/__fixtures__/nw-wrap-probe/PositiveControl.jsx (as if it
- * lived in src/) and stops if any of its five known-bad wraps goes
- * unflagged; the fifth is a className slot over DmText, so a slot rule that
- * starts passing hosts it shouldn't stops the run too.
+ * lived in src/) and stops unless it yields exactly its three known-bad wraps
+ * (a file-path import, a same-file consumer, a className slot over DmText,
+ * so a slot rule that starts passing hosts it shouldn't stops the run too).
+ * proapp's control also expects two React Compiler temporaries; this one
+ * expects none, so a compiler added to babel.config.js stops the run until
+ * the control expects its temporaries again.
  *
  * Exit 0: no BUG. Exit 1: a BUG, or the positive control failed. Exit 2: a
  * file failed to transform, or bad usage.
@@ -73,18 +79,12 @@ const ROOT = path.resolve(__dirname, "..")
 const SHARED_SRC = path.join(ROOT, "..", "tappler-shared", "src")
 const FIXTURES = path.join(__dirname, "__fixtures__", "nw-wrap-probe")
 const CONTROL = path.join(FIXTURES, "PositiveControl.jsx")
-// Where fixtures are transformed: inside src/, so tailwind `content` and the
-// compiler's infer-mode override both apply. Nothing is written there.
+// Where fixtures are transformed: inside src/, so tailwind `content` (and
+// any src/ override in babel.config.js) applies. Nothing is written there.
 const VIRTUAL_DIR = path.join(ROOT, "src", "__nw_wrap_probe__")
 
-const CONSUMERS = [
-  "DmText",
-  "ActionBtn",
-  "MainModal",
-  "DmInput",
-  "DmChecbox",
-  "HeaderOnboarding",
-]
+// proapp's list less HeaderOnboarding, a proapp component.
+const CONSUMERS = ["DmText", "ActionBtn", "MainModal", "DmInput", "DmChecbox"]
 const FORWARDERS = ["DmView"]
 // Calls whose result is the component passed to them (or defined in them).
 const COMPONENT_WRAPPERS = [
@@ -100,10 +100,9 @@ const SLOTS_MODULE = path.join(SHARED_SRC, "components", "classNameSlots.ts")
 const SLOT_FACTORIES = ["classNameSlot", "lazyClassNameSlot"]
 const SLOT_COMPONENTS = ["ClassNameText"]
 
-// What the control must yield, in source order.
+// What the control must yield, in source order. No compiler temporaries:
+// customerapp has no React Compiler (proapp's control starts with two).
 const CONTROL_EXPECT = [
-  { component: "MainModal", temp: true },
-  { component: "ActionBtn", temp: true },
   { component: "DmTextByPath", temp: false },
   { component: "Row", temp: false },
   { component: "Title", temp: false },

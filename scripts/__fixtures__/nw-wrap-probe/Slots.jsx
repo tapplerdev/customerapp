@@ -8,7 +8,7 @@ import {
   lazyClassNameSlot,
 } from "@tappler/shared/src/components/classNameSlots"
 import { classNameSlot as lookAlike } from "./classNameSlots"
-import BannerContainer from "components/BannerContainer"
+import BannerContainer from "components/BannerContainer/BannerContainer"
 
 // tappler-shared's slots over hosts that read style: ok
 const Box = classNameSlot(DmView)

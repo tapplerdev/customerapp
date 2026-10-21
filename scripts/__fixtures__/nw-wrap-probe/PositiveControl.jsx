@@ -2,7 +2,7 @@ import React from "react"
 import { ActionBtn, DmText } from "@tappler/shared/src/components/UI"
 import DmTextByPath from "@tappler/shared/src/components/UI/DmText/DmText"
 import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
-import MainModal from "components/MainModal"
+import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 
 const summarize = (user, isAr) => ({
@@ -11,6 +11,10 @@ const summarize = (user, isAr) => ({
   memberSince: user?.createdAt,
 })
 
+// proapp's React Compiler turns this shape into T0/T1 temporaries, which
+// NativeWind wraps. customerapp has no compiler, so here MainModal, ActionBtn
+// and the DmTexts come through their barrels and stay unwrapped: a compiler
+// added to babel.config.js makes the control fail until it expects them.
 export const ThroughTemporaries = ({ user }) => {
   const { t, i18n } = useTranslation()
   const profile = summarize(user, i18n.language === "ar")

@@ -2,7 +2,7 @@ import React from "react"
 import { Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
-import MainModal from "components/MainModal"
+import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 
 const summarize = (user, isAr) => ({
@@ -11,6 +11,7 @@ const summarize = (user, isAr) => ({
   memberSince: user?.createdAt,
 })
 
+// The control's compiler shape on DmView: with no compiler it isn't wrapped.
 export const SameShapeOnDmView = ({ user }) => {
   const { t, i18n } = useTranslation()
   const profile = summarize(user, i18n.language === "ar")

@@ -1,13 +1,15 @@
 /**
  * scripts/nw-wrap-probe.js on its fixtures, transformed by the real
  * babel.config.js as if they lived in src/:
- * - PositiveControl.jsx has the five ways a className consumer gets wrapped
- *   (two React Compiler temporaries, a file-path import, a same-file
- *   component that reads className, a className slot over DmText); every
- *   one must be a BUG.
- * - Clean.jsx has the same compiler shape on DmView, a wrapped
- *   SafeAreaView, and DmText/ActionBtn/MainModal through their barrels;
- *   nothing in it may be a BUG.
+ * - PositiveControl.jsx has the three ways a className consumer gets
+ *   wrapped in an app with no React Compiler (a file-path import, a
+ *   same-file component that reads className, a className slot over
+ *   DmText); every one must be a BUG. proapp's shape that compiles to two
+ *   temporaries is there too, and must stay unwrapped: customerapp has no
+ *   compiler, so a temporary showing up means babel.config.js changed.
+ * - Clean.jsx has the same shape on DmView, a wrapped SafeAreaView, and
+ *   DmText/ActionBtn/MainModal through their barrels; nothing in it may be
+ *   a BUG.
  * - Slots.jsx has tappler-shared's className slots over hosts that read
  *   style (ok), over a consumer (BUG) and over our own component (review),
  *   and slot look-alikes that must not pass as ok.
@@ -63,9 +65,8 @@ describe("nw-wrap-probe", () => {
     const [file] = r.files
     expect(file.error).toBeUndefined()
     expect(file.wraps.map(summary)).toEqual([
-      // SettingsProfileHeader's shape, which compiles to T0/T1 for real
-      { component: "MainModal", via: ["T1"], temp: true, status: "bug" },
-      { component: "ActionBtn", via: ["T0"], temp: true, status: "bug" },
+      // (proapp's SettingsProfileHeader shape, T0/T1 under its compiler,
+      // is not wrapped here: no compiler, and its imports are barrels)
       // imported by file path, so NativeWind can't tell it's the barrel's
       { component: "DmTextByPath", via: [], temp: false, status: "bug" },
       // defined in the same file, and reads className
@@ -73,33 +74,29 @@ describe("nw-wrap-probe", () => {
       // a className slot (wrapped on purpose) over a consumer
       { component: "Title", via: [], temp: false, status: "bug" },
     ])
-    expect(file.wraps.map((w) => w.key)).toEqual([
-      "MainModal",
-      "ActionBtn",
-      "DmText",
-      "Row",
-      "Title",
-    ])
-    expect(file.wraps[4].host).toMatchObject({ kind: "import", key: "DmText" })
+    expect(file.wraps.map((w) => w.key)).toEqual(["DmText", "Row", "Title"])
+    expect(file.wraps[2].host).toMatchObject({ kind: "import", key: "DmText" })
+    // MainModal, ActionBtn and the three DmTexts of the compiler shape, and
+    // Row's own DmText, passed through with their className.
+    expect(file.unwrapped).toBe(6)
     expect(file.wraps.map((w) => w.component)).toEqual(
       CONTROL_EXPECT.map((e) => e.component)
     )
   })
 
-  it("finds no BUG in the clean file, and keeps its temporaries visible", () => {
+  it("finds no BUG in the clean file", () => {
     const r = probeJson(CLEAN, path.join(VIRTUAL_DIR, "Clean.jsx"))
     expect(r.code).toBe(0)
     const [file] = r.files
     expect(file.error).toBeUndefined()
     expect(file.wraps.map(summary)).toEqual([
-      { component: "DmView", via: ["T1"], temp: true, status: "ok" },
-      { component: "DmView", via: ["T0"], temp: true, status: "ok" },
       { component: "SafeAreaView", via: [], temp: false, status: "ok" },
     ])
-    expect(file.counts).toEqual({ wraps: 3, temps: 2, bug: 0, review: 0 })
-    // DmText x3, ActionBtn and MainModal came through their barrels, so
-    // NativeWind passed their className through untouched.
-    expect(file.unwrapped).toBe(5)
+    expect(file.counts).toEqual({ wraps: 1, temps: 0, bug: 0, review: 0 })
+    // DmView x2, DmText x3, ActionBtn and MainModal came through their
+    // barrels, so NativeWind passed their className through untouched (in
+    // proapp the compiler's temporaries got the two DmViews wrapped).
+    expect(file.unwrapped).toBe(7)
   })
 
   it("follows every assignment of a tag, and the worst value wins", () => {
@@ -115,8 +112,9 @@ describe("nw-wrap-probe", () => {
       [19, "Label", "bug"],
       // let Label; if (big) Label = View; else Label = DmText
       [27, "Label", "bug"],
-      // Label = pick(big): unreadable, so review, never ok
-      [34, "t1", "review"],
+      // Label = pick(big): unreadable, so review, never ok (proapp's
+      // compiler names it t1; here it is the reassigned Label itself)
+      [34, "Label", "review"],
       // View or Text, both react-native
       [41, "Label", "ok"],
       // a known consumer through a bare specifier
@@ -128,7 +126,7 @@ describe("nw-wrap-probe", () => {
     expect(later.options.map((o) => o.name)).toEqual(["DmView", "DmText"])
     expect(branches.options.map((o) => o.name)).toEqual(["View", "DmText"])
     expect(r.files[0].wraps[2].reason).toBe(
-      "can't tell what t1 is: it's what pick() returns"
+      "one of DmView / Label: DmView forwards style; can't tell what Label is: it's what pick() returns"
     )
   })
 
@@ -191,22 +189,9 @@ describe("nw-wrap-probe", () => {
     expect(file.counts).toEqual({ wraps: 12, temps: 0, bug: 1, review: 6 })
   })
 
-  it("reads the compiler's memo cache as the value stored in it", () => {
-    // `let T0; if (miss) { T0 = ActionBtn; $[3] = T0 } else { T0 = $[3] }`:
-    // the cache read must not turn the temporary into an unknown.
-    const r = probeJson(CONTROL, path.join(VIRTUAL_DIR, "PositiveControl.jsx"))
-    const [modal, btn] = r.files[0].wraps
-    expect([modal.kind, modal.key, modal.via]).toEqual([
-      "import",
-      "MainModal",
-      ["T1"],
-    ])
-    expect([btn.kind, btn.key, btn.via]).toEqual([
-      "import",
-      "ActionBtn",
-      ["T0"],
-    ])
-  })
+  // proapp's "reads the compiler's memo cache" case has nothing to run on
+  // here: with no React Compiler no file has a memo cache. The code stays
+  // as proapp's; the control above fails the day a compiler arrives.
 
   it("sees nothing in a file outside tailwind content, and says so", () => {
     // The same control at its real path: NativeWind skips it entirely,
@@ -221,13 +206,13 @@ describe("nw-wrap-probe", () => {
     const r = cli([
       "--json",
       "--consumer",
-      "DmView",
+      "SafeAreaView",
       "--as",
       path.join(VIRTUAL_DIR, "Clean.jsx"),
       CLEAN,
     ])
     expect(r.code).toBe(1)
-    expect(JSON.parse(r.stdout).files[0].counts.bug).toBe(2)
+    expect(JSON.parse(r.stdout).files[0].counts.bug).toBe(1)
   })
 
   it("prints each wrap with its line, path and verdict", () => {
@@ -237,16 +222,17 @@ describe("nw-wrap-probe", () => {
       CONTROL,
     ])
     expect(r.stdout).toMatch(
-      /BUG {4}:19 {2}<MainModal> via T1 \[compiler temporary\] {2}MainModal reads its className/
+      /BUG {4}:46 {2}<DmTextByPath> {2}DmText reads its className/
     )
     expect(r.stdout).toMatch(
-      /BUG {4}:20 {2}<ActionBtn> via T0 \[compiler temporary\]/
+      /BUG {4}:52 {2}<Row> {2}same-file component that reads className/
     )
     expect(r.stdout).toMatch(
-      /BUG {4}:55 {2}<Title> {2}className slot over DmText, which gets the caller's classes as style: DmText reads its className/
+      /BUG {4}:59 {2}<Title> {2}className slot over DmText, which gets the caller's classes as style: DmText reads its className/
     )
-    expect(r.stdout).toContain("positive control flagged (5 of 5)")
-    expect(r.stdout).toContain("5 BUG, 0 to review")
+    expect(r.stdout).not.toContain("[compiler temporary]")
+    expect(r.stdout).toContain("positive control flagged (3 of 3)")
+    expect(r.stdout).toContain("3 BUG, 0 to review")
   })
 
   it("refuses bad usage, and refuses to run inside jest", () => {
