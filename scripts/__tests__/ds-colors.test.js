@@ -1,5 +1,5 @@
 /**
- * scripts/ds-colors.js: proapp's colour tokens, generated from
+ * scripts/ds-colors.js: customerapp's colour tokens, generated from
  * tailwind.config.js beside tappler-shared's palette.
  */
 const {
@@ -38,7 +38,7 @@ describe("ds:colors", () => {
       {
         name: "grey55",
         value: "#C6C6C6",
-        note: "shared's grey55 is #00000091; proapp's classes draw this",
+        note: "shared's grey55 is #00000091; customerapp's classes draw this",
       },
       { name: "homeInk", value: "#111111", note: null },
     ])
@@ -50,10 +50,10 @@ describe("ds:colors", () => {
   it("refuses a one-off named like a tailwind colour", () => {
     expect(() =>
       tokens({
-        tailwind: { theme: { extend: { colors: { redAlpha5: "#000" } } } },
+        tailwind: { theme: { extend: { colors: { redAlpha10: "#000" } } } },
         shared: {},
       })
-    ).toThrow(/one-off redAlpha5 is a tailwind colour too/)
+    ).toThrow(/one-off redAlpha10 is a tailwind colour too/)
   })
 
   it("names each one-off with what NativeWind draws for its class", () => {
@@ -65,6 +65,21 @@ describe("ds:colors", () => {
         value: o.value,
       })
     }
+  })
+
+  it("names this app's own colours: the four shared lacks or draws otherwise", () => {
+    const list = tokens({
+      tailwind: require("../../tailwind.config"),
+      shared: sharedPalette(),
+    })
+    expect(list.map((t) => [t.name, t.value])).toEqual([
+      ["red7", "#F76363"],
+      ["grey55", "#C6C6C6"],
+      ["blue1", "#4084F5"],
+      ["blue2", "#4084F566"],
+      ["redAlpha10", "rgba(204, 0, 0, 0.1)"],
+      ["whiteAlpha20", "rgba(255, 255, 255, 0.2)"],
+    ])
   })
 
   it("reads shared's palette from its source", () => {
