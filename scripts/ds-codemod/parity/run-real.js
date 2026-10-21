@@ -7,7 +7,9 @@
  * 2. converts the targets in place with `yarn ds:codemod` (wrap probe on);
  * 3. renders them again, converted;
  * 4. compares the host trees (Button's minHeight for ActionBtn's height is
- *    the one accepted difference, and counted);
+ *    the one accepted difference, and counted); with --sweep, a file that
+ *    can't load or has no component to draw fails the run unless
+ *    sweep-gaps.js lists it with its cause (sweep.js);
  * 5. with --tsc, type-checks the converted tree against the error set
  *    before conversion;
  * 6. puts every file back (git checkout of what it changed, removal of the
@@ -22,6 +24,8 @@ const path = require("path")
 const ROOT = path.resolve(__dirname, "..", "..", "..")
 const { FILES } = require("./targets")
 const { allowButtonHeight, diffTrees } = require("./compare")
+const { SWEEP_GAPS } = require("./sweep-gaps")
+const { sweepVerdict } = require("./sweep")
 
 const args = process.argv.slice(2)
 const opt = (name) => {
@@ -181,51 +185,17 @@ const main = () => {
     const after = {}
     for (const p of PLATFORMS) after[p] = jest("converted", p)
     if (SWEEP) {
-      const sweep = {
-        files: sweepFiles.length,
-        drawn: 0,
-        equal: 0,
-        bothFailed: 0,
-        accepted: 0,
-        problems: [],
-      }
-      for (const p of PLATFORMS) {
-        const b = sweepBefore[p]
-        const a = jest("converted", p, { DS_PARITY_SWEEP: sweepList })
-        for (const file of sweepFiles) {
-          const xs = b[file] || []
-          const ys = a[file] || []
-          xs.forEach((x, i) => {
-            const y = ys[i] || {}
-            if (x.error && y.error) {
-              sweep.bothFailed++
-              return
-            }
-            if (x.error || y.error) {
-              sweep.problems.push({
-                file,
-                platform: p,
-                lang: x.lang,
-                before: x.error || "drew",
-                after: y.error || "drew",
-              })
-              return
-            }
-            sweep.drawn++
-            const d = diffTrees(x.tree, y.tree, allowButtonHeight)
-            sweep.accepted += d.accepted.length
-            if (d.diffs.length)
-              sweep.problems.push({
-                file,
-                platform: p,
-                lang: x.lang,
-                diffs: d.diffs.slice(0, 4),
-              })
-            else sweep.equal++
-          })
-        }
-      }
-      summary.sweep = sweep
+      const sweepAfter = {}
+      for (const p of PLATFORMS)
+        sweepAfter[p] = jest("converted", p, { DS_PARITY_SWEEP: sweepList })
+      summary.sweep = sweepVerdict({
+        files: sweepFiles,
+        before: sweepBefore,
+        after: sweepAfter,
+        gaps: SWEEP_GAPS,
+        diffTrees,
+        allow: allowButtonHeight,
+      })
     }
     if (TSC) {
       const d = multisetDiff(baseErrors, tscErrors())
@@ -323,13 +293,25 @@ const main = () => {
     console.log(
       `tsc: ${summary.tsc.before} before, +${summary.tsc.added.length} / -${summary.tsc.removed.length} after`
     )
-  if (summary.sweep)
+  if (summary.sweep) {
+    const v = summary.sweep
     console.log(
-      `sweep: ${summary.sweep.files} files, ${summary.sweep.equal}/${summary.sweep.drawn} renders that draw are equal (${summary.sweep.accepted} Button heights), ${summary.sweep.bothFailed} need props (failed before and after), ${summary.sweep.problems.length} problems`
+      `sweep: ${v.files} files, ${v.equal}/${v.drawn} renders that draw are equal (${v.accepted} Button heights), ${v.needProps} need props (failed before and after), ${v.gaps.length} known gaps, ${v.loadFailures.length} load failures, ${v.noComponent.length} with no component, ${v.stale.length} stale gaps, ${v.problems.length} problems`
     )
+    for (const g of v.gaps)
+      console.log(`  known gap (${g.kind}) ${g.file}: ${g.cause}`)
+    for (const f of v.loadFailures)
+      console.log(
+        `  LOAD FAILURE ${f.file} (${f.platform}): ${f.error} (fix it, or list it in sweep-gaps.js with its cause)`
+      )
+    for (const f of v.noComponent)
+      console.log(`  NO COMPONENT ${f} (list it in sweep-gaps.js)`)
+    for (const f of v.stale)
+      console.log(`  STALE GAP ${f}: it no longer fails as listed`)
+  }
   return summary.totals.equal === summary.totals.renders &&
     (!summary.tsc || summary.tsc.added.length === 0) &&
-    (!summary.sweep || summary.sweep.problems.length === 0)
+    (!summary.sweep || summary.sweep.ok)
     ? 0
     : 1
 }
