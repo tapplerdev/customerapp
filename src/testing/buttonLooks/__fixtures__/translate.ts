@@ -43,8 +43,14 @@ import {
   type ButtonShape,
   type ButtonVariant,
 } from "@tappler/shared/src/ds/buttonStyles"
-import { ARABIC_FONT_WEIGHTS } from "@tappler/shared/src/helpers/helpers"
-import { APP_LATIN_FONT_WEIGHTS } from "testing/hostTreeParity"
+// The Latin faces as tappler-shared holds them right now: what DmText draws.
+// customerapp registers none (index.js), so they are shared's Montserrat;
+// proapp's translator read the faces its index.js registers (Poppins) from
+// the parity kit instead.
+import {
+  ARABIC_FONT_WEIGHTS,
+  getLatinFontWeights,
+} from "@tappler/shared/src/helpers/helpers"
 
 import type { ElementSpec, Look, SpecValue } from "../harvest"
 
@@ -148,7 +154,7 @@ const faceOf = (
   const arabic = family === "auto" ? lang === "ar" : family === "arabic"
   return arabic
     ? ARABIC_FONT_WEIGHTS[WEIGHTS[weight]]
-    : APP_LATIN_FONT_WEIGHTS[WEIGHTS[weight]]
+    : getLatinFontWeights()[WEIGHTS[weight]]
 }
 
 const close = (left: unknown, right: number) =>
@@ -219,6 +225,11 @@ export const translate = (
   container.forEach((token) => {
     const style = resolveClass(token)
     const keys = Object.keys(style)
+    // A class NativeWind draws nothing for leaves ActionBtn's own value in
+    // place, so it takes no prop: rounded-[12], a bare radius
+    // (RequestSummary:467), keeps ActionBtn's 28 corners (skeptic H4). A
+    // font class on the container draws nothing there either.
+    if (keys.length === 0) return
     if (STATE_CLASSES.has(token)) {
       stateClasses.push(token)
     } else if (keys.length === 1 && keys[0] === "height") {
@@ -271,6 +282,22 @@ export const translate = (
   // refuse a fill there), so a fill class has no prop on it.
   const takesDisabledFill = VARIANTS[rule.variant].disabled === "fill"
   const takesLoadingFill = VARIANTS[rule.variant].loading === "fill"
+  // ActionBtn's grey state fill comes before the caller's classes in its
+  // clsx, so a caller's background still draws while disabled or loading:
+  // red under the spinner at AddNewAddress:234, GateRegister:222 and
+  // Register:326 (CA-W0-B). Where Button puts a state fill instead, the
+  // look has no spelling.
+  const state = loading ? "loading" : disable ? "disabled" : null
+  const fillsState =
+    state === "loading" ? takesLoadingFill : state === "disabled" && takesDisabledFill
+  const paints = lookClasses.filter(
+    (token) => "backgroundColor" in resolveClass(token)
+  )
+  if (fillsState && paints.length)
+    fail(
+      look,
+      `${paints.join(" ")} draws over ActionBtn's ${state} fill (the caller's classes come last), where Button draws its ${state} fill`
+    )
 
   // --- the state classes ------------------------------------------------
   let surface = "legacy" as "legacy" | "design" | "shade"

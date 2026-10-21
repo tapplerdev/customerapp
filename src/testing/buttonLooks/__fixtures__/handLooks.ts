@@ -1,5 +1,5 @@
 /**
- * Jest only. ActionBtn looks no proapp site draws today, so the harvest
+ * Jest only. ActionBtn looks no customerapp site draws today, so the harvest
  * (../harvest) can't find them, but which Button has a prop for: every variant
  * in every state (enabled, disabled, loading, both), with and without
  * onPress, and the content props no site passes yet (titleSecond, descr,
