@@ -319,6 +319,22 @@ describe("rule 1, customerapp's faces: Montserrat, the faces it doesn't ship, th
     expect(r.latent.map((x) => x.class)).toEqual(["font-custom800"])
   })
 
+  it("says which face DmText draws where another face class beside font-custom800 wins", () => {
+    // DmText takes the last font-customNNN it has a face for, and a family
+    // class (font-sans700) stands where it has none: not the system face
+    // (review-ca-w0's low)
+    const reasonOf = (className) =>
+      convert(`<DmText className="${className}">x</DmText>`).latent.find(
+        (x) => x.class === "font-custom800"
+      ).reason
+    expect(reasonOf("font-custom600 font-custom800 text-14")).toBe(
+      "no face for weight 800 in English or Arabic: DmText draws Montserrat-SemiBold in English and TheSans-Bold in Arabic, from the element's other face class"
+    )
+    expect(reasonOf("font-sans700 font-custom800 text-14")).toBe(
+      "no face for weight 800 in English or Arabic: DmText draws TheSans-Bold, from the element's other face class"
+    )
+  })
+
   it("writes the weight the classes name where TheSans draws two alike (font-sans700)", () => {
     // WelcomeScreen.tsx:49: TheSans-Bold in both languages, pinned
     const r = convert(
