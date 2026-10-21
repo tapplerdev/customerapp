@@ -237,36 +237,61 @@ describe("nw-wrap-probe", () => {
     expect(r.stdout).toContain("3 BUG, 0 to review")
   })
 
-  it("knows today's twelve review wraps: the call sites whose className draws nothing at e30b19a", () => {
-    expect(Object.fromEntries(KNOWN_REVIEWS)).toEqual({
-      "src/components/OffersSection/OffersSection.tsx#BannerContainer": 1,
-      "src/components/ProCardBase/ProCardBase.tsx#PromoLine": 1,
-      "src/components/QuestionComponent/QuestionComponent.tsx#ImageWithTextButton": 1,
-      "src/components/QuestionComponent/QuestionComponent.tsx#ImageWithCheckmarkButton": 1,
-      "src/components/QuestionComponent/QuestionComponent.tsx#TextWithCheckmarkButton": 1,
-      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx#SkeletonLoader": 5,
-      "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx#OrderBill": 1,
-      "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx#PromoLine": 1,
-    })
-    const job = path.join(
-      ROOT,
-      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx"
-    )
-    const wraps = (n, status = "review") =>
-      Array.from({ length: n }, (_, i) => ({
-        line: 547 + i,
-        component: "SkeletonLoader",
-        status,
-      }))
-    expect(unknownReviews([{ file: job, wraps: wraps(5) }])).toEqual([])
-    expect(unknownReviews([{ file: job, wraps: wraps(6) }])).toEqual([
-      {
-        file: "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
-        line: 552,
-        component: "SkeletonLoader",
-      },
+  it("knows today's twelve review wraps, each by file, component, classes and its className line at e30b19a", () => {
+    expect(
+      KNOWN_REVIEWS.map((k) => `${k.file} <${k.component}> ${k.classes} | ${k.text}`)
+    ).toEqual([
+      'src/components/OffersSection/OffersSection.tsx <BannerContainer> `${compact ? "mx-0" : "mx-[10]"} ${className}` | className={`${compact ? "mx-0" : "mx-[10]"} ${className}`}',
+      'src/components/ProCardBase/ProCardBase.tsx <PromoLine> mt-[8] | className="mt-[8]"',
+      'src/components/QuestionComponent/QuestionComponent.tsx <ImageWithTextButton> layout === "onePerRow" ? "mb-[16]" : layout === "wrap" ? "mr-[16] mb-[16]" : "mr-[16]" | className={',
+      'src/components/QuestionComponent/QuestionComponent.tsx <ImageWithCheckmarkButton> layout === "onePerRow" ? "mb-[16]" : layout === "wrap" ? "mr-[16] mb-[16]" : "mr-[16]" | className={',
+      'src/components/QuestionComponent/QuestionComponent.tsx <TextWithCheckmarkButton> layout === "onePerRow" ? "mb-[12]" : layout === "wrap" ? "mr-[12] mb-[12]" : "mr-[12]" | className={',
+      'src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> mt-[6] | <SkeletonLoader width={90} height={11} borderRadius={4} className="mt-[6]" />',
+      'src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> mt-[8] | <SkeletonLoader width={230} height={13} borderRadius={4} className="mt-[8]" />',
+      'src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> mt-[8] | <SkeletonLoader width="35%" height={12} borderRadius={4} className="mt-[8]" />',
+      'src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> mt-[8] | <SkeletonLoader width="45%" height={12} borderRadius={4} className="mt-[8]" />',
+      'src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> mt-[10] | <SkeletonLoader width="30%" height={16} borderRadius={8} className="mt-[10]" />',
+      'src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx <OrderBill> mt-[24] | className="mt-[24]"',
+      'src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx <PromoLine> mt-[8] | className="mt-[8]"',
     ])
-    expect(unknownReviews([{ file: job, wraps: wraps(6, "ok") }])).toEqual([])
+    const rel = "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx"
+    const job = path.join(ROOT, rel)
+    const frozen = KNOWN_REVIEWS.filter((k) => k.file === rel)
+    const wrap = (k, line, over = {}) => ({
+      line,
+      component: k.component,
+      classes: k.classes,
+      lineText: k.text,
+      status: "review",
+      ...over,
+    })
+    const five = frozen.map((k, i) => wrap(k, [547, 557, 563, 564, 565][i]))
+    const unknown = (wraps) =>
+      unknownReviews([{ file: job, wraps }]).map((u) => `${u.file}:${u.line} <${u.component}>`)
+    expect(unknown(five)).toEqual([])
+    // drift: the same lines, lower down
+    expect(unknown(frozen.map((k, i) => wrap(k, 600 + i)))).toEqual([])
+    // a wrap that isn't review never counts
+    expect(unknown(five.map((w) => ({ ...w, status: "ok" })))).toEqual([])
+    // a sixth on a known line: each row is taken once
+    expect(unknown([...five, wrap(frozen[0], 570)])).toEqual([`${rel}:570 <SkeletonLoader>`])
+    // review-ca-w0, the T re-check's L3: these passed the count per file and component
+    // - 547's class moved to the SkeletonLoader at 552
+    const moved = wrap(frozen[0], 552, {
+      lineText: '<SkeletonLoader width="85%" height={42} borderRadius={8} className="mt-[6]" />',
+    })
+    expect(unknown([moved, ...five.slice(1)])).toEqual([`${rel}:552 <SkeletonLoader>`])
+    // - the five deleted (W1), then a new dead class on 546's SkeletonLoader
+    const added = wrap(frozen[1], 546, {
+      lineText: '<SkeletonLoader width={130} height={16} borderRadius={4} className="mt-[8]" />',
+    })
+    expect(unknown([added])).toEqual([`${rel}:546 <SkeletonLoader>`])
+    // - a token changed on a known line
+    const changed = wrap(frozen[0], 547, {
+      classes: "mt-[7]",
+      lineText: frozen[0].text.replace("mt-[6]", "mt-[7]"),
+    })
+    expect(unknown([changed, ...five.slice(1)])).toEqual([`${rel}:547 <SkeletonLoader>`])
   })
 
   it("fails on a review wrap that isn't one of the twelve (review-ca-w0's low: it passed any number)", () => {

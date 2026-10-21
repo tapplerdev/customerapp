@@ -71,10 +71,13 @@
  *
  * The twelve `review` wraps at e30b19a are the twelve call sites whose
  * className draws nothing, frozen in scripts/ds-codemod/dead-at-e30b19a.json
- * (by file and component here): they stay review, and any other review wrap
- * fails the run, so a new one is looked at rather than counted. Once W1
- * deletes those classNames their wraps go, which is fine: only a review
- * wrap the list doesn't hold fails.
+ * (here by file, component, classes and the text of the className line at
+ * e30b19a, each row once): they stay review, and any other review wrap fails
+ * the run, so a new one is looked at rather than counted. Once W1 deletes
+ * those classNames their wraps go, which is fine: only a review wrap the
+ * list doesn't hold fails, and a class moved to another element of the same
+ * component, or a dead one written after the twelve are gone, is not one of
+ * them.
  *
  * Exit 0: no BUG and no review beyond the twelve. Exit 1: a BUG, a review
  * wrap beyond the twelve, or the positive control failed. Exit 2: a file
@@ -605,6 +608,19 @@ const textOf = (node, code) => {
   return generate(node).code
 }
 
+const squash = (s) => s.replace(/\s+/g, " ").trim()
+
+/** A class attribute's classes as dead-at-e30b19a.json keys them (convert.js classesText). */
+const classesOf = (attr, code) => {
+  const v = attr.value
+  if (!v) return ""
+  if (v.type === "StringLiteral") return squash(v.value)
+  return squash(textOf(v.type === "JSXExpressionContainer" ? v.expression : v, code))
+}
+
+/** A line of the source as written, trimmed. */
+const lineAt = (code, line) => (code.split("\n")[line - 1] || "").trim()
+
 // ---------------------------------------------------------------------------
 // One file
 
@@ -661,6 +677,9 @@ const probePlugin = (sink) => () => ({
             const loc = (cls && cls.loc) || p.node.loc
             sink.wraps.push({
               line: loc ? loc.start.line : null,
+              // what pins a review wrap to e30b19a's (KNOWN_REVIEWS)
+              classes: cls ? classesOf(cls, state.file.code) : null,
+              lineText: loc ? lineAt(state.file.code, loc.start.line) : null,
               component: res.name,
               key: res.key,
               via: res.chain,
@@ -814,29 +833,39 @@ const walk = (dir) =>
 
 const rel = (file) => path.relative(ROOT, path.resolve(file))
 
-// The review wraps known at e30b19a, as file#component -> how many.
-const KNOWN_REVIEWS = (() => {
-  const known = new Map()
+// The review wraps known at e30b19a: each frozen row, by file, component,
+// classes and the text of its className line there. A count per file and
+// component let a class moved to another SkeletonLoader pass, and, once W1
+// deletes the twelve, a new dead one (review-ca-w0, the T re-check's L3).
+const KNOWN_REVIEWS = Object.freeze(
   // eslint-disable-next-line global-require
-  for (const d of require("./ds-codemod/dead-at-e30b19a.json").sites) {
-    const key = `${d.file}#${d.component}`
-    known.set(key, (known.get(key) || 0) + 1)
-  }
-  return known
-})()
+  require("./ds-codemod/dead-at-e30b19a.json").sites.map((d) =>
+    Object.freeze({
+      file: d.file,
+      component: d.component,
+      classes: d.classes,
+      text: d.e30b19aText,
+    })
+  )
+)
 
-/** The review wraps beyond `known` (file#component -> count), in order. */
+/** The review wraps that aren't a known one (each known row taken once), in order. */
 const unknownReviews = (results, known = KNOWN_REVIEWS) => {
-  const seen = new Map()
+  const left = [...known]
   const out = []
   for (const r of results)
     for (const w of r.wraps || []) {
       if (w.status !== "review") continue
-      const key = `${rel(r.file)}#${w.component}`
-      const n = (seen.get(key) || 0) + 1
-      seen.set(key, n)
-      if (n > (known.get(key) || 0))
-        out.push({ file: rel(r.file), line: w.line, component: w.component })
+      const file = rel(r.file)
+      const at = left.findIndex(
+        (k) =>
+          k.file === file &&
+          k.component === w.component &&
+          k.classes === w.classes &&
+          k.text === w.lineText
+      )
+      if (at >= 0) left.splice(at, 1)
+      else out.push({ file, line: w.line, component: w.component })
     }
   return out
 }
