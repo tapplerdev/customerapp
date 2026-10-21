@@ -19,7 +19,7 @@ const { loadDs } = require("./dsload")
 const { convertDmText, TEXT_PROPS } = require("./dmtext")
 const { convertActionBtn } = require("./actionbtn")
 const { Unconvertible, styleFromIR } = require("./plain")
-const { slotFor, twinRenames } = require("./slots")
+const { ignoresStyle, slotFor, twinRenames } = require("./slots")
 const { convertFields, convertTextSlot } = require("./typetwin")
 const { FIELDS, HAND_EDITS, bannedKeys } = require("./twins")
 const { checkStyleAttr, sheetObject } = require("./stylecheck")
@@ -1265,6 +1265,21 @@ const convertSource = (code, file, options = {}) => {
                 "waiting-on-component",
                 `same-file <${tag}> that NativeWind doesn't wrap`
               )
+            // Wrapped, it gets the classes as a style it never reads, so
+            // they draw nothing today. As a style they would start drawing
+            // the day the component takes one (a W1 twin): left, to delete.
+            if (info.kind === "component" && info.def && ignoresStyle(info.def)) {
+              const raw = classAttrs
+                .map((a) => a.node.name.name)
+                .filter((n) => n !== "className")
+              throw new Unconvertible(
+                "wrapped-ignores-style",
+                `NativeWind wraps <${tag}> here (an import it can't trace to a folder), so it gets className as style, and ${info.def.name} reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin` +
+                  (raw.length
+                    ? `; ${raw.map((n) => `\`${n}\``).join(", ")} reach${raw.length === 1 ? "es" : ""} it raw and draw${raw.length === 1 ? "s" : ""} as it draws ${raw.length === 1 ? "it" : "them"}`
+                    : "")
+              )
+            }
             return "style"
           }
           if (info.kind === "component") return null

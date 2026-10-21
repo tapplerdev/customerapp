@@ -298,6 +298,26 @@ const componentShape = (def) => {
   return { fn, propsType }
 }
 
+/**
+ * Whether a component plainly reads no `style`: its props are destructured
+ * with no `style` key and no rest. NativeWind hands a component it wraps a
+ * style instead of className, so for one like that the classes draw nothing
+ * (customerapp's SkeletonLoader, PromoLine, OrderBill and the question
+ * buttons, imported by file path). Anything less plain (a props object, a
+ * rest) may pass style on: false.
+ */
+const ignoresStyle = (def) => {
+  const { fn } = componentShape(def)
+  const param = fn && fn.params[0]
+  if (!param || param.type !== "ObjectPattern") return false
+  return param.properties.every(
+    (p) =>
+      p.type === "ObjectProperty" &&
+      !p.computed &&
+      (p.key.type === "Identifier" ? p.key.name : p.key.value) !== "style"
+  )
+}
+
 // How a component uses one of its props, reference by reference:
 //   class-part   a plain part of a className (the whole value, a clsx
 //                argument, a template expression)
@@ -809,6 +829,7 @@ const twinRenames = (def, attrNames) => {
 module.exports = {
   KNOWN,
   componentShape,
+  ignoresStyle,
   membersOf,
   slotFor,
   slotName,

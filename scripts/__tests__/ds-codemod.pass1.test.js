@@ -772,6 +772,35 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     )
   })
 
+  it("leaves the classes of a wrapped component that reads no style: they draw nothing today", () => {
+    // customerapp imports seven of its own components by file path, so
+    // NativeWind wraps them (ds:probe's twelve reviews): ProCard.tsx:274's
+    // PromoLine gets mt-[8] as a style it never reads. Plain, here, as by
+    // file path; Card reads its style, so a wrapped Card's className moves.
+    const file = path.join(SLOTS, "Unit.tsx")
+    const code = lines(
+      'import React from "react"',
+      'import Plain from "./Plain/Plain"',
+      'import Card from "./Card/Card"',
+      "",
+      'export const X = () => <><Plain className="mt-[8]" /><Card title="t" className="mt-[4]" /></>'
+    )
+    const r = convertSource(code, file, {
+      wraps: [
+        { line: 5, component: "Plain" },
+        { line: 5, component: "Card" },
+      ],
+    })
+    expect(r.sites.map((x) => [x.tag, x.status, x.reason])).toEqual([
+      ["Plain", "left", "wrapped-ignores-style"],
+      ["Card", "converted", undefined],
+    ])
+    expect(r.sites[0].detail).toBe(
+      "NativeWind wraps <Plain> here (an import it can't trace to a folder), so it gets className as style, and Plain reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin"
+    )
+    expect(r.code).toContain('<Card title="t" style={a.mt_4} />')
+  })
+
   it("names a class attribute that isn't a prop, where the props type names every prop", () => {
     const r = convert(
       '<><Plain classNameInfo="text-12" /><AppScrollView fooClassName="mt-[2]" /></>',
