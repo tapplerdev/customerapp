@@ -318,6 +318,120 @@ const ignoresStyle = (def) => {
   )
 }
 
+/**
+ * How a wrapped call site's className reaches a component: NativeWind hands
+ * it over as a style ARRAY (styled(): `[...class styles, inline style]`).
+ * Written as one object instead, it draws the same only where the
+ * component lets React Native flatten it: the whole value of a `style`, an
+ * entry of a `style` array, StyleSheet.flatten/compose. Read as an object
+ * anywhere else (spread into one, a key read off it, a default), an array
+ * draws nothing there and an object would (review-ca-w0, the T re-check's
+ * L1). Returns `{ reads, takesArray }`: how it reads `style` as an object
+ * (null if never), and whether its `style` is typed to take an array
+ * (StyleProp<...>, or untyped).
+ */
+const styleArrayReads = (def) => {
+  const { fn, propsType } = componentShape(def)
+  const out = { reads: null, takesArray: true }
+  if (propsType) {
+    const typeText = membersOf(propsType, def.file).own.get("style")
+    if (typeText !== undefined) out.takesArray = /StyleProp</.test(typeText)
+  }
+  if (!fn) return out
+  const { ast } = parseFile(def.file)
+  const param = fn.params[0]
+  let local = null
+  let propsName = null
+  if (param && param.type === "ObjectPattern") {
+    for (const p of param.properties)
+      if (
+        p.type === "ObjectProperty" &&
+        !p.computed &&
+        (p.key.type === "Identifier" ? p.key.name : p.key.value) === "style"
+      ) {
+        const v = p.value.type === "AssignmentPattern" ? p.value.left : p.value
+        if (v.type === "Identifier") local = v.name
+      }
+  } else if (param && param.type === "Identifier") propsName = param.name
+  // through a cast or parentheses: `style as ViewStyle`, `(style)`
+  const CASTS = [
+    "TSAsExpression",
+    "TSSatisfiesExpression",
+    "TSNonNullExpression",
+    "TypeCastExpression",
+    "ParenthesizedExpression",
+  ]
+  const up = (x) => {
+    let y = x
+    while (CASTS.includes(y.parentPath.node.type)) y = y.parentPath
+    return y
+  }
+  const flattens = (ref) => {
+    let x = up(ref)
+    // entries of (nested) arrays
+    while (x.parentPath.isArrayExpression()) x = up(x.parentPath)
+    const parent = x.parentPath
+    if (parent.isJSXExpressionContainer()) {
+      const attr = parent.parentPath
+      return (
+        attr.isJSXAttribute() &&
+        attr.node.name.type === "JSXIdentifier" &&
+        attr.node.name.name === "style"
+      )
+    }
+    const callee = parent.isCallExpression() && parent.node.callee
+    return !!(
+      callee &&
+      parent.node.arguments.includes(x.node) &&
+      callee.type === "MemberExpression" &&
+      !callee.computed &&
+      callee.object.type === "Identifier" &&
+      callee.object.name === "StyleSheet" &&
+      ["flatten", "compose"].includes(callee.property.name)
+    )
+  }
+  const describe = (ref) => {
+    const x = up(ref)
+    const parent = x.parentPath
+    if (parent.isSpreadElement()) return "spreads `style` into an object"
+    if (parent.isMemberExpression({ object: x.node }))
+      return "reads a key off `style`"
+    return `reads \`style\` in a ${parent.node.type}`
+  }
+  traverse(ast, {
+    Function(fp) {
+      if (fp.node !== fn) return
+      fp.traverse({
+        Identifier(p) {
+          if (
+            out.reads ||
+            !local ||
+            p.node.name !== local ||
+            !p.isReferencedIdentifier() ||
+            !p.scope.getBinding(local) ||
+            !p.scope.getBinding(local).path.findParent((x) => x.node === fn)
+          )
+            return
+          if (!flattens(p)) out.reads = describe(p)
+        },
+        MemberExpression(p) {
+          if (
+            out.reads ||
+            !propsName ||
+            !p.get("object").isIdentifier({ name: propsName }) ||
+            p.node.computed ||
+            p.node.property.name !== "style"
+          )
+            return
+          if (!flattens(p)) out.reads = describe(p)
+        },
+      })
+      fp.stop()
+    },
+  })
+  return out
+}
+
 // How a component uses one of its props, reference by reference:
 //   class-part   a plain part of a className (the whole value, a clsx
 //                argument, a template expression)
@@ -834,5 +948,6 @@ module.exports = {
   slotFor,
   slotName,
   slotTag,
+  styleArrayReads,
   twinRenames,
 }

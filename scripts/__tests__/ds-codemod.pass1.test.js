@@ -896,6 +896,42 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     expect(r.code).toContain('<Card title="t" style={a.mt_4} />')
   })
 
+  // review-ca-w0, the T re-check's L1: a wrapped component's className was
+  // written as one style object, where NativeWind hands over an array, so a
+  // component that spreads `style` into an object would start drawing it.
+  it("writes a wrapped component's className as a style array where the component reads style as an object, and leaves it where its style takes no array", () => {
+    const file = path.join(SLOTS, "Unit.tsx")
+    const at = (from, props = "") =>
+      lines(
+        'import React from "react"',
+        `import Part from "${from}"`,
+        "",
+        `export const X = () => <Part${props} className="mt-[4]" />`
+      )
+    const options = { wraps: [{ line: 4, component: "Part" }], deadSites: [] }
+    const typedObject = convertSource(at("./Spreads/SpreadsStyle"), file, options)
+    expect(typedObject.sites.map((x) => [x.attr, x.status, x.reason])).toEqual([
+      ["className", "left", "waiting-on-component"],
+    ])
+    expect(typedObject.sites[0].detail).toBe(
+      "NativeWind hands <Part> its className as a style array, and SpreadsStyle spreads `style` into an object, so the classes draw nothing there today; written as an object they would draw, and its `style` takes no array"
+    )
+    expect(typedObject.changed).toBe(false)
+    const typedProp = convertSource(at("./Spreads/SpreadsStyleProp"), file, options)
+    expect(typedProp.sites.map((x) => x.status)).toEqual(["converted"])
+    expect(typedProp.code).toContain("<Part style={[a.mt_4]} />")
+    // the control: a component that lets React Native flatten its style
+    // (SkeletonTwinned's [{ width, height }, style]) keeps the plain object
+    const flattened = convertSource(
+      at("./Skeleton/SkeletonTwinned", " width={1} height={1}"),
+      file,
+      options
+    )
+    expect(flattened.code).toContain(
+      "<Part width={1} height={1} style={a.mt_4} />"
+    )
+  })
+
   it("files only a wrapped component's className as dead: a class prop it gets raw still draws (OffersSection.tsx:97)", () => {
     // OffersSection's BannerContainer, imported by file path: the wrap turns
     // className (:95) into a style BannerContainer never reads, and hands

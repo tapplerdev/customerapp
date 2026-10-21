@@ -19,7 +19,12 @@ const { loadDs } = require("./dsload")
 const { convertDmText, TEXT_PROPS } = require("./dmtext")
 const { convertActionBtn } = require("./actionbtn")
 const { Unconvertible, styleFromIR } = require("./plain")
-const { ignoresStyle, slotFor, twinRenames } = require("./slots")
+const {
+  ignoresStyle,
+  slotFor,
+  styleArrayReads,
+  twinRenames,
+} = require("./slots")
 const { convertFields, convertTextSlot } = require("./typetwin")
 const { FIELDS, HAND_EDITS, bannedKeys } = require("./twins")
 const { checkStyleAttr, sheetObject } = require("./stylecheck")
@@ -1390,6 +1395,7 @@ const convertSource = (code, file, options = {}) => {
           let slot
           let text = false
           let twin = null
+          let asArray = false
           if (
             styleTarget === "style" ||
             (styleTarget === "wrapped-component" && attrName === "className")
@@ -1400,6 +1406,26 @@ const convertSource = (code, file, options = {}) => {
                 `\`${attrName}\` on <${tag}>, which only NativeWind's className styles`
               )
             slot = "style"
+            // NativeWind hands a wrapped component its className as a style
+            // array: one that reads `style` as an object draws the classes
+            // nothing there, and gets an array written in their place, or
+            // is left when its `style` takes no array (styleArrayReads).
+            const read =
+              styleTarget === "wrapped-component" && info.def
+                ? styleArrayReads(info.def)
+                : null
+            if (read && read.reads && !read.takesArray) {
+              record({
+                ...base,
+                line: a.node.loc.start.line,
+                attr: attrName,
+                status: "left",
+                reason: "waiting-on-component",
+                detail: `NativeWind hands <${tag}> its className as a style array, and ${info.def.name} ${read.reads}, so the classes draw nothing there today; written as an object they would draw, and its \`style\` takes no array`,
+              })
+              continue
+            }
+            asArray = !!(read && read.reads)
           } else {
             const edit = handEditFor(info.def, attrName, a, attrs)
             if (edit) {
@@ -1447,6 +1473,7 @@ const convertSource = (code, file, options = {}) => {
             attrPath: a,
             slot,
             text,
+            asArray,
             field: !!(twin && twin.field),
             typeTwin: twin && twin.typeTwin,
             styleType: twin && twin.styleType,
@@ -1690,6 +1717,7 @@ const convertSource = (code, file, options = {}) => {
             styleExpr: p.extra.noStyle ? null : p.result.expr,
             styleAttr: (p.slot && attrs[p.slot]) || null,
             styleName: p.slot,
+            asArray: !!p.asArray,
           })
           record({
             ...base,
@@ -1909,6 +1937,9 @@ const convertSource = (code, file, options = {}) => {
       // (removing the attribute when it is null), instead of putting it
       // before what the attribute already holds.
       replaceStyle = false,
+      // Always an array, as NativeWind hands a wrapped component its
+      // className (styleArrayReads)
+      asArray = false,
     } = spec
     const node = openingPath.node
     if (rename) {
@@ -1962,7 +1993,9 @@ const convertSource = (code, file, options = {}) => {
           edits.push({ start: e.start, end: e.start, text: `[${printed}, ` })
           edits.push({ start: e.end, end: e.end, text: "]" })
         }
-      } else
+      } else if (asArray && styleExpr.k !== "arr")
+        styleText = `${styleName}={[${printStyle(styleExpr, printNames, PRINT_OPTS)}]}`
+      else
         styleText = `${styleName}={${printStyle(styleExpr, printNames, PRINT_OPTS)}}`
     }
     for (const place of placements) {
