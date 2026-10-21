@@ -1,26 +1,31 @@
 /**
  * Rule 2: <ActionBtn ...> -> the design system's <Button ...>, by the rules
- * proapp's Button parity proves: src/testing/buttonLooks/__fixtures__/
- * translate.ts, which turns one ActionBtn look into Button props and is
- * drawn against ActionBtn for every look the app has (Button.looks.test,
- * en/ar x iOS/Android). The codemod runs that translator itself rather than
- * a copy of its rules.
+ * of src/testing/buttonLooks/__fixtures__/translate.ts, which turns one
+ * ActionBtn look into Button props (proapp's, with customerapp's faces and
+ * two rules of its own: a class NativeWind drops takes no prop, and a
+ * caller's background over a state fill has no spelling). The codemod runs
+ * that translator itself rather than a copy of its rules.
  *
  * A site is every look its conditions can make: each combination of the
  * class strings' conditions, the variant's, and disable, isLoading,
  * isIconRight and reverseItems, built the way the look harvest builds it.
- * The site converts only if every one of those looks is one the parity drew
- * (the harvest's Button.looks.cases.json, or a hand look): nothing the proof
- * hasn't seen is written. Each
+ * The site converts only if every one of those looks is one a parity drew
+ * in customerapp's config, listed in
+ * src/testing/buttonLooks/__tests__/__parity__/Button.looks.cases.json
+ * (where the looks proof lands, skeptic H4): nothing the proof hasn't seen
+ * is written. Until that file exists no look is proven, so every ActionBtn
+ * is left with its reason; proapp's proven looks were drawn in Poppins and
+ * prove nothing here. Each
  * prop is then one expression over the site's conditions, a state's props
  * taken only from the combinations where they draw (the label not while
  * loading, the disabled look only when dimmed or loading, the loading fill
  * only while loading). The layout classes become the style, through atoms
  * and entries like any other.
  */
+const fs = require("fs")
 const path = require("path")
 
-const { NwResolveError, readLatinRegistry, paths } = require("../nw-resolve")
+const { NwResolveError, paths } = require("../nw-resolve")
 const {
   assignments,
   atomsOf,
@@ -30,7 +35,7 @@ const {
   canonical,
 } = require("./classexpr")
 const { synthesize } = require("./dmtext")
-const { load, loadDs, stub } = require("./dsload")
+const { load, loadDs } = require("./dsload")
 const { Unconvertible, resolveOrLeave, styleFromIR } = require("./plain")
 const { deepEqual, evalStyle, flatten } = require("./styles")
 
@@ -43,24 +48,18 @@ const TRANSLATOR = path.join(
   "__fixtures__",
   "translate.ts"
 )
-// The looks the parity draws: every one the harvest found in src, and the
-// hand looks (each variant in each state, the content props no site uses).
+// The looks a parity drew in customerapp's config: { looks: { id: { props
+// } } }, harvested sites and hand looks alike. A hand look
+// (__fixtures__/handLooks.ts) counts only once it is listed here: proapp's
+// driver drew them in proapp's config, nothing has here.
 const PROVEN = path.join(
-  ROOT,
-  "src",
-  "components",
-  "__tests__",
-  "ds",
-  "__parity__",
-  "Button.looks.cases.json"
-)
-const HAND_LOOKS = path.join(
   ROOT,
   "src",
   "testing",
   "buttonLooks",
-  "__fixtures__",
-  "handLooks.ts"
+  "__tests__",
+  "__parity__",
+  "Button.looks.cases.json"
 )
 
 // Button's label presets (Button.tsx LABEL_SIZE).
@@ -149,12 +148,9 @@ const NOT_LAYOUT = { has: (key) => !LAYOUT_KEYS.has(key) }
 let translator
 const translatorFn = () => {
   if (!translator) {
+    // The translator reads the Latin faces from tappler-shared's helpers,
+    // the instance loadDs() registered (or left at Montserrat, as here).
     loadDs()
-    // The translator reads the app's Latin faces from the parity helper,
-    // which only runs under jest.
-    stub(path.join(ROOT, "src", "testing", "hostTreeParity.ts"), {
-      APP_LATIN_FONT_WEIGHTS: readLatinRegistry().weights,
-    })
     translator = load(TRANSLATOR).translate
   }
   return translator
@@ -184,11 +180,8 @@ let proven
 const provenLooks = () => {
   if (!proven) {
     // eslint-disable-next-line import/no-dynamic-require, global-require
-    const { looks } = require(PROVEN)
-    proven = new Set([
-      ...Object.values(looks).map((l) => lookKey(l.props)),
-      ...Object.values(load(HAND_LOOKS).HAND_LOOKS).map(lookKey),
-    ])
+    const { looks = {} } = fs.existsSync(PROVEN) ? require(PROVEN) : {}
+    proven = new Set(Object.values(looks).map((l) => lookKey(l.props)))
   }
   return proven
 }
@@ -254,6 +247,8 @@ const convertActionBtn = ({
   hint,
   hasChildren,
   lookConst,
+  // the proven looks, for a test; else Button.looks.cases.json's
+  proven: provenOverride = null,
 }) => {
   if (hasChildren)
     throw new Unconvertible(
@@ -357,7 +352,9 @@ const convertActionBtn = ({
   const value = (f, env) => (!f ? undefined : f.at(env))
 
   const translate = translatorFn()
-  const known = provenLooks()
+  const known = provenOverride
+    ? new Set([...provenOverride].map(lookKey))
+    : provenLooks()
   const combos = envs.map((env) => {
     const look = { title: PLACEHOLDER.title }
     if (attrs.onPress) look.onPress = { $fn: true }
@@ -386,7 +383,7 @@ const convertActionBtn = ({
     if (!known.has(lookKey(look)))
       throw new Unconvertible(
         "unproven-look",
-        `a look the Button parity hasn't drawn (${lookKey(look)}): add the site to the look harvest first`
+        `a look no Button parity has drawn in customerapp's config (${lookKey(look)}): prove it first (Button.looks.cases.json)`
       )
     return {
       env,
@@ -530,4 +527,11 @@ const convertActionBtn = ({
   }
 }
 
-module.exports = { LAYOUT_KEYS, convertActionBtn, lookKey, sharedStepsOnly }
+module.exports = {
+  LAYOUT_KEYS,
+  PROVEN,
+  TRANSLATOR,
+  convertActionBtn,
+  lookKey,
+  sharedStepsOnly,
+}

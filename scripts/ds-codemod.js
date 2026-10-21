@@ -52,8 +52,9 @@ const USAGE = `usage: yarn ds:codemod <files|dirs|globs> [--dry] [--report out.j
   --dry        change nothing; print (and with --report, write) what would happen
   --report     write every site, its outcome and the totals as JSON
   --no-probe   don't ask ds:probe which call sites NativeWind wraps (faster;
-               misses React Compiler temporaries, so a wrapped DmText or
-               ActionBtn would be converted as if it weren't)
+               misses the wraps a file-path import makes, so a wrapped
+               DmText, ActionBtn or own component would be converted as if
+               it weren't)
   --latent     where dropped classes are appended (default latent-bugs.md)
   --quiet      only the totals`
 

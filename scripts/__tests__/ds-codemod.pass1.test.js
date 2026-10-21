@@ -2,7 +2,9 @@
  * ds:codemod, rule by rule, on source text: what it writes, what it leaves
  * and why. That the output draws exactly what the input drew is proved by
  * rendering (scripts/ds-codemod/parity/, its own jest config); these tests pin
- * the shape of the output and the reasons, quickly, in the normal jest run.
+ * the shape of the output and the reasons, quickly, in `yarn test:pass1-tools`.
+ * customerapp's own call sites where it has the shape (file:line at e30b19a);
+ * proapp's where it doesn't, marked as proapp's.
  */
 const { execFileSync } = require("child_process")
 const fs = require("fs")
@@ -23,9 +25,26 @@ const SLOTS = path.join(ROOT, "scripts", "__fixtures__", "ds-codemod", "slots")
 const UI =
   'import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"\n'
 
-const convert = (body, { file = FILE, header = UI, extra = "" } = {}) => {
+// `proven`: the ActionBtn looks a parity has drawn, for the site under test
+// (customerapp has proven none yet, so without this every ActionBtn waits);
+// "all": every look the site makes, for a test whose subject isn't the proof.
+const convert = (
+  body,
+  { file = FILE, header = UI, extra = "", proven = null } = {}
+) => {
   const code = `import React from "react"\n${extra}${header}\nexport const X = ({ on, n, cb }: any) => (\n${body}\n)\n`
-  const result = convertSource(code, file, { wraps: [] })
+  const run = (looks) =>
+    convertSource(code, file, { wraps: [], provenLooks: looks })
+  let result = run(proven === "all" ? [] : proven)
+  if (proven === "all") {
+    const looks = []
+    const unproven = () =>
+      result.sites.find((x) => x.reason === "unproven-look")
+    for (let i = 0; unproven() && i < 64; i++) {
+      looks.push(JSON.parse(unproven().detail.match(/\((\{.*\})\)/)[1]))
+      result = run(looks)
+    }
+  }
   return { ...result, input: code }
 }
 
@@ -174,7 +193,7 @@ describe("rule 1: DmText -> Text", () => {
   })
 
   it("keeps a line height the style sets, in both languages, as { fixed: px(n) }", () => {
-    // ScreenNameInfoScreen's: the style's 16 is unscaled in Arabic
+    // proapp's ScreenNameInfoScreen shape: the style's 16 is unscaled in Arabic
     const r = convert(
       '<DmText className="text-black font-custom400 flex-1" style={{ fontSize: 13, lineHeight: 16 }}>b</DmText>'
     )
@@ -249,56 +268,164 @@ describe("rule 1: DmText -> Text", () => {
   })
 })
 
-describe("rule 2: ActionBtn -> Button", () => {
-  // Every look below is one the Button parity draws (a harvested site's or
-  // a hand look): the codemod converts nothing else.
-  const FORM =
-    'className="h-[47] rounded-5" textClassName="text-13 leading-[16px] font-custom600"'
-
-  it("maps height, corners, the label and disable, by the tested translator", () => {
-    const r = convert(
-      `<ActionBtn title="Save" onPress={cb} disable={!on} ${FORM} />`
-    )
-    expect(r.code).toContain(
-      '<Button title="Save" onPress={cb} disabled={!on} size="lg" shape="r5" label="sm" labelWeight="semibold" />'
-    )
+describe("rule 1, customerapp's faces: Montserrat, the faces it doesn't ship, the weight it has no face for", () => {
+  it("draws Latin text in shared's Montserrat: index.js registers nothing", () => {
+    const ds = loadDs()
+    expect(ds.latinRegistry).toBeNull()
+    for (const [weight, face] of [
+      ["regular", "Montserrat-Regular"],
+      ["medium", "Montserrat-Medium"],
+      ["semibold", "Montserrat-SemiBold"],
+      ["bold", "Montserrat-Bold"],
+    ])
+      expect(ds.textStyle("en", 14, weight, "legacy", "auto").fontFamily).toBe(
+        face
+      )
   })
 
-  it("names the disabled look when the site's classes draw one", () => {
-    // MyAccountEmailScreen's Send
+  it("leaves a face the app doesn't ship for a bridge: TheSans-Regular (font-sans400)", () => {
+    // WelcomeScreen.tsx:83 (customerapp-plan CA5)
     const r = convert(
-      '<ActionBtn title="Send" onPress={cb} disable={!on} className={clsx("mt-[21] h-[44] rounded-10", !on && "bg-grey16")} textClassName={clsx("text-13 leading-[16px] font-custom500", !on && "text-grey10")} />',
-      { extra: 'import clsx from "clsx"\n' }
+      '<DmText className="mt-[32] text-13 text-grey font-sans400 leading-[22px] text-center">x</DmText>'
+    )
+    expect(site(r)).toMatchObject({
+      status: "left",
+      reason: "unshipped-face",
+      detail:
+        "TheSans-Regular isn't a face the app ships, so the device draws the system face; no Text family writes that fontFamily (bridge it by hand)",
+    })
+    // and font-sans600's TheSans-SemiBold the same way
+    expect(
+      site(convert('<DmText className="text-14 font-sans600">x</DmText>'))
+        .reason
+    ).toBe("unshipped-face")
+  })
+
+  it("writes font-custom800 as the system face it draws, and lists it with the drops", () => {
+    // AuthGateScreen.tsx:71: no 800 in either language, so no fontFamily
+    const r = convert(
+      '<DmText className="text-24 leading-[30px] font-custom800 text-black text-center">x</DmText>'
     )
     expect(r.code).toContain(
-      '<Button title="Send" onPress={cb} disabled={!on} size="md" shape="r10" label="sm" disabledLook="design" style={styles.button} />'
+      '<Text size={24} align="center" family="system">x</Text>'
     )
-    expect(r.styles.code).toContain("marginTop: 21")
-    expect(r.code).not.toContain("clsx")
+    expect(site(r).dropped).toEqual([
+      {
+        class: "font-custom800",
+        reason:
+          "no face for weight 800 in English or Arabic: DmText draws the system face",
+      },
+    ])
+    expect(r.latent.map((x) => x.class)).toEqual(["font-custom800"])
+  })
+
+  it("writes the weight the classes name where TheSans draws two alike (font-sans700)", () => {
+    // WelcomeScreen.tsx:49: TheSans-Bold in both languages, pinned
+    const r = convert(
+      '<DmText className="font-sans700 text-18 leading-[31px] text-center">x</DmText>'
+    )
+    expect(r.code).toContain(
+      '<Text size={18} weight="bold" leading={px(31)} align="center" family="arabic">x</Text>'
+    )
+    // WelcomeScreen.tsx:52: Montserrat pinned in both
+    const latin = convert(
+      '<DmText className="mt-[11] font-montserrat600 text-18 leading-[22px] text-center">x</DmText>'
+    )
+    expect(latin.code).toContain(
+      'weight="semibold" leading="tight" align="center" family="latin"'
+    )
+  })
+})
+
+describe("rule 2: ActionBtn -> Button", () => {
+  // customerapp's own sites (file:line at e30b19a). No look is proven in its
+  // config yet (skeptic H4), so each test hands the codemod the looks it
+  // proves; with none, a site waits (the last test).
+  const FOOD = 'className="h-[48]" textClassName="text-15 leading-[19px] font-custom600"'
+
+  it("maps height, corners, the label and disable, by the tested translator", () => {
+    // QuestionStepScreen.tsx:308
+    const r = convert(
+      '<ActionBtn title="Next" onPress={cb} disable={!on} className="h-[52] rounded-10" textClassName="text-16 font-custom600" />',
+      { proven: "all" }
+    )
+    expect(r.code).toContain(
+      '<Button title="Next" onPress={cb} disabled={!on} size={px(52)} shape="r10" labelWeight="semibold" />'
+    )
+    expect(r.sites.map((x) => x.status)).toEqual(["converted", "converted"])
+  })
+
+  it("names the loading look when the site's classes draw one", () => {
+    // MapPickerView.tsx:177's Confirm: bg-grey4 under the spinner
+    const r = convert(
+      '<ActionBtn title="Confirm" onPress={cb} className={`h-[42] w-full ${ on ? "bg-grey4" : "" }`} textClassName="text-13 leading-[21px] font-custom600" isLoading={on} />',
+      { proven: "all" }
+    )
+    expect(r.code).toContain(
+      '<Button title="Confirm" onPress={cb} size="sm" label="sm" labelWeight="semibold" labelLeading={px(21)} loadingSurface="shade" style={a.w_full} isLoading={on} />'
+    )
   })
 
   it("writes a prop that changes with a condition as that condition", () => {
-    // FoodMenuSectionMenuItem's badge: the label shrinks on small phones
+    // UpdateMobileNumberScreen.tsx:160: the label greys while the number is bad
     const r = convert(
-      '<ActionBtn title="New" className="h-[20] self-auto bg-red2 rounded-4 px-[8]" classNameTextWrapper="mx-[0]" textClassName={clsx("text-11 leading-[14px] font-custom700 text-white", on && "text-10", n && "text-9")} />',
-      { extra: 'import clsx from "clsx"\n' }
+      '<ActionBtn title="Send" onPress={cb} disable={!on || n} isLoading={n} textClassName={clsx("text-13 leading-[16px] font-custom500", !on && "text-grey10")} className="h-[47] rounded-10" />',
+      { extra: 'import clsx from "clsx"\n', proven: "all" }
     )
     expect(r.code).toContain(
-      '<Button title="New" size={px(20)} shape="r4" paddingX={8} variant="rose" label={n ? 9 : on ? 10 : 11} labelWeight="bold" labelInset={0} labelLeading={on ? { legacy: px(14) } : n ? { legacy: px(14) } : undefined} style={styles.button} />'
+      '<Button title="Send" onPress={cb} disabled={!on || n} isLoading={n} size="lg" shape="r10" label="sm" disabledLook={on ? n ? undefined : disabledLookLegacyMuted : disabledLookLegacyMuted} />'
     )
-    expect(r.code).not.toContain("classNameTextWrapper")
+    expect(r.code).not.toContain("clsx")
   })
 
   it("renames the content props and keeps what they hold", () => {
+    // AuthWelcomeScreen.tsx:128 and :163
     const r = convert(
-      `<DmView><ActionBtn title="Go" onPress={cb} ${FORM} Icon={<DmView />} isIconRight IconNearTitle={<DmView />} /><ActionBtn title="Two" onPress={cb} ${FORM} Icon={<DmView />} titleSecond="2" descr={cb()} /></DmView>`
+      '<DmView><ActionBtn title="Email" onPress={cb} Icon={<DmView />} variant="white" className="rounded-10" textClassName="text-13" /><ActionBtn title="Guest" onPress={cb} descr={cb()} variant="white" className="mt-[66] rounded-10" textClassName="text-13" /></DmView>',
+      { proven: "all" }
     )
     expect(r.code).toContain(
-      '<Button title="Go" onPress={cb} size="lg" shape="r5" label="sm" labelWeight="semibold" iconAt="end" icon={<DmView />} titleIcon={<DmView />} />'
+      '<Button title="Email" onPress={cb} icon={<DmView />} shape="r10" variant="white" label="sm" labelLeading="legacy" />'
     )
     expect(r.code).toContain(
-      'icon={<DmView />} secondTitle="2" description={cb()} />'
+      '<Button title="Guest" onPress={cb} description={cb()} shape="r10" variant="white" label="sm" labelLeading="legacy" style={styles.button} />'
     )
+  })
+
+  it("writes a label face the classes pin: WelcomeScreen's Latin and Arabic buttons", () => {
+    // WelcomeScreen.tsx:61 (font-montserrat500) and :70 (font-sans700)
+    const r = convert(
+      '<DmView><ActionBtn title="English" onPress={cb} className="mr-[10] flex-1" textClassName="font-montserrat500" /><ActionBtn title="Arabic" onPress={cb} className="ml-[10] flex-1" textClassName="font-sans700" /></DmView>',
+      { proven: "all" }
+    )
+    expect(r.code).toContain(
+      '<Button title="English" onPress={cb} labelFamily="latin" style={[a.mr_10, a.flex_1]} />'
+    )
+    expect(r.code).toContain(
+      '<Button title="Arabic" onPress={cb} labelWeight="bold" labelFamily="arabic" style={[a.ml_10, a.flex_1]} />'
+    )
+  })
+
+  it("draws nothing for a class NativeWind drops: rounded-[12] keeps the 28 corners (skeptic H4)", () => {
+    // RequestSummaryScreen.tsx:467
+    const r = convert(
+      '<ActionBtn title="Request" onPress={cb} isLoading={n} disable={on} className="h-[50] rounded-[12]" textClassName="text-16 font-custom700" />',
+      { proven: "all" }
+    )
+    expect(r.code).toContain(
+      '<Button title="Request" onPress={cb} isLoading={n} disabled={on} size={px(50)} labelWeight="bold" />'
+    )
+    expect(r.code).not.toContain("shape=")
+    expect(site(r).dropped).toEqual([
+      expect.objectContaining({ class: "rounded-[12]" }),
+    ])
+    expect(r.latent).toEqual([
+      expect.objectContaining({
+        tag: "ActionBtn",
+        class: "rounded-[12]",
+        reason: expect.stringContaining('"border-radius: 12"'),
+      }),
+    ])
   })
 
   it("writes a label step one of a conditional label's sizes lacks as its value", () => {
@@ -332,15 +459,77 @@ describe("rule 2: ActionBtn -> Button", () => {
     expect(lookName({ label: "muted" })).toBe("Muted")
   })
 
-  it("leaves what Button can't say, and any look its parity hasn't drawn", () => {
+  it("leaves what Button can't say: bg-grey19 and opacity-50 while disabled, a caller's red under the spinner", () => {
+    const left = (body) =>
+      convert(body, { extra: 'import clsx from "clsx"\n', proven: "all" })
+        .sites.map((x) => [x.reason, x.detail])
+    // AddNewAddressScreen.tsx:234 (and ChangePassword, MyInformation,
+    // UpdateEmail): Button has no #E5E5E5 state fill yet (CA-W0-B's)
+    expect(
+      left(
+        '<ActionBtn title="Save" onPress={cb} className={`h-[42] w-full ${on ? "bg-red" : "bg-grey19"}`} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!on} />'
+      )
+    ).toEqual([
+      ["actionbtn-look", "no Button variant for primary|bg-grey19"],
+      ["actionbtn-look", "no Button variant for primary|bg-grey19"],
+    ])
+    // FoodItemScreen.tsx:385: no dim prop yet (CA-W0-B's)
+    expect(
+      left(
+        '<ActionBtn title="Add" onPress={cb} disable={on} className={clsx("mt-[23] h-[41]", on && "opacity-50")} textClassName="text-13 leading-[16px] font-custom600" />'
+      )[0]
+    ).toEqual(["actionbtn-look", "no Button variant for primary|opacity-50"])
+    // GateRegisterScreen.tsx:222 and RegisterScreen.tsx:326: bg-red comes
+    // after ActionBtn's grey, so the spinner sits on red (CA-W0-B)
+    expect(
+      left(
+        '<ActionBtn title="Join" onPress={cb} className={`mt-[40] h-[44] ${on ? "bg-red" : ""}`} isLoading={n} disable={!on} />'
+      )[0]
+    ).toEqual([
+      "actionbtn-look",
+      "bg-red draws over ActionBtn's loading fill (the caller's classes come last), where Button draws its loading fill",
+    ])
+  })
+
+  it("leaves a prop Button doesn't take, and any look no parity has drawn in customerapp's config", () => {
     const r = convert(
-      `<DmView><ActionBtn title="a" onPress={cb} hitSlop={4} /><ActionBtn title="b" onPress={cb} className="h-[47] py-[4]" /><ActionBtn title="c" onPress={cb} variant="white" /></DmView>`
+      `<DmView><ActionBtn title="a" onPress={cb} hitSlop={4} /><ActionBtn title="b" onPress={cb} className="h-[47] py-[4]" /><ActionBtn title="c" onPress={cb} ${FOOD} /></DmView>`
     )
-    expect(r.sites.map((s) => [s.reason, s.detail.split(":")[0]])).toEqual([
+    expect(r.sites.map((x) => [x.reason, x.detail.split(":")[0]])).toEqual([
       ["actionbtn-unsupported-prop", "`hitSlop` has no Button equivalent"],
       ["actionbtn-look", "a container class Button has no prop for"],
-      ["unproven-look", 'a look the Button parity hasn\'t drawn ({"onPress"'],
+      ["unproven-look", "a look no Button parity has drawn in customerapp's config ({\"className\""],
+      ["unproven-look", "a look no Button parity has drawn in customerapp's config ({\"className\""],
     ])
+    // proven by a parity, the same site converts
+    const look = {
+      className: "h-[48]",
+      onPress: true,
+      textClassName: "text-15 leading-[19px] font-custom600",
+    }
+    const proven = convert(`<ActionBtn title="c" onPress={cb} ${FOOD} />`, {
+      proven: [look],
+    })
+    expect(proven.code).toContain(
+      '<Button title="c" onPress={cb} size={px(48)} label="md" labelWeight="semibold" />'
+    )
+  })
+
+  it("reads the proven looks from the looks proof's cases file, none until it exists", () => {
+    const { PROVEN, TRANSLATOR } = require("../ds-codemod/actionbtn")
+    expect(path.relative(ROOT, PROVEN)).toBe(
+      "src/testing/buttonLooks/__tests__/__parity__/Button.looks.cases.json"
+    )
+    expect(path.relative(ROOT, TRANSLATOR)).toBe(
+      "src/testing/buttonLooks/__fixtures__/translate.ts"
+    )
+    // proapp's looks were drawn in Poppins: none of them came along
+    expect(fs.existsSync(PROVEN)).toBe(false)
+    expect(
+      fs.existsSync(
+        path.join(ROOT, "src/components/__tests__/ds/__parity__")
+      )
+    ).toBe(false)
   })
 })
 
@@ -353,16 +542,17 @@ describe("rule 3: DmView and the hosts NativeWind styles", () => {
     expect(r.styles).toBeNull()
   })
 
-  it("names every colour: shared's palette, then proapp's dsColors, the class's own name first", () => {
+  it("names every colour: shared's palette, then customerapp's dsColors, the class's own name first", () => {
+    // MapPinPicker.tsx:47/:49, CalendarTimePicker.tsx:200, a shared colour
     const r = convert(
-      '<DmView><DmView className="bg-grey26" /><DmView className="bg-homeCardSuspended" /><DmView className="bg-homeInk border-homeBorder" /></DmView>'
+      '<DmView><DmView className="bg-grey26" /><DmView className="bg-red7" /><DmView className="bg-blue2" /><DmView className="bg-red/10" /><DmView className="bg-grey55" /></DmView>'
     )
-    // one value, two names: each class keeps its own
     expect(r.styles.code).toContain("backgroundColor: colors.grey26")
-    expect(r.styles.code).toContain(
-      "backgroundColor: dsColors.homeCardSuspended"
-    )
-    expect(r.styles.code).toContain("backgroundColor: dsColors.homeInk")
+    expect(r.styles.code).toContain("backgroundColor: dsColors.red7")
+    expect(r.styles.code).toContain("backgroundColor: dsColors.blue2")
+    expect(r.styles.code).toContain("backgroundColor: dsColors.redAlpha10")
+    // shared's grey55 is another colour: the class's own name is the app's
+    expect(r.styles.code).toContain("backgroundColor: dsColors.grey55")
     expect(r.styles.code).toContain(
       'import colors from "@tappler/shared/src/styles/colors"'
     )
@@ -601,66 +791,81 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     ])
   })
 
-  it("says the edit a component draws a class string as (MyServiceDetailItem's white badge)", () => {
-    const r = convert(
-      [
-        "<>",
-        '<MyServiceDetailItem Icon={null} title="t" descr="d" titleBtn="b" btnVariant="white" classNameBtn="border-red" />',
-        '<MyServiceDetailItem Icon={null} title="t" descr="d" titleBtn="b" btnVariant="grey" classNameBtn="border-red" />',
-        "</>",
-      ].join(""),
-      {
-        header:
-          'import MyServiceDetailItem from "components/MyServiceDetailItem"\n',
-      }
-    ).sites
-    expect(r.map((s) => [s.reason, s.detail])).toEqual([
-      [
-        "hand-edit",
-        'btnHairline="brand": the white badge\'s red hairline, which is what the class draws on it',
+  it("says the edit a component draws a class string as (a HAND_EDITS row)", () => {
+    // customerapp's table is empty: a row for the Badge fixture, shaped like
+    // proapp's MyServiceDetailItem white badge, shows the mechanism
+    const { HAND_EDITS } = require("../ds-codemod/twins")
+    expect(HAND_EDITS).toEqual({})
+    HAND_EDITS.Badge = {
+      classNameBtn: [
+        {
+          classes: "border-red",
+          when: { btnVariant: "white" },
+          edit: 'btnHairline="brand"',
+          why: "the white badge's red hairline, which is what the class draws on it",
+        },
       ],
-      // only the white badge reads btnHairline
-      [
-        "waiting-on-component",
-        "MyServiceDetailItem doesn't declare `btnStyle`",
-      ],
-    ])
+    }
+    try {
+      const r = convert(
+        [
+          "<>",
+          '<Badge titleBtn="b" btnVariant="white" classNameBtn="border-red" />',
+          '<Badge titleBtn="b" btnVariant="grey" classNameBtn="border-red" />',
+          "</>",
+        ].join(""),
+        {
+          file: path.join(SLOTS, "Unit.tsx"),
+          header: 'import Badge from "./Badge"\n',
+        }
+      ).sites
+      expect(r.map((x) => [x.reason, x.detail])).toEqual([
+        [
+          "hand-edit",
+          'btnHairline="brand": the white badge\'s red hairline, which is what the class draws on it',
+        ],
+        // only the white badge reads it
+        ["waiting-on-component", "Badge doesn't declare `btnStyle`"],
+      ])
+    } finally {
+      delete HAND_EDITS.Badge
+    }
   })
 })
 
 describe("rule 5: slots the codemod is told about", () => {
-  const header =
-    'import HeaderOnboarding from "components/HeaderOnboarding"\nimport Screen from "components/Screen"\n'
-
-  it("moves HeaderOnboarding's className to its style, unless the site sets what style now beats", () => {
-    const r = convert(
-      '<><HeaderOnboarding title="t" className="px-[15] border-b-0" /><HeaderOnboarding title="t" gutter className="px-[15]" /></>',
-      { header }
-    )
-    expect(r.code).toContain(
-      '<HeaderOnboarding title="t" style={[styles.header, a.border_b_0]} />'
-    )
-    expect(r.styles.code).toMatch(
-      /header: \{\s+paddingLeft: 15,\s+paddingRight: 15,\s+\},/
-    )
-    expect(r.sites[1]).toMatchObject({
-      status: "left",
-      detail: expect.stringContaining("`gutter`"),
-    })
-  })
-
-  it("follows a <Screen header> object to HeaderOnboarding's slot", () => {
-    const r = convert(
-      '<Screen header={{ title: "t", className: "px-[16]" }} />',
-      { header }
-    )
-    expect(r.code).toContain(
-      '<Screen header={{ title: "t", style: a.px_16 }} />'
-    )
-    expect(r.sites[0]).toMatchObject({
-      attr: "header.className",
-      status: "converted",
-    })
+  it("moves a className to the slot KNOWN states, unless the site sets what the slot now beats", () => {
+    // customerapp's table is empty: a row for the Headed fixture, shaped like
+    // proapp's HeaderOnboarding, shows the mechanism. (proapp's <Screen
+    // header> object rule follows its Screen component, which customerapp
+    // doesn't have.)
+    const { KNOWN } = require("../ds-codemod/slots")
+    expect(KNOWN).toEqual({})
+    const key = "scripts/__fixtures__/ds-codemod/slots/Headed/Headed.tsx"
+    KNOWN[key] = {
+      className: { slot: "style", unless: ["bordered", "gutter", "style"] },
+    }
+    try {
+      const r = convert(
+        '<><Headed title="t" className="px-[15] border-b-0" /><Headed title="t" gutter className="px-[15]" /></>',
+        {
+          file: path.join(SLOTS, "Unit.tsx"),
+          header: 'import Headed from "./Headed"\n',
+        }
+      )
+      expect(r.code).toContain(
+        '<Headed title="t" style={[styles.headed, a.border_b_0]} />'
+      )
+      expect(r.styles.code).toMatch(
+        /headed: \{\s+paddingLeft: 15,\s+paddingRight: 15,\s+\},/
+      )
+      expect(r.sites[1]).toMatchObject({
+        status: "left",
+        detail: expect.stringContaining("`gutter`"),
+      })
+    } finally {
+      delete KNOWN[key]
+    }
   })
 
   it("reads a slot its component declares with @dsSlot", () => {
@@ -745,8 +950,9 @@ describe("rule 5: slots the codemod is told about", () => {
 })
 
 describe("rule 5: shared components' style twins, read off their props types", () => {
+  // MainModal as customerapp imports it: tappler-shared's own, no wrapper
   const header =
-    'import MainModal from "components/MainModal"\nimport { DmChecbox, DmInput } from "@tappler/shared/src/components/UI"\nimport JobLocationMap from "@tappler/shared/src/components/JobLocationMap"\n'
+    'import { MainModal } from "@tappler/shared/src/components"\nimport { DmChecbox, DmInput } from "@tappler/shared/src/components/UI"\nimport JobLocationMap from "@tappler/shared/src/components/JobLocationMap"\n'
 
   it("moves MainModal's classes to the twins declared after them, the card's rounded-NN to radius", () => {
     const r = convert(
@@ -766,8 +972,7 @@ describe("rule 5: shared components' style twins, read off their props types", (
   })
 
   it("renames a twin the component renamed, and a class moving to it joins it there", () => {
-    // LoadingModal's and MyServiceWorkPhotosScreen's: styleHightWrapper is
-    // wrapperStyle now, and classNameWrapperHight's twin
+    // styleHightWrapper is wrapperStyle now, and classNameWrapperHight's twin
     const r = convert(
       '<MainModal isVisible onClose={cb} classNameWrapperHight="self-center" styleHightWrapper={{ opacity: 0.5 }} />',
       { header }
@@ -776,23 +981,41 @@ describe("rule 5: shared components' style twins, read off their props types", (
     expect(r.code).not.toContain("styleHightWrapper")
   })
 
-  it("leaves what a component drops, and writes a text's typography as its *Type", () => {
+  it("moves MainModal's button classes to their twin: shared's MainModal draws them here", () => {
+    // In proapp a wrapper dropped every button class; customerapp passes
+    // them to shared's MainModal, whose own button draws them
+    // (customerapp-plan §1b, MainModal.tsx:372-414).
     const r = convert(
       '<MainModal isVisible onClose={cb} classNameBtn="h-[30]" classNameDescr="text-13 leading-[20px] font-custom400" />',
       { header }
     )
-    expect(r.sites.map((x) => [x.attr, x.reason]).sort()).toEqual([
-      ["classNameBtn", "discarded-by-component"],
-      ["classNameDescr", undefined],
+    expect(r.sites.map((x) => [x.attr, x.status]).sort()).toEqual([
+      ["classNameBtn", "converted"],
+      ["classNameDescr", "converted"],
     ])
+    expect(r.code).toMatch(/actionBtnStyle=\{styles\.\w+\}/)
     // DESCR is 13/legacy/regular/centred: the 20 is 13's loose, x 1.32 in
     // Arabic as the leading-[20px] class was
     expect(r.code).toContain('descrType={{ size: 13, leading: "loose" }}')
   })
 
+  it("leaves a class prop its component takes and draws nothing with", () => {
+    // the Dropping fixture, as customerapp's RateComponent:16 and SearchBar:19
+    const r = convert('<Dropping className="mt-[4]" starClassName="h-[10]" />', {
+      file: path.join(SLOTS, "Unit.tsx"),
+      header: 'import Dropping from "./Dropping"\n',
+    })
+    expect(site(r, "starClassName")).toMatchObject({
+      status: "left",
+      reason: "discarded-by-component",
+      detail:
+        "Dropping takes `starClassName` and draws nothing with it: delete it by hand (pass 2)",
+    })
+  })
+
   it("works a *Type out from the component's own text and what the classes drew over it", () => {
-    // MyProfileScreen's two size-only titles (build-w15-fix.md): a size
-    // class over MainModal's own px(27), and the same with a margin and a face
+    // two size-only titles: a size class over MainModal's own px(27), and
+    // the same with a margin and a face
     const r = convert(
       '<><MainModal isVisible onClose={cb} classNameTitle="text-15" /><MainModal isVisible onClose={cb} classNameTitle="mt-[0] text-16 font-custom600" /></>',
       { header }
@@ -980,7 +1203,7 @@ describe("rule 6: classes NativeWind drops", () => {
   })
 
   it("lists what an ActionBtn's label drops too, under the attribute it is written in", () => {
-    // MyAccountChangePasswordScreen's Change password (review-w2b-P3.md F1):
+    // proapp's MyAccountChangePasswordScreen shape (review-w2b-P3.md F1):
     // font-400 is no class, so the disabled label never drew it
     const r = convert(
       [
@@ -995,7 +1218,7 @@ describe("rule 6: classes NativeWind drops", () => {
         '  title="t"',
         "/>",
       ].join("\n"),
-      { extra: 'import clsx from "clsx"\n' }
+      { extra: 'import clsx from "clsx"\n', proven: "all" }
     )
     expect(r.code).toContain("<Button")
     expect(site(r, "textClassName")).toMatchObject({
@@ -1047,7 +1270,7 @@ describe("rule 7: imports", () => {
   it("removes DmText, ActionBtn and clsx once nothing uses them, and keeps what is still used", () => {
     const r = convert(
       '<DmView className={clsx("mt-[4]")}><DmText className="text-13">a</DmText><ActionBtn title="b" onPress={cb} /></DmView>',
-      { extra: 'import clsx from "clsx"\n' }
+      { extra: 'import clsx from "clsx"\n', proven: "all" }
     )
     expect(r.code).toContain(
       'import { DmView } from "@tappler/shared/src/components/UI"'

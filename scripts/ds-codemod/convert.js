@@ -50,7 +50,7 @@ const PRIMITIVES = {
 }
 const DS_SOURCE = "@tappler/shared/src/ds"
 const PALETTE_SOURCE = "@tappler/shared/src/styles/colors"
-// proapp's own colours, written by yarn ds:colors.
+// The app's own colours, written by yarn ds:colors.
 const APP_PALETTE_SOURCE = "styles/dsColors"
 
 const BOOLEAN_NAME =
@@ -1193,6 +1193,7 @@ const convertSource = (code, file, options = {}) => {
             hint,
             hasChildren,
             lookConst,
+            proven: options.provenLooks,
           })
           checkConditionUse(table, [
             ...condRefs(result.styleExpr),

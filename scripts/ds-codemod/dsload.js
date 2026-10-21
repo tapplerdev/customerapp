@@ -7,9 +7,10 @@
  * files touch (helpers.ts reads Dimensions at import time).
  *
  * The Latin faces are registered from index.js's setLatinFontWeights call,
- * the way proapp registers them before it renders anything. proapp's own
- * colours (src/styles/dsColors.ts, yarn ds:colors) are loaded beside
- * shared's palette.
+ * the way an app registers them before it renders anything; customerapp's
+ * index.js has none, so shared's Montserrat stands. The app's own colours
+ * (src/styles/dsColors.ts, yarn ds:colors) are loaded beside shared's
+ * palette.
  */
 const fs = require("fs")
 const path = require("path")
@@ -155,7 +156,7 @@ const loadDs = () => {
   const radius = load(path.join(DS_DIR, "radius.ts"))
   const buttonStyles = load(path.join(DS_DIR, "buttonStyles.ts"))
   const palette = load(path.join(SHARED_SRC, "styles", "colors.ts")).default
-  // proapp's own colours (yarn ds:colors), when the app has them.
+  // The app's own colours (yarn ds:colors), when the app has them.
   const appPalette = fs.existsSync(APP_PALETTE) ? load(APP_PALETTE).default : {}
   ds = {
     helpers,

@@ -15,7 +15,7 @@
  * and the rest of it stays the style; a typography key the font layer draws
  * over is reported, since it renders nothing today.
  */
-const { NwResolveError, resolveDmText } = require("../nw-resolve")
+const { NwResolveError, resolveDmText, shippedFaces } = require("../nw-resolve")
 const { assignments, atomsOf, evaluate } = require("./classexpr")
 const { Unconvertible, styleFromIR } = require("./plain")
 const { deepEqual, evalStyle, flatten, staticExpr } = require("./styles")
@@ -63,9 +63,17 @@ const emulateText = (ds, lang, p, extra = []) =>
 /**
  * size, weight, family and leading that reproduce DmText's fontSize,
  * lineHeight and fontFamily in both languages, preferring a step to legacy
- * to px(), and the language's own face to a pinned one.
+ * to px(), and the language's own face to a pinned one. `named`: the weight
+ * the classes name last (`font-sans700`'s 700), tried first, since TheSans
+ * draws 600 and 700 alike and the source said which (as the ActionBtn
+ * translator does).
  */
-const mapTypography = (ds, en, ar) => {
+const NAMED_WEIGHT = { 400: "regular", 500: "medium", 600: "semibold", 700: "bold" }
+const namedWeight = (str) => {
+  const all = [...(str || "").matchAll(/font-(?:custom|montserrat|sans)(\d{3})/g)]
+  return all.length ? NAMED_WEIGHT[all[all.length - 1][1]] || null : null
+}
+const mapTypography = (ds, en, ar, named = null) => {
   const size = en.fontSize
   if (ar.fontSize !== size)
     throw new Unconvertible("not-expressible", "fontSize differs by language")
@@ -73,8 +81,11 @@ const mapTypography = (ds, en, ar) => {
   if (!Number.isInteger(size) || size <= 0)
     throw new Unconvertible("off-scale-size", `text size ${size}`)
   let face = null
+  const weights = named
+    ? [named, ...WEIGHTS.filter((w) => w !== named)]
+    : WEIGHTS
   for (const family of FAMILIES) {
-    for (const weight of family === "system" ? ["regular"] : WEIGHTS) {
+    for (const weight of family === "system" ? ["regular"] : weights) {
       const e = ds.textStyle("en", size, weight, "legacy", family).fontFamily
       const a = ds.textStyle("ar", size, weight, "legacy", family).fontFamily
       if (e === en.fontFamily && a === ar.fontFamily) {
@@ -84,11 +95,25 @@ const mapTypography = (ds, en, ar) => {
     }
     if (face) break
   }
-  if (!face)
+  if (!face) {
+    // customerapp's font-sans400/500 (TheSans-Regular) and font-sans600
+    // (TheSans-SemiBold) name faces it doesn't ship: the device draws the
+    // system face, which no Text family spells with that fontFamily. A bridge
+    // keeps it by hand (WelcomeScreen:83, customerapp-plan CA5).
+    const shipped = shippedFaces()
+    const unshipped = [
+      ...new Set([en.fontFamily, ar.fontFamily].filter(Boolean)),
+    ].filter((f) => shipped && !shipped.has(f))
+    if (unshipped.length)
+      throw new Unconvertible(
+        "unshipped-face",
+        `${unshipped.join(" / ")} isn't a face the app ships, so the device draws the system face; no Text family writes that fontFamily (bridge it by hand)`
+      )
     throw new Unconvertible(
       "font-not-expressible",
       `faces ${en.fontFamily || "(system)"} / ${ar.fontFamily || "(system)"} (en/ar) match no weight and family`
     )
+  }
   const candidates = [
     ...(onScale(ds, size) ? STEPS.filter((s) => s in ds.LEADING[size]) : []),
     "legacy",
@@ -232,6 +257,21 @@ const convertDmText = ({
       throw error
     }
     for (const d of en.dropped) dropped.set(d.class, d)
+    // A weight with no face in either language (customerapp's
+    // font-custom800): DmText draws the system face, as Text family="system"
+    // does, and the class is listed with the drops, since it renders nothing.
+    for (const c of en.consumed) {
+      const arFace = ar.consumed.find((x) => x.class === c.class)
+      if (
+        /no face for this weight/.test(c.by) &&
+        arFace &&
+        /no face for this weight/.test(arFace.by)
+      )
+        dropped.set(c.class, {
+          class: c.class,
+          reason: `no face for weight ${c.class.slice(-3)} in English or Arabic: DmText draws the system face`,
+        })
+    }
     if ("fontWeight" in en.style)
       throw new Unconvertible(
         "fontWeight-class",
@@ -245,7 +285,7 @@ const convertDmText = ({
         "fontWeight-in-style",
         `fontWeight ${JSON.stringify(drawn.en.fontWeight ?? drawn.ar.fontWeight)} in the element's style, which Text leaves to the face`
       )
-    const typo = mapTypography(ds, drawn.en, drawn.ar)
+    const typo = mapTypography(ds, drawn.en, drawn.ar, namedWeight(str))
     if (
       en.style.color !== ar.style.color ||
       en.style.textAlign !== ar.style.textAlign

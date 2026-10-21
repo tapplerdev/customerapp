@@ -18,11 +18,12 @@
  * - TWIN_RENAMES: a twin a call site already passes under an old name, and
  *   the new one (MainModal's styleHightWrapper is wrapperStyle now, drawn in
  *   the same place when only one is given).
- * All are keyed by the shared component's file name. And one for proapp's:
+ * All are keyed by the shared component's file name. And one for the app's
+ * own components:
  * - HAND_EDITS: a class string a component draws as a typed prop the codemod
- *   can't prove from the classes (MyServiceDetailItem's white badge draws
- *   `classNameBtn="border-red"` as `btnHairline="brand"`, shown by its own
- *   parity test): the site is left, and its reason says the edit.
+ *   can't prove from the classes (proapp's MyServiceDetailItem's white badge
+ *   drew `classNameBtn="border-red"` as `btnHairline="brand"`, shown by its
+ *   own parity test): the site is left, and its reason says the edit.
  *
  * And what a twin refuses: the keys its type bans (`NoShorthands`,
  * `NoFieldTypography`, `{ height?: never }`...), read from the type text and
@@ -62,19 +63,10 @@ const TWIN_RENAMES = {
 
 // By component file name, then class prop: the whole class string (as
 // written, spaces aside), the literal props the site must also pass, and the
-// edit (review-w2a-0.md S2).
-const HAND_EDITS = {
-  MyServiceDetailItem: {
-    classNameBtn: [
-      {
-        classes: "border-red",
-        when: { btnVariant: "white" },
-        edit: 'btnHairline="brand"',
-        why: "the white badge's red hairline, which is what the class draws on it",
-      },
-    ],
-  },
-}
+// edit (review-w2a-0.md S2). proapp's one entry was its MyServiceDetailItem's
+// white badge; customerapp has none yet (W1 adds one where a component draws
+// a class string a twin can't say).
+const HAND_EDITS = {}
 
 // Fields whose input and placeholder classes both write one FieldType
 // (typetwin.js convertFields): the type prop, and the two class props.

@@ -453,14 +453,10 @@ const slotFor = (def, attr) => {
  * shipped with them. `unless`: props that, set at the call site, would come
  * before the slot and so change what wins.
  */
-const KNOWN = {
-  // style lands on the root through rootStyle, after bordered and gutter
-  // (each "wins over className"): exact only while the call site sets
-  // neither, and passes no style of its own.
-  "src/components/HeaderOnboarding/HeaderOnboarding.tsx": {
-    className: { slot: "style", unless: ["bordered", "gutter", "style"] },
-  },
-}
+// By file under the app root, then class prop. proapp's one entry was its
+// HeaderOnboarding (style lands on the root through rootStyle, after
+// bordered and gutter); customerapp has none yet.
+const KNOWN = {}
 
 /**
  * A slot a component declares in its props' docs: `@dsSlot classNameTitle`
@@ -811,6 +807,7 @@ const twinRenames = (def, attrNames) => {
 }
 
 module.exports = {
+  KNOWN,
   componentShape,
   membersOf,
   slotFor,
