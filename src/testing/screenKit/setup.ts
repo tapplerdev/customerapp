@@ -4,12 +4,13 @@
    for (in whichever module registry asks). */
 /**
  * Jest only: jest.parity.config.js's setup, after the app's jest.setup.js
- * (whose true-sheet and keyboard-controller mocks stay; its Reanimated mock
- * is replaced by the fuller one here). Every native module and native view a
- * screen can reach is swapped for a stand-in (nativeMocks.ts); the network
- * is shut (backend.ts answers RTK Query; anything else that tries is
- * refused, loudly); the store is the kit's (store.ts). No component of ours
- * is mocked.
+ * (whose true-sheet stand-in, true-sheet/reanimated mock and Reanimated and
+ * worklets stand-ins stay). Every native module and native view a screen can
+ * reach is swapped for a stand-in (nativeMocks.ts); the network is shut
+ * (backend.ts answers RTK Query and the render's `http` answers; anything
+ * else that tries is refused, loudly); the store is the kit's (store.ts); the
+ * app's module state is fresh per row (rowState.ts). No component of ours is
+ * mocked.
  */
 import { jest } from "@jest/globals"
 
@@ -36,18 +37,57 @@ jest.mock("@reduxjs/toolkit/query/react", () => {
 })
 
 // ---------------------------------------------------------------------------
+// Module state, fresh for each row (rowState.ts): each module's own code,
+// evaluated again per row. The names match rowState's PER_ROW (pinned by
+// screenKit.parity.tsx).
+
+jest.mock("services/chatReadRegistry", () =>
+  require("testing/screenKit/rowState").perRow("services/chatReadRegistry")
+)
+jest.mock("services/svgCache", () =>
+  require("testing/screenKit/rowState").perRow("services/svgCache")
+)
+jest.mock("services/chatCache", () =>
+  require("testing/screenKit/rowState").perRow("services/chatCache")
+)
+jest.mock("hooks/useAttachments", () =>
+  require("testing/screenKit/rowState").perRow("hooks/useAttachments")
+)
+jest.mock("helpers/layoutAnimation", () =>
+  require("testing/screenKit/rowState").perRow("helpers/layoutAnimation")
+)
+jest.mock("events/questionFlowEventBus", () =>
+  require("testing/screenKit/rowState").perRow("events/questionFlowEventBus")
+)
+jest.mock("events/messageBannerEventBus", () =>
+  require("testing/screenKit/rowState").perRow("events/messageBannerEventBus")
+)
+jest.mock("@tappler/shared/src/events/AddressBus", () =>
+  require("testing/screenKit/rowState").perRow(
+    "@tappler/shared/src/events/AddressBus"
+  )
+)
+jest.mock("@tappler/shared/src/components/NativeSheet/dimStore", () =>
+  require("testing/screenKit/rowState").perRow(
+    "@tappler/shared/src/components/NativeSheet/dimStore"
+  )
+)
+jest.mock("@tappler/shared/src/components/NativeSheet/dimProgress", () =>
+  require("testing/screenKit/rowState").perRow(
+    "@tappler/shared/src/components/NativeSheet/dimProgress"
+  )
+)
+
+// ---------------------------------------------------------------------------
 // Libraries' own jest mocks, where they ship one.
 
 jest.mock("react-native-localize", () =>
   jest.requireActual("react-native-localize/mock")
 )
+// check/request answer "granted" unless the render says otherwise (the
+// engine's `permissions` option sets them per row).
 jest.mock("react-native-permissions", () =>
   jest.requireActual("react-native-permissions/mock")
-)
-jest.mock("react-native-device-info", () =>
-  jest.requireActual(
-    "react-native-device-info/jest/react-native-device-info-mock"
-  )
 )
 // Gesture handler's documented jest setup: its native module and buttons
 // mocked, the rest its real JS.
@@ -62,20 +102,11 @@ jest.mock("react-native/Libraries/Modal/Modal", () =>
     jest.requireActual("@react-native/jest-preset/jest/mocks/Modal")
   )
 )
-jest.mock("react-native-reanimated", () =>
-  require("testing/screenKit/nativeMocks").reanimated()
-)
-jest.mock("react-native-worklets", () =>
-  require("testing/screenKit/nativeMocks").worklets()
-)
 jest.mock("@shopify/flash-list", () =>
   require("testing/screenKit/nativeMocks").flashList()
 )
 jest.mock("react-native-reanimated-carousel", () =>
   require("testing/screenKit/nativeMocks").carousel()
-)
-jest.mock("react-native-sortables", () =>
-  require("testing/screenKit/nativeMocks").sortables()
 )
 jest.mock("react-native-maps", () =>
   require("testing/screenKit/nativeMocks").maps()
@@ -101,29 +132,8 @@ jest.mock("react-native-drop-shadow", () =>
 jest.mock("@react-native-community/slider", () =>
   require("testing/screenKit/nativeMocks").slider()
 )
-jest.mock("react-native-date-picker", () =>
-  require("testing/screenKit/nativeMocks").datePicker()
-)
-jest.mock("react-native-color-matrix-image-filters", () =>
-  require("testing/screenKit/nativeMocks").colorMatrixFilters()
-)
-jest.mock("react-native-svg-uri", () =>
-  require("testing/screenKit/nativeMocks").svgUri()
-)
-jest.mock("react-native-image-crop-tools", () =>
-  require("testing/screenKit/nativeMocks").cropTools()
-)
 jest.mock("react-native-gesture-image-viewer", () =>
   require("testing/screenKit/nativeMocks").gestureImageViewer()
-)
-jest.mock("react-native-vision-camera", () =>
-  require("testing/screenKit/nativeMocks").visionCamera()
-)
-jest.mock("vision-camera-cropper", () =>
-  require("testing/screenKit/nativeMocks").visionCameraCropper()
-)
-jest.mock("paymob-reactnative", () =>
-  require("testing/screenKit/nativeMocks").paymob()
 )
 jest.mock("react-native-mmkv", () =>
   require("testing/screenKit/nativeMocks").mmkv()
@@ -134,23 +144,11 @@ jest.mock("@notifee/react-native", () =>
 jest.mock("@react-native-firebase/messaging", () =>
   require("testing/screenKit/nativeMocks").firebaseMessaging()
 )
-jest.mock("@react-native-firebase/auth", () =>
-  require("testing/screenKit/nativeMocks").firebaseAuth()
-)
 jest.mock("@react-native-firebase/app", () =>
   require("testing/screenKit/nativeMocks").firebaseApp()
 )
-jest.mock("@react-native-google-signin/google-signin", () =>
-  require("testing/screenKit/nativeMocks").googleSignin()
-)
 jest.mock("@react-native-community/geolocation", () =>
   require("testing/screenKit/nativeMocks").geolocation()
-)
-jest.mock("@react-native-community/netinfo", () =>
-  require("testing/screenKit/nativeMocks").netinfo()
-)
-jest.mock("@react-native-clipboard/clipboard", () =>
-  require("testing/screenKit/nativeMocks").clipboard()
 )
 jest.mock("@react-native-camera-roll/camera-roll", () =>
   require("testing/screenKit/nativeMocks").cameraRoll()
@@ -161,32 +159,17 @@ jest.mock("@react-native-documents/picker", () =>
 jest.mock("react-native-image-crop-picker", () =>
   require("testing/screenKit/nativeMocks").imageCropPicker()
 )
-jest.mock("react-native-blob-util", () =>
-  require("testing/screenKit/nativeMocks").blobUtil()
-)
 jest.mock("react-native-compressor", () =>
   require("testing/screenKit/nativeMocks").compressor()
 )
 jest.mock("react-native-create-thumbnail", () =>
   require("testing/screenKit/nativeMocks").createThumbnail()
 )
-jest.mock("react-native-pdf-thumbnail", () =>
-  require("testing/screenKit/nativeMocks").pdfThumbnail()
-)
-jest.mock("react-native-haptic-feedback", () =>
-  require("testing/screenKit/nativeMocks").hapticFeedback()
-)
 jest.mock("react-native-orientation-locker", () =>
   require("testing/screenKit/nativeMocks").orientationLocker()
 )
 jest.mock("react-native-restart", () =>
   require("testing/screenKit/nativeMocks").restart()
-)
-jest.mock("react-native-bootsplash", () =>
-  require("testing/screenKit/nativeMocks").bootsplash()
-)
-jest.mock("react-native-geocoding", () =>
-  require("testing/screenKit/nativeMocks").geocoding()
 )
 jest.mock("socket.io-client", () =>
   require("testing/screenKit/nativeMocks").socketIo()

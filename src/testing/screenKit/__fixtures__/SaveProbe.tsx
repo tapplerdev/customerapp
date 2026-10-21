@@ -5,17 +5,13 @@
 import React, { useState } from "react"
 import { Text, View } from "react-native"
 
-import { useAuthResetPasswordMutation } from "services/api"
+import { useUpdateCustomerMutation } from "services/api"
 
 const SaveProbe = () => {
-  const [reset] = useAuthResetPasswordMutation()
+  const [update] = useUpdateCustomerMutation()
   const [saved, setSaved] = useState("not saved")
   const save = async () => {
-    await reset({
-      email: "pro@example.com",
-      userType: "pro",
-      lang: "en",
-    }).unwrap()
+    await update({ firstName: "Mona" }).unwrap()
     setSaved("saved")
   }
   return (

@@ -1,128 +1,104 @@
 /**
- * Jest only. The signed-in pro a screen renders for: made up, typed by the
- * app's own types (so a field the screens read can't silently go missing),
- * in two account types. No real account's data.
+ * Jest only. Who a screen renders for: a signed-in customer, a guest who has
+ * picked a location, and a fresh install. Made up, typed by the app's own
+ * types (so a field the screens read can't silently go missing). No real
+ * account's data.
  */
 import type { AuthState } from "store/auth/slice"
-import type { UserType } from "types"
+import type { CustomerMeResponse, CustomerSavedAddress } from "types/auth"
 
-const ADDRESS = {
-  streetAddress: "12 Tahrir Street",
-  unitNumber: "4",
-  longitude: 31.2357,
-  latitude: 30.0444,
-  city: "Dokki",
-  governorate: "Giza",
-  location: { lat: 30.0444, lng: 31.2357 },
+/** A saved address, as GET /customers/me lists it. */
+export const SAVED_HOME: CustomerSavedAddress = {
+  id: 501,
+  name: "Home",
+  type: "home",
+  address: {
+    streetAddress: "12 Tahrir Street",
+    city: "Dokki",
+    governorate: "Giza",
+    unitNumber: "4",
+    location: { lat: 30.0444, lng: 31.2357 },
+  },
 }
 
-const BASE: UserType = {
-  id: 1001,
-  email: "pro.parity@example.com",
-  registeredName: "Omar Hassan",
-  firstName: "Omar",
-  lastName: "Hassan",
-  displayName: "full",
-  proType: "individual",
-  mobileNumber: "+201000000000",
-  accountStatus: "active",
-  lastSeen: "2026-10-20T07:30:00.000Z",
-  signupPlatform: "email",
-  pointsBalance: 120,
-  informationAbout:
-    "Ten years fixing plumbing and electrics in Giza and Cairo. Clean work, fair prices.",
-  profilePhoto: "https://example.com/parity/profile.jpg",
-  dateOfBirth: "1990-05-12",
-  gender: "male",
-  referral: "google",
-  serviceLocation: { locationType: "home", isRemote: false, cities: ["Giza"] },
-  hours: [
-    {
-      id: 1,
-      proId: 1001,
-      dayOfWeek: "sunday",
-      openingTime: "09:00",
-      closingTime: "17:00",
-    },
-    {
-      id: 2,
-      proId: 1001,
-      dayOfWeek: "monday",
-      openingTime: "09:00",
-      closingTime: "17:00",
-    },
-  ],
-  documents: [],
-  media: [],
-  socials: [
-    { id: 1, socialMedia: "facebook", socialLink: "https://facebook.com/x" },
-  ],
-  address: { address: ADDRESS, changedAt: "2026-01-10T10:00:00.000Z" },
-  addressHistory: [],
-  suspensions: [],
-  businessName: "",
-  paymentMethods: ["cash", "credit card"],
-  profileEdits: [],
-  isFeatured: false,
-  responseTimeHours: 2,
-  responseTimeScore: 4,
-  reviewScore: {
-    qualityScore: 4.5,
-    completionInTimeScore: 4.2,
-    jobAwarenessScore: 4.4,
-    honestyScore: 4.8,
-    responseTimeScore: 4,
-    overallScore: 4.4,
-    reviewsCount: 12,
+export const SAVED_WORK: CustomerSavedAddress = {
+  id: 502,
+  name: "Work",
+  type: "work",
+  address: {
+    streetAddress: "3 Nile Corniche",
+    city: "Zamalek",
+    governorate: "Cairo",
+    location: { lat: 30.0626, lng: 31.2197 },
   },
+}
+
+/** GET /customers/me for the signed-in customer. */
+export const CUSTOMER: CustomerMeResponse = {
+  id: 2001,
+  firstName: "Mona",
+  lastName: "Adel",
+  email: "customer.parity@example.com",
+  mobileNumber: "+201000000001",
+  gender: "female",
+  status: "active",
   emailVerified: true,
-  photosOfWork: [],
-  registrationDate: "2025-03-01T09:00:00.000Z",
-  responseTimePeriods: {
-    weekResponseTime: 2,
-    monthResponseTime: 3,
-    lifeTimeResponseTime: 4,
+  addresses: [SAVED_HOME, SAVED_WORK],
+  preferredLanguage: "en",
+}
+
+/** Where a guest said they are (GuestLocationScreen / the map). */
+export const GUEST_LOCATION: AuthState["guestLocation"] = {
+  coords: { lat: 30.0444, lng: 31.2357 },
+  address: {
+    address: "12 Tahrir Street, Dokki",
+    city: "Dokki",
+    governorate: "Giza",
+    coords: { lat: 30.0444, lon: 31.2357 },
   },
 }
 
-/** An individual pro with a full name, active, email verified. */
-export const PRO_INDIVIDUAL: UserType = BASE
-
-/** A company: its business name, the same contact person. */
-export const PRO_COMPANY: UserType = {
-  ...BASE,
-  id: 1002,
-  proType: "company",
-  businessName: "Hassan Home Services",
-  registeredName: "Hassan Home Services",
-  displayName: undefined,
-}
-
-/** A signed-in session for `user` (the store's auth slice). */
+/**
+ * A signed-in session for `customer` (the store's auth slice), with the
+ * language picked, as after a sign-in. The auth slice keeps a slim copy of
+ * the customer (getCustomerMe's matcher writes it).
+ */
 export const signedIn = (
-  user: UserType = PRO_INDIVIDUAL
+  customer: CustomerMeResponse = CUSTOMER
 ): Partial<AuthState> => ({
   isAuth: true,
-  isRegistrationFlowComleted: true,
   token: "parity-token",
   refreshToken: "parity-refresh",
-  user,
-  isOnboardingCompleted: true,
-  isFirstLoginCompleted: true,
-  isDocumentLoaded: true,
-  isNotificationsAllowed: true,
-  notificationPermissionStatus: "granted",
-  isNotificationServiceInitialized: true,
-  // The two pop-ups that would cover the first screen of a fresh session.
-  isWaitAMomentModalPossibleVisible: false,
-  isNotificationRequestWasShowing: true,
+  hasPickedLanguage: true,
+  user: {
+    id: customer.id,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    email: customer.email,
+    mobileNumber: customer.mobileNumber,
+    gender: customer.gender,
+  },
+  // ProsListing's best-deal tooltip would cover the first visit.
+  dontShowBestDealTooltip: true,
 })
 
-/** No one signed in (onboarding, sign-up and log-in screens). */
-export const signedOut: Partial<AuthState> = {
+/** A guest browsing from a picked location (signed out, language picked). */
+export const guest: Partial<AuthState> = {
   isAuth: false,
-  user: undefined,
   token: undefined,
   refreshToken: undefined,
-  isOnboardingCompleted: true,
+  user: undefined,
+  hasPickedLanguage: true,
+  guestLocation: GUEST_LOCATION,
+  dontShowBestDealTooltip: true,
+}
+
+/** A fresh install: nobody signed in, no language picked, no location. */
+export const freshInstall: Partial<AuthState> = {
+  isAuth: false,
+  token: undefined,
+  refreshToken: undefined,
+  user: undefined,
+  hasPickedLanguage: false,
+  guestLocation: { coords: null, address: null },
 }

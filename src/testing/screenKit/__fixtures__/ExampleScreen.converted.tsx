@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Text, px } from "@tappler/shared/src/ds"
 import colors from "@tappler/shared/src/styles/colors"
 import { useTypedSelector } from "store"
-import { useGetBadgeCountsQuery } from "services/api"
+import { useGetChatsQuery } from "services/api"
 
 const styles = StyleSheet.create({
   screen: {
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
 const ExampleScreenConverted = () => {
   const { t } = useTranslation()
   const user = useTypedSelector((state) => state.auth.user)
-  const { data, isLoading } = useGetBadgeCountsQuery()
+  const { data, isLoading } = useGetChatsQuery()
   return (
     <View style={styles.screen}>
       <Text size={15} weight="semibold" leading={px(19)}>
@@ -42,10 +42,10 @@ const ExampleScreenConverted = () => {
         color="disabledButton"
         style={styles.count}
       >
-        {isLoading ? "…" : `${t("leads")}: ${data?.newLeads ?? 0}`}
+        {isLoading ? "…" : `${t("messages")}: ${data?.data.length ?? 0}`}
       </Text>
       <Button
-        title={t("leads")}
+        title={t("messages")}
         onPress={() => undefined}
         style={styles.button}
       />

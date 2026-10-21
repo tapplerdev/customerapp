@@ -15,19 +15,27 @@
  * import gets the row's platform. That is why the screen is passed as a
  * loader (or a path under src): it has to load in that registry, and so does
  * anything in the test that calls hooks (put a harness component inside the
- * loader). Rows of one platform and one window share a registry; switching
- * either resets it (rowsByPlatform orders a table so that happens once per
- * platform). A row's `window` is applied before anything loads too, so a
- * module that reads Dimensions as it loads (shared's isSmallPhone) reads the
- * row's; a row without one loads as it always has (LOADED_AS_BEFORE).
+ * loader). The layout direction is part of the registry too, as it is of an
+ * app session (the language switch restarts the app): an Arabic row's modules
+ * load with I18nManager.isRTL already true, so one that reads it at import
+ * (FoodCheckoutScreen/styles.ts:15) draws its Arabic branch, which proapp's
+ * kit never could. Rows of one platform, one direction and one window share
+ * a registry; switching any resets it (rowsByPlatform orders a table so that
+ * happens once per platform and direction). A row's `window` is applied
+ * before anything loads too, so a module that reads Dimensions as it loads
+ * (shared's isSmallPhone) reads the row's; a row without one loads as it
+ * always has (LOADED_AS_BEFORE).
  *
- * What a render sets up (engine.tsx): the language (i18next, RTL, the ds
- * provider, moment's locale, the store's auth.language), the platform, the
- * Latin faces index.js registers, safe-area insets, the window, a frozen
- * clock, a fresh store from the app's reducers with the render's state
- * (store.ts), the backend's answers by endpoint (backend.ts), MMKV's keys,
- * and a real NavigationContainer around the screen (navigation.tsx). Then it
- * runs the clock for `settleMs` so effects, timers and answers land.
+ * What a render sets up (engine.tsx): the app's module state fresh
+ * (rowState.ts), the language (i18next, RTL, the ds provider, the store's
+ * auth.language; moment stays on the device's locale, as in the app), the
+ * platform, the Latin faces customerapp draws (Montserrat), safe-area insets,
+ * the window, a frozen clock, a fresh store from the app's reducers with the
+ * render's state and cache (store.ts), the backend's answers by endpoint and
+ * the plain fetches' by URL (backend.ts), the device's permission and
+ * location answers, MMKV's keys, and a real NavigationContainer around the
+ * screen (navigation.tsx). Then it runs the clock for `settleMs` so effects,
+ * timers and answers land.
  */
 import { jest } from "@jest/globals"
 
@@ -49,31 +57,39 @@ import {
 
 export {
   BOTTOM_GAP_INSETS,
+  closeSheetAsUser,
   copy,
-  enterCode,
   fields,
+  fireHost,
   only,
+  presentedSheets,
   pressText,
   pressTitled,
   typeInto,
   wait,
+  type FireOptions,
   type PressOptions,
   type PressTextOptions,
   type Step,
 } from "./interact"
 
 export type { KitPlatform } from "./platform"
-export type { ScreenSource, ScreenSession } from "./engine"
+export type { PermissionAnswer, ScreenSource, ScreenSession } from "./engine"
+export type { LocationAnswer } from "./nativeMocks"
+export { PER_ROW } from "./rowState"
 export { DEFAULT_WINDOW, type ScreenWindow } from "./window"
 export type {
   BackendFixtures,
   BackendRequest,
   EndpointAnswer,
   EndpointFixture,
+  HttpAnswer,
+  HttpFixtures,
+  HttpRequest,
 } from "./backend"
 export type { CacheSeed, ScreenState } from "./store"
 export type { NavigationRecord, ScreenRoute } from "./navigation"
-export { networkAttempts } from "./backend"
+export { AUTH_REFRESH, httpKey, networkAttempts } from "./backend"
 
 export type RenderScreenOptions = Omit<
   Engine.ScreenOptions,
@@ -85,8 +101,12 @@ export type RenderScreenOptions = Omit<
   platform?: KitPlatform
 }
 
+/** The layout direction a registry's modules load under. */
+export type KitDirection = "ltr" | "rtl"
+
 let loaded: {
   platform: KitPlatform
+  direction: KitDirection
   window: string
   engine: typeof Engine
 } | null = null
@@ -100,27 +120,47 @@ let loaded: {
  */
 export const LOADED_AS_BEFORE = "as before"
 
+/** I18nManager's direction in the current registry, before the app loads. */
+const applyDirection = (direction: KitDirection) => {
+  const { I18nManager } = require("react-native") as typeof import("react-native")
+  const isRTL = direction === "rtl"
+  ;(I18nManager as { isRTL: boolean }).isRTL = isRTL
+  // getConstants() hands back one shared object; keep it in step.
+  ;(I18nManager.getConstants() as { isRTL: boolean }).isRTL = isRTL
+}
+
 /**
- * The engine in the registry of the platform and the window: the current
- * one, or a fresh one. A row that gives `window` gets it applied before
- * anything loads, so a module that reads Dimensions as it loads (shared's
- * isSmallPhone, SCREEN_WIDTH) reads the row's; one that doesn't loads
- * LOADED_AS_BEFORE.
+ * The engine in the registry of the platform, the direction and the window:
+ * the current one, or a fresh one. The direction is applied before anything
+ * loads, so a module that reads I18nManager.isRTL as it loads reads the
+ * row's. A row that gives `window` gets it applied before anything loads, so
+ * a module that reads Dimensions as it loads (shared's isSmallPhone,
+ * SCREEN_WIDTH) reads the row's; one that doesn't loads LOADED_AS_BEFORE.
  */
 const engineFor = (
   platform: KitPlatform,
+  direction: KitDirection,
   window: Partial<ScreenWindow> | undefined
 ): typeof Engine => {
   const key = window ? windowKey(windowOf(window)) : LOADED_AS_BEFORE
-  if (loaded && loaded.platform === platform && loaded.window === key) {
+  if (
+    loaded &&
+    loaded.platform === platform &&
+    loaded.direction === direction &&
+    loaded.window === key
+  ) {
     return loaded.engine
   }
   jest.resetModules()
   preparePlatform(platform)
+  applyDirection(direction)
   if (window) applyWindow(windowOf(window))
   const engine = require("./engine") as typeof Engine
   engine.boot(platform)
-  loaded = { platform, window: key, engine }
+  // It stays the registry's: every row in it has this direction, the engine
+  // asserts it before the screen's modules load, and hostTreeParity's render
+  // sets it again and puts it back.
+  loaded = { platform, direction, window: key, engine }
   return engine
 }
 
@@ -131,7 +171,11 @@ const withDefaults = (options: RenderScreenOptions): Engine.ScreenOptions => ({
 })
 
 const engineOf = (options: Engine.ScreenOptions) =>
-  engineFor(options.platform, options.window)
+  engineFor(
+    options.platform,
+    options.lang === "ar" ? "rtl" : "ltr",
+    options.window
+  )
 
 /** Render, settle, and the normalized host tree (hostTreeParity's), unmounted. */
 export const renderScreen = (
@@ -184,8 +228,9 @@ export const treeAfter = async (
 }
 
 /**
- * A table of rows ordered platform by platform (all iOS rows, then all
- * Android), so a file switches registries once. Each row carries its env.
+ * A table of rows ordered platform by platform, and within a platform
+ * English before Arabic (each its own registry), so a file switches
+ * registries once per platform and direction. Each row carries its env.
  */
 export const rowsByPlatform = <T extends object>(
   cases: readonly T[],
@@ -194,7 +239,8 @@ export const rowsByPlatform = <T extends object>(
   const rows = cases.flatMap((entry) =>
     matrix.map((env) => ({ ...entry, env }))
   )
-  const order = (env: ParityEnv) => ((env.platform ?? "ios") === "ios" ? 0 : 1)
+  const order = (env: ParityEnv) =>
+    ((env.platform ?? "ios") === "ios" ? 0 : 2) + (env.language === "ar" ? 1 : 0)
   return rows
     .map((row, index) => ({ row, index }))
     .sort((a, b) => order(a.row.env) - order(b.row.env) || a.index - b.index)
@@ -203,6 +249,9 @@ export const rowsByPlatform = <T extends object>(
 
 /** Which platform's registry is loaded (for the kit's own tests). */
 export const loadedPlatform = () => loaded?.platform ?? null
+
+/** Which direction the loaded registry's modules loaded under (the kit's own tests). */
+export const loadedDirection = () => loaded?.direction ?? null
 
 /**
  * Which window the loaded registry was booted with (for the kit's own

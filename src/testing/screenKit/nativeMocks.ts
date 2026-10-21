@@ -15,7 +15,14 @@
  *   its own (a thumbnail, a location fix). Nothing reaches the network.
  *
  * Our own components are never mocked here; data comes from the store and
- * backend kits (store.ts, backend.ts).
+ * backend kits (store.ts, backend.ts). A row can give the device's answers
+ * for permissions, notifications and a location fix (engine.tsx: the
+ * `permissions` and `location` options, through the `__screenKit*` handles
+ * below). customerapp's copy of proapp's, without the stand-ins for
+ * libraries customerapp doesn't install (paymob, vision-camera, Google
+ * sign-in, netinfo...): a new native library a screen reaches needs one here
+ * and a line in setup.ts. The true-sheet stand-in is testing/trueSheet.tsx
+ * (both jest configs use it).
  */
 import type React from "react"
 
@@ -435,25 +442,6 @@ export const carousel = () => ({
   default: listHost("Carousel"),
 })
 
-/** react-native-sortables: Grid and Flex draw every item; Handle and Touchable their children. */
-export const sortables = () => {
-  const R = require("react") as typeof React
-  const passthrough = (name: string) => {
-    const Component = ({ children }: Props) =>
-      R.createElement(R.Fragment, null, children)
-    Component.displayName = name
-    return Component
-  }
-  const Sortable = {
-    Grid: listHost("SortableGrid"),
-    Flex: host("SortableFlex"),
-    Handle: passthrough("SortableHandle"),
-    Touchable: host("SortableTouchable"),
-    Layer: passthrough("SortableLayer"),
-  }
-  return { __esModule: true, default: Sortable, ...Sortable }
-}
-
 // ---------------------------------------------------------------------------
 // Native views
 
@@ -544,26 +532,6 @@ export const dropShadow = () => ({
 
 export const slider = () => ({ __esModule: true, default: host("Slider") })
 
-export const datePicker = () => ({
-  __esModule: true,
-  default: host("DatePicker"),
-})
-
-export const colorMatrixFilters = () =>
-  new Proxy({ __esModule: true } as Record<string, unknown>, {
-    get: (target, key) =>
-      typeof key === "string" && /^[A-Z]/.test(key)
-        ? host(key)
-        : target[key as string],
-  })
-
-export const svgUri = () => ({ __esModule: true, default: host("SvgUri") })
-
-export const cropTools = () => ({
-  __esModule: true,
-  CropView: host("CropView"),
-})
-
 export const gestureImageViewer = () => ({
   __esModule: true,
   GestureViewer: host("GestureViewer"),
@@ -580,80 +548,6 @@ export const gestureImageViewer = () => ({
   useGestureViewerEvent: noop,
   registerGestureViewer: noop,
 })
-
-export const visionCamera = () => ({
-  __esModule: true,
-  Camera: host("Camera"),
-  useCameraDevice: () => undefined,
-  useCameraDevices: () => [],
-  useCameraFormat: () => undefined,
-  useCameraPermission: () => ({
-    hasPermission: true,
-    requestPermission: resolved(true),
-  }),
-  useMicrophonePermission: () => ({
-    hasPermission: true,
-    requestPermission: resolved(true),
-  }),
-  useFrameOutput: () => ({}),
-  usePhotoOutput: () => ({ capturePhoto: pending }),
-  useFrameProcessor: () => undefined,
-  CommonResolutions: new Proxy({}, { get: (_t, key) => String(key) }),
-})
-
-export const visionCameraCropper = () => ({
-  __esModule: true,
-  crop: pending,
-})
-
-/**
- * paymob-reactnative as its src/index.js exports it (pinned against that
- * file by screenKit.parity.tsx): the SDK module, the embedded card form and
- * its commands, and the two enums. No charge is ever made: the setters do
- * nothing, presentPayVC presents nothing, and nothing ever calls the
- * transaction listener or the form's outcome events.
- */
-export const paymob = () => {
-  // The default export: the SDK's own screen and its settings. Each returns
-  // nothing, as the SDK's do (the outcome comes through setSdkListener).
-  const Paymob = {
-    setAppIcon: noop,
-    setAppName: noop,
-    setButtonBackgroundColor: noop,
-    setButtonTextColor: noop,
-    setSaveCardDefault: noop,
-    setShowSaveCard: noop,
-    setShowConfirmationPage: noop,
-    setShowTransactionResult: noop,
-    setKeyboardHandlingEnabled: noop,
-    setFailureCallbackVersion: noop,
-    presentPayVC: noop,
-    setSdkListener: noop,
-    removeSdkListener: noop,
-  }
-  return {
-    __esModule: true,
-    default: Paymob,
-    // The embedded card form: a native view (requireNativeComponent), so a
-    // host under its own name, carrying its props.
-    PaymobCheckoutView: host("PaymobCheckoutView"),
-    // Its commands, each taking the mounted view's ref: a device that does
-    // nothing with them.
-    PaymobCheckout: {
-      configure: noop,
-      setPaymentKeys: noop,
-      payFromOutside: noop,
-      revealValidationErrors: noop,
-    },
-    PaymentStatus: {
-      SUCCESS: "Success",
-      FAIL: "Fail",
-      CANCELLED: "Cancelled",
-      PENDING: "Pending",
-    },
-    FailureCallBackVersion: { V1: "V1", V2: "V2" },
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Native modules
@@ -703,10 +597,21 @@ export const mmkv = () => {
   }
 }
 
+/**
+ * What the device's notification permission is, for notifee and Firebase
+ * messaging alike: an AuthorizationStatus (1 authorized, 0 denied). The
+ * engine sets it per row from `permissions.notifications`; authorized unless
+ * the row says otherwise.
+ */
+export type NotificationPermissionBox = { status: number }
+
 export const notifee = () => {
+  const permission: NotificationPermissionBox = { status: 1 }
+  const settings = () =>
+    Promise.resolve({ authorizationStatus: permission.status })
   const notifeeModule = {
-    requestPermission: resolved({ authorizationStatus: 1 }),
-    getNotificationSettings: resolved({ authorizationStatus: 1 }),
+    requestPermission: settings,
+    getNotificationSettings: settings,
     createChannel: resolved("default"),
     displayNotification: resolved("id"),
     cancelNotification: resolved(undefined),
@@ -735,11 +640,18 @@ export const notifee = () => {
       ACTION_PRESS: 2,
       DELIVERED: 3,
     },
+    /** The kit's handle on the permission (engine.tsx). */
+    __screenKitPermission: permission,
   }
 }
 
 export const firebaseMessaging = () => {
   const messaging = {}
+  const permission: NotificationPermissionBox = { status: 1 }
+  const status = () => Promise.resolve(permission.status)
+  // The modular API (Firebase 26 deleted the namespaced one): each function
+  // takes the Messaging instance first. getToken never settles: no token
+  // arrives, so nothing is registered.
   return {
     __esModule: true,
     default: () => messaging,
@@ -750,24 +662,18 @@ export const firebaseMessaging = () => {
     onTokenRefresh: () => noop,
     onNotificationOpenedApp: () => noop,
     getInitialNotification: resolved(null),
-    requestPermission: resolved(1),
-    hasPermission: resolved(1),
+    requestPermission: status,
+    hasPermission: status,
     registerDeviceForRemoteMessages: resolved(undefined),
     setBackgroundMessageHandler: noop,
-    AuthorizationStatus: { AUTHORIZED: 1, DENIED: 0, NOT_DETERMINED: -1 },
-  }
-}
-
-export const firebaseAuth = () => {
-  const auth = { currentUser: null }
-  return {
-    __esModule: true,
-    default: () => auth,
-    getAuth: () => auth,
-    GoogleAuthProvider: { credential: () => ({}) },
-    signInWithCredential: pending,
-    signOut: resolved(undefined),
-    onAuthStateChanged: () => noop,
+    AuthorizationStatus: {
+      AUTHORIZED: 1,
+      DENIED: 0,
+      NOT_DETERMINED: -1,
+      PROVISIONAL: 2,
+    },
+    /** The kit's handle on the permission (engine.tsx). */
+    __screenKitPermission: permission,
   }
 }
 
@@ -778,77 +684,63 @@ export const firebaseApp = () => ({
   initializeApp: resolved({}),
 })
 
-export const googleSignin = () => ({
-  __esModule: true,
-  GoogleSignin: {
-    configure: noop,
-    hasPlayServices: resolved(true),
-    signIn: pending,
-    signInSilently: pending,
-    signOut: resolved(null),
-    revokeAccess: resolved(null),
-    getCurrentUser: () => null,
-    hasPreviousSignIn: () => false,
-  },
-  isSuccessResponse: (response: { type?: string }) =>
-    response?.type === "success",
-  isErrorWithCode: () => false,
-  statusCodes: {
-    SIGN_IN_CANCELLED: "SIGN_IN_CANCELLED",
-    IN_PROGRESS: "IN_PROGRESS",
-    PLAY_SERVICES_NOT_AVAILABLE: "PLAY_SERVICES_NOT_AVAILABLE",
-  },
-  GoogleSigninButton: host("GoogleSigninButton"),
-})
+/**
+ * What a location request answers this row (the engine's `location`
+ * option): "pending" (default: no fix ever arrives, the screen stays where it
+ * was), a position, or an error as the library reports one (code 1 permission
+ * denied, 2 unavailable, 3 timeout).
+ */
+export type LocationAnswer =
+  | "pending"
+  | { latitude: number; longitude: number; accuracy?: number }
+  | { error: { code: number; message: string } }
 
 export const geolocation = () => {
+  const answer: { current: LocationAnswer } = { current: "pending" }
+  type Success = (position: unknown) => void
+  type Failure = (error: unknown) => void
+  // A fix arrives after the request returns, as the device's does.
+  const reply = (success: Success, failure?: Failure) => {
+    const now = answer.current
+    if (now === "pending") return
+    queueMicrotask(() => {
+      if ("error" in now) {
+        failure?.({ ...now.error, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 })
+        return
+      }
+      success({
+        coords: {
+          latitude: now.latitude,
+          longitude: now.longitude,
+          accuracy: now.accuracy ?? 5,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+        },
+        timestamp: Date.now(),
+      })
+    })
+  }
   const Geolocation = {
-    getCurrentPosition: noop,
-    watchPosition: () => 0,
+    getCurrentPosition: (success: Success, failure?: Failure) =>
+      reply(success, failure),
+    watchPosition: (success: Success, failure?: Failure) => {
+      reply(success, failure)
+      return 0
+    },
     clearWatch: noop,
     stopObserving: noop,
-    requestAuthorization: noop,
+    requestAuthorization: (success?: () => void) => success?.(),
     setRNConfiguration: noop,
-  }
-  return { __esModule: true, default: Geolocation, ...Geolocation }
-}
-
-export const netinfo = () => {
-  const state = {
-    type: "wifi",
-    isConnected: true,
-    isInternetReachable: true,
-    details: { isConnectionExpensive: false },
-  }
-  const NetInfo = {
-    fetch: resolved(state),
-    refresh: resolved(state),
-    addEventListener: () => noop,
-    configure: noop,
-    useNetInfo: () => state,
   }
   return {
     __esModule: true,
-    default: NetInfo,
-    ...NetInfo,
-    useNetInfoInstance: () => ({ netInfo: state, refresh: resolved(state) }),
-    NetInfoStateType: {
-      unknown: "unknown",
-      none: "none",
-      cellular: "cellular",
-      wifi: "wifi",
-    },
+    default: Geolocation,
+    ...Geolocation,
+    /** The kit's handle on the answer (engine.tsx). */
+    __screenKitLocation: answer,
   }
-}
-
-export const clipboard = () => {
-  const Clipboard = {
-    setString: noop,
-    getString: resolved(""),
-    hasString: resolved(false),
-    addListener: () => ({ remove: noop }),
-  }
-  return { __esModule: true, default: Clipboard, ...Clipboard }
 }
 
 export const cameraRoll = () => ({
@@ -880,23 +772,6 @@ export const imageCropPicker = () => {
   return { __esModule: true, default: picker, ...picker }
 }
 
-export const blobUtil = () => {
-  const blob = {
-    fs: {
-      dirs: { DocumentDir: "/docs", CacheDir: "/cache", DownloadDir: "/dl" },
-      exists: resolved(false),
-      unlink: resolved(undefined),
-      readFile: pending,
-      writeFile: pending,
-    },
-    config: () => ({ fetch: pending }),
-    fetch: pending,
-    ios: { openDocument: noop, previewDocument: noop },
-    android: { actionViewIntent: noop, addCompleteDownload: noop },
-  }
-  return { __esModule: true, default: blob }
-}
-
 export const compressor = () => ({
   __esModule: true,
   Image: { compress: pending },
@@ -909,21 +784,6 @@ export const createThumbnail = () => ({
   // Never settles: a thumbnail stays on its skeleton, the same every run.
   createThumbnail: pending,
 })
-
-export const pdfThumbnail = () => ({
-  __esModule: true,
-  default: { generate: pending, generateAllPages: pending },
-})
-
-export const hapticFeedback = () => {
-  const module = { trigger: noop }
-  return {
-    __esModule: true,
-    default: module,
-    trigger: noop,
-    HapticFeedbackTypes: new Proxy({}, { get: (_t, key) => String(key) }),
-  }
-}
 
 export const orientationLocker = () => ({
   __esModule: true,
@@ -950,16 +810,6 @@ export const restart = () => {
   return { __esModule: true, default: RNRestart }
 }
 
-export const bootsplash = () => ({
-  __esModule: true,
-  default: { hide: resolved(undefined), isVisible: resolved(false) },
-})
-
-export const geocoding = () => ({
-  __esModule: true,
-  default: { init: noop, from: pending, isInit: () => true },
-})
-
 /** socket.io: a socket that never connects (the app's WebSocketService stays offline). */
 export const socketIo = () => {
   const socket = () => {
@@ -983,6 +833,16 @@ export const socketIo = () => {
         listeners.clear()
         return self
       },
+      // Catch-all listeners (customerapp's WebSocketService logs every event
+      // through onAny): kept, never called, since no event ever arrives.
+      onAny: () => self,
+      prependAny: () => self,
+      offAny: () => self,
+      onAnyOutgoing: () => self,
+      offAnyOutgoing: () => self,
+      listeners: (event: string) => [...(listeners.get(event) ?? [])],
+      hasListeners: (event: string) => (listeners.get(event)?.size ?? 0) > 0,
+      timeout: () => self,
       emit: () => self,
       connect: () => self,
       disconnect: () => self,

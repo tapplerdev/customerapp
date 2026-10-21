@@ -1,9 +1,9 @@
 /*
- * Jest only, for interact.parity.tsx: what a pro presses and types, on our
- * own components (titled buttons, links, fields, the code boxes), each
- * writing down what it got, and a timer for wait(). Some refuse a pro: a
- * disabled and a loading button, a disabled link and touchable, a row whose
- * touchable its own lock disables, a field that isn't editable, one you press.
+ * Jest only, for interact.parity.tsx: what a customer presses and types, on
+ * shared's components (titled buttons, links, fields), each writing down what
+ * it got, and a timer for wait(). Some refuse a customer: a disabled and a
+ * loading button, a disabled link and touchable, a row whose touchable its
+ * own lock disables, a field that isn't editable, one you press.
  */
 import React, { useEffect, useState } from "react"
 import { Text, TouchableOpacity, View } from "react-native"
@@ -16,7 +16,6 @@ import {
   DmView,
 } from "@tappler/shared/src/components/UI"
 import { Button } from "@tappler/shared/src/ds"
-import VerifyCodeInput from "components/VerifyCodeInput"
 
 // A titled row whose touchable isn't its first host, and whose lock is its
 // own prop (not `disabled`): only the touchable says it refuses a tap.
@@ -42,7 +41,6 @@ const InteractProbe = () => {
   const [name, setName] = useState("")
   const [city, setCity] = useState("")
   const [digits, setDigits] = useState("")
-  const [code, setCode] = useState("")
   const [timer, setTimer] = useState("timer waiting")
   const press = (what: string) => setPressed((all) => [...all, what])
   useEffect(() => {
@@ -56,7 +54,7 @@ const InteractProbe = () => {
       <ActionBtn title="Sending" isLoading onPress={() => press("sending")} />
       <Button title="Pay" disabled onPress={() => press("pay")} />
       <DmView onPress={() => press("link")}>
-        <DmText>{t("forgot_password")}</DmText>
+        <DmText>{t("delete_account")}</DmText>
       </DmView>
       <DmView onPress={() => press("disabled link")} disabled>
         <DmText>Disabled link</DmText>
@@ -91,9 +89,8 @@ const InteractProbe = () => {
         onPress={() => press("picker")}
         placeholder="Picker"
       />
-      <VerifyCodeInput setCodeValue={setCode} />
       <Text testID="pressed">{pressed.join(",")}</Text>
-      <Text testID="typed">{`${name}|${city}|${digits}|${code}`}</Text>
+      <Text testID="typed">{`${name}|${city}|${digits}`}</Text>
       <Text testID="timer">{timer}</Text>
     </DmView>
   )

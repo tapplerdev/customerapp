@@ -6,7 +6,6 @@ import { describe, expect, it } from "@jest/globals"
 import {
   BOTTOM_GAP_INSETS,
   copy,
-  enterCode,
   fields,
   only,
   openScreen,
@@ -31,7 +30,7 @@ import ar from "locales/ar.json"
 
 /*
  * The kit's press and type helpers (interact.ts, and treeAfter in index.ts),
- * on a probe of our own components that writes down what it got.
+ * on a probe of shared's components that writes down what it got.
  */
 
 const probe = () => require("../__fixtures__/InteractProbe")
@@ -61,38 +60,37 @@ describe("copy", () => {
   const EN: ParityEnv = { language: "en" }
   const AR: ParityEnv = { language: "ar" }
 
-  it("is the row's language, straight from the app's files", () => {
-    expect(copy(EN, "save")).toBe(en.translation.save)
-    expect(copy(AR, "save")).toBe(ar.translation.save)
+  it("is the row's language, straight from the app's (flat) files", () => {
+    expect(copy(EN, "save")).toBe(en.save)
+    expect(copy(AR, "save")).toBe(ar.save)
     expect(copy(AR, "save")).not.toBe(copy(EN, "save"))
   })
 
-  it("falls back to English for a key ar.json lacks, as i18next does, and throws on one neither has", () => {
-    expect("update_account_type" in ar.translation).toBe(false)
-    expect(copy(AR, "update_account_type")).toBe(
-      en.translation.update_account_type
-    )
-    expect(() => copy(EN, "no_such_key_anywhere")).toThrow(
-      'no string "no_such_key_anywhere" in en.json or en.json'
+  // customerapp's two files hold the same keys today, so the English
+  // fallback i18next would take (fallbackLng "en") never runs; a key added
+  // to en.json alone would take it.
+  it("finds every English key in Arabic too, and throws on a key neither has", () => {
+    expect(Object.keys(en).filter((key) => !(key in ar))).toEqual([])
+    expect(() => copy(AR, "no_such_key_anywhere")).toThrow(
+      'no string "no_such_key_anywhere" in ar.json or en.json'
     )
   })
 })
 
-describe("pressing and typing by what the pro sees", () => {
+describe("pressing and typing by what the customer sees", () => {
   const rows = rowsByPlatform([{}], PARITY_MATRIX)
 
   it.each(rows)(
-    "presses a titled button and a link, types into two fields and the code [$env.language $env.platform]",
+    "presses a titled button and a link, types into two fields [$env.language $env.platform]",
     async ({ env }) => {
       const steps: Step[] = [
-        (root) => typeInto(root, 0, "Omar"),
+        (root) => typeInto(root, 0, "Mona"),
         (root) => typeInto(root, 1, "Giza"),
-        (root) => enterCode(root, "1234"),
         (root, rowEnv) => pressTitled(root, copy(rowEnv, "save")),
-        (root, rowEnv) => pressText(root, copy(rowEnv, "forgot_password")),
+        (root, rowEnv) => pressText(root, copy(rowEnv, "delete_account")),
       ]
       const tree = await treeAfter(probe, optionsFor(env), env, steps)
-      expect(text(tree, "typed")).toBe("Omar|Giza||1234")
+      expect(text(tree, "typed")).toBe("Mona|Giza|")
       expect(text(tree, "pressed")).toBe("save,link")
     }
   )
@@ -102,10 +100,10 @@ describe("pressing and typing by what the pro sees", () => {
     const tree = await treeAfter(probe, optionsFor(env), env, [
       (root) => typeInto(root, 2, "١٢٣"),
     ])
-    expect(text(tree, "typed")).toBe("||123|")
+    expect(text(tree, "typed")).toBe("||123")
   })
 
-  it("refuses what a pro can't do: a disabled or loading control, a field that isn't editable or that takes a press", async () => {
+  it("refuses what a customer can't do: a disabled or loading control, a field that isn't editable or that takes a press", async () => {
     const env: ParityEnv = { language: "en", platform: "ios" }
     const session = await openScreen(probe, optionsFor(env))
     try {
@@ -186,10 +184,10 @@ describe("pressing and typing by what the pro sees", () => {
     const session = await openScreen(probe, optionsFor(env))
     try {
       const { root } = session
-      // the five DmInputs and VerifyCodeInput's hidden field, outermost first
-      expect(fields(root)).toHaveLength(6)
-      expect(() => typeInto(root, 6, "x")).toThrow(
-        "type into field 6: only 6 fields"
+      // the five DmInputs, outermost first
+      expect(fields(root)).toHaveLength(5)
+      expect(() => typeInto(root, 5, "x")).toThrow(
+        "type into field 5: only 5 fields"
       )
       expect(() => pressTitled(root, "Nowhere")).toThrow(
         'press "Nowhere": 0 matches, expected 1'
@@ -199,7 +197,7 @@ describe("pressing and typing by what the pro sees", () => {
       )
       expect(() =>
         only(root, (node) => typeof node.props.onChangeText === "function", "a field")
-      ).toThrow("a field: 6 matches, expected 1")
+      ).toThrow("a field: 5 matches, expected 1")
     } finally {
       session.unmount()
     }
@@ -209,7 +207,7 @@ describe("pressing and typing by what the pro sees", () => {
     const env: ParityEnv = { language: "en", platform: "ios" }
     await expect(
       treeAfter(probe, optionsFor(env), env, [
-        (root) => typeInto(root, 0, "Omar"),
+        (root) => typeInto(root, 0, "Mona"),
         () => new Promise<void>(() => undefined),
       ])
     ).rejects.toThrow(/pending after 1000 turns[^]*: treeAfter's step 2 of 2, /)

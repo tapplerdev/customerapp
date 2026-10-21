@@ -1,115 +1,331 @@
 /**
- * Jest only. The records the screens show (a service, a job, a chat, a
- * notification...), made up and typed by the app's own types, so a field a
- * screen reads can't go missing without tsc saying so. Dates sit around the
- * kit's frozen clock (engine.DEFAULT_NOW, 2026-10-20 10:00 in Cairo). No real
- * account's data.
+ * Jest only. The records the backend answers with (fixtures/api.ts), one of
+ * each the screens open with, made up and typed by the app's own types. A big
+ * record is `some<T>()`: only the fields given, each one typed. Dates count
+ * back from the kit's clock (engine.tsx DEFAULT_NOW), so "2 hours ago" and a
+ * cart draft's freshness come out the same on every run.
  *
- * Where the backend sends `null` for a field the app's type doesn't allow
- * (an active service's `suspension`), `wireNull` says so at the spot.
+ * One answer per endpoint, as the kit's core (skeptic M9): the states an area
+ * needs (a job in every status, each message kind on its own) belong to that
+ * area's tests, built from these, and move here when a second area wants them.
  */
+import type { CartDraft } from "store/cart/slice"
 import type {
-  BadgeCountsResponse,
-  GeneralSettingResponse,
-  GetJobsResponse,
-  GetNotitficationsResponse,
-  GetPointsHistoryResponse,
-  ProsServicesCategoriesResponse,
-} from "services"
-import type {
-  AddressType,
   ChatMessageType,
   ChatPreviewType,
   ChatType,
-  CustomerType,
-  IdDocumentData,
-  JobProsType,
-  JobType,
-  MenuItemType,
-  MenuSectionType,
-  MenuType,
-  NewAddressDataType,
-  NotificationsItemType,
-  PaymentTransactionType,
-  PlaceOfServiceType,
-  PointsItemPackagesType,
-  PointsTransactionsHistoryType,
-  ProfileSettingParamTypes,
-  RejectedItemType,
-  SubCategoryType,
-} from "types"
-import type { MockSearchItemType } from "data/mockData"
+} from "types/chat"
+import type {
+  PresetType,
+  ServiceCategoryType,
+  ServiceQuestionType,
+  ServiceType,
+} from "types/cms"
+import type {
+  AreaGeometryResponse,
+  FoodMenuType,
+  PointAreasResponse,
+} from "types/food"
+import type { JobProType, JobType } from "types/job"
+import type { NotificationsItemType } from "types/notification"
+import type { ProType } from "types/pro"
 
-import { PRO_INDIVIDUAL } from "./users"
+import { CUSTOMER } from "./users"
 
-/** What the wire sends where the app's type has no null (read as "absent"). */
-export const wireNull = <T>() => null as unknown as T
+type DeepPartial<T> = T extends (infer U)[]
+  ? DeepPartial<U>[]
+  : T extends object
+    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    : T
 
-export const DAYS_AGO = (days: number, hour = 9) =>
-  new Date(Date.UTC(2026, 9, 20 - days, hour - 2, 30)).toISOString()
+/** A record with only the fields the screens read; what is given is typed. */
+export const some = <T>(value: DeepPartial<T>) => value as T
 
-// ---------------------------------------------------------------------------
-// Services
+/** The kit's clock (engine.tsx DEFAULT_NOW). */
+export const KIT_NOW = Date.parse("2026-10-20T08:00:00.000Z")
 
-const subCategory = (
-  id: number,
-  nameEn: string,
-  nameAr: string,
-  extra: Partial<SubCategoryType> = {}
-): SubCategoryType => ({
-  id,
-  name: nameEn,
-  nameEn,
-  nameAr,
-  descriptionForProsEn: `${nameEn} jobs near you.`,
-  descriptionForProsAr: `وظائف ${nameAr} بالقرب منك.`,
-  descriptionForCustomersEn: `Book a ${nameEn.toLowerCase()} pro.`,
-  descriptionForCustomersAr: `احجز محترف ${nameAr}.`,
-  descriptionForPros: `${nameEn} jobs near you.`,
-  descriptionForCustomers: `Book a ${nameEn.toLowerCase()} pro.`,
-  keywords: nameEn.toLowerCase(),
-  picture: `https://example.com/parity/${id}.jpg`,
-  interviewRequired: false,
-  allowedEmployeeType: "both",
-  opportunityPointsCost: 5,
-  hasMenu: false,
-  hasQualifications: false,
-  criminalRecordsRequired: false,
-  healthRecordsRequired: false,
-  locationPhotoRequired: false,
-  additionalDocuments: [],
-  serviceId: 10,
-  relatedServiceCategoriesIds: [],
-  placeOfService: ["proToCustomer"],
-  proQuestions: [],
-  customerQuestions: [],
-  ...extra,
+const HOUR = 60 * 60 * 1000
+/** An ISO date `hours` before the kit's clock. */
+export const HOURS_AGO = (hours: number) =>
+  new Date(KIT_NOW - hours * HOUR).toISOString()
+/** An ISO date `days` before the kit's clock. */
+export const DAYS_AGO = (days: number) => HOURS_AGO(days * 24)
+
+const IMG = (name: string) => ({
+  id: name.length,
+  url: `https://example.com/parity/${name}.jpg`,
+  url720: `https://example.com/parity/${name}-720.jpg`,
+  url150: `https://example.com/parity/${name}-150.jpg`,
 })
 
-export const SUB_CATEGORY: SubCategoryType = subCategory(
-  201,
-  "Plumbing",
-  "سباكة"
-)
+// ---------------------------------------------------------------------------
+// Services and categories
 
-export const SUB_CATEGORY_FOOD: SubCategoryType = subCategory(
-  301,
-  "Home Cooking",
-  "طبخ منزلي",
-  { hasMenu: true, placeOfService: ["delivery"], serviceId: 30 }
-)
-
-export const PLACE_OF_SERVICE: PlaceOfServiceType = {
-  place: "proToCustomer",
-  serviceLocationAreas: [
-    { city: "Dokki", governorate: "Giza", governorateId: 2, cityId: 125 },
-    { city: "Mohandessin", governorate: "Giza", governorateId: 2, cityId: 126 },
+export const QUESTION_PLACE: ServiceQuestionType = {
+  id: 701,
+  assignee: "customer",
+  type: "oneChoice",
+  style: "radio",
+  text: "What needs fixing?",
+  textAr: "ما الذي يحتاج إلى إصلاح؟",
+  isFilter: true,
+  tier: "primary",
+  order: 1,
+  options: [
+    { id: 7011, label: "A leaking tap", labelAr: "صنبور يسرب", value: "tap" },
+    { id: 7012, label: "A blocked drain", labelAr: "صرف مسدود", value: "drain" },
   ],
-  serviceLocationType: "home",
-  locationAddress: {
-    serviceLocationId: 1,
-    serviceLocation: { id: 1, nameEn: "Home", nameAr: "المنزل" },
-    changedAt: null,
+}
+
+export const QUESTION_NOTES: ServiceQuestionType = {
+  id: 702,
+  assignee: "customer",
+  type: "paragraph",
+  text: "Anything the pro should know?",
+  textAr: "هل هناك ما يجب أن يعرفه المحترف؟",
+  isFilter: false,
+  order: 2,
+}
+
+export const CATEGORY: ServiceCategoryType = {
+  id: 301,
+  nameEn: "Plumbing",
+  nameAr: "السباكة",
+  picture: IMG("plumbing"),
+  serviceId: 201,
+  placeOfService: ["customerPlace"],
+  customerQuestions: [QUESTION_PLACE, QUESTION_NOTES],
+  dateTypes: ["asap", "date", "hours48", "week", "notDecided"],
+  isUrgent: false,
+  hasMenu: false,
+}
+
+export const CATEGORY_FOOD: ServiceCategoryType = {
+  id: 302,
+  nameEn: "Home-cooked meals",
+  nameAr: "أكل بيتي",
+  picture: IMG("meals"),
+  serviceId: 202,
+  placeOfService: ["customerPlace", "proPlace"],
+  customerQuestions: [],
+  dateTypes: [],
+  isUrgent: true,
+  hasMenu: true,
+}
+
+export const SERVICE: ServiceType = {
+  id: 201,
+  nameEn: "Home repairs",
+  nameAr: "إصلاحات المنزل",
+  categories: [CATEGORY],
+}
+
+export const SERVICE_FOOD: ServiceType = {
+  id: 202,
+  nameEn: "Food",
+  nameAr: "طعام",
+  categories: [CATEGORY_FOOD],
+}
+
+export const SERVICES: ServiceType[] = [SERVICE, SERVICE_FOOD]
+
+/** The Home screen's active preset: one section of main categories. */
+export const PRESET: PresetType = {
+  id: 1,
+  name: "parity",
+  isActive: true,
+  updatedAt: DAYS_AGO(3),
+  sections: [
+    {
+      id: 11,
+      order: 1,
+      shapeType: "squareWithOverlay",
+      titleEn: "Popular services",
+      titleAr: "الخدمات الشائعة",
+      descriptionEn: "What customers book most",
+      descriptionAr: "ما يحجزه العملاء أكثر",
+      dataSource: "mainCategories",
+      viewAll: true,
+      groups: [
+        {
+          id: 111,
+          order: 1,
+          sectionId: 11,
+          items: [
+            {
+              id: 1111,
+              nameEn: "Home repairs",
+              nameAr: "إصلاحات المنزل",
+              pictureEn: IMG("repairs-en"),
+              pictureAr: IMG("repairs-ar"),
+              services: [SERVICE],
+              groupId: 111,
+            },
+            {
+              id: 1112,
+              nameEn: "Food",
+              nameAr: "طعام",
+              pictureEn: IMG("food-en"),
+              pictureAr: IMG("food-ar"),
+              services: [SERVICE_FOOD],
+              groupId: 111,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
+// ---------------------------------------------------------------------------
+// Pros
+
+const REVIEW_SCORE = {
+  overallScore: 4.6,
+  qualityScore: 4.7,
+  completionInTimeScore: 4.5,
+  jobAwarenessScore: 4.6,
+  honestyScore: 4.8,
+  responseTimeScore: 4.4,
+  reviewsCount: 18,
+}
+
+export const PRO_INDIVIDUAL: ProType = {
+  id: 1001,
+  registeredName: "Omar Hassan",
+  displayName: "full",
+  proType: "individual",
+  profilePhoto: "https://example.com/parity/pro.jpg",
+  profilePhoto150: "https://example.com/parity/pro-150.jpg",
+  profilePhoto720: "https://example.com/parity/pro-720.jpg",
+  reviewScore: REVIEW_SCORE,
+  informationAbout:
+    "Ten years fixing plumbing and electrics in Giza and Cairo. Clean work, fair prices.",
+  address: {
+    changedAt: DAYS_AGO(90),
+    address: {
+      streetAddress: "5 Mossadak Street",
+      city: "Dokki",
+      governorate: "Giza",
+      location: { lat: 30.0385, lng: 31.2118 },
+    },
+  },
+  serviceCategories: [
+    { serviceCategoryId: CATEGORY.id, status: "active", isFeatured: false },
+  ],
+  documents: [],
+  paymentMethods: ["cash", "credit card"],
+  hours: [
+    { id: 1, dayOfWeek: "sunday", openingTime: "09:00", closingTime: "17:00" },
+    { id: 2, dayOfWeek: "monday", openingTime: "09:00", closingTime: "17:00" },
+  ],
+  workPhotos: [],
+  socials: [],
+  media: [],
+  responseTimeHours: 2,
+  lastSeen: HOURS_AGO(1),
+}
+
+export const PRO_COMPANY: ProType = {
+  ...PRO_INDIVIDUAL,
+  id: 1002,
+  proType: "company",
+  registeredName: "Hassan Home Services",
+  businessName: "Hassan Home Services",
+  displayName: undefined,
+}
+
+/** A food pro (a hasMenu category), delivering and taking pickups. */
+export const PRO_FOOD: ProType = {
+  ...PRO_INDIVIDUAL,
+  id: 1003,
+  registeredName: "Laila's Kitchen",
+  businessName: "Laila's Kitchen",
+  proType: "company",
+  distanceKm: 2.4,
+  isDeliveryEnabled: true,
+  isPickupEnabled: true,
+  serviceCategories: [
+    { serviceCategoryId: CATEGORY_FOOD.id, status: "active", isFeatured: true },
+  ],
+}
+
+export const FOOD_MENU: FoodMenuType = {
+  deliveryCharge: 25,
+  freeDeliveryThreshold: 400,
+  totalOrderValueDiscountRate: null,
+  totalOrderValueDiscountThreshold: null,
+  status: "approved",
+  isDeliveryEnabled: true,
+  isPickupEnabled: true,
+  menuSections: [
+    {
+      id: 41,
+      title: "Mains",
+      order: 1,
+      menuItems: [
+        {
+          id: 411,
+          name: "Molokhia with chicken",
+          description: "Slow-cooked, with rice and bread.",
+          price: 185,
+          discountPrice: 0,
+          isExpressDeliveryAvailable: true,
+          isPreOrderOnly: false,
+          leadTimeHours: null,
+          photo: "https://example.com/parity/molokhia.jpg",
+          inStock: true,
+          options: [
+            {
+              id: 4111,
+              name: "Bread",
+              isRequired: false,
+              minQty: 0,
+              maxQty: 1,
+              choices: [{ id: 41111, name: "Extra bread", price: 10 }],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
+// ---------------------------------------------------------------------------
+// Jobs
+
+/** A pro on a job that has sent an offer. */
+export const JOB_PRO_OFFER: JobProType = {
+  id: 9001,
+  jobId: 8001,
+  proId: PRO_INDIVIDUAL.id,
+  selectionStatus: "offer",
+  ratePerHour: 150,
+  proOfferSentAt: HOURS_AGO(2),
+  pro: PRO_INDIVIDUAL,
+  offers: [{ id: 1, jobProId: 9001, ratePerHour: 150, createdAt: HOURS_AGO(2) }],
+  review: null,
+}
+
+/** A pro on the same job that hasn't answered yet. */
+export const JOB_PRO_WAITING: JobProType = {
+  id: 9002,
+  jobId: 8001,
+  proId: PRO_COMPANY.id,
+  selectionStatus: "selected",
+  pro: PRO_COMPANY,
+  offers: [],
+  review: null,
+}
+
+/** An open service request with one offer in. */
+export const JOB: JobType = {
+  id: 8001,
+  status: "active",
+  requestedOn: HOURS_AGO(5),
+  serviceCategoryId: CATEGORY.id,
+  customerId: CUSTOMER.id,
+  address: {
     address: {
       streetAddress: "12 Tahrir Street",
       city: "Dokki",
@@ -117,242 +333,69 @@ export const PLACE_OF_SERVICE: PlaceOfServiceType = {
       location: { lat: 30.0444, lng: 31.2357 },
     },
   },
-  deliveryRadius: 5,
-  pickupLocationType: "home",
-  pickupAddress: {
-    streetAddress: "12 Tahrir Street",
-    city: "Dokki",
-    governorate: "Giza",
-  },
-  isRemote: false,
-}
-
-export const MENU_ITEM: MenuItemType = {
-  id: 501,
-  name: "Stuffed vine leaves",
-  description: "Rice, herbs and lemon, rolled by hand. A tray of 30.",
-  price: 180,
-  discountPrice: 150,
-  isExpressDeliveryAvailable: true,
-  isPreOrderOnly: false,
-  leadTimeHours: null,
-  options: [
-    {
-      id: 1,
-      name: "Size",
-      isRequired: true,
-      minQty: 1,
-      maxQty: 1,
-      choices: [
-        { name: "30 pieces", price: 0 },
-        { name: "60 pieces", price: 150 },
-      ] as never,
-    },
-  ],
-  photo: "https://example.com/parity/menu-501.jpg",
-  inStock: true,
-}
-
-export const MENU_SECTION: MenuSectionType = {
-  id: 401,
-  title: "Main dishes",
-  order: 1,
-  menuItems: [
-    MENU_ITEM,
-    {
-      ...MENU_ITEM,
-      id: 502,
-      name: "Molokhia with rice",
-      price: 120,
-      discountPrice: 0,
-      options: [],
-    },
-  ],
-}
-
-export const REJECTED_ITEM: RejectedItemType = {
-  itemId: 502,
-  itemName: "Molokhia with rice",
-  sectionTitle: "Main dishes",
-  reason: "The photo doesn't show the dish.",
-  reasons: ["The photo doesn't show the dish."],
-}
-
-export const MENU: MenuType = {
-  foodCategories: [],
-  deliveryCharge: 25,
-  freeDeliveryThreshold: 500,
-  totalOrderValueDiscountRate: 10,
-  totalOrderValueDiscountThreshold: 300,
-  menuSections: [MENU_SECTION],
-  status: "approved",
-  hasDraftChanges: false,
-  hasApprovedVersion: true,
-  matchesApprovedVersion: true,
-  rejectedItems: [],
-}
-
-/** An active plumbing service, offered at the customer's place. */
-export const SERVICE: ProsServicesCategoriesResponse = {
-  serviceCategory: SUB_CATEGORY,
-  status: "active",
-  placeOfService: [PLACE_OF_SERVICE],
-  questionsAnswers: [],
-  menu: null,
-  isFeatured: false,
-  suspension: wireNull(),
-  proAdditionalDocuments: [],
-  qualificationDocuments: [],
-  subscriptions: [],
-  questionsOutdatedAt: null,
-  lastLocationAddress: null,
-}
-
-/** An active home-cooking service with an approved menu, delivering. */
-export const SERVICE_FOOD: ProsServicesCategoriesResponse = {
-  ...SERVICE,
-  serviceCategory: SUB_CATEGORY_FOOD,
-  placeOfService: [{ ...PLACE_OF_SERVICE, place: "delivery" }],
-  menu: MENU,
-}
-
-/** A service waiting for its interview. */
-export const SERVICE_PENDING_INTERVIEW: ProsServicesCategoriesResponse = {
-  ...SERVICE,
   serviceCategory: {
-    ...subCategory(202, "Electrician", "كهربائي"),
-    interviewRequired: true,
+    id: CATEGORY.id,
+    nameEn: CATEGORY.nameEn,
+    nameAr: CATEGORY.nameAr,
+    serviceId: SERVICE.id,
+    hasMenu: false,
   },
-  status: "pendingInterview",
-}
-
-// ---------------------------------------------------------------------------
-// Jobs
-
-export const ADDRESS: AddressType = {
-  streetAddress: "5 Nile Street",
-  city: "Dokki",
-  governorate: "Giza",
-  latitude: 30.0381,
-  longitude: 31.2112,
-  location: { lat: 30.0381, lng: 31.2112 },
-  changedAt: null,
-}
-
-export const CUSTOMER: CustomerType = {
-  id: 7001,
-  firstName: "Mona",
-  lastName: "Adel",
-  gender: "female",
-  mobileNumber: "+201111111111",
-  email: "customer.parity@example.com",
-  status: "verified",
-  signupPlatform: "email",
-  accountCreationDate: "2025-06-01T09:00:00.000Z",
-  lastSeen: DAYS_AGO(0, 9),
-  addresses: [ADDRESS],
-  emailVerified: true,
-}
-
-const proOnJob = (
-  jobId: number,
-  selectionStatus: JobProsType["selectionStatus"]
-): JobProsType => ({
-  jobId,
-  proId: PRO_INDIVIDUAL.id,
-  selectionStatus,
-  responseTime: 0,
-  opportunityNotes: "",
-  ratePerHour: 0,
-  proOfferSentAt: wireNull(),
-  proOpportunityOfferSentAt: wireNull(),
-  rejectedByProAt: wireNull(),
-  opportunityRejectedAt: wireNull(),
-  opportunityAcceptedAt: wireNull(),
-  status: null,
-})
-
-/** An open opportunity: a customer's request this pro hasn't answered. */
-export const JOB: JobType = {
-  id: 9001,
-  requestedOn: DAYS_AGO(2),
-  status: "active",
-  cityId: 125,
-  customerId: CUSTOMER.id,
-  serviceCategoryId: SUB_CATEGORY.id,
-  address: { id: 1, ...ADDRESS, address: ADDRESS },
-  customer: CUSTOMER,
-  serviceCategory: { ...SUB_CATEGORY, rejectReason: "", isRevised: false },
-  serviceArea: { id: "125", type: "subArea", name: "Dokki", nameAr: "الدقي" },
-  placeOfService: "proToCustomer",
-  dateType: "specific",
-  pros: [proOnJob(9001, "opportunity")],
-  dates: [{ id: 1, date: "2026-10-22" }],
-  timeSlots: [{ id: 1, start: "10:00", end: "12:00" }],
-  orderNotes: null,
-  paymentMethod: "cash",
-  isFavorite: false,
-}
-
-/** A lead: the customer picked this pro directly. */
-export const JOB_LEAD: JobType = {
-  ...JOB,
-  id: 9002,
-  requestedOn: DAYS_AGO(1),
-  pros: [proOnJob(9002, "selected")],
-}
-
-/** A food order to this pro's kitchen, for delivery. */
-export const FOOD_ORDER: JobType = {
-  ...JOB,
-  id: 9003,
-  requestedOn: DAYS_AGO(0, 9),
-  serviceCategoryId: SUB_CATEGORY_FOOD.id,
-  serviceCategory: { ...SUB_CATEGORY_FOOD, rejectReason: "", isRevised: false },
-  placeOfService: "delivery",
+  pros: [JOB_PRO_OFFER, JOB_PRO_WAITING],
   dateType: "asap",
   dates: [],
   timeSlots: [],
-  pros: [proOnJob(9003, "selected")],
+  questionsAnswers: [
+    { questionId: QUESTION_PLACE.id, optionId: 7011 },
+    { questionId: QUESTION_NOTES.id, answer: "Under the kitchen sink." },
+  ],
+  placeOfService: "customerPlace",
+  createdAt: HOURS_AGO(5),
+  updatedAt: HOURS_AGO(2),
+}
+
+/** A food order a pro is preparing. */
+export const JOB_FOOD: JobType = {
+  id: 8002,
+  status: "active",
+  requestedOn: HOURS_AGO(1),
+  serviceCategoryId: CATEGORY_FOOD.id,
+  customerId: CUSTOMER.id,
+  address: JOB.address,
+  serviceCategory: {
+    id: CATEGORY_FOOD.id,
+    nameEn: CATEGORY_FOOD.nameEn,
+    nameAr: CATEGORY_FOOD.nameAr,
+    serviceId: SERVICE_FOOD.id,
+    hasMenu: true,
+  },
+  pros: [
+    {
+      id: 9003,
+      jobId: 8002,
+      proId: PRO_FOOD.id,
+      selectionStatus: "offer",
+      status: "preparing",
+      pro: PRO_FOOD,
+      offers: [],
+      review: null,
+    },
+  ],
+  placeOfService: "customerPlace",
+  paymentMethod: "cash",
   foodOrderItems: [
     {
       id: 1,
-      menuItemId: 501,
-      name: "Stuffed vine leaves",
-      price: 150,
+      menuItemId: 411,
+      name: "Molokhia with chicken",
+      price: 185,
       quantity: 2,
-    },
-    {
-      id: 2,
-      menuItemId: 502,
-      name: "Molokhia with rice",
-      price: 120,
-      quantity: 1,
     },
   ],
   deliveryFee: 25,
   orderDiscount: 0,
-  orderNotes: "Ring the bell twice, please.",
+  createdAt: HOURS_AGO(1),
+  updatedAt: HOURS_AGO(1),
 }
-
-/** The lead after this pro sent a price: the chat that follows it, Update your offer. */
-export const JOB_LEAD_OFFERED: JobType = {
-  ...JOB_LEAD,
-  pros: [
-    {
-      ...proOnJob(JOB_LEAD.id, "offer"),
-      ratePerHour: 300,
-      proOfferSentAt: DAYS_AGO(1, 12),
-    },
-  ],
-}
-
-export const jobsPage = (data: JobType[]): GetJobsResponse => ({
-  page: 1,
-  perPage: 20,
-  total: data.length,
-  data,
-})
 
 // ---------------------------------------------------------------------------
 // Chats
@@ -362,174 +405,166 @@ export const CHAT: ChatType = {
   status: "active",
   proId: PRO_INDIVIDUAL.id,
   customerId: CUSTOMER.id,
-  customer: CUSTOMER,
-  serviceCategoryId: SUB_CATEGORY.id,
-  serviceCategory: {
-    id: 10,
-    nameAr: "إصلاحات المنزل",
-    nameEn: "Home repairs",
-    categories: [SUB_CATEGORY],
+  pro: {
+    id: PRO_INDIVIDUAL.id,
+    registeredName: PRO_INDIVIDUAL.registeredName,
+    proType: "individual",
+    profilePhoto: PRO_INDIVIDUAL.profilePhoto,
+    profilePhoto150: PRO_INDIVIDUAL.profilePhoto150,
+    lastSeen: HOURS_AGO(1),
+    accountStatus: "active",
   },
-  jobId: JOB_LEAD_OFFERED.id,
-  job: JOB_LEAD_OFFERED,
-  canProRevealContactInfo: false,
+  customer: {
+    id: CUSTOMER.id,
+    firstName: CUSTOMER.firstName,
+    lastName: CUSTOMER.lastName,
+  },
+  serviceCategoryId: CATEGORY.id,
+  serviceCategory: {
+    id: CATEGORY.id,
+    nameEn: CATEGORY.nameEn,
+    nameAr: CATEGORY.nameAr,
+  },
+  jobId: JOB.id,
+  createdAt: HOURS_AGO(4),
 }
 
+/** A thread: the pro's text, the customer's reply, a photo, a location. */
 export const CHAT_MESSAGES: ChatMessageType[] = [
   {
-    id: 1,
-    text: "Hello, can you come on Thursday morning?",
+    id: 7104,
+    chatId: CHAT.id,
     ownerType: "customer",
-    createdAt: DAYS_AGO(1, 10),
-    readAt: DAYS_AGO(1, 11),
-    customerId: CUSTOMER.id,
+    location: { id: 1, latitude: 30.0444, longitude: 31.2357 },
+    createdAt: HOURS_AGO(1),
+    readAt: HOURS_AGO(1),
   },
   {
-    id: 2,
-    text: "Yes, 10 am works. I'll bring the parts.",
+    id: 7103,
+    chatId: CHAT.id,
     ownerType: "pro",
-    createdAt: DAYS_AGO(1, 11),
+    files: [
+      {
+        id: 1,
+        fileName: "sink.jpg",
+        extension: "jpg",
+        originalName: "sink.jpg",
+        mimeType: "image/jpeg",
+        storageKey: "parity/sink.jpg",
+        url: "https://example.com/parity/sink.jpg",
+        url720: "https://example.com/parity/sink-720.jpg",
+        url150: "https://example.com/parity/sink-150.jpg",
+      },
+    ],
+    createdAt: HOURS_AGO(2),
     readAt: null,
-    proId: PRO_INDIVIDUAL.id,
+  },
+  {
+    id: 7102,
+    chatId: CHAT.id,
+    ownerType: "customer",
+    text: "Thursday at 10 works. The tap is under the kitchen sink.",
+    createdAt: HOURS_AGO(3),
+    readAt: HOURS_AGO(3),
+  },
+  {
+    id: 7101,
+    chatId: CHAT.id,
+    ownerType: "pro",
+    text: "Hello! I can come on Thursday at 10 with the parts.",
+    createdAt: HOURS_AGO(4),
+    readAt: HOURS_AGO(3),
   },
 ]
 
 export const CHAT_PREVIEW: ChatPreviewType = {
   chat: CHAT,
   notReadMessages: 1,
-  lastMessage: CHAT_MESSAGES[1],
+  hasHumanMessages: true,
   hasCustomerMessages: true,
+  lastMessage: CHAT_MESSAGES[0],
 }
 
 // ---------------------------------------------------------------------------
-// Notifications, points, settings
+// Notifications
 
-export const NOTIFICATION: NotificationsItemType = {
-  id: 4001,
-  event: "system.job:pro.job.opportunity.available",
-  userType: "pro",
-  userId: PRO_INDIVIDUAL.id,
-  title: "New opportunity",
-  body: "A customer in Dokki needs a plumber.",
-  readAt: wireNull(),
-  createdAt: DAYS_AGO(0, 8),
-  data: { jobId: JOB.id, job: JOB },
+export const NOTIFICATION_UNREAD: NotificationsItemType = {
+  id: 5001,
+  event: "system.job:customer.job.offer.received",
+  userType: "customer",
+  userId: CUSTOMER.id,
+  title: "New offer",
+  body: "Omar Hassan sent you an offer for Plumbing.",
+  readAt: null,
+  createdAt: HOURS_AGO(2),
+  data: { jobId: JOB.id },
 }
 
-export const notificationsPage = (
-  data: NotificationsItemType[]
-): GetNotitficationsResponse => ({
-  page: 1,
-  perPage: 20,
-  total: data.length,
-  data,
-})
-
-export const POINTS_PACKAGE: PointsItemPackagesType = {
-  id: 27,
-  status: "active",
-  pointsAmount: 100,
-  price: 500,
-  originalPrice: 600,
-  saving: 100,
-  descriptionEn: "100 points",
-  descriptionAr: "100 نقطة",
-  startDate: "2026-01-01T00:00:00.000Z",
-  expirationDate: "2027-01-01T00:00:00.000Z",
+export const NOTIFICATION_READ: NotificationsItemType = {
+  id: 5002,
+  event: "system.account:customer.welcome",
+  userType: "customer",
+  userId: CUSTOMER.id,
+  title: "Welcome to Tappler",
+  body: "Find a pro for anything around the house.",
+  readAt: DAYS_AGO(2),
+  createdAt: DAYS_AGO(3),
 }
 
-export const POINTS_TRANSACTION: PointsTransactionsHistoryType = {
-  id: 3001,
-  type: "purchase",
-  pointsAdded: 100,
-  amountBefore: 20,
-  amountAfter: 120,
-  date: DAYS_AGO(3),
-  proId: PRO_INDIVIDUAL.id,
-  pointsPackageId: POINTS_PACKAGE.id,
-  pointsPackage: POINTS_PACKAGE,
+// ---------------------------------------------------------------------------
+// Maps and the cart
+
+export const POINT_AREAS: PointAreasResponse = {
+  country: { id: 1, type: "country", nameEn: "Egypt", nameAr: "مصر" },
+  governorate: { id: 2, type: "governorate", nameEn: "Giza", nameAr: "الجيزة" },
+  area: { id: 125, type: "area", nameEn: "Dokki", nameAr: "الدقي" },
 }
 
-export const POINTS_HISTORY: GetPointsHistoryResponse = {
-  page: 1,
-  perPage: 20,
-  total: 2,
-  data: [
-    POINTS_TRANSACTION,
+export const AREA_GEOMETRY: AreaGeometryResponse = {
+  id: "125",
+  type: "area",
+  nameEn: "Dokki",
+  nameAr: "الدقي",
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [31.2, 30.03],
+        [31.22, 30.03],
+        [31.22, 30.05],
+        [31.2, 30.05],
+        [31.2, 30.03],
+      ],
+    ],
+  },
+}
+
+/** A cart draft at PRO_FOOD, touched ten minutes before the kit's clock (fresh: drafts expire after an hour). */
+export const CART_DRAFT: CartDraft = {
+  proId: PRO_FOOD.id,
+  serviceCategoryId: CATEGORY_FOOD.id,
+  serviceId: SERVICE_FOOD.id,
+  proName: PRO_FOOD.registeredName,
+  categoryName: CATEGORY_FOOD.nameEn,
+  items: [
     {
-      ...POINTS_TRANSACTION,
-      id: 3002,
-      type: "spend",
-      pointsAdded: 0,
-      pointsCharged: 5,
-      amountBefore: 125,
-      amountAfter: 120,
-      date: DAYS_AGO(1),
-      pointsPackageId: null,
-      jobId: JOB.id,
+      uid: "411:bread",
+      menuItemId: 411,
+      name: "Molokhia with chicken",
+      price: 185,
+      quantity: 1,
+      selectedOptions: [
+        { optionName: "Bread", choices: [{ name: "Extra bread", price: 10 }] },
+      ],
+      photo: "https://example.com/parity/molokhia.jpg",
     },
   ],
+  orderNotes: "",
+  fulfillmentMode: "delivery",
+  lastUpdatedAt: KIT_NOW - 10 * 60 * 1000,
 }
 
-export const PAYMENT_TRANSACTION: PaymentTransactionType = {
-  id: 1401,
-  createdAt: DAYS_AGO(3),
-  systemTransactionNumber: "TX-1401",
-  status: "success",
-  paymentMethod: "card",
-  cents: 50000,
-  currency: "EGP",
-  orderId: 1501,
-}
-
-export const BADGE_COUNTS: BadgeCountsResponse = {
-  newLeads: 2,
-  unseenOpportunities: 3,
-}
-
-export const GENERAL_SETTINGS: GeneralSettingResponse = {
-  firstDayOfWeek: "saturday",
-  mobileNumberOne: "+20221234567",
-  mobileNumberTwo: "+201000000001",
-  contactRevealPointsCost: 1,
-}
-
-// ---------------------------------------------------------------------------
-// What screens pass each other
-
-/** My Profile's edit screens are opened with the profile as it stands. */
-export const PROFILE_PARAMS: ProfileSettingParamTypes = {
-  proType: PRO_INDIVIDUAL.proType,
-  businessName: PRO_INDIVIDUAL.businessName,
-  informationAbout: PRO_INDIVIDUAL.informationAbout,
-  profilePhoto: PRO_INDIVIDUAL.profilePhoto,
-  payment: PRO_INDIVIDUAL.paymentMethods,
-  originalPayment: PRO_INDIVIDUAL.paymentMethods,
-  media: PRO_INDIVIDUAL.media,
-  socials: PRO_INDIVIDUAL.socials,
-  photosOfWorks: [],
-  hours: PRO_INDIVIDUAL.hours,
-  credential: [],
-}
-
-export const NEW_ADDRESS: NewAddressDataType = {
-  address: "12 Tahrir Street",
-  city: "Dokki",
-  governorate: "Giza",
-  coords: { lat: 30.0444, lon: 31.2357 },
-}
-
-export const SEARCH_ITEM: MockSearchItemType = {
-  id: "125",
-  name: "Dokki",
-  area: "Dokki",
-  governorate: "Giza",
-  coords: { lat: 30.0381, lon: 31.2112 },
-}
-
-export const ID_DOCUMENT: IdDocumentData = {
-  name: "Omar Hassan",
-  idNumber: "29005120100000",
-  dateOfBirth: "1990-05-12",
-  expirationDate: "2030-05-12",
+/** Offer history for the chat's strip (GET .../offer-history). */
+export const OFFER_HISTORY = {
+  data: [{ id: 1, ratePerHour: 150, createdAt: HOURS_AGO(2) }],
 }

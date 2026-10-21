@@ -19,7 +19,7 @@ import { FlashList } from "@shopify/flash-list"
 
 import { DmText } from "@tappler/shared/src/components/UI"
 import { useTypedSelector, store } from "store"
-import { useGetBadgeCountsQuery, useGetPointsHistoryQuery } from "services/api"
+import { useGetChatsQuery, useGetNotificationsQuery } from "services/api"
 
 const KitProbe = () => {
   const navigation = useNavigation()
@@ -28,8 +28,10 @@ const KitProbe = () => {
   const { t, i18n } = useTranslation()
   const user = useTypedSelector((state) => state.auth.user)
   const language = useTypedSelector((state) => state.auth.language)
-  const badges = useGetBadgeCountsQuery()
-  const history = useGetPointsHistoryQuery({ page: 1 } as never)
+  const carts = useTypedSelector((state) => state.cart.carts)
+  const drafts = Object.keys(carts)
+  const chats = useGetChatsQuery()
+  const notifications = useGetNotificationsQuery({ page: 1, perPage: 20 })
   const [focused, setFocused] = useState(0)
   // The clock as the screen mounted (once, so the render stays pure).
   const [clock] = useState(() => new Date().toISOString())
@@ -41,24 +43,30 @@ const KitProbe = () => {
   return (
     <View testID="probe">
       <Text testID="platform">{`${Platform.OS} ${String(Platform.Version)}`}</Text>
-      <Text testID="language">{`${i18n.language} ${language} ${I18nManager.isRTL ? "rtl" : "ltr"} ${t("leads")}`}</Text>
+      <Text testID="language">{`${i18n.language} ${language} ${I18nManager.isRTL ? "rtl" : "ltr"} ${t("messages")}`}</Text>
       <Text testID="moment">
-        {moment("2026-10-20T08:00:00.000Z").format("D MMMM")}
+        {`${moment.locale()} ${moment("2026-10-20T08:00:00.000Z").format("D MMMM")}`}
       </Text>
       <Text testID="clock">{clock}</Text>
       <Text testID="insets">{`${insets.top} ${insets.bottom}`}</Text>
       <Text testID="route">{`${route.name} ${JSON.stringify(route.params)}`}</Text>
       <Text testID="user">{`${user?.firstName} ${store.getState().auth.user?.lastName}`}</Text>
-      <Text testID="badges">
-        {badges.data
-          ? `leads ${badges.data.newLeads}`
-          : badges.isError
+      <Text testID="cart">{`drafts ${drafts.join(",")}`}</Text>
+      <Text testID="chats">
+        {chats.data
+          ? `chats ${chats.data.data.length} unread ${chats.data.data[0]?.notReadMessages ?? 0}`
+          : chats.isError
             ? "error"
             : "loading"}
       </Text>
-      <Text testID="history">{history.isLoading ? "loading" : "done"}</Text>
+      <Text testID="notifications">
+        {notifications.isLoading ? "loading" : "done"}
+      </Text>
       <Text testID="focused">{`focused ${focused}`}</Text>
-      <Text testID="go" onPress={() => navigation.navigate("leads" as never)}>
+      <Text
+        testID="go"
+        onPress={() => navigation.navigate("JobDetailScreen" as never)}
+      >
         go
       </Text>
       <DmText className="text-20 font-custom600">face</DmText>

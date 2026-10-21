@@ -28,7 +28,11 @@ import { ROUTE_PARAMS, ROUTE_VARIANTS } from "testing/screenKit/fixtures/routes"
 
 const SRC = path.resolve(__dirname, "../../..")
 const SCREENS = path.join(SRC, "screens")
-const NAVIGATOR = path.join(SRC, "navigation", "Navigator.tsx")
+// The stack's routes, and the four tabs HomeTabs registers.
+const NAVIGATORS = [
+  path.join(SRC, "navigation", "Navigator.tsx"),
+  path.join(SRC, "navigation", "HomeTabs.tsx"),
+]
 
 // Read through a variable: react-native-dotenv inlines a literal
 // `process.env.NAME` at transform time, and jest caches that.
@@ -58,11 +62,18 @@ const walk = (dir: string, out: string[] = []) => {
 const FILES = walk(SCREENS).sort()
 const rel = (file: string) => path.relative(path.join(SRC, ".."), file)
 
-/** The navigator's registrations: route name and the module it imports. */
-const registrations = () => {
+/**
+ * The navigators' registrations: route name and the module it imports.
+ * customerapp names its routes with string literals
+ * (`<Stack.Screen name="JobDetailScreen" component={JobDetailScreen} />`).
+ */
+const registrations = () =>
+  NAVIGATORS.flatMap((navigator) => registrationsIn(navigator))
+
+const registrationsIn = (navigator: string) => {
   const source = ts.createSourceFile(
-    NAVIGATOR,
-    fs.readFileSync(NAVIGATOR, "utf8"),
+    navigator,
+    fs.readFileSync(navigator, "utf8"),
     ts.ScriptTarget.Latest,
     true,
     ts.ScriptKind.TSX
@@ -81,9 +92,6 @@ const registrations = () => {
       )
     }
   })
-  const { ROUTES } = require("navigation/routes") as {
-    ROUTES: Record<string, string>
-  }
   const found: { route: string; spec: string }[] = []
   const visit = (node: ts.Node) => {
     if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
@@ -103,18 +111,14 @@ const registrations = () => {
       let comp = value(component)
       while (comp && ts.isAsExpression(comp)) comp = comp.expression
       const routeExpr = value(name)
-      if (
-        comp &&
-        ts.isIdentifier(comp) &&
-        imports.has(comp.text) &&
-        routeExpr &&
-        ts.isPropertyAccessExpression(routeExpr) &&
-        routeExpr.expression.getText() === "ROUTES"
-      ) {
-        found.push({
-          route: ROUTES[routeExpr.name.text],
-          spec: imports.get(comp.text)!,
-        })
+      const route =
+        name?.initializer && ts.isStringLiteral(name.initializer)
+          ? name.initializer.text
+          : routeExpr && ts.isStringLiteral(routeExpr)
+            ? routeExpr.text
+            : undefined
+      if (comp && ts.isIdentifier(comp) && imports.has(comp.text) && route) {
+        found.push({ route, spec: imports.get(comp.text)! })
       }
     }
     ts.forEachChild(node, visit)
@@ -275,8 +279,8 @@ describe.each(PLATFORMS)("every screen file [%s]", (platform) => {
           // eslint-disable-next-line no-await-in-loop
           await renderInto(file, `${route} ${variant.name}`, component, {
             ...screenState("data"),
-            state: variant.state,
-            route: { name: route, params: params[route] },
+            ...(variant.state ? { state: variant.state } : {}),
+            route: { name: route, params: variant.params ?? params[route] },
           })
         }
       }
@@ -295,13 +299,15 @@ describe.each(PLATFORMS)("every screen file [%s]", (platform) => {
           props,
         })
       }
-      expect(routes.length).toBeGreaterThan(100)
+      // 40 stack routes with a screen of src/screens (HomeTabs is the tab
+      // navigator itself) and the 4 tabs.
+      expect(routes.length).toBe(44)
     },
     30 * 60 * 1000
   )
 
-  // The W1.5 target: the screen files with class names (the ones wave 2
-  // converts) render, nine in ten at least; today every one does.
+  // proapp's W1.5 target: the screen files with class names (the ones W2
+  // converts) render, nine in ten at least.
   it("renders at least 90% of the screen files with class names", () => {
     const withClasses = [...reports.values()].filter((r) => r.className)
     const rendered = withClasses.filter((r) => covered(r, platform))
@@ -366,7 +372,7 @@ afterAll(() => {
       REPORT,
       `${JSON.stringify(
         {
-          proapp: head(path.join(SRC, "..")),
+          customerapp: head(path.join(SRC, "..")),
           shared: head(path.join(SRC, "..", "..", "tappler-shared")),
           summary,
           files: all,

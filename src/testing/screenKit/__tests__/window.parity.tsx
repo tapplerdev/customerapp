@@ -15,10 +15,11 @@ import type { HostNode } from "testing/hostTreeParity"
 /*
  * A row's window is part of its module registry and applied before the app
  * loads, so what a module works out from Dimensions when it loads follows
- * the row: tappler-shared's isSmallPhone (width under 393), which
- * RegistrationFlowScreen, SocialMediaItem, FilterScreen and five components
- * branch on, and SCREEN_WIDTH / SCREEN_HEIGHT. Set at render time only, the
- * branch stayed the large phone's whatever the row asked for.
+ * the row: tappler-shared's isSmallPhone (width under 393) and SCREEN_WIDTH /
+ * SCREEN_HEIGHT, and customerapp's own SCREEN_WIDTHs read at import
+ * (ReviewFormScreen, MessagesComponent, MessageComponent, TabBar, OffersSection,
+ * FoodMenuItemRow, ImageViewerModal). Set at render time only, they stayed the
+ * large phone's whatever the row asked for (proapp's finding).
  */
 
 const probe = () => require("../__fixtures__/SmallPhoneProbe")

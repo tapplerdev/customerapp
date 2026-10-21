@@ -3,10 +3,10 @@
  * loads.
  *
  * Under jest every module resolves through haste's default platform (iOS),
- * and ten app files read `Platform.OS` at import (FoodMenuSectionMenuItem,
- * PaymobCardEntrySheet, helpers/layoutAnimation, the two map pickers,
- * MessagesDetailsScreen's styles, MyServiceWorkPhotoAdjustScreen,
- * LeadDetailScreen, OpportunityDetailScreen, utils/haptics), so swapping
+ * and some app files read `Platform.OS` at import (customerapp: the two map
+ * pickers' `isAndroid`, MapPickerView.tsx:29 and MapPickerWithSearchView.tsx:64,
+ * helpers/layoutAnimation, ProsListingScreen's components/styles.ts and
+ * SearchLocationModal's StyleSheet through Platform.select), so swapping
  * Platform.OS at render time leaves them on iOS. The kit instead loads each
  * platform's render into a module registry of its own (jest.resetModules,
  * index.ts), and before anything loads in an Android registry it points
@@ -35,7 +35,7 @@ const PLATFORM_DIRS = [
   "react-native-gesture-handler/lib/commonjs",
   "react-native-screens/lib/commonjs",
   "react-native-safe-area-context/lib/commonjs",
-  "react-native-keyboard-controller/lib/commonjs",
+  "@react-navigation/elements/lib/module",
 ]
 
 /** Modules React Native's jest setup already replaces (its Image mock). */

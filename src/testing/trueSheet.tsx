@@ -70,11 +70,9 @@ export type TrueSheetStandIn = React.Component<Props, State> & {
   resize: (index: number) => Promise<void>
 }
 
-const ON = "screenKit:userDismiss"
-
 /** The sheet closed by the user (a swipe, the backdrop): its two events, no dismiss() call. */
 export const userDismiss = (sheet: TrueSheetStandIn) =>
-  (sheet as unknown as Record<string, () => void>)[ON]()
+  (sheet as unknown as { screenKitUserDismiss: () => void }).screenKitUserDismiss()
 
 export const trueSheet = () => {
   const R = require("react") as typeof React
@@ -192,7 +190,8 @@ export const trueSheet = () => {
       this.fire("onDetentChange", this.event(index))
     })
 
-    [ON] = () => {
+    /** What userDismiss() calls: the native dismissal, nobody's dismiss() behind it. */
+    screenKitUserDismiss = () => {
       if (!this.state.presented) {
         throw new Error("TrueSheet stand-in: the sheet isn't presented, so the user can't close it")
       }

@@ -1,33 +1,35 @@
 /**
- * Jest only. What a pro does to a screen before its tree is read, by what
- * they see rather than by testIDs (a screen has none, and can't get one in
- * pass 1: a testID is a host prop, so the tree would change): the copy in
+ * Jest only. What a customer does to a screen before its tree is read, by
+ * what they see rather than by testIDs (a screen has none, and can't get one
+ * in pass 1: a testID is a host prop, so the tree would change): the copy in
  * the row's language, a press on a titled control or on a link's words,
- * typing into a field or the code boxes, and the rows a screen's bottom gap
- * needs. treeAfter (index.ts) runs a list of these. Written for My Account's
- * screens (W2b P3) and moved here for every area.
+ * typing into a field, a native view's callback (a map settling, an
+ * animation ending), a sheet closed by a swipe, and the rows a screen's
+ * bottom gap needs. treeAfter (index.ts) runs a list of these. proapp's
+ * (written for its My Account screens, W2b P3), on customerapp's copy.
  *
  * Each press calls the element's own onPress, as a tap does, and returns
  * nothing: a tap doesn't wait for an async handler, and session.act would
  * (a save whose request never answers would hang the row). The kit's settle
- * after the step runs what the press started. A helper refuses what a pro
+ * after the step runs what the press started. A helper refuses what a customer
  * couldn't do (a disabled control, a field that isn't editable) and what it
  * can't tell apart (two controls with the same words), so a row can't reach
- * a state no pro can. Nothing here imports the app: the kit loads it per
+ * a state no customer can. Nothing here imports the app: the kit loads it per
  * platform registry.
  */
 import type { ReactTestInstance } from "react-test-renderer"
 
 import type { ParityEnv, ParityLanguage } from "testing/hostTreeParity"
+import { userDismiss, type TrueSheetStandIn } from "testing/trueSheet"
 
 import en from "locales/en.json"
 import ar from "locales/ar.json"
 
-/** The copy, by language, straight from the app's files (t() draws the same). */
-const COPY: Record<ParityLanguage, Record<string, unknown>> = {
-  en: en.translation,
-  ar: ar.translation,
-}
+/**
+ * The copy, by language, straight from the app's files (t() draws the
+ * same). customerapp's are flat (setupI18n wraps them for i18next).
+ */
+const COPY: Record<ParityLanguage, Record<string, unknown>> = { en, ar }
 
 /**
  * The translated string for `key` in the row's language, falling back to
@@ -125,13 +127,13 @@ const refused = (what: string) =>
 export type PressOptions = {
   /**
    * Press it even though it is disabled (a tap would do nothing): a test of
-   * the handler itself, never a step a pro takes.
+   * the handler itself, never a step a customer takes.
    */
   allowDisabled?: boolean
 }
 
 /**
- * Press the control titled `title` (an ActionBtn, a Button, a My Account row:
+ * Press the control titled `title` (an ActionBtn, a Button, an account row:
  * each takes `title` and `onPress`), through its onPress, as a tap does.
  * What the handler returns is dropped: a tap doesn't wait for an async
  * handler (a save whose request never answers would hang the step), the
@@ -212,7 +214,7 @@ export const pressText = (
   control.props.onPress()
 }
 
-/** The fields (DmInput, PhoneInput) that take text, outermost first, in order. */
+/** The fields (DmInput, DmAuthInput) that take text, outermost first, in order. */
 export const fields = (root: ReactTestInstance) =>
   root.findAll(
     (node) =>
@@ -225,7 +227,7 @@ export const fields = (root: ReactTestInstance) =>
  * Type `text` into the `index`th field (as fields() orders them) the way a
  * keyboard does: through the onChangeText of the TextInput the field draws,
  * as fireEvent.changeText does, so the field's own handler runs on the way
- * (DmInput's and PhoneInput's fromArabic for digits). A field that draws no
+ * (DmInput's fromArabic for digits). A field that draws no
  * TextInput (a DmInput with onPress) or one that isn't editable throws.
  */
 export const typeInto = (
@@ -257,23 +259,85 @@ export const typeInto = (
   input.props.onChangeText(text)
 }
 
-/**
- * Type a code into VerifyCodeInput's hidden field (the one the boxes draw
- * from), through its onChangeText, as the keyboard does.
- */
-export const enterCode = (root: ReactTestInstance, code: string): void => {
-  only(
-    root,
-    (node) =>
-      typeof node.type !== "string" &&
-      node.props.autoComplete === "one-time-code" &&
-      typeof node.props.onChangeText === "function",
-    "the code field"
-  ).props.onChangeText(code)
+export type FireOptions = {
+  /** Which of several such views (0 for the first, in screen order). */
+  nth?: number
 }
 
 /**
- * Something the pro does before the tree is read: a press, typing. The kit
+ * Call the `prop` callback a native view's stand-in was handed, as the
+ * device calls it: a host named `type` (nativeMocks' MapView and its
+ * onRegionChangeComplete, LottieView's onAnimationFinish, Video's onLoad...)
+ * with `args`. Several such views throw unless `nth` picks one; none
+ * holding the callback throws too. Returns nothing, as a press does.
+ */
+export const fireHost = (
+  root: ReactTestInstance,
+  type: string,
+  prop: string,
+  args: unknown[] = [],
+  options: FireOptions = {}
+): void => {
+  const found = root.findAll(
+    (node) =>
+      (node.type as unknown) === type &&
+      typeof node.props[prop] === "function"
+  )
+  const what = `${type}'s ${prop}`
+  if (found.length === 0) throw new Error(`fire ${what}: no ${type} holds it`)
+  const { nth } = options
+  if (nth === undefined && found.length > 1) {
+    throw new Error(
+      `fire ${what}: ${found.length} views hold it (pass { nth } to pick one)`
+    )
+  }
+  const host = found[nth ?? 0]
+  if (!host) {
+    throw new Error(`fire ${what}: no view ${String(nth)}, only ${found.length}`)
+  }
+  host.props[prop](...args)
+}
+
+/** The presented sheets (testing/trueSheet's instances), in screen order. */
+export const presentedSheets = (root: ReactTestInstance) =>
+  root
+    .findAll(
+      (node) =>
+        node.instance !== null &&
+        typeof node.instance === "object" &&
+        typeof (node.instance as { present?: unknown }).present ===
+          "function" &&
+        (node.instance as { state?: { presented?: boolean } }).state
+          ?.presented === true,
+      { deep: true }
+    )
+    .map((node) => node.instance as TrueSheetStandIn)
+
+/**
+ * Close a presented sheet the way a customer does, with a swipe or a tap on
+ * the dim: the sheet reports its dismissal with nobody's dismiss() behind
+ * it, so shared's NativeSheet calls onDismissed (a programmatic close calls
+ * only onClosed). Several presented sheets throw unless `nth` picks one.
+ */
+export const closeSheetAsUser = (
+  root: ReactTestInstance,
+  options: FireOptions = {}
+): void => {
+  const sheets = presentedSheets(root)
+  if (sheets.length === 0) throw new Error("close a sheet: none is presented")
+  const { nth } = options
+  if (nth === undefined && sheets.length > 1) {
+    throw new Error(
+      `close a sheet: ${sheets.length} are presented (pass { nth } to pick one)`
+    )
+  }
+  const sheet = sheets[nth ?? 0]
+  if (!sheet) throw new Error(`close a sheet: no sheet ${String(nth)}`)
+  userDismiss(sheet)
+}
+
+/**
+ * Something the customer does before the tree is read: a press, typing. The kit
  * settles 500 ms after each; `settleMs` gives a step longer (a card's close,
  * whose present on iOS ends on a 2 s backstop under jest: the Modal stand-in
  * reports a dismissal, not a present).

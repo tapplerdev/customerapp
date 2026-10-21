@@ -96,8 +96,8 @@ describe("what the states drew", () => {
         session.unmount()
       }
     }
-    expect(await text("data")).toContain("Leads: 2")
-    expect(await text("empty")).toContain("Leads: 0")
+    expect(await text("data")).toContain("Messages: 1")
+    expect(await text("empty")).toContain("Messages: 0")
     expect(await text("loading")).toContain("…")
   })
 })
