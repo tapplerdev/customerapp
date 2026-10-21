@@ -28,6 +28,7 @@
     "test": "jest",
     "test:parity": "jest -c jest.parity.config.js",
     "test:parity:reverse": "jest -c jest.parity.reverse.config.js",
+    "test:parity:fresh": "jest -c jest.parity.fresh.config.js",
     "ds:parity:capture": "node scripts/ds-parity-capture.js",
     "ds:parity:screens": "jest -c jest.parity.config.js src/testing/screenKit/__tests__/screens.coverage.parity.tsx",
     "postinstall": "patch-package"

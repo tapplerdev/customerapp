@@ -25,7 +25,9 @@
  * own `isRefreshing` can't be: the store and the slices hold that module.
  * Instead no refresh outlives its row (backend.ts's endRefreshes), and a
  * refresh nothing answered fails the row. `yarn test:parity:reverse` runs
- * every file's rows in reverse, so a leak nobody listed fails there.
+ * every file's rows in reverse, so a leak nobody listed fails there, and
+ * `yarn test:parity:fresh` runs each row in a registry of its own, so one
+ * with a source on both sides of a row fails there too.
  */
 import fs from "fs"
 import path from "path"
