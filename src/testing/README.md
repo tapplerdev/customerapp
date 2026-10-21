@@ -460,6 +460,9 @@ writes screens send on open (MessagesDetails' mark-all, an unread NotificationDe
 
 ## The capture flags
 
-- `yarn ds:parity:capture <test file> [--force]`: capture mode, stamped with the commit.
+- `yarn ds:parity:capture <test file> [--force]`: capture mode, stamped with the commit. When
+  anything but test material (`__tests__`, `__fixtures__`, `__parity__`, `*.parity.*`,
+  `*.test.*`) differs from HEAD, the stamp is `<HEAD>-dirty.<hash of those changes>` and the
+  capture lists them: commit the code you capture first.
 - `DS_HARVEST=1`: re-harvest a component's call sites (writes the cases and the classes file).
 - `DS_SCREENKIT_REPORT=<file>`, `DS_SCREENKIT_PLATFORMS=ios`: the coverage report, one platform.
