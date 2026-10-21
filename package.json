@@ -18,6 +18,7 @@
     "clean": "react-native clean",
     "lint": "eslint .",
     "test": "jest",
+    "ds:paths": "node scripts/shared-tsconfig-paths.js",
     "postinstall": "patch-package"
   },
   "dependencies": {

@@ -1,10 +1,115 @@
+// compilerOptions.paths is generated: node scripts/shared-tsconfig-paths.js --write
+// (that file says why each shared import is pinned to one declaration file).
 {
   "extends": "@react-native/typescript-config",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@tappler/shared/*": ["../tappler-shared/*"],
-      "*": ["src/*"]
+      "@tappler/shared/*": [
+        "../tappler-shared/*"
+      ],
+      "@lodev09/react-native-true-sheet": [
+        "node_modules/@lodev09/react-native-true-sheet/lib/typescript/src/index.d.ts"
+      ],
+      "@lodev09/react-native-true-sheet/reanimated": [
+        "node_modules/@lodev09/react-native-true-sheet/lib/typescript/src/reanimated/index.d.ts"
+      ],
+      "@notifee/react-native": [
+        "node_modules/@notifee/react-native/dist/index.d.ts"
+      ],
+      "@react-native-community/geolocation": [
+        "node_modules/@react-native-community/geolocation/lib/typescript/js/index.d.ts"
+      ],
+      "@react-native-firebase/messaging": [
+        "node_modules/@react-native-firebase/messaging/dist/typescript/lib/index.d.ts"
+      ],
+      "@react-navigation/native": [
+        "node_modules/@react-navigation/native/lib/typescript/src/index.d.ts"
+      ],
+      "@react-navigation/native-stack": [
+        "node_modules/@react-navigation/native-stack/lib/typescript/src/index.d.ts"
+      ],
+      "@reduxjs/toolkit": [
+        "node_modules/@reduxjs/toolkit/dist/index.d.ts"
+      ],
+      "@reduxjs/toolkit/query": [
+        "node_modules/@reduxjs/toolkit/dist/query/index.d.ts"
+      ],
+      "@reduxjs/toolkit/query/react": [
+        "node_modules/@reduxjs/toolkit/dist/query/react/index.d.ts"
+      ],
+      "arabic-digits": [
+        "node_modules/arabic-digits/index.ts"
+      ],
+      "clsx": [
+        "node_modules/clsx/clsx.d.mts"
+      ],
+      "i18next": [
+        "node_modules/i18next/index.d.mts"
+      ],
+      "moment": [
+        "node_modules/moment/ts3.1-typings/moment.d.ts"
+      ],
+      "react": [
+        "node_modules/@types/react/index.d.ts"
+      ],
+      "react-i18next": [
+        "node_modules/react-i18next/index.d.mts"
+      ],
+      "react-native": [
+        "node_modules/react-native/types/index.d.ts"
+      ],
+      "react-native-create-thumbnail": [
+        "node_modules/react-native-create-thumbnail/index.d.ts"
+      ],
+      "react-native-fast-image": [
+        "node_modules/react-native-fast-image/dist/index.d.ts"
+      ],
+      "react-native-gesture-handler": [
+        "node_modules/react-native-gesture-handler/lib/typescript/index.d.ts"
+      ],
+      "react-native-gesture-image-viewer": [
+        "node_modules/react-native-gesture-image-viewer/lib/typescript/src/index.d.ts"
+      ],
+      "react-native-linear-gradient": [
+        "node_modules/react-native-linear-gradient/index.d.ts"
+      ],
+      "react-native-localize": [
+        "node_modules/react-native-localize/dist/typescript/module/index.d.ts"
+      ],
+      "react-native-maps": [
+        "node_modules/react-native-maps/dist/src/index.d.ts"
+      ],
+      "react-native-mmkv": [
+        "node_modules/react-native-mmkv/lib/index.d.ts"
+      ],
+      "react-native-orientation-locker": [
+        "node_modules/react-native-orientation-locker/index.d.ts"
+      ],
+      "react-native-permissions": [
+        "node_modules/react-native-permissions/dist/typescript/module/index.d.ts"
+      ],
+      "react-native-reanimated": [
+        "node_modules/react-native-reanimated/lib/typescript/index.d.ts"
+      ],
+      "react-native-safe-area-context": [
+        "node_modules/react-native-safe-area-context/lib/typescript/src/index.d.ts"
+      ],
+      "react-native-svg": [
+        "node_modules/react-native-svg/lib/typescript/index.d.ts"
+      ],
+      "react-native-video": [
+        "node_modules/react-native-video/lib/index.d.ts"
+      ],
+      "react-native-webview": [
+        "node_modules/react-native-webview/index.d.ts"
+      ],
+      "redux-persist": [
+        "node_modules/redux-persist/types/index.d.ts"
+      ],
+      "*": [
+        "src/*"
+      ]
     }
   }
 }

@@ -9,18 +9,21 @@
  * that gains a nested duplicate, which the check here can't see.
  *
  * Why this exists. tappler-shared is a sibling checkout (../tappler-shared)
- * with no node_modules of its own, so when tsc follows proapp's imports into
- * it, every `import ... from "react-native"` inside shared looked for
+ * with no node_modules of its own, so when tsc follows customerapp's imports
+ * into it, every `import ... from "react-native"` inside shared looked for
  * ../tappler-shared/node_modules, found nothing, and the whole package typed
- * as `any`: a bogus prop on DmView, DmText or ActionBtn compiled clean. Metro
- * and jest don't have the problem (metro.config.js nodeModulesPaths,
- * jest.config.js modulePaths); tsc needs `paths`.
+ * as `any`: a bogus prop on DmView, DmText or ActionBtn compiled clean, and
+ * tsc reported 385 errors inside shared (416 in all, 32 with these paths).
+ * Metro and jest don't have the problem (metro.config.js nodeModulesPaths,
+ * jest.config.js modulePaths); tsc needs `paths`. Copied from proapp, where
+ * the same fix took its tsc from 420 to 131.
  *
  * One entry per module specifier shared imports, each pinned to the exact
- * file TypeScript resolves for that specifier from proapp itself. So shared
- * and proapp see the same declaration file for "react-native", and nothing
- * about how proapp resolves its own imports changes. Two shapes that were
- * tried first and must not come back:
+ * file TypeScript resolves for that specifier from customerapp itself. So
+ * shared and the app see the same declaration file for "react-native", and
+ * nothing about how the app resolves its own imports changes. (RTK 2.2.1
+ * here resolves to its index.d.ts, where proapp's newer RTK has .d.mts.)
+ * Two shapes that were tried first, in proapp, and must not come back:
  * - a `"*": ["node_modules/*"]` fallback also applies to imports INSIDE
  *   node_modules declarations, and it re-pointed RTK's types from its nested
  *   reselect 5.1.1 to the top-level 4.1.8 (skipLibCheck hides that);
@@ -34,7 +37,7 @@
  * with --write. A package upgrade that moves its typings shows up the same way.
  * Specifiers TypeScript can't resolve to a file (Node built-ins, `events`,
  * which comes from @types/node's ambient declaration) are reported and left
- * unmapped; they resolve the same from shared as from proapp.
+ * unmapped; they resolve the same from shared as from the app.
  */
 const fs = require("fs")
 const path = require("path")
@@ -117,8 +120,8 @@ function readTsconfig() {
 }
 
 function resolverOptions() {
-  // proapp's effective options (the extended RN preset included), minus our own
-  // paths/baseUrl: the question is where a plain proapp import lands.
+  // the app's effective options (the extended RN preset included), minus our
+  // own paths/baseUrl: the question is where a plain app import lands.
   const parsed = ts.parseJsonConfigFileContent(readTsconfig(), ts.sys, ROOT)
   const options = { ...parsed.options }
   delete options.paths
