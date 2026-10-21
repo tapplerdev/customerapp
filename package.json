@@ -22,6 +22,8 @@
     "ds:probe": "node scripts/nw-wrap-probe.js",
     "ds:ratchet": "node scripts/style-ratchet.js",
     "ds:colors": "node scripts/ds-colors.js",
+    "ds:codemod": "node scripts/ds-codemod.js",
+    "ds:codemod:parity": "jest -c scripts/ds-codemod/parity/jest.config.js",
     "test:pass1-tools": "jest -c jest.pass1.config.js",
     "test": "jest",
     "postinstall": "patch-package"
