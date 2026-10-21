@@ -42,6 +42,26 @@ const {
 } = require("./modules")
 
 const CLASS_ATTR = /^className|ClassName$/
+
+// The class attributes that drew nothing at e30b19a (dead-at-e30b19a.json):
+// refused whatever their component reads now, so a W1 twin can't make them
+// draw (review-ca-w0 M3).
+const DEAD_AT_E30B19A = Object.freeze(
+  // eslint-disable-next-line global-require
+  require("./dead-at-e30b19a.json").sites.map((d) => Object.freeze(d))
+)
+
+const squashSpace = (s) => s.replace(/\s+/g, " ").trim()
+
+/** A class attribute's classes as dead-at-e30b19a.json keys them. */
+const classesText = (attrPath, code) => {
+  const v = attrPath.node.value
+  if (!v) return ""
+  if (v.type === "StringLiteral") return squashSpace(v.value)
+  const e = v.type === "JSXExpressionContainer" ? v.expression : v
+  return squashSpace(code.slice(e.start, e.end))
+}
+
 const UI_DIR = path.join(SHARED, "src", "components", "UI")
 const PRIMITIVES = {
   [path.join(UI_DIR, "DmText", "DmText.tsx")]: "DmText",
@@ -868,6 +888,9 @@ const convertSource = (code, file, options = {}) => {
   const latent = []
   const edits = []
   const relFile = rel(file)
+  const deadSites = (options.deadSites || DEAD_AT_E30B19A).filter(
+    (d) => d.file === relFile
+  )
   const wraps = (options.wraps || []).map((w) => ({ ...w, used: false }))
   const isWrapped = (line, tag) => {
     const hit = wraps.find(
@@ -1012,25 +1035,40 @@ const convertSource = (code, file, options = {}) => {
         )
       const base = { tag, kind: info.kind, wrapped }
 
-      // A className NativeWind turns into a style for a component that reads
-      // no style draws nothing: it is left for a person to delete, never
-      // converted, which would make it draw the day the component takes a
-      // style (a W1 twin). The wrap turns only className into style: a
-      // component's other class props reach it as written and go on below
-      // like anyone's (review-ca-w0 H3).
+      // Classes that draw nothing are left for a person to delete, never
+      // converted, which would make them draw:
+      // - the ones frozen at e30b19a, whatever their component reads now (a
+      //   W1 twin would make them draw: review-ca-w0 M3);
+      // - a className NativeWind turns into a style for a component that
+      //   reads no style.
+      // The wrap turns only className into style: a component's other class
+      // props reach it as written and go on below like anyone's (H3).
+      const readsNoStyle = () =>
+        info.kind === "component" && !!info.def && ignoresStyle(info.def)
       const dead = []
-      for (const a of classAttrs)
+      for (const a of classAttrs) {
+        const attr = a.node.name.name
+        const classes = classesText(a, code)
         if (
-          a.node.name.name === "className" &&
-          wrapped &&
-          info.kind === "component" &&
-          info.def &&
-          ignoresStyle(info.def)
+          deadSites.some(
+            (d) =>
+              d.component === tag && d.attr === attr && d.classes === classes
+          )
         )
+          dead.push({
+            a,
+            detail:
+              `dead at e30b19a: delete the class first. At e30b19a NativeWind wrapped <${tag}> here and handed it these classes as a style it didn't read, so they drew nothing; pass 1 keeps them that way, and a style or a twin would draw them` +
+              (info.kind === "component" && !readsNoStyle()
+                ? ` (<${tag}> may read style now)`
+                : ""),
+          })
+        else if (attr === "className" && wrapped && readsNoStyle())
           dead.push({
             a,
             detail: `NativeWind wraps <${tag}> here (an import it can't trace to a folder), so it gets className as style, and ${info.def.name} reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin`,
           })
+      }
       for (const { a, detail } of dead)
         record({
           ...base,
@@ -2187,6 +2225,7 @@ const printLook = (look) =>
     .join(", ")} }`
 
 module.exports = {
+  DEAD_AT_E30B19A,
   convertSource,
   classifyTag,
   applyEdits,

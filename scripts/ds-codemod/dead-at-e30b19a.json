@@ -1,0 +1,95 @@
+{
+  "about": [
+    "The class attributes that drew nothing at customerapp e30b19a: imported by file path, each component is wrapped by NativeWind, which hands the className over as a style the component never read.",
+    "ds:codemod refuses each one (wrapped-ignores-style, \"dead at e30b19a: delete the class first\") whatever the component reads now, so a style twin added later (W1) cannot make a class draw that pass 1 must keep invisible (review-ca-w0 M3).",
+    "Matched by file, component (the JSX tag), attribute and classes (a string literal as its value, an expression as its source, whitespace squashed). e30b19aLine is for people: matching never reads it.",
+    "Captured with `yarn ds:codemod src --dry --report`: the className rows it filed as wrapped-ignores-style, the classes read from `git show e30b19a:<file>` (src/components and src/screens were byte-identical to e30b19a). Never add to it: a class written after e30b19a is not on it."
+  ],
+  "capturedAt": "e30b19a",
+  "sites": [
+    {
+      "file": "src/components/OffersSection/OffersSection.tsx",
+      "component": "BannerContainer",
+      "attr": "className",
+      "classes": "`${compact ? \"mx-0\" : \"mx-[10]\"} ${className}`",
+      "e30b19aLine": 95
+    },
+    {
+      "file": "src/components/ProCardBase/ProCardBase.tsx",
+      "component": "PromoLine",
+      "attr": "className",
+      "classes": "mt-[8]",
+      "e30b19aLine": 219
+    },
+    {
+      "file": "src/components/QuestionComponent/QuestionComponent.tsx",
+      "component": "ImageWithTextButton",
+      "attr": "className",
+      "classes": "layout === \"onePerRow\" ? \"mb-[16]\" : layout === \"wrap\" ? \"mr-[16] mb-[16]\" : \"mr-[16]\"",
+      "e30b19aLine": 306
+    },
+    {
+      "file": "src/components/QuestionComponent/QuestionComponent.tsx",
+      "component": "ImageWithCheckmarkButton",
+      "attr": "className",
+      "classes": "layout === \"onePerRow\" ? \"mb-[16]\" : layout === \"wrap\" ? \"mr-[16] mb-[16]\" : \"mr-[16]\"",
+      "e30b19aLine": 336
+    },
+    {
+      "file": "src/components/QuestionComponent/QuestionComponent.tsx",
+      "component": "TextWithCheckmarkButton",
+      "attr": "className",
+      "classes": "layout === \"onePerRow\" ? \"mb-[12]\" : layout === \"wrap\" ? \"mr-[12] mb-[12]\" : \"mr-[12]\"",
+      "e30b19aLine": 365
+    },
+    {
+      "file": "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
+      "component": "SkeletonLoader",
+      "attr": "className",
+      "classes": "mt-[6]",
+      "e30b19aLine": 547
+    },
+    {
+      "file": "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
+      "component": "SkeletonLoader",
+      "attr": "className",
+      "classes": "mt-[8]",
+      "e30b19aLine": 557
+    },
+    {
+      "file": "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
+      "component": "SkeletonLoader",
+      "attr": "className",
+      "classes": "mt-[8]",
+      "e30b19aLine": 563
+    },
+    {
+      "file": "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
+      "component": "SkeletonLoader",
+      "attr": "className",
+      "classes": "mt-[8]",
+      "e30b19aLine": 564
+    },
+    {
+      "file": "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
+      "component": "SkeletonLoader",
+      "attr": "className",
+      "classes": "mt-[10]",
+      "e30b19aLine": 565
+    },
+    {
+      "file": "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx",
+      "component": "OrderBill",
+      "attr": "className",
+      "classes": "mt-[24]",
+      "e30b19aLine": 862
+    },
+    {
+      "file": "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx",
+      "component": "PromoLine",
+      "attr": "className",
+      "classes": "mt-[8]",
+      "e30b19aLine": 274
+    }
+  ]
+}

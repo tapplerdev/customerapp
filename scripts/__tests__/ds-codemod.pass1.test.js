@@ -829,6 +829,105 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     expect(r.changed).toBe(false)
   })
 
+  it("keeps refusing a class that drew nothing at e30b19a after its component gains a style twin", () => {
+    // JobDetailScreen.tsx:547's SkeletonLoader: wrapped, it gets mt-[6] as a
+    // style it never reads. Once W1 adds a style twin (Skeleton ->
+    // SkeletonTwinned), the component's own code says it reads style, and
+    // converting the class would make it draw (review-ca-w0 M3): the list
+    // frozen at e30b19a keeps it refused.
+    const file = path.join(SLOTS, "Unit.tsx")
+    const at = (from) =>
+      lines(
+        'import React from "react"',
+        `import Skeleton from "${from}"`,
+        "",
+        'export const X = () => <Skeleton width={90} height={11} className="mt-[6]" />'
+      )
+    const wraps = [{ line: 4, component: "Skeleton" }]
+    const deadSites = [
+      {
+        file: path.relative(ROOT, file),
+        component: "Skeleton",
+        attr: "className",
+        classes: "mt-[6]",
+      },
+    ]
+    const before = convertSource(at("./Skeleton/Skeleton"), file, {
+      wraps,
+      deadSites,
+    })
+    const after = convertSource(at("./Skeleton/SkeletonTwinned"), file, {
+      wraps,
+      deadSites,
+    })
+    for (const r of [before, after]) {
+      expect(r.sites.map((x) => [x.attr, x.status, x.reason])).toEqual([
+        ["className", "left", "wrapped-ignores-style"],
+      ])
+      expect(r.sites[0].detail).toMatch(
+        /^dead at e30b19a: delete the class first\. /
+      )
+      expect(r.changed).toBe(false)
+    }
+    expect(after.sites[0].detail).toContain("(<Skeleton> may read style now)")
+    expect(before.sites[0].detail).not.toContain("may read style")
+    // the control: off the list, the twin makes the same class convert
+    const control = convertSource(at("./Skeleton/SkeletonTwinned"), file, {
+      wraps,
+      deadSites: [],
+    })
+    expect(control.sites[0].status).toBe("converted")
+    expect(control.code).toContain(
+      "<Skeleton width={90} height={11} style={a.mt_6} />"
+    )
+  })
+
+  it("freezes the twelve classes that drew nothing at e30b19a by file, component, attribute and classes", () => {
+    const { DEAD_AT_E30B19A } = require("../ds-codemod/convert")
+    expect(
+      DEAD_AT_E30B19A.map(
+        (d) => `${d.file} <${d.component}> ${d.attr}={${d.classes}}`
+      )
+    ).toEqual([
+      'src/components/OffersSection/OffersSection.tsx <BannerContainer> className={`${compact ? "mx-0" : "mx-[10]"} ${className}`}',
+      "src/components/ProCardBase/ProCardBase.tsx <PromoLine> className={mt-[8]}",
+      'src/components/QuestionComponent/QuestionComponent.tsx <ImageWithTextButton> className={layout === "onePerRow" ? "mb-[16]" : layout === "wrap" ? "mr-[16] mb-[16]" : "mr-[16]"}',
+      'src/components/QuestionComponent/QuestionComponent.tsx <ImageWithCheckmarkButton> className={layout === "onePerRow" ? "mb-[16]" : layout === "wrap" ? "mr-[16] mb-[16]" : "mr-[16]"}',
+      'src/components/QuestionComponent/QuestionComponent.tsx <TextWithCheckmarkButton> className={layout === "onePerRow" ? "mb-[12]" : layout === "wrap" ? "mr-[12] mb-[12]" : "mr-[12]"}',
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[6]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[8]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[8]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[8]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[10]}",
+      "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx <OrderBill> className={mt-[24]}",
+      "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx <PromoLine> className={mt-[8]}",
+    ])
+  })
+
+  it("refuses a frozen site with no list passed in, wrapped or not", () => {
+    // as at JobDetailScreen.tsx:547, without the wrap the probe reports
+    const file = path.join(
+      ROOT,
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx"
+    )
+    const r = convertSource(
+      lines(
+        'import React from "react"',
+        'import SkeletonLoader from "../../../components/SkeletonLoader/SkeletonLoader"',
+        "",
+        'export const X = () => <SkeletonLoader width={90} height={11} borderRadius={4} className="mt-[6]" />'
+      ),
+      file,
+      { wraps: [] }
+    )
+    expect(r.sites.map((x) => [x.status, x.reason])).toEqual([
+      ["left", "wrapped-ignores-style"],
+    ])
+    expect(r.sites[0].detail).toMatch(
+      /^dead at e30b19a: delete the class first\. /
+    )
+  })
+
   it("names a class attribute that isn't a prop, where the props type names every prop", () => {
     const r = convert(
       '<><Plain classNameInfo="text-12" /><AppScrollView fooClassName="mt-[2]" /></>',
