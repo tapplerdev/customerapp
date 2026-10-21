@@ -1,5 +1,6 @@
 {
-  "about": "The ActionBtn fixture's looks (all but its White case, left unproven on purpose): fixtures.parity.js hands them to the codemod with --proven and then draws each against the Button it writes. Regenerate when the fixture's looks change.",
+  "about": "The ActionBtn fixture's looks (all but its White case, left unproven on purpose): fixtures.parity.js hands them to the codemod with --proven and then draws each against the Button it writes, in customerapp's config. Regenerate when the fixture's looks change.",
+  "drawnIn": "customerapp",
   "looks": {
     "c63b6a0b3b": {
       "props": {

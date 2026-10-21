@@ -183,13 +183,37 @@ const lookKey = (look) => {
   return JSON.stringify(out)
 }
 
+/**
+ * A looks proof's looks (props), once the proof says they were drawn in
+ * customerapp's config: a `customerapp` commit (CA-W0-B's harvest of
+ * e30b19a's sites), or `drawnIn: "customerapp"` (a run that draws its own,
+ * as the fixture parity does). Any other proof, proapp's above all (drawn
+ * in Poppins under proapp's config, it once converted 13 attributes here
+ * by luck: review-ca-w0), is refused.
+ */
+const readProof = (file) => {
+  const where = path.relative(ROOT, file)
+  const proof = JSON.parse(fs.readFileSync(file, "utf8"))
+  const commit =
+    typeof proof.customerapp === "string" &&
+    /^[0-9a-f]{7,40}$/.test(proof.customerapp)
+  if (!commit && proof.drawnIn !== "customerapp")
+    throw new Error(
+      `ds-codemod: ${where} doesn't say its looks were drawn in customerapp's config (a "customerapp" commit, or "drawnIn": "customerapp"): a proof from another app proves nothing here`
+    )
+  if (!proof.looks || typeof proof.looks !== "object")
+    throw new Error(
+      `ds-codemod: ${where} has no looks ({ looks: { id: { props } } })`
+    )
+  return Object.values(proof.looks).map((l) => l.props)
+}
+
 let proven
 const provenLooks = () => {
-  if (!proven) {
-    // eslint-disable-next-line import/no-dynamic-require, global-require
-    const { looks = {} } = fs.existsSync(PROVEN) ? require(PROVEN) : {}
-    proven = new Set(Object.values(looks).map((l) => lookKey(l.props)))
-  }
+  if (!proven)
+    proven = new Set(
+      (fs.existsSync(PROVEN) ? readProof(PROVEN) : []).map(lookKey)
+    )
   return proven
 }
 
@@ -659,5 +683,6 @@ module.exports = {
   TRANSLATOR,
   convertActionBtn,
   lookKey,
+  readProof,
   sharedStepsOnly,
 }

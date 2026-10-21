@@ -58,7 +58,9 @@ const USAGE = `usage: yarn ds:codemod <files|dirs|globs> [--dry] [--report out.j
   --latent     where dropped classes are appended (default latent-bugs.md)
   --proven     the ActionBtn looks a parity drew, as { looks: { id: { props } } },
                instead of src/testing/buttonLooks/__tests__/__parity__/
-               Button.looks.cases.json (the fixture parity run proves its own)
+               Button.looks.cases.json (the fixture parity run proves its own);
+               the file must say it was drawn in customerapp's config (a
+               "customerapp" commit, or "drawnIn": "customerapp")
   --quiet      only the totals`
 
 const walk = (dir) =>
@@ -250,11 +252,14 @@ const run = async (argv) => {
     return 2
   }
   const files = expand(args)
-  const provenLooks = opts.proven
-    ? Object.values(JSON.parse(fs.readFileSync(opts.proven, "utf8")).looks).map(
-        (l) => l.props
-      )
-    : undefined
+  let provenLooks
+  if (opts.proven)
+    try {
+      provenLooks = require("./ds-codemod/actionbtn").readProof(opts.proven)
+    } catch (error) {
+      console.error(error.message)
+      return 2
+    }
   const { convertSource } = require("./ds-codemod/convert")
   const { rel } = require("./ds-codemod/modules")
   let probe = null

@@ -1838,14 +1838,25 @@ describe("re-running", () => {
     const code = `import React from "react"\n${UI}\nexport const X = ({ cb }: any) => <ActionBtn title="Go" onPress={cb} className="h-[48]" />\n`
     fs.writeFileSync(file, code)
     const looks = path.join(dir, "looks.json")
+    const drawn = {
+      looks: { a: { props: { className: "h-[48]", onPress: true } } },
+    }
     fs.writeFileSync(
       looks,
-      JSON.stringify({
-        looks: { a: { props: { className: "h-[48]", onPress: true } } },
-      })
+      JSON.stringify({ drawnIn: "customerapp", ...drawn })
+    )
+    // a proof that doesn't say where it was drawn (proapp's 84f2287c file's
+    // shape): refused, never taken (review-ca-w0's low)
+    const foreign = path.join(dir, "foreign.json")
+    fs.writeFileSync(
+      foreign,
+      JSON.stringify({ capturedAt: "f0b6c43", elements: 128, ...drawn })
     )
     const report = path.join(dir, "report.json")
     const log = jest.spyOn(console, "log").mockImplementation(() => undefined)
+    const error = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined)
     try {
       const statusOf = async (...extra) => {
         await run([file, "--dry", "--no-probe", "--quiet", "--report", report, ...extra])
@@ -1853,8 +1864,17 @@ describe("re-running", () => {
       }
       expect(await statusOf()).toMatchObject({ status: "left", reason: "unproven-look" })
       expect(await statusOf("--proven", looks)).toMatchObject({ status: "converted" })
+      expect(
+        await run([file, "--dry", "--no-probe", "--quiet", "--proven", foreign])
+      ).toBe(2)
+      expect(error.mock.calls.map((c) => c[0])).toContainEqual(
+        expect.stringContaining(
+          "foreign.json doesn't say its looks were drawn in customerapp's config"
+        )
+      )
     } finally {
       log.mockRestore()
+      error.mockRestore()
       fs.rmSync(dir, { recursive: true, force: true })
     }
   })
