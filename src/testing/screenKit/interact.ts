@@ -214,6 +214,81 @@ export const pressText = (
   control.props.onPress()
 }
 
+export type PressIconOptions = PressOptions & {
+  /**
+   * A host the control draws: an SVG icon's (`svg:close`, as the kit's svg
+   * transformer names each after its file) or any other host type (`Image`,
+   * `LottieView`). Without it, every icon-only control counts.
+   */
+  icon?: string
+  /**
+   * Which of several (0 for the first, in the screen's order). Without it,
+   * more than one throws, listing what each draws.
+   */
+  nth?: number
+}
+
+/** What a control draws, for an error: the hosts that aren't views or text, or how many views. */
+const drawnBy = (control: ReactTestInstance) => {
+  const hosts = control.findAll((node) => typeof node.type === "string")
+  const named = [
+    ...new Set(
+      hosts
+        .map((node) => node.type as unknown as string)
+        .filter((type) => type !== "View" && type !== "Text")
+    ),
+  ]
+  return named.length > 0 ? named.join(" ") : `${hosts.length} views`
+}
+
+/**
+ * Press an icon-only control (one with an onPress that shows no words: a
+ * back chevron, a close X, JobDetail's three dots), through its onPress, as
+ * pressText does: the innermost element of the chain. Pick it by a host it
+ * draws (`icon`), by its place among the screen's icon-only controls
+ * (`nth`), or both. Several matches throw, listing what each draws, so a row
+ * can't press the wrong one without a word; a disabled one throws, as
+ * pressTitled's does, unless `allowDisabled`.
+ */
+export const pressIcon = (
+  root: ReactTestInstance,
+  options: PressIconOptions = {}
+): void => {
+  const { icon, nth } = options
+  const what = icon ? `an icon-only control drawing ${icon}` : "an icon-only control"
+  // Something on screen to tap (an element that draws no host, a closed
+  // modal's say, isn't), with no words, and the icon when one is named.
+  const found = root.findAll(
+    (node) =>
+      takesPress(node) &&
+      textOf(node) === "" &&
+      node.findAll((inner) => typeof inner.type === "string").length > 0 &&
+      (icon === undefined ||
+        node.findAll((inner) => (inner.type as unknown) === icon).length > 0)
+  )
+  const controls = found.filter(
+    (node) => !found.some((other) => other !== node && isInside(other, node))
+  )
+  if (controls.length === 0) throw new Error(`press ${what}: no match`)
+  if (nth === undefined && controls.length > 1) {
+    throw new Error(
+      `press ${what}: ${controls.length} controls (pass { nth } to pick one, in screen order): ${controls
+        .map((control, index) => `[${index}] ${drawnBy(control)}`)
+        .join(", ")}`
+    )
+  }
+  const control = controls[nth ?? 0]
+  if (!control) {
+    throw new Error(
+      `press ${what}: no control ${String(nth)}, only ${controls.length}`
+    )
+  }
+  if (!options.allowDisabled && refusesTap(control)) {
+    throw new Error(refused(`${what} ${nth ?? 0}`))
+  }
+  control.props.onPress()
+}
+
 /** The fields (DmInput, DmAuthInput) that take text, outermost first, in order. */
 export const fields = (root: ReactTestInstance) =>
   root.findAll(
