@@ -173,9 +173,22 @@ const errorText = (error) =>
       : error
   )
 
+// Why a file didn't import: the message and the package file it stopped in
+// (an ESM file this config doesn't transform, a native module's guard).
+const loadError = (error) => {
+  const message = String((error && error.message) || error).split("\n")[0]
+  const frame = String((error && error.stack) || "")
+    .split("\n")
+    .map((line) => line.match(/node_modules\/[^():\s]+(:\d+)?/))
+    .find(Boolean)
+  return frame ? `${message} (${frame[0]})` : message
+}
+
 // The broad check: every file the codemod changes, its default export drawn
 // with no props (a screen gets navigation and route). Many need props and
-// throw; those are counted, not compared. What draws is compared.
+// throw; those are counted, not compared. What draws is compared. A file
+// that doesn't import, or has no component to draw, is its own kind
+// (sweep.js): nothing in it was checked.
 describeSweep(`sweep, ${PHASE}, ${PLATFORM}`, () => {
   // A skipped describe still runs its body to list the tests.
   const files = SWEEP
@@ -197,11 +210,11 @@ describeSweep(`sweep, ${PHASE}, ${PLATFORM}`, () => {
       // eslint-disable-next-line import/no-dynamic-require
       Component = require(path.join(ROOT, file)).default
     } catch (error) {
-      results[file] = [{ error: `import: ${errorText(error)}` }]
+      results[file] = [{ kind: "load", error: `import: ${loadError(error)}` }]
       return
     }
     if (typeof Component !== "function" && !(Component && Component.$$typeof)) {
-      results[file] = [{ error: "no component export" }]
+      results[file] = [{ kind: "export", error: "no component export" }]
       return
     }
     const props = file.startsWith("src/screens/") ? { navigation, route } : {}
@@ -212,7 +225,7 @@ describeSweep(`sweep, ${PHASE}, ${PLATFORM}`, () => {
           tree: await renderTree(React.createElement(Component, props), lang),
         })
       } catch (error) {
-        out.push({ lang, error: errorText(error) })
+        out.push({ lang, kind: "render", error: errorText(error) })
       }
     }
     results[file] = out

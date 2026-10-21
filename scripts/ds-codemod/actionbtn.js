@@ -2,14 +2,20 @@
  * Rule 2: <ActionBtn ...> -> the design system's <Button ...>, by the rules
  * of src/testing/buttonLooks/__fixtures__/translate.ts, which turns one
  * ActionBtn look into Button props (proapp's, with customerapp's faces and
- * two rules of its own: a class NativeWind drops takes no prop, and a
- * caller's background over a state fill has no spelling). The codemod runs
- * that translator itself rather than a copy of its rules.
+ * rules of its own: a class NativeWind drops takes no prop; CA-W0-B's
+ * bg-grey19 while disabled (subtle), a caller's red under the spinner
+ * (brand) and opacity-50 (dim); any other caller's background over a state
+ * fill has no spelling). The codemod runs that translator itself rather
+ * than a copy of its rules.
  *
  * A site is every look its conditions can make: each combination of the
  * class strings' conditions, the variant's, and disable, isLoading,
  * isIconRight and reverseItems, built the way the look harvest builds it.
- * The site converts only if every one of those looks is one a parity drew
+ * Taken apart to their identifiers as the harvest takes them, a combination
+ * they can't make is no look (ChangePassword's class reads `isFilled &&
+ * !hasClientError && !isLoading` whole, its disable `!isFilled ||
+ * hasClientError || isLoading`), and onPress is in a look only where it is
+ * a function (`c ? fn : undefined`, FoodCheckout). The site converts only if every one of those looks is one a parity drew
  * in customerapp's config, listed in
  * src/testing/buttonLooks/__tests__/__parity__/Button.looks.cases.json
  * (where the looks proof lands, skeptic H4): nothing the proof hasn't seen
@@ -33,6 +39,7 @@ const {
   truth,
   unparen,
   canonical,
+  isPure,
 } = require("./classexpr")
 const { synthesize } = require("./dmtext")
 const { load, loadDs } = require("./dsload")
@@ -176,13 +183,37 @@ const lookKey = (look) => {
   return JSON.stringify(out)
 }
 
+/**
+ * A looks proof's looks (props), once the proof says they were drawn in
+ * customerapp's config: a `customerapp` commit (CA-W0-B's harvest of
+ * e30b19a's sites), or `drawnIn: "customerapp"` (a run that draws its own,
+ * as the fixture parity does). Any other proof, proapp's above all (drawn
+ * in Poppins under proapp's config, it once converted 13 attributes here
+ * by luck: review-ca-w0), is refused.
+ */
+const readProof = (file) => {
+  const where = path.relative(ROOT, file)
+  const proof = JSON.parse(fs.readFileSync(file, "utf8"))
+  const commit =
+    typeof proof.customerapp === "string" &&
+    /^[0-9a-f]{7,40}$/.test(proof.customerapp)
+  if (!commit && proof.drawnIn !== "customerapp")
+    throw new Error(
+      `ds-codemod: ${where} doesn't say its looks were drawn in customerapp's config (a "customerapp" commit, or "drawnIn": "customerapp"): a proof from another app proves nothing here`
+    )
+  if (!proof.looks || typeof proof.looks !== "object")
+    throw new Error(
+      `ds-codemod: ${where} has no looks ({ looks: { id: { props } } })`
+    )
+  return Object.values(proof.looks).map((l) => l.props)
+}
+
 let proven
 const provenLooks = () => {
-  if (!proven) {
-    // eslint-disable-next-line import/no-dynamic-require, global-require
-    const { looks = {} } = fs.existsSync(PROVEN) ? require(PROVEN) : {}
-    proven = new Set(Object.values(looks).map((l) => lookKey(l.props)))
-  }
+  if (!proven)
+    proven = new Set(
+      (fs.existsSync(PROVEN) ? readProof(PROVEN) : []).map(lookKey)
+    )
   return proven
 }
 
@@ -231,6 +262,83 @@ const printLeading = (v) =>
   typeof v === "object" && v !== null && "legacy" in v
     ? `{ legacy: px(${v.legacy}) }`
     : null
+
+// The most identifiers a site's conditions are checked over (2^n cases).
+const MAX_LEAVES = 12
+
+/**
+ * A condition as the identifiers it is built from, the way the look
+ * harvest evaluates one: `&&`, `||`, `!` and `?:` by truthiness, anything
+ * else (an identifier, a member, a comparison) a leaf by its source text.
+ * `at(leafEnv)` is the condition's truth. Null when a leaf calls something
+ * (two readings of it needn't agree).
+ */
+const decompose = (node) => {
+  const n = unparen(node)
+  if (n.type === "UnaryExpression" && n.operator === "!") {
+    const x = decompose(n.argument)
+    return x && { leaves: x.leaves, at: (v) => !x.at(v) }
+  }
+  if (
+    n.type === "LogicalExpression" &&
+    (n.operator === "&&" || n.operator === "||")
+  ) {
+    const l = decompose(n.left)
+    const r = decompose(n.right)
+    if (!l || !r) return null
+    return {
+      leaves: new Set([...l.leaves, ...r.leaves]),
+      at:
+        n.operator === "&&"
+          ? (v) => l.at(v) && r.at(v)
+          : (v) => l.at(v) || r.at(v),
+    }
+  }
+  if (n.type === "ConditionalExpression") {
+    const parts = [n.test, n.consequent, n.alternate].map(decompose)
+    if (parts.some((x) => !x)) return null
+    const [t, y, z] = parts
+    return {
+      leaves: new Set(parts.flatMap((x) => [...x.leaves])),
+      at: (v) => (t.at(v) ? y.at(v) : z.at(v)),
+    }
+  }
+  if (n.type === "BooleanLiteral")
+    return { leaves: new Set(), at: () => n.value }
+  if (!isPure(n)) return null
+  const key = canonical(n)
+  return { leaf: true, leaves: new Set([key]), at: (v) => v.get(key) }
+}
+
+/**
+ * Which assignments of a site's conditions can happen. A class string
+ * reads its condition whole (`isFilled && !hasClientError && !isLoading ?
+ * "bg-red" : "bg-grey19"`), a flag as the parts it is built from
+ * (`disable={!isFilled || hasClientError || isLoading}`); taken apart to
+ * their identifiers, as the look harvest takes them, they are one set of
+ * facts, and an assignment no identifiers can make (filled and disabled
+ * at once) is no look at all. A function of an assignment (env), or null
+ * when every assignment can happen as far as the conditions tell.
+ */
+const reachableOf = (atomIds, table) => {
+  const models = atomIds.map((id) => {
+    const model = decompose(table.atoms[id].node)
+    const own = `#${id}`
+    return (
+      model || { leaf: true, leaves: new Set([own]), at: (v) => v.get(own) }
+    )
+  })
+  // each its own identifier: every assignment can happen
+  if (models.every((m) => m.leaf)) return null
+  const leaves = [...new Set(models.flatMap((m) => [...m.leaves]))]
+  if (leaves.length > MAX_LEAVES) return null
+  const seen = new Set()
+  for (let mask = 0; mask < 1 << leaves.length; mask++) {
+    const v = new Map(leaves.map((k, i) => [k, Boolean(mask & (1 << i))]))
+    seen.add(models.map((m) => (m.at(v) ? 1 : 0)).join(""))
+  }
+  return (env) => seen.has(atomIds.map((id) => (env.get(id) ? 1 : 0)).join(""))
+}
 
 /**
  * Button props for an ActionBtn element, or Unconvertible.
@@ -337,10 +445,41 @@ const convertActionBtn = ({
     [...CLASSES, "variant"].map((n) => [n, attrs[n] ? irOf(n) : null])
   )
   const flags = Object.fromEntries(FLAGS.map((n) => [n, flag(n)]))
+  // onPress is in every look, or only where its condition says: `c ? fn :
+  // undefined` (FoodCheckoutScreen.tsx:843) hands ActionBtn no handler when
+  // c is false, as the look harvest reads it. What it holds stays as written.
+  const press = (() => {
+    const attr = attrs.onPress
+    if (!attr) return null
+    const v = attr.node.value
+    if (!v || v.type !== "JSXExpressionContainer")
+      return { atoms: [], at: () => true }
+    const e = unparen(v.expression)
+    const none = (x) => {
+      const u = unparen(x)
+      return (
+        (u.type === "Identifier" && u.name === "undefined") ||
+        u.type === "NullLiteral"
+      )
+    }
+    if (e.type === "LogicalExpression" && e.operator === "&&")
+      throw new Unconvertible(
+        "actionbtn-unsupported-prop",
+        "`onPress` is `c && fn`, which hands ActionBtn `false` when c is false: write it `c ? fn : undefined` first"
+      )
+    if (e.type !== "ConditionalExpression") return { atoms: [], at: () => true }
+    if (!none(e.consequent) && !none(e.alternate))
+      return { atoms: [], at: () => true }
+    if (none(e.consequent) && none(e.alternate))
+      return { atoms: [], at: () => false }
+    const test = boolOf(e.test)
+    const whenTrue = !none(e.consequent)
+    return { atoms: test.atoms, at: (env) => test.at(env) === whenTrue }
+  })()
   const ids = new Set()
   for (const ir of Object.values(irs))
     if (ir) for (const id of atomsOf(ir)) ids.add(id)
-  for (const f of Object.values(flags))
+  for (const f of [...Object.values(flags), press])
     if (f) for (const id of f.atoms) ids.add(id)
   const atomIds = [...ids]
   let envs
@@ -350,14 +489,20 @@ const convertActionBtn = ({
     throw new Unconvertible("too-many-conditions", error.message)
   }
   const value = (f, env) => (!f ? undefined : f.at(env))
+  // The assignments the site's conditions can make (reachableOf): only they
+  // are looks, translated and proven; the others are no state the button
+  // is ever in, and take a drawn neighbour's props like one where they
+  // don't draw.
+  const reachable = reachableOf(atomIds, table)
 
   const translate = translatorFn()
   const known = provenOverride
     ? new Set([...provenOverride].map(lookKey))
     : provenLooks()
   const combos = envs.map((env) => {
+    if (reachable && !reachable(env)) return { env, live: false }
     const look = { title: PLACEHOLDER.title }
-    if (attrs.onPress) look.onPress = { $fn: true }
+    if (press && press.at(env)) look.onPress = { $fn: true }
     for (const name of FLAGS) {
       const v = value(flags[name], env)
       if (v !== undefined) look[name] = v
@@ -382,15 +527,17 @@ const convertActionBtn = ({
     }
     return {
       env,
+      live: true,
       look,
       props,
       D: !!look.disable,
       L: !!look.isLoading,
     }
   })
+  const live = combos.filter((c) => c.live)
   // Every look translated first, so a site Button can't draw says so even
   // while nothing is proven; then each must be one a parity drew.
-  for (const c of combos)
+  for (const c of live)
     if (!known.has(lookKey(c.look)))
       throw new Unconvertible(
         "unproven-look",
@@ -407,7 +554,7 @@ const convertActionBtn = ({
         fontIsDead: true,
       })
     : { expr: null, dropped: [] }
-  for (const c of combos) {
+  for (const c of live) {
     const got = flatten(evalStyle(layout.expr, c.env, registry.a))
     const want = c.props.style || {}
     if (!deepEqual(got, want))
@@ -429,7 +576,7 @@ const convertActionBtn = ({
   ]) {
     if (!irs[name]) continue
     const found = new Map()
-    for (const c of combos) {
+    for (const c of live) {
       const str = evaluate(irs[name], c.env)
       if (str && str.trim())
         for (const d of resolveOrLeave(str, { fontIsDead }).dropped)
@@ -441,13 +588,13 @@ const convertActionBtn = ({
   // Each prop as one expression over the conditions, from the combinations
   // where it draws; the others take a neighbour's value (they can't tell).
   const keys = new Set()
-  for (const c of combos)
+  for (const c of live)
     for (const k of Object.keys(c.props)) if (!PASSED.has(k)) keys.add(k)
   const uses = { px: false }
   const refs = []
   const attrsOut = []
   const pxKeys = new Set()
-  for (const c of combos) {
+  for (const c of live) {
     const { written } = translate(c.look, () => ({ $node: true }))
     for (const m of written.matchAll(/(\w+)=\{px\(/g)) pxKeys.add(m[1])
   }
@@ -457,7 +604,7 @@ const convertActionBtn = ({
     ds &&
     sharedStepsOnly(
       ds,
-      combos.filter((c) => !c.L)
+      live.filter((c) => !c.L)
     )
   )
     pxKeys.add("labelLeading")
@@ -476,10 +623,10 @@ const convertActionBtn = ({
   }
   // in the translator's order: container, variant, state, label, content
   for (const key of keys) {
-    const drawn = combos.filter((c) => draws(key, c))
+    const drawn = live.filter((c) => draws(key, c))
     if (drawn.length === 0) continue
     const values = combos.map((c) => {
-      if (draws(key, c)) return { env: c.env, value: c.props[key] }
+      if (c.live && draws(key, c)) return { env: c.env, value: c.props[key] }
       // the drawn combination that differs least
       const near = drawn
         .map((d) => ({
@@ -526,7 +673,7 @@ const convertActionBtn = ({
     // every class it drops, and by the attribute it is written in
     dropped: Object.values(droppedBy).flat(),
     droppedBy,
-    combos: combos.length,
+    combos: live.length,
   }
 }
 
@@ -536,5 +683,6 @@ module.exports = {
   TRANSLATOR,
   convertActionBtn,
   lookKey,
+  readProof,
   sharedStepsOnly,
 }

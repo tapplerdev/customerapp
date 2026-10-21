@@ -31,6 +31,29 @@ jest.mock("react-native-reanimated", () => {
       this.value = typeof next === "function" ? next(this.value) : next
     },
   })
+  // A layout animation's builder: each step (FadeIn.duration(300).delay(100))
+  // gives the builder back. Its methods are all a tree shows of it, which
+  // drops them.
+  const builder = () => {
+    const b = {}
+    for (const step of [
+      "duration",
+      "delay",
+      "springify",
+      "damping",
+      "dampingRatio",
+      "mass",
+      "stiffness",
+      "overshootClamping",
+      "easing",
+      "randomDelay",
+      "reduceMotion",
+      "withInitialValues",
+      "withCallback",
+    ])
+      b[step] = () => b
+    return b
+  }
   const Animated = {
     View: RN.View,
     Text: RN.Text,
@@ -66,10 +89,16 @@ jest.mock("react-native-reanimated", () => {
     Extrapolate: { CLAMP: "clamp", EXTEND: "extend", IDENTITY: "identity" },
     Easing: easing,
     ReduceMotion: { System: "system", Always: "always", Never: "never" },
-    FadeIn: { duration: () => ({}) },
-    FadeOut: { duration: () => ({}) },
-    LinearTransition: {},
-    Layout: {},
+    FadeIn: builder(),
+    FadeOut: builder(),
+    FadeInUp: builder(),
+    FadeInDown: builder(),
+    ZoomIn: builder(),
+    LinearTransition: builder(),
+    Layout: builder(),
+    Keyframe: function Keyframe() {
+      return builder()
+    },
   }
 })
 

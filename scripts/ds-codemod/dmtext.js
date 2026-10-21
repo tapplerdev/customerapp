@@ -259,7 +259,15 @@ const convertDmText = ({
     for (const d of en.dropped) dropped.set(d.class, d)
     // A weight with no face in either language (customerapp's
     // font-custom800): DmText draws the system face, as Text family="system"
-    // does, and the class is listed with the drops, since it renders nothing.
+    // does, or the face of the element's other face class where there is
+    // one (another font-customNNN, a family class such as font-sans700),
+    // and the class is listed with the drops, since it renders nothing.
+    const faces =
+      en.style.fontFamily || ar.style.fontFamily
+        ? en.style.fontFamily === ar.style.fontFamily
+          ? `${en.style.fontFamily}, from the element's other face class`
+          : `${en.style.fontFamily || "the system face"} in English and ${ar.style.fontFamily || "the system face"} in Arabic, from the element's other face class`
+        : "the system face"
     for (const c of en.consumed) {
       const arFace = ar.consumed.find((x) => x.class === c.class)
       if (
@@ -269,7 +277,7 @@ const convertDmText = ({
       )
         dropped.set(c.class, {
           class: c.class,
-          reason: `no face for weight ${c.class.slice(-3)} in English or Arabic: DmText draws the system face`,
+          reason: `no face for weight ${c.class.slice(-3)} in English or Arabic: DmText draws ${faces}`,
         })
     }
     if ("fontWeight" in en.style)

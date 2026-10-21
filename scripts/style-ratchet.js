@@ -20,10 +20,15 @@
  *                    font class, also as a *Type's family
  *   colour literals  "#hex", rgb()/hsl() and named colours in the value of a
  *                    *color/*Color key of an object (style objects,
- *                    StyleSheet.create, inline style={{...}})
+ *                    StyleSheet.create, inline style={{...}}): each literal
+ *                    anywhere in that value, with no function or statement
+ *                    between, so every branch of a ternary or && counts on
+ *                    its own (`color: on ? "#fff" : "#000"` is two), and
+ *                    `transparent` never (it is no colour anyone would
+ *                    tokenise). That is how src comes to 149.
  *   DmText/ActionBtn <DmText> and <ActionBtn> elements, with or without a
  *                    className, under any local name the file gives them
- *                    (namesOf)
+ *                    (namesOf), and createElement(DmText, ...) calls
  *   LegacyText       <LegacyText> elements (`bridge`): tappler-shared's
  *                    LegacyText (src/components/LegacyText, a default
  *                    export), the pass-1 stand-in for a DmText ds Text can't
@@ -37,7 +42,8 @@
  *   className keys   className-family keys in an object literal
  *                    (`{ className: "mt-[4]" }` handed to createElement, a
  *                    spread or a props object), named like the className
- *                    metric; not a destructuring pattern
+ *                    metric; not a destructuring pattern; and the same key
+ *                    set as a member (`extra.className = "mt-[4]"`)
  *   className prop types  className-family property signatures
  *                    (`className?: string` in a Props type or interface):
  *                    each lets a call site hand over a class that draws
@@ -46,8 +52,13 @@
  *                    `nativewind` (or a subpath) or `clsx`
  *   DmText/ActionBtn imports  DmText or ActionBtn brought in from
  *                    tappler-shared: by name from a barrel, or its own
- *                    module's default (also re-exported, or required); a
- *                    type-only import is none
+ *                    module's default (also re-exported, or required), by
+ *                    `@tappler/shared/...` or a relative path into
+ *                    ../tappler-shared, with or without an extension; or
+ *                    handed on by a file of the app (`export { DmText as
+ *                    Txt }`, `export const T = DmText`, `export default
+ *                    DmText`), which another file then uses under a name
+ *                    nothing here knows; a type-only import is none
  *
  * and compares against scripts/style-ratchet-baseline.json:
  *
@@ -78,6 +89,12 @@
  *   <DmText> or <ActionBtn> either, with or without a className, as an area
  *   needs before W3 (a primitive is its own element: --allow DmText exempts
  *   it).
+ *
+ * The files: every .js/.jsx/.ts/.tsx under --dir (src) but tests, mocks and
+ * fixtures (__tests__, __mocks__, __fixtures__, *.test.*, *.spec.*), and
+ * any file of the app that an app file imports from one of those or from
+ * outside --dir (followed import by import; src/testing's imports are not
+ * followed): a class moved into one is still the app's.
  *
  * A file that is new counts from 0, so new code can't add className. When
  * counts have fallen, --update writes them into the baseline to lock the
@@ -162,18 +179,40 @@ const ownModule = (component) =>
     `^@tappler/shared/src/components/(?:UI/)?${component}(?:/(?:index|${component}))?$`
   )
 
+// tappler-shared, the sibling Metro's watchFolders resolve a relative path
+// into.
+const SHARED_ROOT = path.join(ROOT, "..", "tappler-shared")
+
+/**
+ * An import's source as the barrels and own modules above are spelled: a
+ * relative path that lands in ../tappler-shared as `@tappler/shared/...`,
+ * and an extension or a trailing `/index` left off (`.../DmText/DmText.tsx`
+ * is DmText's own module).
+ */
+const sharedForm = (source, filename) => {
+  let s = source
+  if (s.startsWith(".") && filename) {
+    const abs = path.resolve(path.dirname(path.resolve(filename)), s)
+    const inShared = path.relative(SHARED_ROOT, abs)
+    if (!inShared.startsWith("..") && !path.isAbsolute(inShared))
+      s = posix(path.join("@tappler/shared", inShared))
+  }
+  return s.replace(/\.(tsx?|jsx?)$/, "").replace(/\/index$/, "")
+}
+
 /**
  * Every name `component` goes by in a file: its own; a named import of it
  * from a shared barrel, renamed or not; its own module's default export
  * (\`import X from\`, \`{ default as X }\`); a namespace import of either
  * (\`<NS.DmText>\`, \`<NS.default>\`); and \`const Y = X\` of any of those.
+ * A source is read as sharedForm spells it.
  */
-const namesOf = (ast, component) => {
+const namesOf = (ast, component, filename) => {
   const names = new Set([component])
   const own = ownModule(component)
   for (const stmt of ast.program.body) {
     if (stmt.type !== "ImportDeclaration" || stmt.importKind === "type") continue
-    const source = stmt.source.value
+    const source = sharedForm(stmt.source.value, filename)
     const barrel = SHARED_BARRELS.has(source)
     const home = own.test(source)
     if (!barrel && !home) continue
@@ -195,7 +234,8 @@ const namesOf = (ast, component) => {
 }
 
 /** Is `source` a shared barrel, or DmText's or ActionBtn's own module? */
-const primitiveSource = (source) => {
+const primitiveSource = (raw, filename) => {
+  const source = sharedForm(raw, filename)
   if (SHARED_BARRELS.has(source)) return { barrel: true, own: null }
   for (const component of PRIMITIVES)
     if (ownModule(component).test(source))
@@ -209,10 +249,10 @@ const primitiveSource = (source) => {
  * module's default (named `default`, or a namespace of it). A type-only one
  * brings in nothing that renders.
  */
-const primitiveBindings = (node) => {
+const primitiveBindings = (node, filename) => {
   if (!node.source || node.importKind === "type" || node.exportKind === "type")
     return 0
-  const from = primitiveSource(node.source.value)
+  const from = primitiveSource(node.source.value, filename)
   if (!from) return 0
   if (node.type === "ExportAllDeclaration") return 1
   return (node.specifiers || []).filter((sp) => {
@@ -426,6 +466,9 @@ const countSource = (code, filename = "file.tsx") => {
   const occurrences = []
   // className?: string in a Props type or interface: reported, not gated.
   const classNameProps = []
+  // Every module the file imports, re-exports from or requires (scan follows
+  // the app's own into files the walk leaves out).
+  const imports = []
   const add = (metric, node, owner) =>
     occurrences.push({
       metric,
@@ -441,9 +484,18 @@ const countSource = (code, filename = "file.tsx") => {
   const pairs = rebindingsOf(ast)
   const primitiveOf = new Map()
   for (const component of PRIMITIVES)
-    for (const name of withRebindings(namesOf(ast, component), pairs))
+    for (const name of withRebindings(namesOf(ast, component, filename), pairs))
       primitiveOf.set(name, component)
-  const legacyText = withRebindings(namesOf(ast, LEGACY_TEXT), pairs)
+  const legacyText = withRebindings(namesOf(ast, LEGACY_TEXT, filename), pairs)
+  // A tag as JSX or createElement names it: `T`, `UI.DmText`.
+  const tagName = (n) =>
+    n.type === "Identifier"
+      ? n.name
+      : n.type === "MemberExpression" &&
+          !n.computed &&
+          n.object.type === "Identifier"
+        ? `${n.object.name}.${n.property.name}`
+        : null
   traverse(ast, {
     JSXOpeningElement(p) {
       const name = elementName(p.node.name)
@@ -523,12 +575,52 @@ const countSource = (code, filename = "file.tsx") => {
       const name = keyName(p.node)
       if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, ownerOf(p))
     },
+    // extra.className = "mt-[4]", extra["textClassName"] = ...: the same key,
+    // set as a member
+    AssignmentExpression(p) {
+      const left = p.node.left
+      if (left.type !== "MemberExpression") return
+      const name = left.computed
+        ? left.property.type === "StringLiteral"
+          ? left.property.value
+          : null
+        : left.property.name
+      if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, null)
+    },
     "ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration"(p) {
       const { node } = p
-      if (!node.source) return
+      if (node.source) imports.push(node.source.value)
+      if (!node.source) {
+        // `export { DmText as Txt }`, `export const Txt = DmText`: a file of
+        // the app handing DmText or ActionBtn on, under a name no other file
+        // would know for it, so counted here as bringing it in
+        if (
+          node.type !== "ExportNamedDeclaration" ||
+          node.exportKind === "type"
+        )
+          return
+        for (const sp of node.specifiers || [])
+          if (
+            sp.type === "ExportSpecifier" &&
+            sp.exportKind !== "type" &&
+            primitiveOf.has(sp.local.name)
+          )
+            add("primitiveImport", node, null)
+        const decl = node.declaration
+        if (decl && decl.type === "VariableDeclaration")
+          for (const d of decl.declarations)
+            if (d.id.type === "Identifier" && primitiveOf.has(d.id.name))
+              add("primitiveImport", node, null)
+        return
+      }
       if (CLASS_MODULE.test(node.source.value)) add("classImport", node, null)
-      for (let i = primitiveBindings(node); i > 0; i--)
+      for (let i = primitiveBindings(node, filename); i > 0; i--)
         add("primitiveImport", node, null)
+    },
+    ExportDefaultDeclaration(p) {
+      const d = p.node.declaration
+      if (d.type === "Identifier" && primitiveOf.has(d.name))
+        add("primitiveImport", p.node, null)
     },
     TSImportEqualsDeclaration(p) {
       const ref = p.node.moduleReference
@@ -547,6 +639,18 @@ const countSource = (code, filename = "file.tsx") => {
           c.property.name === "px")
       )
         add("px", p.node, ownerOf(p))
+      // React.createElement(DmText, ...): a DmText with no JSX to count
+      const created =
+        (c.type === "Identifier" && c.name === "createElement") ||
+        (c.type === "MemberExpression" &&
+          !c.computed &&
+          c.property.name === "createElement")
+      if (created && p.node.arguments[0]) {
+        const tag = tagName(p.node.arguments[0])
+        if (tag && primitiveOf.has(tag))
+          add("primitives", p.node, primitiveOf.get(tag))
+        if (tag && legacyText.has(tag)) add("bridge", p.node, LEGACY_TEXT)
+      }
       // require("clsx"), import("nativewind"), require() of DmText's or
       // ActionBtn's own module, and `{ DmText } = require(<barrel>)`
       const arg = p.node.arguments[0]
@@ -559,8 +663,9 @@ const countSource = (code, filename = "file.tsx") => {
         arg.type !== "StringLiteral"
       )
         return
+      imports.push(arg.value)
       if (CLASS_MODULE.test(arg.value)) add("classImport", p.node, null)
-      const from = primitiveSource(arg.value)
+      const from = primitiveSource(arg.value, filename)
       if (!from) return
       if (from.own) {
         add("primitiveImport", p.node, null)
@@ -590,7 +695,7 @@ const countSource = (code, filename = "file.tsx") => {
   })
   const counts = Object.fromEntries(METRICS.map((m) => [m, 0]))
   for (const o of occurrences) counts[o.metric]++
-  return { counts, occurrences, classNameProps }
+  return { counts, occurrences, classNameProps, imports }
 }
 
 /**
@@ -644,29 +749,73 @@ const appOnly = (rel, counted) => {
   }
 }
 
+const CODE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js"]
+
+/**
+ * A module an app file imports, as the app's babel resolves it (a relative
+ * path, or module-resolver's root `src`): the file, when it is code of this
+ * app (under the root, not node_modules, not tappler-shared); else null.
+ */
+const appModule = (root, fromFile, source) => {
+  if (/^@tappler\/shared(\/|$)/.test(source)) return null
+  const base = source.startsWith(".")
+    ? path.resolve(path.dirname(fromFile), source)
+    : path.join(root, "src", source)
+  const candidates = [
+    base,
+    ...CODE_EXTENSIONS.map((e) => base + e),
+    ...CODE_EXTENSIONS.map((e) => path.join(base, `index${e}`)),
+  ]
+  const file = candidates.find(
+    (f) =>
+      /\.[jt]sx?$/.test(f) &&
+      !/\.d\.ts$/.test(f) &&
+      fs.existsSync(f) &&
+      fs.statSync(f).isFile()
+  )
+  if (!file) return null
+  const rel = path.relative(root, file)
+  if (rel.startsWith("..") || path.isAbsolute(rel)) return null
+  return rel.split(path.sep).includes("node_modules") ? null : file
+}
+
 // { files: { "src/a.tsx": { counts, occurrences } }, errors: [...] }
+// The walk leaves out __tests__, __mocks__ and __fixtures__ directories and
+// *.test / *.spec files, and sees only `dirs`; a file of those that an app
+// file imports is the app's all the same, so it is followed and counted
+// (review-ca-w0: a className or a DmText moved into one went uncounted).
 const scan = ({ root = ROOT, dirs = DEFAULT_DIRS } = {}) => {
   const files = {}
   const errors = []
+  const queue = []
+  const count = (file) => {
+    const rel = posix(path.relative(root, file))
+    if (files[rel]) return
+    try {
+      const { imports, ...counted } = countSource(
+        fs.readFileSync(file, "utf8"),
+        file
+      )
+      files[rel] = appOnly(rel, counted)
+      if (!JEST_ONLY.test(rel))
+        for (const source of imports) {
+          const target = appModule(root, file, source)
+          if (target) queue.push(target)
+        }
+    } catch (error) {
+      errors.push({ file: rel, error: error.message.split("\n")[0] })
+    }
+  }
   for (const dir of dirs) {
     const abs = path.resolve(root, dir)
     if (!fs.existsSync(abs)) {
       errors.push({ file: dir, error: "no such directory" })
       continue
     }
-    for (const file of walk(abs).sort()) {
-      const rel = posix(path.relative(root, file))
-      try {
-        files[rel] = appOnly(
-          rel,
-          countSource(fs.readFileSync(file, "utf8"), file)
-        )
-      } catch (error) {
-        errors.push({ file: rel, error: error.message.split("\n")[0] })
-      }
-    }
+    for (const file of walk(abs).sort()) count(file)
   }
-  return { files, errors }
+  while (queue.length) count(queue.shift())
+  return { files: sorted(files), errors }
 }
 
 const nonZero = (counts) =>

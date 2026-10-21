@@ -69,8 +69,16 @@
  * expects none, so a compiler added to babel.config.js stops the run until
  * the control expects its temporaries again.
  *
- * Exit 0: no BUG. Exit 1: a BUG, or the positive control failed. Exit 2: a
- * file failed to transform, or bad usage.
+ * The twelve `review` wraps at e30b19a are the twelve call sites whose
+ * className draws nothing, frozen in scripts/ds-codemod/dead-at-e30b19a.json
+ * (by file and component here): they stay review, and any other review wrap
+ * fails the run, so a new one is looked at rather than counted. Once W1
+ * deletes those classNames their wraps go, which is fine: only a review
+ * wrap the list doesn't hold fails.
+ *
+ * Exit 0: no BUG and no review beyond the twelve. Exit 1: a BUG, a review
+ * wrap beyond the twelve, or the positive control failed. Exit 2: a file
+ * failed to transform, or bad usage.
  */
 const fs = require("fs")
 const path = require("path")
@@ -806,6 +814,33 @@ const walk = (dir) =>
 
 const rel = (file) => path.relative(ROOT, path.resolve(file))
 
+// The review wraps known at e30b19a, as file#component -> how many.
+const KNOWN_REVIEWS = (() => {
+  const known = new Map()
+  // eslint-disable-next-line global-require
+  for (const d of require("./ds-codemod/dead-at-e30b19a.json").sites) {
+    const key = `${d.file}#${d.component}`
+    known.set(key, (known.get(key) || 0) + 1)
+  }
+  return known
+})()
+
+/** The review wraps beyond `known` (file#component -> count), in order. */
+const unknownReviews = (results, known = KNOWN_REVIEWS) => {
+  const seen = new Map()
+  const out = []
+  for (const r of results)
+    for (const w of r.wraps || []) {
+      if (w.status !== "review") continue
+      const key = `${rel(r.file)}#${w.component}`
+      const n = (seen.get(key) || 0) + 1
+      seen.set(key, n)
+      if (n > (known.get(key) || 0))
+        out.push({ file: rel(r.file), line: w.line, component: w.component })
+    }
+  return out
+}
+
 const formatFile = (r, quiet) => {
   const lines = []
   if (r.error) lines.push(`${rel(r.file)}: ERROR ${r.error}`)
@@ -922,12 +957,14 @@ const main = (argv) => {
       errors: 0,
     }
   )
+  const unknown = unknownReviews(results)
   if (opts.json) {
     console.log(
       JSON.stringify(
         {
           control: { ok: true, wraps: control.got },
           totals,
+          unknownReviews: unknown,
           files: results.map((r) => ({
             ...r,
             file: rel(r.file),
@@ -951,17 +988,28 @@ const main = (argv) => {
         `${totals.files} files, ${totals.wraps} wraps (${totals.temps} through a compiler temporary), ` +
         `${totals.unwrapped} className elements passed through unwrapped: ` +
         `${totals.bug} BUG, ${totals.review} to review` +
+        (unknown.length
+          ? ` (${unknown.length} beyond the twelve known at e30b19a)`
+          : totals.review
+            ? " (known at e30b19a)"
+            : "") +
         (totals.errors ? `, ${totals.errors} files failed` : "")
     )
+    for (const u of unknown)
+      console.log(
+        `  NEW REVIEW ${u.file}:${u.line} <${u.component}>: not one of the twelve at e30b19a (ds-codemod/dead-at-e30b19a.json); look at it`
+      )
   }
   if (totals.errors) return 2
-  return totals.bug ? 1 : 0
+  return totals.bug || unknown.length ? 1 : 0
 }
 
 module.exports = {
   probeFile,
   runControl,
   classify,
+  KNOWN_REVIEWS,
+  unknownReviews,
   CONSUMERS,
   FORWARDERS,
   CONTROL,

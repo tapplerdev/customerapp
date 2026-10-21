@@ -9,10 +9,18 @@
  *
  * - The container's classes split into the size (h-[n]), the corners
  *   (rounded-N), the padding (px-[n]), the layout keys (margins, width,
- *   flex, self-*: Button's `style`) and the look classes, which together
- *   with ActionBtn's `variant` pick the Button variant (VARIANT_RULES).
- *   The state classes (a grey only while disabled, loading or neither) pick
- *   the disabled look, the loading surface, or `looksDisabled`.
+ *   flex, self-*: Button's `style`), `opacity-50` (Button's `dim`) and the
+ *   look classes, which together with ActionBtn's `variant` pick the Button
+ *   variant (VARIANT_RULES). The state classes (a grey only while disabled,
+ *   loading or neither) pick the disabled look, the loading surface, or
+ *   `looksDisabled`.
+ * - CA-W0-B's rules for customerapp's sites (build-ca-w0-B.md, "Translator
+ *   rules T should mirror"): `bg-grey19` while disabled is the disabled
+ *   look's `subtle` surface (#E5E5E5, also under the spinner); a primary
+ *   button's own `bg-red` while it loads is `loadingSurface="brand"` (the
+ *   caller's class comes after ActionBtn's grey, so it stays red under the
+ *   spinner); `opacity-50` is `dim`. Any other paint over a state's fill
+ *   has no spelling.
  * - The label is ActionBtn's own label string with the caller's classes
  *   appended, resolved per language as DmText draws it; its size, face, line
  *   height in both languages, tracking, case and offset pick the label props.
@@ -94,7 +102,12 @@ const LOOK_KEY =
 const RADIUS_KEY = /^border(TopLeft|TopRight|BottomRight|BottomLeft)Radius$/
 
 /** The classes that paint a state rather than a look. */
-const STATE_CLASSES = new Set(["bg-grey7", "bg-grey16", "bg-grey4"])
+const STATE_CLASSES = new Set([
+  "bg-grey7",
+  "bg-grey16",
+  "bg-grey4",
+  "bg-grey19",
+])
 
 /**
  * ActionBtn's variant and the caller's look classes (sorted) -> Button's
@@ -222,6 +235,7 @@ export const translate = (
   let height: number | undefined
   let corner: number | undefined
   let paddingX: number | undefined
+  let dim = false
   container.forEach((token) => {
     const style = resolveClass(token)
     const keys = Object.keys(style)
@@ -245,6 +259,9 @@ export const translate = (
       paddingX = style.paddingLeft as number
     } else if (keys.length > 0 && keys.every((key) => LAYOUT_KEYS.has(key))) {
       layout.push(token)
+    } else if (keys.length === 1 && style.opacity === 0.5) {
+      // the whole button at half opacity (FoodItem:385's opacity-50)
+      dim = true
     } else if (keys.length > 0 && keys.every((key) => LOOK_KEY.test(key))) {
       lookClasses.push(token)
     } else {
@@ -293,15 +310,20 @@ export const translate = (
   const paints = lookClasses.filter(
     (token) => "backgroundColor" in resolveClass(token)
   )
-  if (fillsState && paints.length)
+  // ...except a primary button's own red while it loads: Button's `brand`
+  // loading surface (CA-W0-B). Red while disabled and not loading would be
+  // the disabled look's brand surface, which no site has: refused below.
+  const keepsRed = rule.variant === "primary" && lookClasses.includes("bg-red")
+  if (keepsRed && loading) props.loadingSurface = "brand"
+  else if (fillsState && paints.length)
     fail(
       look,
       `${paints.join(" ")} draws over ActionBtn's ${state} fill (the caller's classes come last), where Button draws its ${state} fill`
     )
 
   // --- the state classes ------------------------------------------------
-  let surface = "legacy" as "legacy" | "design" | "shade"
-  const disabledFill = (fill: "design" | "shade", token: string) => {
+  let surface = "legacy" as "legacy" | "design" | "shade" | "subtle"
+  const disabledFill = (fill: "design" | "shade" | "subtle", token: string) => {
     if (!takesDisabledFill)
       fail(
         look,
@@ -324,6 +346,10 @@ export const translate = (
         props.loadingSurface = "shade"
       } else if (disable) disabledFill("shade", token)
       else fail(look, "bg-grey4 on an enabled button")
+    } else if (token === "bg-grey19") {
+      // The spinner sits on the disabled look's surface while it loads too.
+      if (!disable) fail(look, "bg-grey19 outside the disabled state")
+      disabledFill("subtle", token)
     } else if (token === "bg-grey7") {
       if (!disable && !loading) props.looksDisabled = true
     }
@@ -497,6 +523,7 @@ export const translate = (
   }
   if (look.classNameIcon) fail(look, "classNameIcon has no Button prop")
 
+  if (dim) props.dim = true
   const written = Object.entries(props)
     .filter(([key]) => key !== "title" && key !== "onPress")
     .map(([key, value]) => {

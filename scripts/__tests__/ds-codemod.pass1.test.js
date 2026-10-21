@@ -319,6 +319,22 @@ describe("rule 1, customerapp's faces: Montserrat, the faces it doesn't ship, th
     expect(r.latent.map((x) => x.class)).toEqual(["font-custom800"])
   })
 
+  it("says which face DmText draws where another face class beside font-custom800 wins", () => {
+    // DmText takes the last font-customNNN it has a face for, and a family
+    // class (font-sans700) stands where it has none: not the system face
+    // (review-ca-w0's low)
+    const reasonOf = (className) =>
+      convert(`<DmText className="${className}">x</DmText>`).latent.find(
+        (x) => x.class === "font-custom800"
+      ).reason
+    expect(reasonOf("font-custom600 font-custom800 text-14")).toBe(
+      "no face for weight 800 in English or Arabic: DmText draws Montserrat-SemiBold in English and TheSans-Bold in Arabic, from the element's other face class"
+    )
+    expect(reasonOf("font-sans700 font-custom800 text-14")).toBe(
+      "no face for weight 800 in English or Arabic: DmText draws TheSans-Bold, from the element's other face class"
+    )
+  })
+
   it("writes the weight the classes name where TheSans draws two alike (font-sans700)", () => {
     // WelcomeScreen.tsx:49: TheSans-Bold in both languages, pinned
     const r = convert(
@@ -459,35 +475,114 @@ describe("rule 2: ActionBtn -> Button", () => {
     expect(lookName({ label: "muted" })).toBe("Muted")
   })
 
-  it("leaves what Button can't say: bg-grey19 and opacity-50 while disabled, a caller's red under the spinner", () => {
-    const left = (body) =>
+  it("writes CA-W0-B's three spellings: bg-grey19 while disabled, opacity-50, a caller's red under the spinner", () => {
+    const out = (body) =>
       convert(body, { extra: 'import clsx from "clsx"\n', proven: "all" })
-        .sites.map((x) => [x.reason, x.detail])
     // AddNewAddressScreen.tsx:234 (and ChangePassword, MyInformation,
-    // UpdateEmail): Button has no #E5E5E5 state fill yet (CA-W0-B's)
+    // UpdateEmail): #E5E5E5 while disabled, Button's subtle state fill
+    const save = out(
+      '<ActionBtn title="Save" onPress={cb} className={`h-[42] w-full ${on ? "bg-red" : "bg-grey19"}`} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!on} />'
+    )
+    expect(save.code).toContain(
+      '<Button title="Save" onPress={cb} size="sm" label="sm" labelWeight="semibold" labelLeading={px(21)} disabledLook={disabledLookSubtleInverse} style={a.w_full} disabled={!on} />'
+    )
+    expect(save.code).toContain(
+      'const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const'
+    )
+    // FoodItemScreen.tsx:385: the whole button at half opacity, Button's dim
     expect(
-      left(
-        '<ActionBtn title="Save" onPress={cb} className={`h-[42] w-full ${on ? "bg-red" : "bg-grey19"}`} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!on} />'
-      )
-    ).toEqual([
-      ["actionbtn-look", "no Button variant for primary|bg-grey19"],
-      ["actionbtn-look", "no Button variant for primary|bg-grey19"],
-    ])
-    // FoodItemScreen.tsx:385: no dim prop yet (CA-W0-B's)
-    expect(
-      left(
+      out(
         '<ActionBtn title="Add" onPress={cb} disable={on} className={clsx("mt-[23] h-[41]", on && "opacity-50")} textClassName="text-13 leading-[16px] font-custom600" />'
-      )[0]
-    ).toEqual(["actionbtn-look", "no Button variant for primary|opacity-50"])
+      ).code
+    ).toContain(
+      '<Button title="Add" onPress={cb} disabled={on} size={px(41)} label="sm" labelWeight="semibold" dim={on ? true : undefined} style={styles.button} />'
+    )
     // GateRegisterScreen.tsx:222 and RegisterScreen.tsx:326: bg-red comes
-    // after ActionBtn's grey, so the spinner sits on red (CA-W0-B)
+    // after ActionBtn's grey, so the spinner sits on red: Button's brand
+    // loading surface
     expect(
-      left(
+      out(
         '<ActionBtn title="Join" onPress={cb} className={`mt-[40] h-[44] ${on ? "bg-red" : ""}`} isLoading={n} disable={!on} />'
-      )[0]
+      ).code
+    ).toContain(
+      '<Button title="Join" onPress={cb} size="md" loadingSurface={on ? "brand" : undefined} style={a.mt_40} isLoading={n} disabled={!on} />'
+    )
+  })
+
+  // CA-W0-B's 72 harvested prop sets (src/testing/buttonLooks/__fixtures__),
+  // every look customerapp's sites draw, as the proof will list them.
+  const B_LOOKS = Object.values(
+    require("../../src/testing/buttonLooks/__fixtures__/ButtonLooks.cases.json")
+      .looks
+  ).map((l) => l.props)
+
+  it("reads a flag and a class condition as the same facts, as the look harvest does", () => {
+    // ChangePasswordScreen.tsx:167 and UpdateEmailScreen.tsx:164 (as
+    // written), and MyInformationScreen.tsx:160: `disable` is the class
+    // condition's negation, so no look is "bg-red and disabled" (review-ca-w0
+    // M2); each converts to B's spelling, disabled and saving alike.
+    for (const [body, disabled] of [
+      [
+        '<ActionBtn onPress={handleSave} className={`h-[42] w-full ${isFilled && !hasClientError && !isLoading ? "bg-red" : "bg-grey19"}`} title={t("send")} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!isFilled || hasClientError || isLoading} isLoading={isLoading} />',
+        "!isFilled || hasClientError || isLoading",
+      ],
+      [
+        '<ActionBtn onPress={handleSave} className={`h-[42] w-full ${hasChanges && !isLoading ? "bg-red" : "bg-grey19"}`} title={t("save")} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!hasChanges || isLoading} isLoading={isLoading} />',
+        "!hasChanges || isLoading",
+      ],
+    ]) {
+      const r = convert(body, { proven: B_LOOKS })
+      expect(r.sites.map((x) => [x.status, x.reason])).toEqual([
+        ["converted", undefined],
+        ["converted", undefined],
+      ])
+      expect(r.code).toContain(
+        `<Button onPress={handleSave} size="sm" label="sm" labelWeight="semibold" labelLeading={px(21)} disabledLook={disabledLookSubtleInverse} style={a.w_full} title={t("${disabled.includes("hasChanges") ? "save" : "send"}")} disabled={${disabled}} isLoading={isLoading} />`
+      )
+      expect(r.code).not.toContain("loadingSurface")
+    }
+  })
+
+  it("draws a look with no onPress where onPress is undefined, as the look harvest does", () => {
+    // FoodCheckoutScreen.tsx:843 and FoodItemScreen.tsx:385: `c ? fn :
+    // undefined` gives ActionBtn no handler when c is false (review-ca-w0 M2)
+    const checkout = convert(
+      '<ActionBtn title={t("review_order")} className="h-[44]" textClassName="text-14 leading-[18px] font-custom600" disable={!canSubmit} onPress={canSubmit ? handleReviewOrder : undefined} />',
+      { proven: B_LOOKS }
+    )
+    expect(checkout.code).toContain(
+      '<Button title={t("review_order")} size="md" label={14} labelWeight="semibold" labelLeading="normal" disabled={!canSubmit} onPress={canSubmit ? handleReviewOrder : undefined} />'
+    )
+    const item = convert(
+      '<ActionBtn disable={missingRequired} title={t("add")} className={clsx("mt-[23] h-[41]", missingRequired && "opacity-50")} textClassName="text-13 leading-[16px] font-custom600" onPress={missingRequired ? undefined : handleAddToCart} />',
+      { extra: 'import clsx from "clsx"\n', proven: B_LOOKS }
+    )
+    expect(item.code).toContain(
+      '<Button disabled={missingRequired} title={t("add")} size={px(41)} label="sm" labelWeight="semibold" dim={missingRequired ? true : undefined} style={styles.button} onPress={missingRequired ? undefined : handleAddToCart} />'
+    )
+    // `c && fn` is false, not undefined, when c is: said, not guessed
+    expect(
+      convert('<ActionBtn title="x" onPress={on && cb} />', { proven: "all" })
+        .sites[0]
+    ).toMatchObject({
+      status: "left",
+      reason: "actionbtn-unsupported-prop",
+    })
+  })
+
+  it("still leaves a caller's paint over a state's fill that Button can't spell", () => {
+    // red while disabled and not loading would be the disabled look's brand
+    // surface: no customerapp site has it (CA-W0-B), so it has no spelling
+    expect(
+      convert(
+        '<ActionBtn title="Red" onPress={cb} className="h-[44] bg-red" disable={on} />',
+        { proven: "all" }
+      ).sites.map((x) => [x.reason, x.detail])
     ).toEqual([
-      "actionbtn-look",
-      "bg-red draws over ActionBtn's loading fill (the caller's classes come last), where Button draws its loading fill",
+      [
+        "actionbtn-look",
+        "bg-red draws over ActionBtn's disabled fill (the caller's classes come last), where Button draws its disabled fill",
+      ],
     ])
   })
 
@@ -551,8 +646,8 @@ describe("rule 3: DmView and the hosts NativeWind styles", () => {
     expect(r.styles.code).toContain("backgroundColor: dsColors.red7")
     expect(r.styles.code).toContain("backgroundColor: dsColors.blue2")
     expect(r.styles.code).toContain("backgroundColor: dsColors.redAlpha10")
-    // shared's grey55 is another colour: the class's own name is the app's
-    expect(r.styles.code).toContain("backgroundColor: dsColors.grey55")
+    // shared's grey55 is another colour: the app's own, under its own name
+    expect(r.styles.code).toContain("backgroundColor: dsColors.grey55Class")
     expect(r.styles.code).toContain(
       'import colors from "@tappler/shared/src/styles/colors"'
     )
@@ -799,6 +894,133 @@ describe("rule 5: what a component's own code says about a class attribute", () 
       "NativeWind wraps <Plain> here (an import it can't trace to a folder), so it gets className as style, and Plain reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin"
     )
     expect(r.code).toContain('<Card title="t" style={a.mt_4} />')
+  })
+
+  it("files only a wrapped component's className as dead: a class prop it gets raw still draws (OffersSection.tsx:97)", () => {
+    // OffersSection's BannerContainer, imported by file path: the wrap turns
+    // className (:95) into a style BannerContainer never reads, and hands
+    // containerClassName (:97) over as it is, which BannerContainer threads
+    // into its inner DmView: that one draws today (review-ca-w0 H3).
+    const file = path.join(SLOTS, "Unit.tsx")
+    const code = lines(
+      'import React from "react"',
+      'import Banner from "./Banner/Banner"',
+      "",
+      'export const X = () => <Banner className="mx-[10]" containerClassName="py-[2] flex-row" />'
+    )
+    const r = convertSource(code, file, {
+      wraps: [{ line: 4, component: "Banner" }],
+    })
+    expect(r.sites.map((x) => [x.attr, x.status, x.reason])).toEqual([
+      ["className", "left", "wrapped-ignores-style"],
+      ["containerClassName", "left", "waiting-on-component"],
+    ])
+    expect(site(r, "className").detail).toBe(
+      "NativeWind wraps <Banner> here (an import it can't trace to a folder), so it gets className as style, and Banner reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin"
+    )
+    expect(site(r, "containerClassName").detail).toBe(
+      "NativeWind's wrap turns only className into style, so `containerClassName` reaches <Banner> as written and draws today: keep it. Banner: `containerStyle` is typed ViewStyle, which takes no style array"
+    )
+    expect(r.changed).toBe(false)
+  })
+
+  it("keeps refusing a class that drew nothing at e30b19a after its component gains a style twin", () => {
+    // JobDetailScreen.tsx:547's SkeletonLoader: wrapped, it gets mt-[6] as a
+    // style it never reads. Once W1 adds a style twin (Skeleton ->
+    // SkeletonTwinned), the component's own code says it reads style, and
+    // converting the class would make it draw (review-ca-w0 M3): the list
+    // frozen at e30b19a keeps it refused.
+    const file = path.join(SLOTS, "Unit.tsx")
+    const at = (from) =>
+      lines(
+        'import React from "react"',
+        `import Skeleton from "${from}"`,
+        "",
+        'export const X = () => <Skeleton width={90} height={11} className="mt-[6]" />'
+      )
+    const wraps = [{ line: 4, component: "Skeleton" }]
+    const deadSites = [
+      {
+        file: path.relative(ROOT, file),
+        component: "Skeleton",
+        attr: "className",
+        classes: "mt-[6]",
+      },
+    ]
+    const before = convertSource(at("./Skeleton/Skeleton"), file, {
+      wraps,
+      deadSites,
+    })
+    const after = convertSource(at("./Skeleton/SkeletonTwinned"), file, {
+      wraps,
+      deadSites,
+    })
+    for (const r of [before, after]) {
+      expect(r.sites.map((x) => [x.attr, x.status, x.reason])).toEqual([
+        ["className", "left", "wrapped-ignores-style"],
+      ])
+      expect(r.sites[0].detail).toMatch(
+        /^dead at e30b19a: delete the class first\. /
+      )
+      expect(r.changed).toBe(false)
+    }
+    expect(after.sites[0].detail).toContain("(<Skeleton> may read style now)")
+    expect(before.sites[0].detail).not.toContain("may read style")
+    // the control: off the list, the twin makes the same class convert
+    const control = convertSource(at("./Skeleton/SkeletonTwinned"), file, {
+      wraps,
+      deadSites: [],
+    })
+    expect(control.sites[0].status).toBe("converted")
+    expect(control.code).toContain(
+      "<Skeleton width={90} height={11} style={a.mt_6} />"
+    )
+  })
+
+  it("freezes the twelve classes that drew nothing at e30b19a by file, component, attribute and classes", () => {
+    const { DEAD_AT_E30B19A } = require("../ds-codemod/convert")
+    expect(
+      DEAD_AT_E30B19A.map(
+        (d) => `${d.file} <${d.component}> ${d.attr}={${d.classes}}`
+      )
+    ).toEqual([
+      'src/components/OffersSection/OffersSection.tsx <BannerContainer> className={`${compact ? "mx-0" : "mx-[10]"} ${className}`}',
+      "src/components/ProCardBase/ProCardBase.tsx <PromoLine> className={mt-[8]}",
+      'src/components/QuestionComponent/QuestionComponent.tsx <ImageWithTextButton> className={layout === "onePerRow" ? "mb-[16]" : layout === "wrap" ? "mr-[16] mb-[16]" : "mr-[16]"}',
+      'src/components/QuestionComponent/QuestionComponent.tsx <ImageWithCheckmarkButton> className={layout === "onePerRow" ? "mb-[16]" : layout === "wrap" ? "mr-[16] mb-[16]" : "mr-[16]"}',
+      'src/components/QuestionComponent/QuestionComponent.tsx <TextWithCheckmarkButton> className={layout === "onePerRow" ? "mb-[12]" : layout === "wrap" ? "mr-[12] mb-[12]" : "mr-[12]"}',
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[6]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[8]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[8]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[8]}",
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx <SkeletonLoader> className={mt-[10]}",
+      "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx <OrderBill> className={mt-[24]}",
+      "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx <PromoLine> className={mt-[8]}",
+    ])
+  })
+
+  it("refuses a frozen site with no list passed in, wrapped or not", () => {
+    // as at JobDetailScreen.tsx:547, without the wrap the probe reports
+    const file = path.join(
+      ROOT,
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx"
+    )
+    const r = convertSource(
+      lines(
+        'import React from "react"',
+        'import SkeletonLoader from "../../../components/SkeletonLoader/SkeletonLoader"',
+        "",
+        'export const X = () => <SkeletonLoader width={90} height={11} borderRadius={4} className="mt-[6]" />'
+      ),
+      file,
+      { wraps: [] }
+    )
+    expect(r.sites.map((x) => [x.status, x.reason])).toEqual([
+      ["left", "wrapped-ignores-style"],
+    ])
+    expect(r.sites[0].detail).toMatch(
+      /^dead at e30b19a: delete the class first\. /
+    )
   })
 
   it("names a class attribute that isn't a prop, where the props type names every prop", () => {
@@ -1632,14 +1854,25 @@ describe("re-running", () => {
     const code = `import React from "react"\n${UI}\nexport const X = ({ cb }: any) => <ActionBtn title="Go" onPress={cb} className="h-[48]" />\n`
     fs.writeFileSync(file, code)
     const looks = path.join(dir, "looks.json")
+    const drawn = {
+      looks: { a: { props: { className: "h-[48]", onPress: true } } },
+    }
     fs.writeFileSync(
       looks,
-      JSON.stringify({
-        looks: { a: { props: { className: "h-[48]", onPress: true } } },
-      })
+      JSON.stringify({ drawnIn: "customerapp", ...drawn })
+    )
+    // a proof that doesn't say where it was drawn (proapp's 84f2287c file's
+    // shape): refused, never taken (review-ca-w0's low)
+    const foreign = path.join(dir, "foreign.json")
+    fs.writeFileSync(
+      foreign,
+      JSON.stringify({ capturedAt: "f0b6c43", elements: 128, ...drawn })
     )
     const report = path.join(dir, "report.json")
     const log = jest.spyOn(console, "log").mockImplementation(() => undefined)
+    const error = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined)
     try {
       const statusOf = async (...extra) => {
         await run([file, "--dry", "--no-probe", "--quiet", "--report", report, ...extra])
@@ -1647,8 +1880,17 @@ describe("re-running", () => {
       }
       expect(await statusOf()).toMatchObject({ status: "left", reason: "unproven-look" })
       expect(await statusOf("--proven", looks)).toMatchObject({ status: "converted" })
+      expect(
+        await run([file, "--dry", "--no-probe", "--quiet", "--proven", foreign])
+      ).toBe(2)
+      expect(error.mock.calls.map((c) => c[0])).toContainEqual(
+        expect.stringContaining(
+          "foreign.json doesn't say its looks were drawn in customerapp's config"
+        )
+      )
     } finally {
       log.mockRestore()
+      error.mockRestore()
       fs.rmSync(dir, { recursive: true, force: true })
     }
   })

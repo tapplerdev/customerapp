@@ -1,5 +1,6 @@
 {
-  "about": "The ActionBtn fixture's looks (all but its White case, left unproven on purpose): fixtures.parity.js hands them to the codemod with --proven and then draws each against the Button it writes. Regenerate when the fixture's looks change.",
+  "about": "The ActionBtn fixture's looks (all but its White case, left unproven on purpose): fixtures.parity.js hands them to the codemod with --proven and then draws each against the Button it writes, in customerapp's config. Regenerate when the fixture's looks change.",
+  "drawnIn": "customerapp",
   "looks": {
     "c63b6a0b3b": {
       "props": {
@@ -206,6 +207,34 @@
         "isLoading": true,
         "onPress": true,
         "textClassName": "text-13 leading-[21px] font-custom600"
+      }
+    },
+    "63b7cfdfd4": {
+      "props": {
+        "className": "mt-[40] h-[44]",
+        "disable": true,
+        "onPress": true
+      }
+    },
+    "e3f1bfae25": {
+      "props": {
+        "className": "mt-[40] h-[44] bg-red",
+        "onPress": true
+      }
+    },
+    "3db1cc9dff": {
+      "props": {
+        "className": "mt-[40] h-[44]",
+        "disable": true,
+        "isLoading": true,
+        "onPress": true
+      }
+    },
+    "853bf5ba35": {
+      "props": {
+        "className": "mt-[40] h-[44] bg-red",
+        "isLoading": true,
+        "onPress": true
       }
     }
   }
