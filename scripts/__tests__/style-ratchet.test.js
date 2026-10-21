@@ -1008,3 +1008,106 @@ describe("DmText/ActionBtn (primitives): under any name, and only falling, file 
     expect(ratchet({ "src/A.tsx": [dmTexts(2), legacyTexts(2)] }).violations).toEqual([])
   })
 })
+
+describe("the ways round it review-ca-w0 found: each one counts now", () => {
+  const UI = "@tappler/shared/src/components/UI"
+  const counts = (code, filename = "X.tsx") =>
+    countSource(code, filename).counts
+
+  it("counts a DmText handed on from a file of the app, as an import of it", () => {
+    // AboutApp's `export { DmText as Txt }`, and MessagesSkeleton's <Txt>
+    // from it: the re-export is the one place to count it
+    for (const hand of [
+      "export { DmText as Txt }",
+      "export const Txt = DmText",
+      "export default DmText",
+    ])
+      expect(
+        counts(`import { DmText } from "${UI}"\n${hand}\n`).primitiveImport
+      ).toBe(2)
+    expect(
+      counts(`import { DmView } from "${UI}"\nexport { DmView as V }\n`)
+        .primitiveImport
+    ).toBe(0)
+  })
+
+  it("follows a relative or extension-spelled import of shared to DmText", () => {
+    const file = path.join(
+      __dirname,
+      "..",
+      "..",
+      "src/screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx"
+    )
+    const relative = counts(
+      'import React from "react"\nimport { DmText as T } from "../../../../../tappler-shared/src/components/UI"\nexport const X = () => <T>hi</T>\n',
+      file
+    )
+    expect(relative).toMatchObject({ primitives: 1, primitiveImport: 1 })
+    const extension = counts(
+      `import React from "react"\nimport T from "${UI}/DmText/DmText.tsx"\nexport const X = () => <T>hi</T>\n`,
+      file
+    )
+    expect(extension).toMatchObject({ primitives: 1, primitiveImport: 1 })
+  })
+
+  it("counts createElement(DmText) as a DmText", () => {
+    expect(
+      counts(
+        `import React, { createElement } from "react"\nimport { DmText, ActionBtn as B } from "${UI}"\nexport const X = () => [React.createElement(DmText, null, "hi"), createElement(B, { title: "b" })]\n`
+      )
+    ).toMatchObject({ primitives: 2 })
+  })
+
+  it("counts a className-family key set as a member", () => {
+    expect(
+      counts(
+        'const extra = {}\nextra.className = "mt-[4]"\nextra["textClassName"] = "x"\nextra[key] = "x"\nextra.style = {}\n'
+      ).classKey
+    ).toBe(2)
+  })
+
+  it("counts an app file the app imports from a __fixtures__, __tests__ or __mocks__ directory, a *.spec file or outside src", () => {
+    const root = path.join(tmp, "tree")
+    const write = (file, source) => {
+      fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true })
+      fs.writeFileSync(path.join(root, file), source)
+    }
+    const drawn = `import React from "react"\nimport { DmText, DmView } from "${UI}"\nexport default () => <DmView className="mt-[4]"><DmText>hi</DmText></DmView>\n`
+    write(
+      "src/screens/AboutApp.tsx",
+      [
+        'import React from "react"',
+        'import Fx from "./__fixtures__/Fx"',
+        'import Tx from "screens/__tests__/Tx"',
+        'import Mx from "./__mocks__/Mx"',
+        'import Sx from "components/Sx.spec"',
+        'import Px from "../../plant/Px"',
+        "export default () => <><Fx /><Tx /><Mx /><Sx /><Px /></>",
+        "",
+      ].join("\n")
+    )
+    for (const f of [
+      "src/screens/__fixtures__/Fx.tsx",
+      "src/screens/__tests__/Tx.tsx",
+      "src/screens/__mocks__/Mx.tsx",
+      "src/components/Sx.spec.tsx",
+      "plant/Px.tsx",
+    ])
+      write(f, drawn)
+    // a test nothing in the app imports stays out
+    write("src/screens/__tests__/AboutApp.test.tsx", drawn)
+    const { files } = scan({ root, dirs: ["src"] })
+    expect(Object.keys(files).sort()).toEqual([
+      "plant/Px.tsx",
+      "src/components/Sx.spec.tsx",
+      "src/screens/AboutApp.tsx",
+      "src/screens/__fixtures__/Fx.tsx",
+      "src/screens/__mocks__/Mx.tsx",
+      "src/screens/__tests__/Tx.tsx",
+    ])
+    for (const f of Object.keys(files).filter(
+      (x) => x !== "src/screens/AboutApp.tsx"
+    ))
+      expect(files[f].counts).toMatchObject({ className: 1, primitives: 1 })
+  })
+})
