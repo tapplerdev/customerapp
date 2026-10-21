@@ -110,6 +110,73 @@ describe("run-real's sweep verdict", () => {
     expect(v.gaps.map((g) => g.file)).toEqual(["src/E.tsx"])
   })
 
+  // review-ca-w0, the T re-check's L6: a gap was matched on its before
+  // error only, so a gap file that failed another way once converted passed.
+  it("takes a listed gap only when the converted file fails the same way, and fails one that fails another way after", () => {
+    const loadGap = {
+      file: "src/B.tsx",
+      kind: "load",
+      match: /react-native-drop-shadow/,
+      cause: "react-native-drop-shadow ships ESM",
+    }
+    const renderGap = {
+      file: "src/E.tsx",
+      kind: "render",
+      match: /FadeIn\.duration\(\.\.\.\)\.delay/,
+      cause: "the reanimated mock's FadeIn doesn't chain",
+    }
+    const FADE =
+      "TypeError: _reactNativeReanimated.FadeIn.duration(...).delay is not a function"
+    const same = verdict({
+      files: ["src/B.tsx", "src/E.tsx"],
+      before: { "src/B.tsx": load(PARSE), "src/E.tsx": threw(FADE) },
+      gaps: [loadGap, renderGap],
+    })
+    expect(same).toMatchObject({ ok: true, problems: [], needProps: 0 })
+    const other = verdict({
+      files: ["src/B.tsx", "src/E.tsx"],
+      before: { "src/B.tsx": load(PARSE), "src/E.tsx": threw(FADE) },
+      after: {
+        "src/B.tsx": load("RNCGeolocation doesn't seem to be linked"),
+        "src/E.tsx": threw("TypeError: styles.button2 is undefined"),
+      },
+      gaps: [loadGap, renderGap],
+    })
+    expect(other).toMatchObject({ ok: false, needProps: 0, stale: [] })
+    expect(
+      other.problems.map((p) => [p.file, p.platform, p.lang, p.problem, p.after])
+    ).toEqual([
+      [
+        "src/B.tsx",
+        "ios",
+        undefined,
+        "a known gap before, another failure after",
+        "import: RNCGeolocation doesn't seem to be linked",
+      ],
+      ...["en", "ar"].map((lang) => [
+        "src/E.tsx",
+        "ios",
+        lang,
+        "a known gap before, another failure after",
+        "TypeError: styles.button2 is undefined",
+      ]),
+      [
+        "src/B.tsx",
+        "android",
+        undefined,
+        "a known gap before, another failure after",
+        "import: RNCGeolocation doesn't seem to be linked",
+      ],
+      ...["en", "ar"].map((lang) => [
+        "src/E.tsx",
+        "android",
+        lang,
+        "a known gap before, another failure after",
+        "TypeError: styles.button2 is undefined",
+      ]),
+    ])
+  })
+
   it("fails a file that loads or draws on one side only, or has no result", () => {
     const v = verdict({
       files: ["src/F.tsx", "src/G.tsx", "src/H.tsx"],

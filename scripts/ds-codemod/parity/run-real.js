@@ -308,6 +308,10 @@ const main = () => {
       console.log(`  NO COMPONENT ${f} (list it in sweep-gaps.js)`)
     for (const f of v.stale)
       console.log(`  STALE GAP ${f}: it no longer fails as listed`)
+    for (const p of v.problems.filter((x) => x.cause))
+      console.log(
+        `  GAP FAILS ANOTHER WAY ${p.file} (${p.platform}${p.lang ? ` ${p.lang}` : ""}): listed for ${p.cause}; before: ${p.before}; after: ${p.after}`
+      )
   }
   return summary.totals.equal === summary.totals.renders &&
     (!summary.tsc || summary.tsc.added.length === 0) &&
