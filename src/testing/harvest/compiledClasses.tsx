@@ -27,11 +27,7 @@ import { hostTree } from "testing/hostTreeParity"
 import { ControlText, TokenView } from "./__fixtures__/classProbes"
 import type { CasesFile, HarvestFiles } from "./files"
 import { unlistedClasses } from "./files"
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-const nwResolve = require("../../../scripts/nw-resolve") as {
-  resolve: (className: string) => { style: Record<string, unknown> }
-}
+import { resolveClass } from "./reference"
 
 /** Every class token in the strings, once, sorted. */
 export const classTokens = (classStrings: readonly string[]) =>
@@ -48,8 +44,8 @@ export const drawnStyle = (token: string) => {
   >
 }
 
-/** What NativeWind's own resolver says the token draws. */
-export const resolvedStyle = (token: string) => nwResolve.resolve(token).style
+/** What NativeWind's own resolver says the token draws (reference.ts). */
+export const resolvedStyle = (token: string) => resolveClass(token)
 
 /**
  * The tokens that draw something other than what they should: an

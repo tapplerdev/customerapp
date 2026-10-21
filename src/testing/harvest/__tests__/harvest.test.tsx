@@ -8,6 +8,7 @@ import { Text } from "react-native"
 import {
   buildProps,
   classStringsOf,
+  componentImport,
   harvestCallSites,
   harvestFilesFor,
   readHarvest,
@@ -22,6 +23,21 @@ import { describeCompiledClasses } from "testing/harvest/compiledClasses"
 jest.mock("react-native-localize", () =>
   jest.requireActual("react-native-localize/mock")
 )
+
+// The compiled-class check's reference is scripts/nw-resolve (reference.ts),
+// the class-era tools' port, with tests of its own. This file tests the
+// check's bookkeeping (the control, the list, which token didn't compile),
+// so its reference is testing/nativewind: NativeWind's own tailwind plugin
+// and extractStyles over customerapp's config, which agree with nw-resolve on
+// every token here.
+jest.mock("testing/harvest/reference", () => ({
+  resolveClass: (token: string) =>
+    (
+      jest.requireActual("testing/nativewind") as {
+        nativewindStyle: (className: string) => { style: object }
+      }
+    ).nativewindStyle(token).style,
+}))
 
 /*
  * The component harvest harness, on call sites written for it
@@ -169,6 +185,41 @@ describe("reading a call site", () => {
         (site) => site.site
       )
     ).toEqual(["SiteD.tsx:14", "SiteD.tsx:15", "SiteD.tsx:16"])
+  })
+})
+
+describe("customerapp's two ways of importing a component", () => {
+  it("componentImport matches components/X and components/X/X, and nothing else", () => {
+    const skeleton = componentImport("SkeletonLoader")
+    expect(skeleton.test("components/SkeletonLoader")).toBe(true)
+    expect(skeleton.test("components/SkeletonLoader/SkeletonLoader")).toBe(true)
+    expect(skeleton.test("components/SkeletonLoaderRow")).toBe(false)
+    expect(skeleton.test("components/SkeletonLoader/styles")).toBe(false)
+    expect(skeleton.test("components/Other/SkeletonLoader")).toBe(false)
+  })
+
+  it("finds both in the app: every src/components import is one of the two", () => {
+    const SRC = path.resolve(__dirname, "../../..")
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          return entry.name === "testing" ? [] : walk(full)
+        }
+        return /\.tsx?$/.test(entry.name) ? [full] : []
+      })
+    const specifiers = walk(SRC).flatMap((file) =>
+      [...fs.readFileSync(file, "utf8").matchAll(/from "(components\/[^"]+)"/g)].map(
+        (match) => match[1]
+      )
+    )
+    expect(specifiers.length).toBeGreaterThan(100)
+    const neither = specifiers.filter((specifier) => {
+      const name = specifier.split("/")[1]
+      return !componentImport(name).test(specifier)
+    })
+    // a folder's other files (scroll's index re-exports; styles) aren't components
+    expect(neither.filter((s) => !/\/(styles|index|types?)$/.test(s))).toEqual([])
   })
 })
 

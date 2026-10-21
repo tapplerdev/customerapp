@@ -18,6 +18,7 @@ export {
   type SpecValue,
 } from "./harvest"
 export {
+  componentImport,
   harvestFilesFor,
   harvesting,
   readHarvest,

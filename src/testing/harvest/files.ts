@@ -39,6 +39,15 @@ export type HarvestFiles = {
   classes: string
 }
 
+/**
+ * The import specifiers customerapp reaches one of its src/components by:
+ * `components/X` (the folder's index; 71 imports at e30b19a) and
+ * `components/X/X` (the file; 80). The harvest matches an import's text, so
+ * give it this to find both: `importFrom: componentImport("SkeletonLoader")`.
+ */
+export const componentImport = (name: string) =>
+  new RegExp(`(^|/)components/${name}(/${name})?$`)
+
 /** Where a component's harvest lives: `__fixtures__` beside `testsDir`. */
 export const harvestFilesFor = (
   testsDir: string,
