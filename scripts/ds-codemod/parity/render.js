@@ -2,7 +2,8 @@
  * The parity runs draw through src/testing/hostTreeParity.ts, the helper P3
  * proves its conversions with (real NativeWind runtime; i18next, the ds
  * language provider, I18nManager.isRTL and Platform set per environment;
- * Poppins registered; insets through the safe-area contexts; the tree
+ * the app's Latin faces (Montserrat here); insets through the safe-area
+ * contexts; the tree
  * normalized: styles flattened, text runs joined, SafeAreaViews resolved to
  * the padding they lay out with, the pixel-free accessibility props left
  * out). This file only fixes the environment the codemod's runs use and

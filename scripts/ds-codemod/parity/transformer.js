@@ -6,9 +6,9 @@
  * - NativeWind: only files in tailwind `content` are compiled, and
  *   tailwind reads the file from disk, so the plugin is handed a config
  *   whose content also lists the fixture directories
- *   (tailwind.fixtures.config.js, the app's config plus those globs);
- * - the React Compiler's infer mode, which babel.config.js's override gives
- *   src/ only.
+ *   (tailwind.fixtures.config.js, the app's config plus those globs).
+ * (proapp's also gave them the React Compiler's infer mode, which its
+ * babel.config.js gives src/; customerapp has no compiler.)
  * Everything else (src, tappler-shared, node_modules) passes through as the
  * normal jest run compiles it.
  */
@@ -25,10 +25,6 @@ const isFixture = (file) => FIXTURE_DIRS.some((d) => file.startsWith(d))
 const app = babelJest.createTransformer()
 const fixture = babelJest.createTransformer({
   plugins: [
-    [
-      require.resolve("babel-plugin-react-compiler"),
-      { panicThreshold: "none" },
-    ],
     [
       require.resolve("nativewind/babel"),
       { tailwindConfig: path.join(__dirname, "tailwind.fixtures.config.js") },

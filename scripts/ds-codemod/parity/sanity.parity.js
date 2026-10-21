@@ -33,7 +33,7 @@ describe("the parity run's NativeWind", () => {
       expect(text.props.style.fontSize).toBe(20)
       expect(text.props.style.lineHeight).toBe(lang === "ar" ? 24 * 1.32 : 24)
       expect(text.props.style.fontFamily).toBe(
-        lang === "ar" ? "TheSans-Bold" : "Poppins-Bold"
+        lang === "ar" ? "TheSans-Bold" : "Montserrat-Bold"
       )
     }
   )

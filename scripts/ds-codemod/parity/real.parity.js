@@ -23,26 +23,27 @@ const OUT = ENV.DS_PARITY_OUT
 const PLATFORM = ENV.DS_PARITY_PLATFORM || "ios"
 const ROOT = path.resolve(__dirname, "..", "..", "..")
 
-// The signed-in pro the account screens read.
+// The signed-in customer the screens read (customerapp's auth and cart
+// slices, store/auth/slice.ts and store/cart/slice.ts).
 const mockState = {
   auth: {
-    language: "en",
+    isAuth: true,
     token: "x",
+    language: "en",
+    hasPickedLanguage: true,
+    currentScreen: undefined,
+    isLogout: false,
     user: {
-      id: 1,
+      id: 9,
       firstName: "Omar",
       lastName: "Gabr",
-      displayName: "fullName",
-      registeredName: "Omar Gabr",
-      email: "pro@example.com",
-      phoneNumber: "01012345678",
+      email: "customer@example.com",
       mobileNumber: "+201012345678",
-      countryCode: "+20",
-      accountType: "individual",
-      status: "active",
-      address: { address: "12 Tahrir St", city: "Giza" },
+      gender: "male",
     },
+    guestLocation: { coords: null, address: null },
   },
+  cart: { carts: {}, address: null },
 }
 
 jest.mock("store", () => ({
@@ -69,20 +70,10 @@ jest.mock("react-redux", () => ({
   Provider: ({ children }) => children,
 }))
 
-// The device's notification state, without Firebase (an ESM package jest
-// would have to compile, and a native module behind it).
-jest.mock("hooks/useDeviceNotifications", () => ({
+// WelcomeScreen restarts the app after a language pick; nothing is pressed.
+jest.mock("react-native-restart", () => ({
   __esModule: true,
-  useDeviceNotifications: () => ({
-    initialize: () => undefined,
-    requestPermissions: () => Promise.resolve(true),
-    getToken: () => Promise.resolve(null),
-    displayLocalNotification: () => Promise.resolve(),
-    isNotificationsAllowed: false,
-    notificationPermissionStatus: "unknown",
-    fcmToken: null,
-    isNotificationServiceInitialized: false,
-  }),
+  default: { restart: () => undefined, Restart: () => undefined },
 }))
 
 // The job map, without react-native-maps (TypeScript source in its package

@@ -23,6 +23,7 @@ const ROOT = path.resolve(__dirname, "..", "..", "..")
 const CLI = path.join(ROOT, "scripts", "ds-codemod.js")
 const FIXTURES = path.join(ROOT, "scripts", "__fixtures__", "ds-codemod")
 const OUT = path.join(ROOT, "scripts", "__fixtures__", "ds-codemod-out")
+const PROVEN = path.join(FIXTURES, "actionbtn", "proven.json")
 
 const MAIN = [
   ["dmtext", "DmTextCases"],
@@ -41,9 +42,12 @@ const runCodemod = (...args) => {
   // --no-probe: the probe can't place a fixture in src/ (a virtual path
   // breaks its relative imports), so wraps come from the import rule alone;
   // the real-file parity run is where the probe is exercised.
+  // --proven: the ActionBtn fixture's looks, which this run draws against
+  // Button (customerapp has proven none of its own yet), so its
+  // conversions are drawn and compared like every other rule's.
   return execFileSync(
     process.execPath,
-    [CLI, OUT, "--no-probe", "--quiet", ...args],
+    [CLI, OUT, "--no-probe", "--quiet", "--proven", PROVEN, ...args],
     {
       cwd: ROOT,
       env,

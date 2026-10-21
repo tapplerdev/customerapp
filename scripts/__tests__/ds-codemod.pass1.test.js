@@ -1623,4 +1623,33 @@ describe("re-running", () => {
       fs.rmSync(dir, { recursive: true, force: true })
     }
   })
+
+  it("--proven takes the proven ActionBtn looks from a file (the fixture parity run's own)", async () => {
+    const dir = fs.mkdtempSync(
+      path.join(ROOT, "scripts", "__fixtures__", "ds-codemod-proven-")
+    )
+    const file = path.join(dir, "Proven.tsx")
+    const code = `import React from "react"\n${UI}\nexport const X = ({ cb }: any) => <ActionBtn title="Go" onPress={cb} className="h-[48]" />\n`
+    fs.writeFileSync(file, code)
+    const looks = path.join(dir, "looks.json")
+    fs.writeFileSync(
+      looks,
+      JSON.stringify({
+        looks: { a: { props: { className: "h-[48]", onPress: true } } },
+      })
+    )
+    const report = path.join(dir, "report.json")
+    const log = jest.spyOn(console, "log").mockImplementation(() => undefined)
+    try {
+      const statusOf = async (...extra) => {
+        await run([file, "--dry", "--no-probe", "--quiet", "--report", report, ...extra])
+        return JSON.parse(fs.readFileSync(report, "utf8")).sites[0]
+      }
+      expect(await statusOf()).toMatchObject({ status: "left", reason: "unproven-look" })
+      expect(await statusOf("--proven", looks)).toMatchObject({ status: "converted" })
+    } finally {
+      log.mockRestore()
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })

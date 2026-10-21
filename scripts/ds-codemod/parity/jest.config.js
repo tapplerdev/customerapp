@@ -27,10 +27,11 @@ module.exports = {
   testMatch: ["<rootDir>/scripts/ds-codemod/parity/**/*.parity.js"],
   haste: { defaultPlatform: platform, platforms: ["android", "ios", "native"] },
   // The app's allowlist plus the ESM packages the parity targets reach
-  // (navigation, FlashList through the scroll wrappers, the date picker,
-  // shadow-2 in the code input, the gradient under JobLocationMap).
+  // (navigation, FlashList through the scroll wrappers, the gradient under
+  // JobLocationMap, and customerapp's calendars, swipe gestures and
+  // keyboard-aware scroll view with its iPhone X helper).
   transformIgnorePatterns: [
-    "node_modules/(?!((jest-)?react-native|@react-native(-community)?|@reduxjs/toolkit|immer|reselect|redux|redux-thunk|@lodev09/react-native-true-sheet|react-native-keyboard-controller|@react-navigation|@shopify/flash-list|react-native-date-picker|react-native-shadow-2|react-native-linear-gradient)/)",
+    "node_modules/(?!((jest-)?react-native|@react-native(-community)?|@reduxjs/toolkit|immer|reselect|redux|redux-thunk|@lodev09/react-native-true-sheet|@react-navigation|@shopify/flash-list|react-native-linear-gradient|react-native-calendars|react-native-swipe-gestures|react-native-keyboard-aware-scroll-view|react-native-iphone-x-helper)/)",
   ],
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$":

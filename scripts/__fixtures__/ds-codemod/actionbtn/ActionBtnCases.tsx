@@ -1,7 +1,9 @@
-// Rule 2 (ActionBtn -> ds Button): looks the Button parity draws (real
-// sites' and its hand looks), so each converts, and three that can't.
-// Rendered before and after the codemod by
-// scripts/ds-codemod/parity/fixtures.parity.js.
+// Rule 2 (ActionBtn -> ds Button): proapp's proven looks and customerapp's
+// own (RequestSummary's rounded-[12], WelcomeScreen's label faces,
+// MapPickerView's loading shade), each listed in proven.json beside this
+// file so the codemod converts it, and four that can't. Rendered before
+// and after the codemod by scripts/ds-codemod/parity/fixtures.parity.js,
+// which is what proves these looks in customerapp's config.
 import React from "react"
 import clsx from "clsx"
 
@@ -131,6 +133,48 @@ const ActionBtnCases: React.FC<Props> = ({
       textClassName={FORM_LABEL}
       Icon={saving ? <Glyph /> : undefined}
     />
+    {/* customerapp's RequestSummaryScreen.tsx:467: rounded-[12] draws
+        nothing (NativeWind drops a bare radius), so ActionBtn keeps its 28
+        corners and Button takes no shape */}
+    <ActionBtn
+      title="Request"
+      onPress={onPress}
+      isLoading={saving}
+      disable={!isValid}
+      className="h-[50] rounded-[12]"
+      textClassName="text-16 font-custom700"
+    />
+    {/* customerapp's WelcomeScreen.tsx:61 and :70: a label face the
+        classes pin, Montserrat or TheSans in both languages */}
+    <ActionBtn
+      title="English"
+      onPress={onPress}
+      className="mr-[10] flex-1"
+      textClassName="font-montserrat500"
+    />
+    <ActionBtn
+      title="Arabic"
+      onPress={onPress}
+      className="ml-[10] flex-1"
+      textClassName={clsx("font-sans700", !small && "leading-[25px]")}
+    />
+    {/* customerapp's MapPickerView.tsx:177: the shade under the spinner */}
+    <ActionBtn
+      title="Confirm"
+      onPress={onPress}
+      isLoading={saving}
+      className={clsx("h-[42] w-full", saving && "bg-grey4")}
+      textClassName="text-13 leading-[21px] font-custom600"
+    />
+    {/* left: customerapp's GateRegisterScreen.tsx:222: the caller's bg-red
+        draws over ActionBtn's grey under the spinner, Button has no spelling */}
+    <ActionBtn
+      title="Join"
+      onPress={onPress}
+      isLoading={saving}
+      disable={!isValid}
+      className={clsx("mt-[40] h-[44]", isValid && "bg-red")}
+    />
     {/* left: a padding class Button has no prop for */}
     <ActionBtn title="Tall" onPress={onPress} className="h-[47] py-[4]" />
     {/* left: a look the parity hasn't drawn (white on ActionBtn's defaults) */}
@@ -157,12 +201,12 @@ export const cases = [
 
 // Sites are class attributes (a bare element counts once).
 export const expected = {
-  converted: 23,
+  converted: 31,
   left: {
     "actionbtn-unsupported-prop": 2,
-    "actionbtn-look": 1,
+    "actionbtn-look": 2,
     "unproven-look": 1,
   },
-  dropped: [],
-  removedImports: ["clsx"],
+  dropped: ["rounded-[12]"],
+  removedImports: [],
 }

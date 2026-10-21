@@ -37,9 +37,21 @@ const DmTextCases: React.FC<Props> = ({ active, small }) => {
       </DmText>
       {/* no font class: the system face */}
       <DmText className="text-14 leading-[20px] text-right">system face</DmText>
-      {/* a tailwind face that ignores the language */}
-      <DmText className="text-12 leading-[16px] font-sans400">
+      {/* a tailwind face that ignores the language (proapp's case was
+          font-sans400, TheSans-Plain there; customerapp's font-sans700 is
+          the shipped TheSans-Bold) */}
+      <DmText className="text-12 leading-[16px] font-sans700">
         TheSans both
+      </DmText>
+      {/* left: customerapp's font-sans400 is TheSans-Regular, which it
+          doesn't ship (WelcomeScreen.tsx:83): a bridge by hand */}
+      <DmText className="text-13 leading-[22px] font-sans400">
+        TheSans-Regular
+      </DmText>
+      {/* customerapp's font-custom800 (AuthGateScreen.tsx:71): no face in
+          either language, the system face, listed with the drops */}
+      <DmText className="text-24 leading-[30px] font-custom800 text-center">
+        no 800
       </DmText>
       {/* spacing and a caller style kept after the class styles */}
       <DmText
@@ -149,16 +161,18 @@ export const cases = [
 ]
 
 export const expected = {
-  converted: 22,
+  converted: 23,
   left: {
     "fontWeight-in-style": 1,
     "pressable-dmtext": 1,
+    "unshipped-face": 1,
   },
   dropped: [
     "leading-[20]",
     "font-400",
     "flex-between",
     'style fontFamily: "monospace"',
+    "font-custom800",
   ],
   removedImports: ["clsx", "takeFontFamily"],
 }

@@ -87,6 +87,8 @@ jest.mock("react-native-gesture-handler", () => {
     GestureHandlerRootView: RN.View,
     GestureDetector: ({ children }) =>
       React.createElement(React.Fragment, null, children),
+    // customerapp's MessagesComponent row: its children, as drawn at rest
+    Swipeable: ({ children }) => React.createElement(RN.View, null, children),
     Gesture: new Proxy(
       {},
       { get: () => () => new Proxy({}, { get: (_t, _k, r) => () => r }) }
@@ -142,7 +144,19 @@ jest.mock("react-native-localize", () =>
   jest.requireActual("react-native-localize/mock")
 )
 
-// proapp's Latin faces, as index.js registers them before anything renders.
+// The web view comes with tappler-shared's components barrel, which
+// customerapp imports MainModal from (DocumentViewerModal); its native half
+// is missing in node. A host that keeps its props.
+jest.mock("react-native-webview", () => {
+  const React = require("react")
+  const WebView = (props) => React.createElement("WebView", props)
+  return { __esModule: true, WebView, default: WebView }
+})
+
+// The app's Latin faces, as index.js registers them before anything
+// renders. customerapp's registers none, so shared's Montserrat stands
+// (setLatinFontWeights(null) would break every Latin lookup).
 const { readLatinRegistry } = require("../../nw-resolve")
 const { weights } = readLatinRegistry()
-require("@tappler/shared/src/helpers/helpers").setLatinFontWeights(weights)
+if (weights)
+  require("@tappler/shared/src/helpers/helpers").setLatinFontWeights(weights)

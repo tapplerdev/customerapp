@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * yarn ds:codemod <files|dirs|globs> [--dry] [--report out.json] [--no-probe]
- *                 [--latent latent-bugs.md] [--quiet]
+ *                 [--latent latent-bugs.md] [--proven looks.json] [--quiet]
  *
  * Pass 1 of the StyleSheet migration: rewrites NativeWind class names as the
  * design system's components and styles, pixel for pixel. Every value comes
@@ -47,7 +47,7 @@ const path = require("path")
 const ROOT = path.resolve(__dirname, "..")
 const DEFAULT_LATENT = path.join(ROOT, "latent-bugs.md")
 
-const USAGE = `usage: yarn ds:codemod <files|dirs|globs> [--dry] [--report out.json] [--no-probe] [--latent file.md] [--quiet]
+const USAGE = `usage: yarn ds:codemod <files|dirs|globs> [--dry] [--report out.json] [--no-probe] [--latent file.md] [--proven looks.json] [--quiet]
 
   --dry        change nothing; print (and with --report, write) what would happen
   --report     write every site, its outcome and the totals as JSON
@@ -56,6 +56,9 @@ const USAGE = `usage: yarn ds:codemod <files|dirs|globs> [--dry] [--report out.j
                DmText, ActionBtn or own component would be converted as if
                it weren't)
   --latent     where dropped classes are appended (default latent-bugs.md)
+  --proven     the ActionBtn looks a parity drew, as { looks: { id: { props } } },
+               instead of src/testing/buttonLooks/__tests__/__parity__/
+               Button.looks.cases.json (the fixture parity run proves its own)
   --quiet      only the totals`
 
 const walk = (dir) =>
@@ -223,6 +226,7 @@ const run = async (argv) => {
     report: null,
     probe: true,
     latent: DEFAULT_LATENT,
+    proven: null,
     quiet: false,
   }
   for (let i = 0; i < argv.length; i++) {
@@ -231,6 +235,7 @@ const run = async (argv) => {
     else if (a === "--report") opts.report = path.resolve(argv[++i])
     else if (a === "--no-probe") opts.probe = false
     else if (a === "--latent") opts.latent = path.resolve(argv[++i])
+    else if (a === "--proven") opts.proven = path.resolve(argv[++i])
     else if (a === "--quiet") opts.quiet = true
     else if (a === "--help" || a === "-h") {
       console.log(USAGE)
@@ -245,6 +250,11 @@ const run = async (argv) => {
     return 2
   }
   const files = expand(args)
+  const provenLooks = opts.proven
+    ? Object.values(JSON.parse(fs.readFileSync(opts.proven, "utf8")).looks).map(
+        (l) => l.props
+      )
+    : undefined
   const { convertSource } = require("./ds-codemod/convert")
   const { rel } = require("./ds-codemod/modules")
   let probe = null
@@ -286,7 +296,7 @@ const run = async (argv) => {
     const code = fs.readFileSync(file, "utf8")
     let result
     try {
-      result = convertSource(code, file, { wraps, io })
+      result = convertSource(code, file, { wraps, io, provenLooks })
     } catch (error) {
       failures.push({ file: rel(file), error: error.stack || String(error) })
       continue
