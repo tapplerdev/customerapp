@@ -18,6 +18,9 @@
     "clean": "react-native clean",
     "lint": "eslint .",
     "test": "jest",
+    "test:parity": "jest -c jest.parity.config.js",
+    "ds:parity:capture": "node scripts/ds-parity-capture.js",
+    "ds:parity:screens": "jest -c jest.parity.config.js src/testing/screenKit/__tests__/screens.coverage.parity.tsx",
     "postinstall": "patch-package"
   },
   "dependencies": {

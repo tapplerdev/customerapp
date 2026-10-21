@@ -1,0 +1,12 @@
+{
+ "cases": {
+  "row [ar android]": {"capturedAt":"bd35c2c","tree":"dc476776c0eb","a11y":true},
+  "row [ar ios]": {"capturedAt":"bd35c2c","tree":"dc476776c0eb","a11y":true},
+  "row [en android]": {"capturedAt":"bd35c2c","tree":"a910d400385e","a11y":true},
+  "row [en ios]": {"capturedAt":"bd35c2c","tree":"a910d400385e","a11y":true}
+ },
+ "trees": {
+  "a910d400385e": {"type":"View","props":{"style":{"flexDirection":"row","paddingLeft":16,"paddingRight":16,"paddingTop":20}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"Montserrat-SemiBold","fontSize":15,"lineHeight":19,"textAlign":"left"}},"children":["Account details"]}]},
+  "dc476776c0eb": {"type":"View","props":{"style":{"flexDirection":"row","paddingLeft":16,"paddingRight":16,"paddingTop":20}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"TheSans-Bold","fontSize":15,"lineHeight":25.080000000000002,"textAlign":"left"}},"children":["Account details"]}]}
+ }
+}
