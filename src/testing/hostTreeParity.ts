@@ -134,9 +134,11 @@ export type HostChild = HostNode | string
 /**
  * The Latin faces customerapp draws `font-custom###` and ds Text in:
  * tappler-shared's default (helpers.ts), because customerapp's index.js
- * registers none (proapp's registers Poppins). Pinned by a test against both:
- * shared's untouched default, and no setLatinFontWeights call in index.js or
- * src, so a Poppins table here fails.
+ * registers none (proapp's registers Poppins). Pinned against shared's
+ * untouched default, against any mention of setLatinFontWeights in index.js
+ * or src (hostTreeParity.test.tsx), and against the faces index.js leaves
+ * when it loads, with the app, in a registry of its own (App.parity.tsx: an
+ * aliased import is caught there), so a Poppins table here fails.
  */
 export const APP_LATIN_FONT_WEIGHTS = {
   400: "Montserrat-Regular",

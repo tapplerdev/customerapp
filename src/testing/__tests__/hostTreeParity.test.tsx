@@ -186,7 +186,10 @@ describe("the environment is the one asked for", () => {
   // Poppins), so it draws tappler-shared's default. Both halves are pinned:
   // any other table in APP_LATIN_FONT_WEIGHTS (Poppins, say) fails the
   // first, and a registration added to the app fails the second, which is
-  // the day the kit's table has to follow it.
+  // the day the kit's table has to follow it. The second looks for the
+  // name, so an aliased import (`{ setLatinFontWeights as register }`) or a
+  // namespace's member is found too; App.parity.tsx loads index.js itself,
+  // in a registry of its own, and reads the faces it leaves.
   it("draws shared's default Latin faces, Montserrat, as an app that registers none does", () => {
     let defaults: unknown
     jest.isolateModules(() => {
@@ -218,7 +221,7 @@ describe("the environment is the one asked for", () => {
     const files = [path.join(ROOT, "index.js"), ...walk(path.join(ROOT, "src"))]
     expect(files.length).toBeGreaterThan(100)
     const registering = files.filter((file) =>
-      /setLatinFontWeights\s*\(/.test(fs.readFileSync(file, "utf8"))
+      /\bsetLatinFontWeights\b/.test(fs.readFileSync(file, "utf8"))
     )
     expect(registering.map((file) => path.relative(ROOT, file))).toEqual([])
   })
