@@ -30,14 +30,24 @@ a real navigator, Egypt's time zone, and a module registry per platform and dire
 run with `../tappler-shared` a symlink or missing (jest then drew shared's components without their
 NativeWind styles, and parity passed for the wrong reason).
 
+`yarn test:parity:reverse` is `jest.parity.reverse.config.js`: the same suite with every file's
+rows run in reverse order, in every describe block (`screenKit/reverseEnvironment.js`). A fixture
+is captured in file order, so a row whose tree depends on the rows before it (module state nobody
+resets, a refresh that outlived its row) matches it in file order and passed for the wrong reason
+(review M6: with shared's dimProgress off the reset list, FoodCheckout's leaky capture compared
+8/8 in order). Reversed, every row runs after different rows, and such a row fails. It only
+compares (a capture run is refused), and a test must not lean on the order of the tests before it
+(the coverage sweep runs once per platform, in whichever of its two tests comes first).
+
 A parity row gets 120 s (`testTimeout`), not jest's 5 s: a file's first render in each registry
 loads the app, which on a cold transform cache is slow. A row needs no timeout of its own.
 
-Both are gates. Run jest with your own cache and two workers:
+All three are gates. Run jest with your own cache and two workers:
 
 ```
 node_modules/.bin/jest --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
 node_modules/.bin/jest -c jest.parity.config.js --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
+node_modules/.bin/jest -c jest.parity.reverse.config.js --cacheDirectory ~/develop/ds-migration/jest-cache-<you> --maxWorkers=2
 ```
 
 **`@env` is stubbed in both.** react-native-dotenv inlines `@env` when a file is transformed, and
@@ -85,8 +95,9 @@ The order matters. The fixture has to come from the code before your change, or 
    classes file (re-harvest) and recapture from the old code. Never recapture from converted code.
 6. **The other gates** (the tools are CA-W0-T's; their own docs sit with them in `scripts/`). tsc
    has no new errors against the W0 baseline (compare the error set for your files, not the
-   total). Full `yarn test` and `yarn test:parity` are green. `yarn ds:ratchet` is OK (never
-   `--update`), and so is `yarn ds:ratchet --strict '<area>/**' --strict-metrics className`.
+   total). Full `yarn test`, `yarn test:parity` and `yarn test:parity:reverse` are green.
+   `yarn ds:ratchet` is OK (never `--update`), and so is
+   `yarn ds:ratchet --strict '<area>/**' --strict-metrics className`.
    `yarn ds:probe` shows 0 BUG. customerapp has no React Compiler, so proapp's compiler-coverage
    gate doesn't apply.
 
@@ -370,7 +381,8 @@ editing them in an area branch.
   open chat, useAttachments' optimistic ids, layoutAnimation's frame flag, the event buses'
   listeners and shared's sheet dim. Each is the module's own code, evaluated again from its source
   for every row (`PER_ROW`, mocked in setup.ts and pinned against it). A module that keeps state
-  and isn't listed still leaks: add it.
+  and isn't listed still leaks: add it. `yarn test:parity:reverse` is what finds one (the pin
+  can't see a module taken off both lists).
 - **Real**: the store (the app's reducers and middleware, fresh per render; a test pins the reducer
   list and the app-state middleware's tags against `src/store/index.ts`), React Navigation,
   i18next, NativeWind, tappler-shared, react-native-safe-area-context, react-native-screens,
