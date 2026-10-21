@@ -317,9 +317,9 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
         )}
       </DmView>
 
-      {/* Motivational stickers — the card's FOOTER band: negative margins
-          cancel the card's px-[15]/pb-[12] so it bleeds to the edges, and the
-          bottom corners pick up the card's rounded-20. */}
+      {/* Motivational stickers — the card's FOOTER band, under its OFFERS
+          tab: negative margins cancel the card's px-[15]/pb-[12] so it bleeds
+          to the edges, and the bottom corners pick up the card's rounded-20. */}
       {hasMotivational && (
         <DmView
           className="mt-[14] overflow-hidden"

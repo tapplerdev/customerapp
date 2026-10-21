@@ -3,7 +3,9 @@ import { Dimensions } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
-import BannerContainer from "components/BannerContainer/BannerContainer"
+import BannerContainer, {
+  BannerTab,
+} from "components/BannerContainer/BannerContainer"
 
 interface OffersSectionProps {
   subscriptions: any[]
@@ -11,9 +13,10 @@ interface OffersSectionProps {
   compact?: boolean
   /**
    * "banner" (default) — the red OFFERS tab treatment (BannerContainer).
-   * "strip" — flush tinted footer band on the pro card: no tab, no border,
-   * every sticker at the SAME fixed size, from the band's start edge. The
-   * caller supplies any negative margins needed to bleed to the card's edges.
+   * "strip" — flush tinted footer band on the pro card, under the same red
+   * OFFERS tab: no border, every sticker at the SAME fixed size, from the
+   * band's start edge. The caller supplies any negative margins needed to
+   * bleed to the card's edges.
    */
   variant?: "banner" | "strip"
 }
@@ -54,33 +57,43 @@ const OffersSection: React.FC<OffersSectionProps> = ({
 
   if (variant === "strip") {
     return (
-      <DmView
-        className={`flex-row flex-wrap items-center py-[8] px-[10] ${className}`}
-        style={STRIP_STYLE}
-      >
-        {stickerProducts.map((sub: any, idx: number) => {
-          const uri = stickerUri(sub)
-          return uri ? (
-            <SvgUriContainer
-              key={sub.id || idx}
-              width={STRIP_STICKER_WIDTH}
-              height={STRIP_STICKER_HEIGHT}
-              // No trimming here, deliberately. Each sticker gets the same box
-              // and the SVG default (xMidYMid) places its art the same way
-              // inside it; the boxes themselves start at the band's start edge
-              // (product's call, 2026-10-03: stickers sit to the left however
-              // many there are; they were centred before).
-              //
-              // autoTrimLeftPadding used to be on, and it was the reason the
-              // row looked pushed left: it zeroes each file's group translate,
-              // and those differ per sticker (13.4 / 17.2 / 19.6 units), so it
-              // shifted every artwork left by a DIFFERENT amount. That is a
-              // fix for lining stickers up against a column of text on the pro
-              // profile; here it only made the stickers uneven.
-              uri={uri}
-            />
-          ) : null
-        })}
+      <DmView className={className}>
+        {/* The profile page's OFFERS tab (BannerContainer's, same copy), on
+            the band's top edge and inset 10pt over its first sticker (#503).
+            The card lost it on 2026-07-26 (11ea1f8), when its stickers left
+            the banner for this band. The pro app's preview of this card
+            (ProfileCardPreview) draws the same tab and band: keep in sync. */}
+        <DmView className="px-[10]">
+          <BannerTab text={t("offers")} />
+        </DmView>
+        <DmView
+          className="flex-row flex-wrap items-center py-[8] px-[10]"
+          style={STRIP_STYLE}
+        >
+          {stickerProducts.map((sub: any, idx: number) => {
+            const uri = stickerUri(sub)
+            return uri ? (
+              <SvgUriContainer
+                key={sub.id || idx}
+                width={STRIP_STICKER_WIDTH}
+                height={STRIP_STICKER_HEIGHT}
+                // No trimming here, deliberately. Each sticker gets the same box
+                // and the SVG default (xMidYMid) places its art the same way
+                // inside it; the boxes themselves start at the band's start edge
+                // (product's call, 2026-10-03: stickers sit to the left however
+                // many there are; they were centred before).
+                //
+                // autoTrimLeftPadding used to be on, and it was the reason the
+                // row looked pushed left: it zeroes each file's group translate,
+                // and those differ per sticker (13.4 / 17.2 / 19.6 units), so it
+                // shifted every artwork left by a DIFFERENT amount. That is a
+                // fix for lining stickers up against a column of text on the pro
+                // profile; here it only made the stickers uneven.
+                uri={uri}
+              />
+            ) : null
+          })}
+        </DmView>
       </DmView>
     )
   }
