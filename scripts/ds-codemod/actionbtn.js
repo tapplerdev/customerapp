@@ -380,11 +380,6 @@ const convertActionBtn = ({
       if (error instanceof Unconvertible) throw error
       throw new Unconvertible("actionbtn-look", error.message.split("\n")[0])
     }
-    if (!known.has(lookKey(look)))
-      throw new Unconvertible(
-        "unproven-look",
-        `a look no Button parity has drawn in customerapp's config (${lookKey(look)}): prove it first (Button.looks.cases.json)`
-      )
     return {
       env,
       look,
@@ -393,6 +388,14 @@ const convertActionBtn = ({
       L: !!look.isLoading,
     }
   })
+  // Every look translated first, so a site Button can't draw says so even
+  // while nothing is proven; then each must be one a parity drew.
+  for (const c of combos)
+    if (!known.has(lookKey(c.look)))
+      throw new Unconvertible(
+        "unproven-look",
+        `a look no Button parity has drawn in customerapp's config (${lookKey(c.look)}): prove it first (Button.looks.cases.json)`
+      )
 
   // The layout classes, as their own style.
   const layout = irs.className
