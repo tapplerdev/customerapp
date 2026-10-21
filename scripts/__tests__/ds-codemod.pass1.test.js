@@ -646,8 +646,8 @@ describe("rule 3: DmView and the hosts NativeWind styles", () => {
     expect(r.styles.code).toContain("backgroundColor: dsColors.red7")
     expect(r.styles.code).toContain("backgroundColor: dsColors.blue2")
     expect(r.styles.code).toContain("backgroundColor: dsColors.redAlpha10")
-    // shared's grey55 is another colour: the class's own name is the app's
-    expect(r.styles.code).toContain("backgroundColor: dsColors.grey55")
+    // shared's grey55 is another colour: the app's own, under its own name
+    expect(r.styles.code).toContain("backgroundColor: dsColors.grey55Class")
     expect(r.styles.code).toContain(
       'import colors from "@tappler/shared/src/styles/colors"'
     )

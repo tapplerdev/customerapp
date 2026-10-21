@@ -6,7 +6,7 @@
 // colours the app's classes draw that nothing names (provisional names).
 export default {
   red7: "#F76363",
-  grey55: "#C6C6C6", // shared's grey55 is #00000091; customerapp's classes draw this
+  grey55Class: "#C6C6C6", // the grey55 class's colour; shared's grey55 is #00000091
   blue1: "#4084F5",
   blue2: "#4084F566",
   // Drawn by a class or a DmText style, named by nothing yet: provisional names.

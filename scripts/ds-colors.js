@@ -9,9 +9,12 @@
  * Two parts:
  * - every colour in tailwind.config.js's theme.extend.colors that
  *   tappler-shared's palette (src/styles/colors.ts) doesn't have under the
- *   same name and value: red7, blue1, blue2 and grey55 (#C6C6C6 here,
- *   #00000091 in shared). Generated, so a value can't drift from the class
- *   that draws it;
+ *   same name and value: red7, blue1, blue2, and the grey55 class's #C6C6C6
+ *   as grey55Class. Generated, so a value can't drift from the class that
+ *   draws it. A colour shared names otherwise (its grey55 is #00000091,
+ *   PickAddressScreen/styles.ts:16's shadow) takes the name + "Class", and
+ *   no name here may be one of shared's with another value: one name, two
+ *   colours, is a trap for anyone writing styles by hand;
  * - ONE_OFFS below: what the app's classes draw that no colour names, an
  *   opacity modifier on one (bg-red/10) or an arbitrary value, and colours
  *   of a DmText style the codemod writes again. Their names are provisional
@@ -76,22 +79,30 @@ const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase()
 
 /** [{ name, value, note }] in tailwind's order, then the one-offs. */
 const tokens = ({ tailwind, shared }) => {
-  const own = Object.entries(tailwind.theme.extend.colors)
+  const colors = tailwind.theme.extend.colors
+  const own = Object.entries(colors)
     .filter(([name, value]) => typeof value === "string")
     .filter(([name, value]) => !(name in shared && same(shared[name], value)))
-    .map(([name, value]) => ({
-      name,
-      value,
-      note:
-        name in shared
-          ? `shared's ${name} is ${shared[name]}; customerapp's classes draw this`
-          : null,
-    }))
+    .map(([name, value]) =>
+      name in shared
+        ? {
+            name: `${name}Class`,
+            value,
+            note: `the ${name} class's colour; shared's ${name} is ${shared[name]}`,
+          }
+        : { name, value, note: null }
+    )
   const taken = new Set(own.map((t) => t.name))
   for (const o of ONE_OFFS)
-    if (taken.has(o.name))
+    if (taken.has(o.name) || o.name in colors)
       throw new Error(`ds-colors: one-off ${o.name} is a tailwind colour too`)
-  return [...own, ...ONE_OFFS.map((o) => ({ ...o, note: o.from }))]
+  const list = [...own, ...ONE_OFFS.map((o) => ({ ...o, note: o.from }))]
+  for (const t of list)
+    if (t.name in shared && !same(shared[t.name], t.value))
+      throw new Error(
+        `ds-colors: ${t.name} would shadow shared's ${t.name} (${shared[t.name]}) with ${t.value}`
+      )
+  return list
 }
 
 const render = (list) => {

@@ -34,17 +34,35 @@ describe("ds:colors", () => {
       },
       shared: { red: "#cc0000", grey55: "#00000091" },
     })
+    // shared's name for another colour is never reused: `dsColors.grey55`
+    // beside shared's `colors.grey55` (PickAddressScreen/styles.ts:16) was
+    // two colours under one name (review-ca-w0's low)
     expect(list.slice(0, 2)).toEqual([
       {
-        name: "grey55",
+        name: "grey55Class",
         value: "#C6C6C6",
-        note: "shared's grey55 is #00000091; customerapp's classes draw this",
+        note: "the grey55 class's colour; shared's grey55 is #00000091",
       },
       { name: "homeInk", value: "#111111", note: null },
     ])
     expect(list.slice(2).map((t) => t.name)).toEqual(
       ONE_OFFS.map((o) => o.name)
     )
+  })
+
+  it("refuses a name that shadows one of shared's colours with another value", () => {
+    const ONE = { tailwind: { theme: { extend: { colors: {} } } } }
+    // a one-off under shared's name
+    expect(() =>
+      tokens({ ...ONE, shared: { redAlpha10: "#000000" } })
+    ).toThrow(/redAlpha10 would shadow shared's redAlpha10 \(#000000\)/)
+    // the renamed class colour taken by shared too
+    expect(() =>
+      tokens({
+        tailwind: { theme: { extend: { colors: { grey55: "#C6C6C6" } } } },
+        shared: { grey55: "#00000091", grey55Class: "#111111" },
+      })
+    ).toThrow(/grey55Class would shadow shared's grey55Class \(#111111\)/)
   })
 
   it("refuses a one-off named like a tailwind colour", () => {
@@ -74,7 +92,7 @@ describe("ds:colors", () => {
     })
     expect(list.map((t) => [t.name, t.value])).toEqual([
       ["red7", "#F76363"],
-      ["grey55", "#C6C6C6"],
+      ["grey55Class", "#C6C6C6"],
       ["blue1", "#4084F5"],
       ["blue2", "#4084F566"],
       ["redAlpha10", "rgba(204, 0, 0, 0.1)"],
