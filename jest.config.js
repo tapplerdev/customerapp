@@ -18,6 +18,33 @@ const ENV_STUB = {
 }
 Object.assign(process.env, ENV_STUB)
 
+/*
+ * ../tappler-shared must be a real sibling worktree, for every jest config
+ * (they all start from this one). With a symlink there, jest drew shared's
+ * components WITHOUT their NativeWind styles: `yarn test` failed 17 tests,
+ * and a capture would bake in uncompiled classes, so parity passed for the
+ * wrong reason (a trap proapp hit: STATE "Traps", W2-CARD).
+ * tailwind.config.js's `content` reads ../tappler-shared/src too. A test
+ * pins it (src/testing/__tests__/jestConfigs.test.ts).
+ */
+const fs = require("fs")
+const path = require("path")
+
+const shared = path.join(__dirname, "..", "tappler-shared")
+const sharedIs = (() => {
+  try {
+    if (fs.lstatSync(shared).isSymbolicLink()) return "a symlink"
+    return fs.statSync(shared).isDirectory() ? null : "not a directory"
+  } catch {
+    return "missing"
+  }
+})()
+if (sharedIs) {
+  throw new Error(
+    `jest.config.js: ${shared} must be a real sibling worktree, not ${sharedIs} (NativeWind compiles shared's classes from it)`
+  )
+}
+
 module.exports = {
   preset: 'react-native',
   // tappler-shared is a link: dependency, so its sources resolve from ITS

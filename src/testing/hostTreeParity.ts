@@ -134,9 +134,11 @@ export type HostChild = HostNode | string
 /**
  * The Latin faces customerapp draws `font-custom###` and ds Text in:
  * tappler-shared's default (helpers.ts), because customerapp's index.js
- * registers none (proapp's registers Poppins). Pinned by a test against both:
- * shared's untouched default, and no setLatinFontWeights call in index.js or
- * src, so a Poppins table here fails.
+ * registers none (proapp's registers Poppins). Pinned against shared's
+ * untouched default, against any mention of setLatinFontWeights in index.js
+ * or src (hostTreeParity.test.tsx), and against the faces index.js leaves
+ * when it loads, with the app, in a registry of its own (App.parity.tsx: an
+ * aliased import is caught there), so a Poppins table here fails.
  */
 export const APP_LATIN_FONT_WEIGHTS = {
   400: "Montserrat-Regular",
@@ -883,8 +885,11 @@ export const captureCommit = () => parityFlags.DS_PARITY_COMMIT ?? "unknown"
  *   isn't a touchable (no `accessible`), for a captured View.
  * - `buttonAccessibility`: Button names itself, says it is a button and is
  *   busy while loading (PIXEL_FREE_PROPS); ActionBtn said none of it.
- *   Accepted only on a Button's root, for those three props. An
- *   accessibility prop anywhere else must match.
+ *   Accepted only on a Button's root, for those three props, and only when
+ *   they are Button's own (buttonSaysOf): the label its label box draws,
+ *   role "button", ActionBtn's touchable state plus busy while it loads. A
+ *   Button root saying anything else throws. An accessibility prop anywhere
+ *   else must match.
  *
  * The rules are the codemod comparer's (scripts/ds-codemod/parity/
  * compare.js: allowButtonHeight), so a site the codemod accepted passes here.
@@ -975,20 +980,107 @@ const allowDisabledView = (
   }
 }
 
+/** A host node's text: its strings and its children's, in order. */
+const drawnText = (node: HostChild): string =>
+  typeof node === "string" ? node : node.children.map(drawnText).join("")
+
+/**
+ * What Button's root says of itself (the touchable in Button.tsx), read off
+ * what the root draws and what ActionBtn's root said in its place:
+ * - its label: the texts its label box draws (the title and the second
+ *   title in the label row, the description under it), joined with ", " as
+ *   Button joins them. While it loads only the spinner is drawn, so there is
+ *   no text to read it from: then any non-empty label is Button's (`null`).
+ * - its role: "button".
+ * - its state: the touchable's, which ActionBtn's root had too (each passes
+ *   `disabled` or `disable`, or-ed with isLoading), and `busy` while it loads.
+ */
+const buttonSaysOf = (stored: HostNode, node: HostNode) => {
+  const [first] = node.children
+  const loading =
+    node.children.length === 1 &&
+    typeof first !== "string" &&
+    first.type === "ActivityIndicator"
+  const texts: string[] = []
+  const box = node.children.find(isLabelBox)
+  if (box && typeof box !== "string") {
+    box.children.forEach((child) => {
+      if (typeof child === "string") return
+      if (child.type === "Text") {
+        texts.push(drawnText(child))
+        return
+      }
+      child.children.forEach((inner) => {
+        if (typeof inner !== "string" && inner.type === "Text") {
+          texts.push(drawnText(inner))
+        }
+      })
+    })
+  }
+  const { busy: _busy, ...state } = (stored.props.accessibilityState ??
+    {}) as Record<string, unknown>
+  return {
+    label: loading ? null : texts.filter(Boolean).join(", "),
+    role: "button",
+    state: sortKeys(loading ? { ...state, busy: true } : state),
+  }
+}
+
+/**
+ * Button's three accessibility props in ActionBtn's place, required to be
+ * Button's own (review M4: copying ActionBtn's over any value let a busy
+ * while disabled, a disabled while enabled, a wrong label and a loading
+ * button without busy through). A root that says nothing of a Button (no
+ * role, no label) is left for the comparison to report.
+ */
 const allowAccessibility = (
   stored: HostNode,
   node: HostNode
 ): Allowed | null => {
   const props: Record<string, unknown> = { ...node.props }
-  const changed: string[] = []
-  PIXEL_FREE_PROPS.forEach((key) => {
+  const changed = PIXEL_FREE_PROPS.filter(
+    (key) => JSON.stringify(stored.props[key]) !== JSON.stringify(props[key])
+  )
+  if (changed.length === 0) return null
+  const {
+    accessibilityLabel: label,
+    accessibilityRole: role,
+    accessibilityState: state,
+  } = props
+  if (role !== "button" && label === undefined) return null
+  const own = buttonSaysOf(stored, node)
+  const wrong: string[] = []
+  if (
+    own.label === null
+      ? !(typeof label === "string" && label.length > 0)
+      : label !== own.label
+  ) {
+    wrong.push(
+      `accessibilityLabel ${JSON.stringify(label)}, not ${
+        own.label === null ? "a name" : JSON.stringify(own.label)
+      }`
+    )
+  }
+  if (role !== own.role) {
+    wrong.push(`accessibilityRole ${JSON.stringify(role)}, not "button"`)
+  }
+  if (JSON.stringify(state ?? {}) !== JSON.stringify(own.state)) {
+    wrong.push(
+      `accessibilityState ${JSON.stringify(state ?? {})}, not ${JSON.stringify(own.state)}`
+    )
+  }
+  if (wrong.length > 0) {
+    throw new Error(
+      `Button's root says ${wrong.join("; ")}. Button names itself by what its label box draws ` +
+        '(title, second title, description, joined with ", "), says it is a button, and keeps the touchable\'s ' +
+        "state (disabled while disabled or loading), busy while it loads (Button.tsx)"
+    )
+  }
+  changed.forEach((key) => {
     const before = stored.props[key]
-    if (JSON.stringify(before) === JSON.stringify(props[key])) return
-    changed.push(key)
     if (before === undefined) delete props[key]
     else props[key] = before
   })
-  if (changed.length === 0) return null
   return {
     props: sortKeys(props),
     what: `${changed.join(", ")} (Button)`,
@@ -1023,7 +1115,14 @@ export const applyAllowances = (
     let { props } = node
     if (isButtonRoot(node)) {
       allow.forEach((name) => {
-        const result = ALLOWANCES[name](before, { ...node, props })
+        let result: Allowed | null
+        try {
+          result = ALLOWANCES[name](before, { ...node, props })
+        } catch (error) {
+          throw new Error(
+            `${name} at ${here}: ${error instanceof Error ? error.message : String(error)}`
+          )
+        }
         if (result) {
           props = result.props
           accepted.push({ path: here, what: result.what })

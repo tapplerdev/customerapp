@@ -1,6 +1,7 @@
 /* eslint-disable global-require, @typescript-eslint/no-var-requires --
    the kit loads the app in each render's registry, so App is a loader. */
-import { describe, expect, it } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
+import path from "path"
 
 import { networkAttempts, openScreen, type ScreenSession } from "testing/screenKit"
 import { DATA } from "testing/screenKit/fixtures/api"
@@ -9,7 +10,7 @@ import {
   guestState,
   screenState,
 } from "testing/screenKit/states"
-import type { HostNode } from "testing/hostTreeParity"
+import { APP_LATIN_FONT_WEIGHTS, type HostNode } from "testing/hostTreeParity"
 
 /*
  * The app's root, as index.js registers it, booting in the jest kit: the
@@ -118,5 +119,41 @@ describe("the app boots on each persona's first screen", () => {
     } finally {
       session.unmount()
     }
+  })
+})
+
+// customerapp's entry registers no Latin faces (proapp's index.js registers
+// Poppins), so it draws shared's default, Montserrat, and the kit draws
+// APP_LATIN_FONT_WEIGHTS on every row. A text search for the call misses one
+// made through an aliased import, and the kit's render would draw Montserrat
+// over it anyway (review, Low K). So the entry is loaded, with all it
+// imports, in a registry of its own, and the faces that registry's shared
+// helpers hold afterwards are read: any registration made as the app loads,
+// however it is spelled, changes them.
+describe("the Latin faces the app's entry registers", () => {
+  const facesAfter = (entry: string) => {
+    let faces: Record<string, string> = {}
+    jest.isolateModules(() => {
+      require(entry)
+      const helpers = require("@tappler/shared/src/helpers/helpers") as {
+        getLatinFontWeights: () => Record<string, string>
+      }
+      faces = { ...helpers.getLatinFontWeights() }
+    })
+    return faces
+  }
+
+  it("index.js, loaded with the app, leaves shared's default: Montserrat", () => {
+    expect(facesAfter(path.join(__dirname, "..", "index.js"))).toEqual({
+      ...APP_LATIN_FONT_WEIGHTS,
+    })
+  })
+
+  it("control: an entry that registers Poppins through an aliased import is seen", () => {
+    expect(
+      facesAfter(
+        path.join(__dirname, "../src/testing/screenKit/__fixtures__/AliasedFacesEntry")
+      )
+    ).toMatchObject({ "600": "Poppins-SemiBold" })
   })
 })

@@ -23,6 +23,9 @@
  * copy is made when the row first reads it. A module that keeps state but
  * isn't listed still leaks: add it to PER_ROW (and say why). services/api's
  * own `isRefreshing` can't be: the store and the slices hold that module.
+ * Instead no refresh outlives its row (backend.ts's endRefreshes), and a
+ * refresh nothing answered fails the row. `yarn test:parity:reverse` runs
+ * every file's rows in reverse, so a leak nobody listed fails there.
  */
 import fs from "fs"
 import path from "path"

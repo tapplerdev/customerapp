@@ -181,138 +181,164 @@ const covered = (report: FileReport, platform: string) =>
   (Object.values(report.render[platform] ?? {}).some((o) => o === "ok") ||
     (report.renderedIn[platform]?.length ?? 0) > 0)
 
+/**
+ * The sweep of one platform: every file loaded, every registered screen and
+ * every other file rendered, into `reports`. Run once per platform, by
+ * whichever of the platform's two tests comes first: `yarn
+ * test:parity:reverse` runs them in the other order. Returns how many
+ * routes the navigators register.
+ */
+const sweep = async (platform: KitPlatform): Promise<number> => {
+  // The first render loads this platform's registry; every require
+  // after it lands in the same one.
+  await openScreen(() => ({ default: () => null }), {
+    platform,
+    navigation: "none",
+  }).then((session) => session.unmount())
+  const loaded = new Map<string, Record<string, unknown>>()
+  FILES.forEach((file) => {
+    const report = reports.get(file)!
+    try {
+      loaded.set(file, require(file))
+      report.import[platform] = "ok"
+    } catch (error) {
+      report.import[platform] = firstLine(error)
+    }
+  })
+  const routes = registrations()
+
+  /** One render: record its outcome, its requests, and every file it drew. */
+  const renderInto = async (
+    file: string,
+    label: string,
+    component: unknown,
+    options: Parameters<typeof openScreen>[1]
+  ) => {
+    const report = reports.get(file)!
+    let drawn = new Set<unknown>()
+    let outcome = "ok"
+    try {
+      const session = await openScreen(() => component, {
+        ...options,
+        platform,
+        settleMs: 600,
+      })
+      try {
+        drawn = drawnTypes(session.root as never)
+        report.requests[label] = [
+          ...new Set(
+            session
+              .requests()
+              .filter((r) => r.unanswered)
+              .map((r) => r.endpoint)
+          ),
+        ]
+        session.tree()
+      } finally {
+        session.unmount()
+      }
+    } catch (error) {
+      outcome = firstLine(error)
+    }
+    report.render[platform] = {
+      ...report.render[platform],
+      [label]: outcome,
+    }
+    if (outcome !== "ok") return
+    loaded.forEach((exports, other) => {
+      if (other === file) return
+      const components = exportedComponents(exports)
+      if ([...components].some((c) => drawn.has(c))) {
+        const into = reports.get(other)!
+        const list = into.renderedIn[platform] ?? []
+        if (!list.includes(rel(file))) list.push(rel(file))
+        into.renderedIn[platform] = list
+      }
+    })
+  }
+
+  const params = ROUTE_PARAMS as Record<string, object | undefined>
+  const screens = new Set<string>()
+  for (const { route, spec } of routes) {
+    let component: unknown
+    try {
+      component = (require(path.join(SRC, spec)) as { default: unknown })
+        .default
+    } catch {
+      component = undefined
+    }
+    const file = FILES.find((f) => loaded.get(f)?.default === component)
+    if (!file || !component) continue
+    screens.add(file)
+    const report = reports.get(file)!
+    if (!report.routes.includes(route)) report.routes.push(route)
+    for (const state of STATES) {
+      // eslint-disable-next-line no-await-in-loop
+      await renderInto(file, `${route} ${state}`, component, {
+        ...screenState(state),
+        route: { name: route, params: params[route] },
+      })
+    }
+    for (const variant of ROUTE_VARIANTS[route] ?? []) {
+      // eslint-disable-next-line no-await-in-loop
+      await renderInto(file, `${route} ${variant.name}`, component, {
+        ...screenState("data"),
+        ...(variant.state ? { state: variant.state } : {}),
+        route: { name: route, params: variant.params ?? params[route] },
+      })
+    }
+  }
+
+  // Every other file's default export, as a component given no props
+  // (a skeleton, a static block): it renders, or it needs props, which
+  // only its screen can give it.
+  for (const file of FILES) {
+    if (screens.has(file)) continue
+    const component = loaded.get(file)?.default
+    if (!component) continue
+    const props = COMPONENT_PROPS[path.relative(SRC, file)]
+    // eslint-disable-next-line no-await-in-loop
+    await renderInto(file, props ? "props" : "no props", component, {
+      ...screenState("data"),
+      props,
+    })
+  }
+  return routes.length
+}
+
+const swept = new Map<KitPlatform, Promise<number>>()
+const sweptOnce = (platform: KitPlatform) => {
+  if (!swept.has(platform)) swept.set(platform, sweep(platform))
+  return swept.get(platform)!
+}
+
+// A cold transform cache makes the first load slow; the sweep runs in
+// whichever test comes first.
+const SWEEP_MS = 30 * 60 * 1000
+
 describe.each(PLATFORMS)("every screen file [%s]", (platform) => {
   it(
     "loads, and the registered screens render",
     async () => {
-      // The first render loads this platform's registry; every require
-      // after it lands in the same one.
-      await openScreen(() => ({ default: () => null }), {
-        platform,
-        navigation: "none",
-      }).then((session) => session.unmount())
-      const loaded = new Map<string, Record<string, unknown>>()
-      FILES.forEach((file) => {
-        const report = reports.get(file)!
-        try {
-          loaded.set(file, require(file))
-          report.import[platform] = "ok"
-        } catch (error) {
-          report.import[platform] = firstLine(error)
-        }
-      })
-      const routes = registrations()
-
-      /** One render: record its outcome, its requests, and every file it drew. */
-      const renderInto = async (
-        file: string,
-        label: string,
-        component: unknown,
-        options: Parameters<typeof openScreen>[1]
-      ) => {
-        const report = reports.get(file)!
-        let drawn = new Set<unknown>()
-        let outcome = "ok"
-        try {
-          const session = await openScreen(() => component, {
-            ...options,
-            platform,
-            settleMs: 600,
-          })
-          try {
-            drawn = drawnTypes(session.root as never)
-            report.requests[label] = [
-              ...new Set(
-                session
-                  .requests()
-                  .filter((r) => r.unanswered)
-                  .map((r) => r.endpoint)
-              ),
-            ]
-            session.tree()
-          } finally {
-            session.unmount()
-          }
-        } catch (error) {
-          outcome = firstLine(error)
-        }
-        report.render[platform] = {
-          ...report.render[platform],
-          [label]: outcome,
-        }
-        if (outcome !== "ok") return
-        loaded.forEach((exports, other) => {
-          if (other === file) return
-          const components = exportedComponents(exports)
-          if ([...components].some((c) => drawn.has(c))) {
-            const into = reports.get(other)!
-            const list = into.renderedIn[platform] ?? []
-            if (!list.includes(rel(file))) list.push(rel(file))
-            into.renderedIn[platform] = list
-          }
-        })
-      }
-
-      const params = ROUTE_PARAMS as Record<string, object | undefined>
-      const screens = new Set<string>()
-      for (const { route, spec } of routes) {
-        let component: unknown
-        try {
-          component = (require(path.join(SRC, spec)) as { default: unknown })
-            .default
-        } catch {
-          component = undefined
-        }
-        const file = FILES.find((f) => loaded.get(f)?.default === component)
-        if (!file || !component) continue
-        screens.add(file)
-        const report = reports.get(file)!
-        if (!report.routes.includes(route)) report.routes.push(route)
-        for (const state of STATES) {
-          // eslint-disable-next-line no-await-in-loop
-          await renderInto(file, `${route} ${state}`, component, {
-            ...screenState(state),
-            route: { name: route, params: params[route] },
-          })
-        }
-        for (const variant of ROUTE_VARIANTS[route] ?? []) {
-          // eslint-disable-next-line no-await-in-loop
-          await renderInto(file, `${route} ${variant.name}`, component, {
-            ...screenState("data"),
-            ...(variant.state ? { state: variant.state } : {}),
-            route: { name: route, params: variant.params ?? params[route] },
-          })
-        }
-      }
-
-      // Every other file's default export, as a component given no props
-      // (a skeleton, a static block): it renders, or it needs props, which
-      // only its screen can give it.
-      for (const file of FILES) {
-        if (screens.has(file)) continue
-        const component = loaded.get(file)?.default
-        if (!component) continue
-        const props = COMPONENT_PROPS[path.relative(SRC, file)]
-        // eslint-disable-next-line no-await-in-loop
-        await renderInto(file, props ? "props" : "no props", component, {
-          ...screenState("data"),
-          props,
-        })
-      }
       // 40 stack routes with a screen of src/screens (HomeTabs is the tab
       // navigator itself) and the 4 tabs.
-      expect(routes.length).toBe(44)
+      expect(await sweptOnce(platform)).toBe(44)
     },
-    30 * 60 * 1000
+    SWEEP_MS
   )
 
   // proapp's W1.5 target: the screen files with class names (the ones W2
   // converts) render, nine in ten at least.
-  it("renders at least 90% of the screen files with class names", () => {
-    const withClasses = [...reports.values()].filter((r) => r.className)
-    const rendered = withClasses.filter((r) => covered(r, platform))
-    expect(rendered.length / withClasses.length).toBeGreaterThanOrEqual(0.9)
-  })
+  it(
+    "renders at least 90% of the screen files with class names",
+    async () => {
+      await sweptOnce(platform)
+      const withClasses = [...reports.values()].filter((r) => r.className)
+      const rendered = withClasses.filter((r) => covered(r, platform))
+      expect(rendered.length / withClasses.length).toBeGreaterThanOrEqual(0.9)
+    },
+    SWEEP_MS
+  )
 })
 
 afterAll(() => {

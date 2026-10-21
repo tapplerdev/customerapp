@@ -63,11 +63,14 @@ export {
   fireHost,
   only,
   presentedSheets,
+  pressIcon,
   pressText,
   pressTitled,
   typeInto,
   wait,
+  type CloseSheetOptions,
   type FireOptions,
+  type PressIconOptions,
   type PressOptions,
   type PressTextOptions,
   type Step,
@@ -89,7 +92,12 @@ export type {
 } from "./backend"
 export type { CacheSeed, ScreenState } from "./store"
 export type { NavigationRecord, ScreenRoute } from "./navigation"
-export { AUTH_REFRESH, httpKey, networkAttempts } from "./backend"
+export {
+  AUTH_REFRESH,
+  REFRESH_TIMED_OUT,
+  httpKey,
+  networkAttempts,
+} from "./backend"
 
 export type RenderScreenOptions = Omit<
   Engine.ScreenOptions,

@@ -50,6 +50,7 @@ import {
   withStableScreenIds,
   withStableShadowIds,
   type HostNode,
+  type ParityAllowance,
 } from "../hostTreeParity"
 
 const ROOT = path.resolve(__dirname, "../../..")
@@ -185,7 +186,10 @@ describe("the environment is the one asked for", () => {
   // Poppins), so it draws tappler-shared's default. Both halves are pinned:
   // any other table in APP_LATIN_FONT_WEIGHTS (Poppins, say) fails the
   // first, and a registration added to the app fails the second, which is
-  // the day the kit's table has to follow it.
+  // the day the kit's table has to follow it. The second looks for the
+  // name, so an aliased import (`{ setLatinFontWeights as register }`) or a
+  // namespace's member is found too; App.parity.tsx loads index.js itself,
+  // in a registry of its own, and reads the faces it leaves.
   it("draws shared's default Latin faces, Montserrat, as an app that registers none does", () => {
     let defaults: unknown
     jest.isolateModules(() => {
@@ -217,7 +221,7 @@ describe("the environment is the one asked for", () => {
     const files = [path.join(ROOT, "index.js"), ...walk(path.join(ROOT, "src"))]
     expect(files.length).toBeGreaterThan(100)
     const registering = files.filter((file) =>
-      /setLatinFontWeights\s*\(/.test(fs.readFileSync(file, "utf8"))
+      /\bsetLatinFontWeights\b/.test(fs.readFileSync(file, "utf8"))
     )
     expect(registering.map((file) => path.relative(ROOT, file))).toEqual([])
   })
@@ -962,6 +966,133 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
         allow: ["buttonHeight", "buttonDisabledView"],
       })
     ).toThrow(/disabled/)
+  })
+
+  // Button says what it is (Button.tsx's touchable): named by what its label
+  // box draws (title, second title, description, joined with ", "), a
+  // button, and the touchable's state (disabled while disabled or loading),
+  // busy while the spinner shows. The allowance requires those values, not
+  // any (review M4). The mutants are the review's (B's mutants.py: A1-A3,
+  // R3), on the host tree such a Button draws.
+  const ALLOW_BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+  const saying = (tree: HostNode, props: Record<string, unknown>): HostNode => ({
+    ...tree,
+    props: { ...tree.props, ...props },
+  })
+
+  it.each(PARITY_MATRIX)(
+    "a real disabled, and a real loading, ActionBtn -> Button pass with Button's own state [$language $platform]",
+    (matrixEnv) => {
+      const disabled = expectParity(
+        "it",
+        hostTree(<DsButton title="Save" onPress={noop} disabled />, matrixEnv),
+        {
+          file: captured(
+            hostTree(<ActionBtn title="Save" onPress={noop} disable />, matrixEnv)
+          ),
+          allow: ALLOW_BUTTON,
+        }
+      )
+      const loading = expectParity(
+        "it",
+        hostTree(<DsButton title="Save" onPress={noop} isLoading />, matrixEnv),
+        {
+          file: captured(
+            hostTree(<ActionBtn title="Save" onPress={noop} isLoading />, matrixEnv)
+          ),
+          allow: ALLOW_BUTTON,
+        }
+      )
+      expect([disabled, loading].map(({ accepted }) => accepted[1].what)).toEqual([
+        "accessibilityLabel, accessibilityRole (Button)",
+        "accessibilityLabel, accessibilityRole, accessibilityState (Button)",
+      ])
+    }
+  )
+
+  it.each([
+    [
+      "A1 busy while disabled",
+      <DsButton title="Save" onPress={noop} disabled />,
+      <ActionBtn title="Save" onPress={noop} disable />,
+      { accessibilityState: { busy: true, disabled: true } },
+      /accessibilityState \{"busy":true,"disabled":true\}, not \{"disabled":true\}/,
+    ],
+    [
+      "A2 says disabled when enabled",
+      <DsButton title="Save" onPress={noop} />,
+      <ActionBtn title="Save" onPress={noop} />,
+      { accessibilityState: { disabled: true } },
+      /accessibilityState \{"disabled":true\}, not \{\}/,
+    ],
+    [
+      "A3 a wrong label",
+      <DsButton title="Save" onPress={noop} />,
+      <ActionBtn title="Save" onPress={noop} />,
+      { accessibilityLabel: "Save button" },
+      /accessibilityLabel "Save button", not "Save"/,
+    ],
+    [
+      "R3 loading without busy",
+      <DsButton title="Save" onPress={noop} isLoading />,
+      <ActionBtn title="Save" onPress={noop} isLoading />,
+      { accessibilityState: { disabled: true } },
+      /accessibilityState \{"disabled":true\}, not \{"busy":true,"disabled":true\}/,
+    ],
+    [
+      "another role",
+      <DsButton title="Save" onPress={noop} />,
+      <ActionBtn title="Save" onPress={noop} />,
+      { accessibilityRole: "link" },
+      /accessibilityRole "link", not "button"/,
+    ],
+    [
+      "no name while loading",
+      <DsButton title="Save" onPress={noop} isLoading />,
+      <ActionBtn title="Save" onPress={noop} isLoading />,
+      { accessibilityLabel: "" },
+      /accessibilityLabel "", not a name/,
+    ],
+  ])(
+    "mutant: Button's root saying something Button doesn't fails with the allowance: %s",
+    (_label, after, before, says, message) => {
+      const tree = saying(hostTree(after, env)!, says)
+      const file = captured(hostTree(before, env))
+      expect(() => expectParity("it", tree, { file, allow: ALLOW_BUTTON })).toThrow(
+        message
+      )
+    }
+  )
+
+  it("names a Button by its title, second title and description, as Button does", () => {
+    const tree = hostTree(
+      <DsButton
+        title="Save"
+        secondTitle="20 EGP"
+        description="Pay on delivery"
+        onPress={noop}
+      />,
+      env
+    )!
+    expect(tree.props.accessibilityLabel).toBe("Save, 20 EGP, Pay on delivery")
+    // What ActionBtn said of the same button: no name, no role.
+    const { accessibilityLabel, accessibilityRole, ...actionBtn } = tree.props
+    expect([accessibilityLabel, accessibilityRole]).toEqual([
+      "Save, 20 EGP, Pay on delivery",
+      "button",
+    ])
+    const file = captured({ ...tree, props: actionBtn })
+    expect(
+      expectParity("it", tree, { file, allow: ["buttonAccessibility"] }).accepted
+    ).toEqual([
+      { path: "root<View>", what: "accessibilityLabel, accessibilityRole (Button)" },
+    ])
+    expect(() =>
+      expectParity("it", saying(tree, { accessibilityLabel: "Save" }), {
+        file,
+        allow: ["buttonAccessibility"],
+      })
+    ).toThrow(/accessibilityLabel "Save", not "Save, 20 EGP, Pay on delivery"/)
   })
 
   it("leaves a capture alone (allowances apply to a comparison only)", () => {

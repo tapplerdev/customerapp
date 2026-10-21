@@ -9,6 +9,8 @@ import {
   fields,
   only,
   openScreen,
+  presentedSheets,
+  pressIcon,
   pressText,
   pressTitled,
   rowsByPlatform,
@@ -19,6 +21,7 @@ import {
   type Step,
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
+import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import {
   PARITY_MATRIX,
   type HostNode,
@@ -216,4 +219,80 @@ describe("pressing and typing by what the customer sees", () => {
 
 it("BOTTOM_GAP_INSETS: no home indicator and one past the 45 threshold, beside each platform's default", () => {
   expect(BOTTOM_GAP_INSETS).toEqual([0, 48])
+})
+
+// A control that shows no words (review, Low K: nothing pressed one, like
+// JobDetailScreen's ••• menu, JobDetailScreen.tsx:716-729).
+describe("pressing an icon-only control", () => {
+  const iconProbe = () => require("../__fixtures__/IconProbe")
+  const env: ParityEnv = { language: "en", platform: "ios" }
+
+  it("by the icon it draws, or by its place among the screen's icon-only controls", async () => {
+    const session = await openScreen(iconProbe, optionsFor(env))
+    try {
+      const { root } = session
+      expect(() => pressIcon(root)).toThrow(
+        "press an icon-only control: 3 controls (pass { nth } to pick one, in screen order): " +
+          "[0] svg:chevron-left, [1] 5 views, [2] svg:close"
+      )
+      await session.act(() => {
+        pressIcon(root, { icon: "svg:chevron-left" })
+        pressIcon(root, { nth: 1 })
+      })
+      expect(text(session.tree(), "pressed")).toBe("back,more")
+    } finally {
+      session.unmount()
+    }
+  })
+
+  it("refuses a disabled one, a control with words, and what isn't there", async () => {
+    const session = await openScreen(iconProbe, optionsFor(env))
+    try {
+      const { root } = session
+      // the X with words beside it ("Save") is not an icon-only control
+      expect(() => pressIcon(root, { icon: "svg:close" })).toThrow(
+        'press "an icon-only control drawing svg:close": it is disabled, so a tap does nothing'
+      )
+      expect(() => pressIcon(root, { icon: "svg:bell" })).toThrow(
+        "press an icon-only control drawing svg:bell: no match"
+      )
+      expect(() => pressIcon(root, { nth: 3 })).toThrow(
+        "press an icon-only control: no control 3, only 3"
+      )
+      await session.act(() => {
+        pressIcon(root, { icon: "svg:close", allowDisabled: true })
+      })
+      expect(text(session.tree(), "pressed")).toBe("close")
+    } finally {
+      session.unmount()
+    }
+  })
+
+  it.each(rowsByPlatform([{}], PARITY_MATRIX))(
+    "opens JobDetail's ••• menu [$env.language $env.platform]",
+    async ({ env: rowEnv }) => {
+      const session = await openScreen(
+        () => require("screens/dashboardScreens/JobDetailScreen/JobDetailScreen"),
+        {
+          ...screenState("data"),
+          lang: rowEnv.language,
+          platform: rowEnv.platform,
+          route: { name: "JobDetailScreen", params: ROUTE_PARAMS.JobDetailScreen },
+        }
+      )
+      try {
+        // the back chevron, then the three dots
+        expect(() => pressIcon(session.root)).toThrow(
+          "[0] svg:chevron-left, [1] 5 views"
+        )
+        expect(presentedSheets(session.root)).toHaveLength(0)
+        await session.act(() => {
+          pressIcon(session.root, { nth: 1 })
+        })
+        expect(presentedSheets(session.root)).toHaveLength(1)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
 })

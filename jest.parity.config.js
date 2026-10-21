@@ -15,22 +15,10 @@
  *   module state fresh per row
  * - the time zone, Egypt's
  */
-const fs = require("fs")
-const path = require("path")
+// jest.config.js refuses a symlinked or missing ../tappler-shared, for this
+// config too (with a symlink, jest drew shared's components without their
+// NativeWind styles, and parity passed for the wrong reason).
 const base = require("./jest.config")
-
-// With a symlinked ../tappler-shared, jest drew shared's components WITHOUT
-// their NativeWind styles, so parity passed for the wrong reason (a trap
-// proapp hit: STATE "Traps", W2-CARD); tailwind.config.js's `content` reads
-// ../tappler-shared/src too. Refuse anything but a real sibling.
-const shared = path.join(__dirname, "..", "tappler-shared")
-if (!fs.existsSync(shared) || fs.lstatSync(shared).isSymbolicLink()) {
-  throw new Error(
-    `jest.parity.config.js: ${shared} must be a real sibling worktree, not ${
-      fs.existsSync(shared) ? "a symlink" : "missing"
-    } (NativeWind compiles shared's classes from it)`
-  )
-}
 
 // Every date a screen formats comes out as it does in Egypt, on any machine
 // (the workers inherit it). The kit's clock is frozen too (engine.tsx).
