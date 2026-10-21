@@ -9,7 +9,7 @@
  * The library's mock draws the header, children and footer into a plain
  * View whether the sheet is open or not, and hands that View only `style`:
  * an open sheet, a closed one and one whose detents, colour or corner radius
- * changed all drew the same tree (proapp's B2, B3, B5, B6 and B7 reviews).
+ * changed all drew the same tree (proapp's B1, B2, B3, B5, B6 and B7 reviews).
  * This stand-in draws what the real component hands its native views
  * (TrueSheet.tsx in the library, 4.0.0-beta.16):
  *
