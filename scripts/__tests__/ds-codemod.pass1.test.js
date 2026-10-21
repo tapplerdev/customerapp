@@ -493,6 +493,67 @@ describe("rule 2: ActionBtn -> Button", () => {
     )
   })
 
+  // CA-W0-B's 72 harvested prop sets (src/testing/buttonLooks/__fixtures__),
+  // every look customerapp's sites draw, as the proof will list them.
+  const B_LOOKS = Object.values(
+    require("../../src/testing/buttonLooks/__fixtures__/ButtonLooks.cases.json")
+      .looks
+  ).map((l) => l.props)
+
+  it("reads a flag and a class condition as the same facts, as the look harvest does", () => {
+    // ChangePasswordScreen.tsx:167 and UpdateEmailScreen.tsx:164 (as
+    // written), and MyInformationScreen.tsx:160: `disable` is the class
+    // condition's negation, so no look is "bg-red and disabled" (review-ca-w0
+    // M2); each converts to B's spelling, disabled and saving alike.
+    for (const [body, disabled] of [
+      [
+        '<ActionBtn onPress={handleSave} className={`h-[42] w-full ${isFilled && !hasClientError && !isLoading ? "bg-red" : "bg-grey19"}`} title={t("send")} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!isFilled || hasClientError || isLoading} isLoading={isLoading} />',
+        "!isFilled || hasClientError || isLoading",
+      ],
+      [
+        '<ActionBtn onPress={handleSave} className={`h-[42] w-full ${hasChanges && !isLoading ? "bg-red" : "bg-grey19"}`} title={t("save")} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!hasChanges || isLoading} isLoading={isLoading} />',
+        "!hasChanges || isLoading",
+      ],
+    ]) {
+      const r = convert(body, { proven: B_LOOKS })
+      expect(r.sites.map((x) => [x.status, x.reason])).toEqual([
+        ["converted", undefined],
+        ["converted", undefined],
+      ])
+      expect(r.code).toContain(
+        `<Button onPress={handleSave} size="sm" label="sm" labelWeight="semibold" labelLeading={px(21)} disabledLook={disabledLookSubtleInverse} style={a.w_full} title={t("${disabled.includes("hasChanges") ? "save" : "send"}")} disabled={${disabled}} isLoading={isLoading} />`
+      )
+      expect(r.code).not.toContain("loadingSurface")
+    }
+  })
+
+  it("draws a look with no onPress where onPress is undefined, as the look harvest does", () => {
+    // FoodCheckoutScreen.tsx:843 and FoodItemScreen.tsx:385: `c ? fn :
+    // undefined` gives ActionBtn no handler when c is false (review-ca-w0 M2)
+    const checkout = convert(
+      '<ActionBtn title={t("review_order")} className="h-[44]" textClassName="text-14 leading-[18px] font-custom600" disable={!canSubmit} onPress={canSubmit ? handleReviewOrder : undefined} />',
+      { proven: B_LOOKS }
+    )
+    expect(checkout.code).toContain(
+      '<Button title={t("review_order")} size="md" label={14} labelWeight="semibold" labelLeading="normal" disabled={!canSubmit} onPress={canSubmit ? handleReviewOrder : undefined} />'
+    )
+    const item = convert(
+      '<ActionBtn disable={missingRequired} title={t("add")} className={clsx("mt-[23] h-[41]", missingRequired && "opacity-50")} textClassName="text-13 leading-[16px] font-custom600" onPress={missingRequired ? undefined : handleAddToCart} />',
+      { extra: 'import clsx from "clsx"\n', proven: B_LOOKS }
+    )
+    expect(item.code).toContain(
+      '<Button disabled={missingRequired} title={t("add")} size={px(41)} label="sm" labelWeight="semibold" dim={missingRequired ? true : undefined} style={styles.button} onPress={missingRequired ? undefined : handleAddToCart} />'
+    )
+    // `c && fn` is false, not undefined, when c is: said, not guessed
+    expect(
+      convert('<ActionBtn title="x" onPress={on && cb} />', { proven: "all" })
+        .sites[0]
+    ).toMatchObject({
+      status: "left",
+      reason: "actionbtn-unsupported-prop",
+    })
+  })
+
   it("still leaves a caller's paint over a state's fill that Button can't spell", () => {
     // red while disabled and not loading would be the disabled look's brand
     // surface: no customerapp site has it (CA-W0-B), so it has no spelling
