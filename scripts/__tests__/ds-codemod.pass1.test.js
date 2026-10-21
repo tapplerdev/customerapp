@@ -801,6 +801,34 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     expect(r.code).toContain('<Card title="t" style={a.mt_4} />')
   })
 
+  it("files only a wrapped component's className as dead: a class prop it gets raw still draws (OffersSection.tsx:97)", () => {
+    // OffersSection's BannerContainer, imported by file path: the wrap turns
+    // className (:95) into a style BannerContainer never reads, and hands
+    // containerClassName (:97) over as it is, which BannerContainer threads
+    // into its inner DmView: that one draws today (review-ca-w0 H3).
+    const file = path.join(SLOTS, "Unit.tsx")
+    const code = lines(
+      'import React from "react"',
+      'import Banner from "./Banner/Banner"',
+      "",
+      'export const X = () => <Banner className="mx-[10]" containerClassName="py-[2] flex-row" />'
+    )
+    const r = convertSource(code, file, {
+      wraps: [{ line: 4, component: "Banner" }],
+    })
+    expect(r.sites.map((x) => [x.attr, x.status, x.reason])).toEqual([
+      ["className", "left", "wrapped-ignores-style"],
+      ["containerClassName", "left", "waiting-on-component"],
+    ])
+    expect(site(r, "className").detail).toBe(
+      "NativeWind wraps <Banner> here (an import it can't trace to a folder), so it gets className as style, and Banner reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin"
+    )
+    expect(site(r, "containerClassName").detail).toBe(
+      "NativeWind's wrap turns only className into style, so `containerClassName` reaches <Banner> as written and draws today: keep it. Banner: `containerStyle` is typed ViewStyle, which takes no style array"
+    )
+    expect(r.changed).toBe(false)
+  })
+
   it("names a class attribute that isn't a prop, where the props type names every prop", () => {
     const r = convert(
       '<><Plain classNameInfo="text-12" /><AppScrollView fooClassName="mt-[2]" /></>',

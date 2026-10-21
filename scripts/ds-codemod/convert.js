@@ -983,7 +983,7 @@ const convertSource = (code, file, options = {}) => {
   traverse(ast, {
     JSXOpeningElement(openingPath) {
       const node = openingPath.node
-      const classAttrs = openingPath
+      let classAttrs = openingPath
         .get("attributes")
         .filter(
           (a) =>
@@ -1011,6 +1011,49 @@ const convertSource = (code, file, options = {}) => {
           tag
         )
       const base = { tag, kind: info.kind, wrapped }
+
+      // A className NativeWind turns into a style for a component that reads
+      // no style draws nothing: it is left for a person to delete, never
+      // converted, which would make it draw the day the component takes a
+      // style (a W1 twin). The wrap turns only className into style: a
+      // component's other class props reach it as written and go on below
+      // like anyone's (review-ca-w0 H3).
+      const dead = []
+      for (const a of classAttrs)
+        if (
+          a.node.name.name === "className" &&
+          wrapped &&
+          info.kind === "component" &&
+          info.def &&
+          ignoresStyle(info.def)
+        )
+          dead.push({
+            a,
+            detail: `NativeWind wraps <${tag}> here (an import it can't trace to a folder), so it gets className as style, and ${info.def.name} reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin`,
+          })
+      for (const { a, detail } of dead)
+        record({
+          ...base,
+          line: a.node.loc.start.line,
+          attr: a.node.name.name,
+          status: "left",
+          reason: "wrapped-ignores-style",
+          detail,
+        })
+      if (dead.length) {
+        classAttrs = classAttrs.filter((a) => !dead.some((d) => d.a === a))
+        if (classAttrs.length === 0) return
+      }
+      // What a left class prop that the wrap passed on as written says first:
+      // it draws today (unless the component never reads it).
+      const rawNote = (attrName, reason) =>
+        wrapped &&
+        info.kind === "component" &&
+        attrName !== "className" &&
+        !["not-a-prop", "discarded-by-component", "hand-edit"].includes(reason)
+          ? `NativeWind's wrap turns only className into style, so \`${attrName}\` reaches <${tag}> as written and draws today: keep it. `
+          : ""
+
       const leaveAll = (reason, detail) => {
         for (const a of classAttrs)
           record({
@@ -1265,22 +1308,10 @@ const convertSource = (code, file, options = {}) => {
                 "waiting-on-component",
                 `same-file <${tag}> that NativeWind doesn't wrap`
               )
-            // Wrapped, it gets the classes as a style it never reads, so
-            // they draw nothing today. As a style they would start drawing
-            // the day the component takes one (a W1 twin): left, to delete.
-            if (info.kind === "component" && info.def && ignoresStyle(info.def)) {
-              const raw = classAttrs
-                .map((a) => a.node.name.name)
-                .filter((n) => n !== "className")
-              throw new Unconvertible(
-                "wrapped-ignores-style",
-                `NativeWind wraps <${tag}> here (an import it can't trace to a folder), so it gets className as style, and ${info.def.name} reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin` +
-                  (raw.length
-                    ? `; ${raw.map((n) => `\`${n}\``).join(", ")} reach${raw.length === 1 ? "es" : ""} it raw and draw${raw.length === 1 ? "s" : ""} as it draws ${raw.length === 1 ? "it" : "them"}`
-                    : "")
-              )
-            }
-            return "style"
+            // Wrapped, a component gets className as style (one that reads
+            // no style lost its className above) and its other class props
+            // as written: those take their slots like an unwrapped one's.
+            return info.kind === "component" ? "wrapped-component" : "style"
           }
           if (info.kind === "component") return null
           throw new Unconvertible("unknown-tag", `can't tell what <${tag}> is`)
@@ -1288,7 +1319,8 @@ const convertSource = (code, file, options = {}) => {
 
         // A twin the site passes under a name the component renamed takes
         // the new one, so a class moving to that twin joins it there.
-        if (!styleTarget && info.def)
+        const slotted = !styleTarget || styleTarget === "wrapped-component"
+        if (slotted && info.def)
           for (const r of twinRenames(info.def, Object.keys(attrs))) {
             const attr = attrs[r.from]
             edits.push({
@@ -1306,7 +1338,10 @@ const convertSource = (code, file, options = {}) => {
           let slot
           let text = false
           let twin = null
-          if (styleTarget) {
+          if (
+            styleTarget === "style" ||
+            (styleTarget === "wrapped-component" && attrName === "className")
+          ) {
             if (attrName !== "className")
               throw new Unconvertible(
                 "unknown-attr",
@@ -1334,7 +1369,7 @@ const convertSource = (code, file, options = {}) => {
                 attr: attrName,
                 status: "left",
                 reason: s.code,
-                detail: s.detail,
+                detail: rawNote(attrName, s.code) + s.detail,
               })
               continue
             }
@@ -1346,7 +1381,9 @@ const convertSource = (code, file, options = {}) => {
                 attr: attrName,
                 status: "left",
                 reason: "waiting-on-component",
-                detail: `the call site sets \`${blocked}\`, which comes before ${tag}'s \`${s.slot}\` and would now lose to it`,
+                detail:
+                  rawNote(attrName, "waiting-on-component") +
+                  `the call site sets \`${blocked}\`, which comes before ${tag}'s \`${s.slot}\` and would now lose to it`,
               })
               continue
             }
@@ -1440,15 +1477,19 @@ const convertSource = (code, file, options = {}) => {
             )
               throw error
             registry.rollback(cpFields)
-            for (const x of joint)
+            for (const x of joint) {
+              const reason = error instanceof Dynamic ? "dynamic" : error.code
               record({
                 ...base,
                 line: x.attrPath.node.loc.start.line,
                 attr: x.attrPath.node.name.name,
                 status: "left",
-                reason: error instanceof Dynamic ? "dynamic" : error.code,
-                detail: error instanceof Dynamic ? error.message : error.detail,
+                reason,
+                detail:
+                  rawNote(x.attrPath.node.name.name, reason) +
+                  (error instanceof Dynamic ? error.message : error.detail),
               })
+            }
             slotAttrs.splice(
               0,
               slotAttrs.length,
@@ -1564,13 +1605,16 @@ const convertSource = (code, file, options = {}) => {
             )
               throw error
             registry.rollback(cpAttr)
+            const reason = error instanceof Dynamic ? "dynamic" : error.code
             record({
               ...base,
               line: s.attrPath.node.loc.start.line,
               attr: s.attrPath.node.name.name,
               status: "left",
-              reason: error instanceof Dynamic ? "dynamic" : error.code,
-              detail: error instanceof Dynamic ? error.message : error.detail,
+              reason,
+              detail:
+                rawNote(s.attrPath.node.name.name, reason) +
+                (error instanceof Dynamic ? error.message : error.detail),
             })
           }
         }
