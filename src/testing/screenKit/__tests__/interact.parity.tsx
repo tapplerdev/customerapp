@@ -251,7 +251,7 @@ describe("pressing an icon-only control", () => {
       const { root } = session
       // the X with words beside it ("Save") is not an icon-only control
       expect(() => pressIcon(root, { icon: "svg:close" })).toThrow(
-        'press "an icon-only control drawing svg:close 0": it is disabled, so a tap does nothing'
+        'press "an icon-only control drawing svg:close": it is disabled, so a tap does nothing'
       )
       expect(() => pressIcon(root, { icon: "svg:bell" })).toThrow(
         "press an icon-only control drawing svg:bell: no match"

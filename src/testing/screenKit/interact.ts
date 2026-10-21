@@ -284,7 +284,7 @@ export const pressIcon = (
     )
   }
   if (!options.allowDisabled && refusesTap(control)) {
-    throw new Error(refused(`${what} ${nth ?? 0}`))
+    throw new Error(refused(nth === undefined ? what : `${what} [${nth}]`))
   }
   control.props.onPress()
 }
