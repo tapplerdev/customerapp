@@ -17,12 +17,13 @@
     "doctor": "react-native doctor",
     "clean": "react-native clean",
     "lint": "eslint .",
-    "test": "jest",
     "ds:paths": "node scripts/shared-tsconfig-paths.js",
     "ds:resolve": "node scripts/nw-resolve.js",
     "ds:probe": "node scripts/nw-wrap-probe.js",
     "ds:ratchet": "node scripts/style-ratchet.js",
     "ds:colors": "node scripts/ds-colors.js",
+    "test:pass1-tools": "jest -c jest.pass1.config.js",
+    "test": "jest",
     "postinstall": "patch-package"
   },
   "dependencies": {
