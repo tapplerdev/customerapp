@@ -19,6 +19,36 @@ import { shutTheNetwork } from "./backend"
 shutTheNetwork()
 
 // ---------------------------------------------------------------------------
+// The test file's own module registry has no layout direction. A module the
+// test imports at its top loads here, in no row's registry: always LTR, so a
+// styles file that reads I18nManager.isRTL as it loads
+// (FoodCheckoutScreen/styles.ts:15) kept its English branch in every Arabic
+// row, capture and compare alike (review, Low K). Every row's registry
+// (index.ts, after jest.resetModules) has an I18nManager of its own, which
+// the kit sets; this one refuses to be read, and says what to do.
+
+const TOP_LEVEL_DIRECTION =
+  "screenKit: I18nManager.isRTL read in the test file's own registry, which is no row's (always LTR): " +
+  "a module imported at the top of a *.parity.tsx (a styles file, a component, a harness) loads there, " +
+  "so an Arabic row would draw its English branch. Load it inside the loader " +
+  '(`() => require("../MyScreen")`, a harness defined in it) or in a step, where it loads in the row\'s ' +
+  "registry, with the row's direction."
+Object.defineProperty(
+  (require("react-native") as { I18nManager: object }).I18nManager,
+  "isRTL",
+  {
+    configurable: true,
+    enumerable: true,
+    get: () => {
+      throw new Error(TOP_LEVEL_DIRECTION)
+    },
+    set: () => {
+      throw new Error(TOP_LEVEL_DIRECTION)
+    },
+  }
+)
+
+// ---------------------------------------------------------------------------
 // The app's own data layer: a real Redux store from the app's reducers, made
 // fresh for each render (store.ts says how, and pins the reducer list).
 

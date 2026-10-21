@@ -204,7 +204,8 @@ it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => 
   `I18nManager.isRTL` at import (FoodCheckoutScreen/styles.ts:15) draw their Arabic branch in
   Arabic rows, as the app does after its language restart (proapp's kit couldn't: there it was
   device-only); and one per window, below. A component imported at the top of the test belongs to
-  the wrong registry. For the same reason, a harness component that calls hooks has to be defined
+  the wrong registry (see Traps: one that reads `I18nManager.isRTL` there throws). For the same
+  reason, a harness component that calls hooks has to be defined
   inside the loader. Order the table with `rowsByPlatform` (platform, then English before Arabic),
   so the file switches registries as few times as it can.
 - **Cover the states a customer sees**: data, empty, loading and error, signed in and as a guest
@@ -405,6 +406,15 @@ proxy answers it 503) and Home still draws.
 
 ### Traps
 
+- **Nothing a row draws is imported at the top of the test.** A top-level import loads in the test
+  file's own module registry, which is no row's: LTR, iOS, jest's window. A styles file that reads
+  `I18nManager.isRTL` as it loads (FoodCheckoutScreen/styles.ts:15), imported there, kept its
+  English branch in every Arabic row, in the capture and the compare alike. So the kit's setup
+  makes that registry's I18nManager throw when it is read, naming the fix: require the module in
+  the loader (a harness defined inside it) or in a step (`screenKit/__tests__/topRegistry.parity.tsx`).
+  `Platform.OS` and `Dimensions` can't be guarded that way (React Native reads them as it loads):
+  a module that reads those at import, imported at the top, draws iOS and jest's window in every
+  row without a word.
 - **moment's locale is the device's, not the app's language.** customerapp's BootstrapScreen sets
   i18next and RTL but never moment, so moment keeps what shared's setupI18n gave it: RNLocalize's
   tag (the mock's `en-US`). The kit puts it back before every row, after the screen loads, because
