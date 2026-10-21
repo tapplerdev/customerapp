@@ -207,6 +207,34 @@
         "onPress": true,
         "textClassName": "text-13 leading-[21px] font-custom600"
       }
+    },
+    "63b7cfdfd4": {
+      "props": {
+        "className": "mt-[40] h-[44]",
+        "disable": true,
+        "onPress": true
+      }
+    },
+    "e3f1bfae25": {
+      "props": {
+        "className": "mt-[40] h-[44] bg-red",
+        "onPress": true
+      }
+    },
+    "3db1cc9dff": {
+      "props": {
+        "className": "mt-[40] h-[44]",
+        "disable": true,
+        "isLoading": true,
+        "onPress": true
+      }
+    },
+    "853bf5ba35": {
+      "props": {
+        "className": "mt-[40] h-[44] bg-red",
+        "isLoading": true,
+        "onPress": true
+      }
     }
   }
 }

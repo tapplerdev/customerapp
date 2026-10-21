@@ -166,8 +166,9 @@ const ActionBtnCases: React.FC<Props> = ({
       className={clsx("h-[42] w-full", saving && "bg-grey4")}
       textClassName="text-13 leading-[21px] font-custom600"
     />
-    {/* left: customerapp's GateRegisterScreen.tsx:222: the caller's bg-red
-        draws over ActionBtn's grey under the spinner, Button has no spelling */}
+    {/* customerapp's GateRegisterScreen.tsx:222: the caller's bg-red draws
+        over ActionBtn's grey under the spinner: Button's brand loading
+        surface (CA-W0-B) */}
     <ActionBtn
       title="Join"
       onPress={onPress}
@@ -201,10 +202,10 @@ export const cases = [
 
 // Sites are class attributes (a bare element counts once).
 export const expected = {
-  converted: 31,
+  converted: 32,
   left: {
     "actionbtn-unsupported-prop": 2,
-    "actionbtn-look": 2,
+    "actionbtn-look": 1,
     "unproven-look": 1,
   },
   dropped: ["rounded-[12]"],
