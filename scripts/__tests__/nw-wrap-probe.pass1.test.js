@@ -26,7 +26,9 @@ const {
   probeFile,
   CONTROL,
   CONTROL_EXPECT,
+  KNOWN_REVIEWS,
   VIRTUAL_DIR,
+  unknownReviews,
 } = require("../nw-wrap-probe")
 
 const PROBE = path.join(__dirname, "..", "nw-wrap-probe.js")
@@ -233,6 +235,50 @@ describe("nw-wrap-probe", () => {
     expect(r.stdout).not.toContain("[compiler temporary]")
     expect(r.stdout).toContain("positive control flagged (3 of 3)")
     expect(r.stdout).toContain("3 BUG, 0 to review")
+  })
+
+  it("knows today's twelve review wraps: the call sites whose className draws nothing at e30b19a", () => {
+    expect(Object.fromEntries(KNOWN_REVIEWS)).toEqual({
+      "src/components/OffersSection/OffersSection.tsx#BannerContainer": 1,
+      "src/components/ProCardBase/ProCardBase.tsx#PromoLine": 1,
+      "src/components/QuestionComponent/QuestionComponent.tsx#ImageWithTextButton": 1,
+      "src/components/QuestionComponent/QuestionComponent.tsx#ImageWithCheckmarkButton": 1,
+      "src/components/QuestionComponent/QuestionComponent.tsx#TextWithCheckmarkButton": 1,
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx#SkeletonLoader": 5,
+      "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx#OrderBill": 1,
+      "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx#PromoLine": 1,
+    })
+    const job = path.join(
+      ROOT,
+      "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx"
+    )
+    const wraps = (n, status = "review") =>
+      Array.from({ length: n }, (_, i) => ({
+        line: 547 + i,
+        component: "SkeletonLoader",
+        status,
+      }))
+    expect(unknownReviews([{ file: job, wraps: wraps(5) }])).toEqual([])
+    expect(unknownReviews([{ file: job, wraps: wraps(6) }])).toEqual([
+      {
+        file: "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx",
+        line: 552,
+        component: "SkeletonLoader",
+      },
+    ])
+    expect(unknownReviews([{ file: job, wraps: wraps(6, "ok") }])).toEqual([])
+  })
+
+  it("fails on a review wrap that isn't one of the twelve (review-ca-w0's low: it passed any number)", () => {
+    const file = path.join(path.dirname(CONTROL), "ReviewOnly.jsx")
+    const r = cli(["--as", path.join(VIRTUAL_DIR, "ReviewOnly.jsx"), file])
+    expect(r.code).toBe(1)
+    expect(r.stdout).toContain(
+      "0 BUG, 1 to review (1 beyond the twelve known at e30b19a)"
+    )
+    expect(r.stdout).toMatch(
+      /NEW REVIEW scripts\/__fixtures__\/nw-wrap-probe\/ReviewOnly\.jsx:8 <PromoLine>: not one of the twelve/
+    )
   })
 
   it("refuses bad usage, and refuses to run inside jest", () => {
