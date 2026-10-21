@@ -1045,25 +1045,39 @@ const convertSource = (code, file, options = {}) => {
       // props reach it as written and go on below like anyone's (H3).
       const readsNoStyle = () =>
         info.kind === "component" && !!info.def && ignoresStyle(info.def)
+      // A frozen row is the component, under its tag or the definition it
+      // resolves to (an import renamed since), and the attribute: whatever
+      // its classes say now. At e30b19a every such attribute in the file
+      // drew nothing (NativeWind wraps by import, and the component read no
+      // style), and a token changed or added since would draw once
+      // converted (review-ca-w0, the T re-check's L2).
+      const defName =
+        info.def &&
+        (info.def.name && info.def.name !== "default"
+          ? info.def.name
+          : path.basename(info.def.file).replace(/\.[jt]sx?$/, ""))
+      const frozenFor = (attr) =>
+        deadSites.filter(
+          (d) => (d.component === tag || d.component === defName) && d.attr === attr
+        )
       const dead = []
       for (const a of classAttrs) {
         const attr = a.node.name.name
         const classes = classesText(a, code)
-        if (
-          deadSites.some(
-            (d) =>
-              d.component === tag && d.attr === attr && d.classes === classes
-          )
-        )
+        const frozen = frozenFor(attr)
+        if (frozen.length) {
+          const asFrozen = frozen.some((d) => d.classes === classes)
           dead.push({
             a,
             detail:
-              `dead at e30b19a: delete the class first. At e30b19a NativeWind wrapped <${tag}> here and handed it these classes as a style it didn't read, so they drew nothing; pass 1 keeps them that way, and a style or a twin would draw them` +
+              (asFrozen
+                ? `dead at e30b19a: delete the class first. At e30b19a NativeWind wrapped <${tag}> here and handed it these classes as a style it didn't read, so they drew nothing; pass 1 keeps them that way, and a style or a twin would draw them`
+                : `dead at e30b19a, changed since: delete the class first. At e30b19a NativeWind wrapped every <${frozen[0].component}> ${attr} in this file and handed it its classes as a style it didn't read, so they drew nothing; these classes (${classes}) aren't any of e30b19a's (${[...new Set(frozen.map((d) => d.classes))].join("; ")}), so they were edited or added since. Pass 1 keeps them refused: a style or a twin would draw them. Delete them, or convert by hand a class that must draw`) +
               (info.kind === "component" && !readsNoStyle()
                 ? ` (<${tag}> may read style now)`
                 : ""),
           })
-        else if (attr === "className" && wrapped && readsNoStyle())
+        } else if (attr === "className" && wrapped && readsNoStyle())
           dead.push({
             a,
             detail: `NativeWind wraps <${tag}> here (an import it can't trace to a folder), so it gets className as style, and ${info.def.name} reads no style: those classes draw nothing today. Delete them (latent) rather than move them to a twin`,

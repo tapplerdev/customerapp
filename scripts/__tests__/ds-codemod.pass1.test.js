@@ -977,6 +977,61 @@ describe("rule 5: what a component's own code says about a class attribute", () 
     )
   })
 
+  it("keeps refusing a frozen class with the twin in place after a token changes or is added, it becomes an expression, or its import is renamed", () => {
+    // review-ca-w0, the T re-check's L2: the list wanted the exact tag and
+    // classes, so with a twin each of these converted, and drew.
+    const file = path.join(SLOTS, "Unit.tsx")
+    const at = (local, classAttr) =>
+      lines(
+        'import React from "react"',
+        `import ${local} from "./Skeleton/SkeletonTwinned"`,
+        "",
+        `export const X = () => <${local} width={90} height={11} ${classAttr} />`
+      )
+    const deadSites = [
+      {
+        file: path.relative(ROOT, file),
+        component: "SkeletonTwinned",
+        attr: "className",
+        classes: "mt-[6]",
+      },
+    ]
+    const variants = [
+      ["as frozen", "SkeletonTwinned", 'className="mt-[6]"', "dead at e30b19a: delete"],
+      ["a token changed", "SkeletonTwinned", 'className="mt-[7]"', "dead at e30b19a, changed since: delete"],
+      ["a token added", "SkeletonTwinned", 'className="mt-[6] mb-[2]"', "dead at e30b19a, changed since: delete"],
+      ["an expression", "SkeletonTwinned", 'className={"mt-[6]"}', "dead at e30b19a, changed since: delete"],
+      ["the import renamed", "Skel", 'className="mt-[6]"', "dead at e30b19a: delete"],
+    ]
+    for (const [name, local, classAttr, says] of variants) {
+      const r = convertSource(at(local, classAttr), file, {
+        wraps: [{ line: 4, component: local }],
+        deadSites,
+      })
+      expect({
+        name,
+        sites: r.sites.map((x) => [x.attr, x.status, x.reason]),
+        changed: r.changed,
+        says: (r.sites[0].detail || "").startsWith(says),
+      }).toEqual({
+        name,
+        sites: [["className", "left", "wrapped-ignores-style"]],
+        changed: false,
+        says: true,
+      })
+    }
+    // the control: off the list, the twin makes the changed class convert
+    const control = convertSource(
+      at("SkeletonTwinned", 'className="mt-[7]"'),
+      file,
+      { wraps: [{ line: 4, component: "SkeletonTwinned" }], deadSites: [] }
+    )
+    expect(control.sites[0].status).toBe("converted")
+    expect(control.code).toMatch(
+      /<SkeletonTwinned width=\{90\} height=\{11\} style=\{styles\.\w+\} \/>/
+    )
+  })
+
   it("freezes the twelve classes that drew nothing at e30b19a by file, component, attribute and classes", () => {
     const { DEAD_AT_E30B19A } = require("../ds-codemod/convert")
     expect(
