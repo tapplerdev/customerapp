@@ -35,8 +35,9 @@ const SHARED_PALETTE = path.join(
 )
 
 // name, the value NativeWind draws for the class, and where it is used.
-// customerapp's classes draw two colours no colour names (proapp had its
-// own six, none of which this app draws).
+// customerapp's classes draw two colours no colour names, and its
+// OfferUpdateCard (the same card as proapp's) two more in DmText styles the
+// codemod writes again. proapp's other four one-offs this app doesn't draw.
 const ONE_OFFS = [
   {
     name: "redAlpha10",
@@ -47,6 +48,18 @@ const ONE_OFFS = [
     name: "whiteAlpha20",
     value: "rgba(255, 255, 255, 0.2)",
     from: "bg-white/20, ImageViewerModal",
+  },
+  // A DmText style the codemod writes again once its typography is props
+  // (OfferUpdateCard's struck and connector texts on the red bubble).
+  {
+    name: "whiteAlpha65",
+    value: "rgba(255,255,255,0.65)",
+    from: "style color, OfferUpdateCard's struck price",
+  },
+  {
+    name: "whiteAlpha90",
+    value: "rgba(255,255,255,0.9)",
+    from: "style color, OfferUpdateCard's connector text",
   },
 ]
 

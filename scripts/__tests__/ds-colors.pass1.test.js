@@ -67,7 +67,7 @@ describe("ds:colors", () => {
     }
   })
 
-  it("names this app's own colours: the four shared lacks or draws otherwise", () => {
+  it("names this app's own colours: the four shared lacks or draws otherwise, then the one-offs", () => {
     const list = tokens({
       tailwind: require("../../tailwind.config"),
       shared: sharedPalette(),
@@ -79,6 +79,8 @@ describe("ds:colors", () => {
       ["blue2", "#4084F566"],
       ["redAlpha10", "rgba(204, 0, 0, 0.1)"],
       ["whiteAlpha20", "rgba(255, 255, 255, 0.2)"],
+      ["whiteAlpha65", "rgba(255,255,255,0.65)"],
+      ["whiteAlpha90", "rgba(255,255,255,0.9)"],
     ])
   })
 

@@ -12,4 +12,6 @@ export default {
   // Drawn by a class or a DmText style, named by nothing yet: provisional names.
   redAlpha10: "rgba(204, 0, 0, 0.1)", // bg-red/10, CalendarTimePicker
   whiteAlpha20: "rgba(255, 255, 255, 0.2)", // bg-white/20, ImageViewerModal
+  whiteAlpha65: "rgba(255,255,255,0.65)", // style color, OfferUpdateCard's struck price
+  whiteAlpha90: "rgba(255,255,255,0.9)", // style color, OfferUpdateCard's connector text
 }
