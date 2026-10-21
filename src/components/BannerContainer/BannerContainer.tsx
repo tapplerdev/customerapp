@@ -9,9 +9,10 @@ import styles from "./styles"
 // its box, and OffersSection's strip over the pro card's sticker band, so the
 // card labels the stickers the way the profile page does.
 //
-// It takes no className. NativeWind's babel plugin turns a className given to
-// one of this app's own components into a style prop and drops the className,
-// so a caller that needs to move the tab wraps it in a DmView.
+// It takes no className. NativeWind's babel plugin wraps a component imported
+// by its file path, as this one is, and the wrapper hands the component a
+// style prop in place of the className. So a caller that needs to move the
+// tab wraps it in a DmView.
 export const BannerTab: React.FC<{ text: string }> = ({ text }) => (
   <DmView className="flex-row justify-start">
     <DmView
