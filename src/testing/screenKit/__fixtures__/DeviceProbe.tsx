@@ -11,6 +11,8 @@ import MapView from "react-native-maps"
 import { PERMISSIONS, check } from "react-native-permissions"
 import { getMessaging, hasPermission } from "@react-native-firebase/messaging"
 
+import searching from "assets/animations/search-animation.json"
+
 const DeviceProbe = () => {
   const [permission, setPermission] = useState("asking")
   const [push, setPush] = useState("asking")
@@ -41,7 +43,7 @@ const DeviceProbe = () => {
         }
       />
       <LottieView
-        source={{ nm: "searching" }}
+        source={searching}
         autoPlay
         loop={false}
         onAnimationFinish={() => setAnimation("finished")}

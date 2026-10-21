@@ -443,6 +443,7 @@ export const openScreen = async (
 
     // The registry's direction (index.ts), which is this row's: a module the
     // screen loads now that reads I18nManager.isRTL at import reads it.
+    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
     const { I18nManager } = require("react-native") as typeof import("react-native")
     if (I18nManager.isRTL !== (options.lang === "ar")) {
       throw new Error(

@@ -22,7 +22,7 @@ import {
   type ScreenSession,
 } from "testing/screenKit"
 import { DATA, QUERY_ENDPOINTS } from "testing/screenKit/fixtures/api"
-import { KIT_NOW } from "testing/screenKit/fixtures/entities"
+import { CHAT_PREVIEW, KIT_NOW } from "testing/screenKit/fixtures/entities"
 import { CUSTOMER, signedIn } from "testing/screenKit/fixtures/users"
 import { screenState } from "testing/screenKit/states"
 import type { HostNode } from "testing/hostTreeParity"
@@ -308,7 +308,9 @@ describe("what a render sets up", () => {
       api: {
         getChats: () => {
           calls += 1
-          return calls === 1 ? { error: { status: 401 } } : DATA.getChats
+          return calls === 1
+            ? { error: { status: 401 } }
+            : { data: { data: [CHAT_PREVIEW] } }
         },
         [AUTH_REFRESH]: {
           data: { token: "parity-token-2", refreshToken: "parity-refresh-2" },
@@ -559,8 +561,13 @@ describe("the device's answers, per row", () => {
       expect(() =>
         fireHost(session.root, "MapView", "onPress")
       ).toThrow(/no MapView holds it/)
-      // Lottie's animation JSON is named, not drawn
-      expect(hosts(session.tree(), "LottieView")[0].props.source).toBe("searching")
+      // Lottie's animation JSON is named (its `nm`), not drawn
+      const animation = require("assets/animations/search-animation.json") as {
+        nm: string
+      }
+      expect(hosts(session.tree(), "LottieView")[0].props.source).toBe(
+        animation.nm
+      )
     } finally {
       session.unmount()
     }
