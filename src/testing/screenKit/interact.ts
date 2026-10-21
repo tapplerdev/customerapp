@@ -313,15 +313,31 @@ export const presentedSheets = (root: ReactTestInstance) =>
     )
     .map((node) => node.instance as TrueSheetStandIn)
 
+export type CloseSheetOptions = FireOptions & {
+  /**
+   * Swipe a sheet that isn't dismissible anyway, to draw the refused swipe:
+   * the sheet stays up and the library reports onDismissAttempt. Never a
+   * way to close it.
+   */
+  refused?: boolean
+}
+
 /**
  * Close a presented sheet the way a customer does, with a swipe or a tap on
  * the dim: the sheet reports its dismissal with nobody's dismiss() behind
  * it, so shared's NativeSheet calls onDismissed (a programmatic close calls
  * only onClosed). Several presented sheets throw unless `nth` picks one.
+ *
+ * A sheet that isn't dismissible throws (review M5): the device refuses the
+ * swipe, and the dim's tap does nothing, so no customer closes it this way.
+ * shared's NativeSheet hands true-sheet `dismissible={false}` for
+ * `dismissable={false}` and for every `interceptBackPress` sheet
+ * (NativeSheet.tsx:514), QuestionFlowSheet's among them. Close such a sheet
+ * with its own controls; `{ refused: true }` draws the refused swipe.
  */
 export const closeSheetAsUser = (
   root: ReactTestInstance,
-  options: FireOptions = {}
+  options: CloseSheetOptions = {}
 ): void => {
   const sheets = presentedSheets(root)
   if (sheets.length === 0) throw new Error("close a sheet: none is presented")
@@ -333,6 +349,20 @@ export const closeSheetAsUser = (
   }
   const sheet = sheets[nth ?? 0]
   if (!sheet) throw new Error(`close a sheet: no sheet ${String(nth)}`)
+  const dismissible = sheet.props.dismissible !== false
+  if (!dismissible && !options.refused) {
+    throw new Error(
+      "close a sheet: it isn't dismissible (dismissible={false}: shared's NativeSheet passes that for " +
+        "dismissable={false} and for every interceptBackPress sheet), so the device refuses a customer's swipe: " +
+        "the sheet stays up and reports onDismissAttempt, and a tap on the dim does nothing. Close it with its own " +
+        "controls (pressTitled, pressText, pressIcon), or pass { refused: true } to draw the refused swipe."
+    )
+  }
+  if (dismissible && options.refused) {
+    throw new Error(
+      "close a sheet: it is dismissible, so a customer's swipe closes it (drop { refused: true })"
+    )
+  }
   userDismiss(sheet)
 }
 

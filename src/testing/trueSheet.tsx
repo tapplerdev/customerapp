@@ -34,7 +34,10 @@
  * ref a caller holds), and the statics act on the sheet registered under
  * `name`, as the library's do. A user's swipe or backdrop tap is
  * `userDismiss(instance)` (testing/screenKit's `closeSheetAsUser`): the same
- * two events with nobody's dismiss() behind them.
+ * two events with nobody's dismiss() behind them. A sheet with
+ * `dismissible={false}` refuses it as the library does: it stays up and
+ * reports `onDismissAttempt` (TrueSheet.types.ts:736; shared's NativeSheet
+ * passes dismissible={false} for every interceptBackPress sheet).
  */
 import { jest } from "@jest/globals"
 import type React from "react"
@@ -70,9 +73,13 @@ export type TrueSheetStandIn = React.Component<Props, State> & {
   resize: (index: number) => Promise<void>
 }
 
-/** The sheet closed by the user (a swipe, the backdrop): its two events, no dismiss() call. */
-export const userDismiss = (sheet: TrueSheetStandIn) =>
-  (sheet as unknown as { screenKitUserDismiss: () => void }).screenKitUserDismiss()
+/**
+ * The sheet closed by the user (a swipe, the backdrop): its two events, no
+ * dismiss() call. A sheet that isn't dismissible refuses, as the library
+ * does: it stays up and reports onDismissAttempt. Returns whether it closed.
+ */
+export const userDismiss = (sheet: TrueSheetStandIn): boolean =>
+  (sheet as unknown as { screenKitUserDismiss: () => boolean }).screenKitUserDismiss()
 
 export const trueSheet = () => {
   const R = require("react") as typeof React
@@ -190,12 +197,22 @@ export const trueSheet = () => {
       this.fire("onDetentChange", this.event(index))
     })
 
-    /** What userDismiss() calls: the native dismissal, nobody's dismiss() behind it. */
+    /**
+     * What userDismiss() calls: the native dismissal, nobody's dismiss()
+     * behind it. With `dismissible={false}` the library refuses the drag: the
+     * sheet stays where it is and onDismissAttempt fires (TrueSheet.tsx:
+     * the same event its back-key path sends).
+     */
     screenKitUserDismiss = () => {
       if (!this.state.presented) {
         throw new Error("TrueSheet stand-in: the sheet isn't presented, so the user can't close it")
       }
+      if (this.props.dismissible === false) {
+        this.fire("onDismissAttempt", { nativeEvent: null })
+        return false
+      }
       this.close()
+      return true
     }
 
     render() {

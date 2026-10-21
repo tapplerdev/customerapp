@@ -627,6 +627,63 @@ describe("the sheet stand-in draws what true-sheet hands its native views", () =
     }
   })
 
+  // shared's NativeSheet hands true-sheet dismissible={false} for
+  // dismissable={false} and for every interceptBackPress sheet
+  // (NativeSheet.tsx:514), and the library then refuses the drag and fires
+  // onDismissAttempt instead (TrueSheet.types.ts:736). QuestionFlowSheet
+  // commits from onDismissed, so a "swipe" the kit let through drew a commit
+  // the device refuses (review M5).
+  it.each([
+    ["dismissable={false}", { dismissable: false }, "attempts 1"],
+    // NativeSheet doesn't forward onDismissAttempt for these
+    ["interceptBackPress (QuestionFlowSheet)", { interceptBackPress: true }, "attempts 0"],
+  ])(
+    "a sheet that isn't dismissible refuses the customer's swipe: %s",
+    async (_label, locked, attempts) => {
+      const session = await openScreen(sheetProbe, {
+        navigation: "none",
+        props: { open: true, ...locked },
+      })
+      try {
+        expect(sheetOf(session).props).toMatchObject({
+          presented: true,
+          dismissible: false,
+        })
+        expect(() => closeSheetAsUser(session.root)).toThrow(
+          /isn't dismissible[^]*\{ refused: true \}/
+        )
+        expect(sheetOf(session).props.presented).toBe(true)
+        expect(text(session.tree(), "counts")).toBe("dismissed 0 closed 0")
+        // The refused swipe itself, drawn on purpose: the sheet stays up,
+        // and the library reports the attempt.
+        await session.act(() => {
+          closeSheetAsUser(session.root, { refused: true })
+        })
+        expect(sheetOf(session).props.presented).toBe(true)
+        expect(text(session.tree(), "counts")).toBe("dismissed 0 closed 0")
+        expect(text(session.tree(), "attempts")).toBe(attempts)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it("a refused swipe on a sheet the customer can close is refused itself", async () => {
+    const session = await openScreen(sheetProbe, {
+      navigation: "none",
+      props: { open: true },
+    })
+    try {
+      expect(() => closeSheetAsUser(session.root, { refused: true })).toThrow(
+        /is dismissible/
+      )
+      expect(sheetOf(session).props.presented).toBe(true)
+      expect(text(session.tree(), "attempts")).toBe("attempts 0")
+    } finally {
+      session.unmount()
+    }
+  })
+
   it("a sheet prop that changes changes the tree", async () => {
     const at = (cornerRadius?: number) =>
       renderScreen(sheetProbe, {

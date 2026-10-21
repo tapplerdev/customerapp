@@ -241,7 +241,7 @@ it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => 
   | `pressText(root, text, { nth, allowDisabled }?)` | Calls the onPress of the innermost element whose text is `text` (a link: a pressable view around a text). Two separate controls showing those words throw unless `nth` (0-based, in screen order) picks one; a disabled one throws, as `pressTitled`'s does. |
   | `typeInto(root, index, text)` | Types into the `index`th field (DmInput, DmAuthInput: composite elements taking onChangeText, outermost first) through the TextInput it draws, as `fireEvent.changeText` does, so the field's own handler runs (`fromArabic` for digits). A field with no TextInput (a DmInput with onPress) or one that isn't editable throws. |
   | `fireHost(root, type, prop, args?, { nth }?)` | Calls a native view stand-in's callback as the device does: `fireHost(root, "MapView", "onRegionChangeComplete", [region])` (PickAddress reverse-geocodes from it), `fireHost(root, "LottieView", "onAnimationFinish", [false])` (RequestSuccess, Talabati). |
-  | `closeSheetAsUser(root, { nth }?)` | Closes a presented sheet the way a customer does (a swipe, the dim): the sheet reports its dismissal with nobody's dismiss() behind it, so shared's NativeSheet calls `onDismissed` (a close the screen asked for calls only `onClosed`). `presentedSheets(root)` lists them. |
+  | `closeSheetAsUser(root, { nth, refused }?)` | Closes a presented sheet the way a customer does (a swipe, the dim): the sheet reports its dismissal with nobody's dismiss() behind it, so shared's NativeSheet calls `onDismissed` (a close the screen asked for calls only `onClosed`). A sheet that isn't dismissible throws: NativeSheet hands true-sheet `dismissible={false}` for `dismissable={false}` and every `interceptBackPress` sheet (QuestionFlowSheet), and the device refuses the swipe. Close it with its own controls; `{ refused: true }` draws the refused swipe (the sheet stays up, `onDismissAttempt` fires). `presentedSheets(root)` lists them. |
   | `fields(root)`, `only(root, predicate, what)` | The fields `typeInto` counts; the one outermost match, or a throw saying how many. |
   | `treeAfter(load, options, env, steps)` | The tree after `steps` (each a `Step`: `(root, env) => void`, with an optional `settleMs`). |
   | `wait(ms)` | A step that only lets `ms` pass. |
@@ -356,7 +356,8 @@ editing them in an area branch.
   `initialDetentIndex`). `present()`, `dismiss()` and `resize()` answer at once with their events
   (`dismiss()` reports onWillDismiss and onDidDismiss before its promise settles, which is how
   shared's NativeSheet tells its own closes from the customer's). A customer's swipe is
-  `closeSheetAsUser`. The true-sheet reanimated entry (shared's NativeSheet.tsx:4) is the library's
+  `closeSheetAsUser`, which a sheet with `dismissible={false}` refuses as the library does (it
+  stays up and reports `onDismissAttempt`). The true-sheet reanimated entry (shared's NativeSheet.tsx:4) is the library's
   mock: its position handler never runs, so the dim's drag never moves.
 - **The network is shut.** RTK Query's `fetchBaseQuery` is answered by the kit's backend. A plain
   `fetch` is answered only by the render's `http`; any other fetch, XMLHttpRequest or WebSocket

@@ -67,6 +67,7 @@ export {
   pressTitled,
   typeInto,
   wait,
+  type CloseSheetOptions,
   type FireOptions,
   type PressOptions,
   type PressTextOptions,
