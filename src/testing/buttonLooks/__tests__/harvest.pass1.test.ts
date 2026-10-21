@@ -3,7 +3,7 @@
  * site read with no rewrite (REWRITES is empty), and the looks keyed the way
  * the codemod keys them (scripts/ds-codemod/actionbtn.js lookKey), so the
  * looks proof and the codemod count the same 63. Then the translator's
- * verdict on each: which have a Button spelling today.
+ * verdict on each: every one has a Button spelling.
  */
 import { describe, expect, it } from "@jest/globals"
 import path from "path"
@@ -35,45 +35,20 @@ describe("the ActionBtn look harvest on customerapp", () => {
     expect(byKey.size).toBe(63)
   })
 
-  it("translates all but five looks; those five are what Button can't spell yet", () => {
-    const refused: Record<string, { looks: number; sites: string[] }> = {}
+  it("translates all 63 looks: CA-W0-B's rules spell the five it once refused", () => {
+    // bg-grey19 while disabled (subtle), a caller's bg-red under the
+    // spinner (brand), opacity-50 (dim); table.pass1.test.ts checks every
+    // look's props against B's table
+    const refused: Record<string, string[]> = {}
     for (const [key, where] of byKey) {
       const look = JSON.parse(key)
       try {
         translate({ title: "Button title", ...look }, () => null)
       } catch (error) {
         const why = String((error as Error).message).split("\n")[0]
-        const entry = (refused[why] = refused[why] ?? { looks: 0, sites: [] })
-        entry.looks += 1
-        entry.sites = [...new Set([...entry.sites, ...where])].sort()
+        refused[why] = [...new Set([...(refused[why] ?? []), ...where])]
       }
     }
-    expect(refused).toEqual({
-      // no #E5E5E5 state fill: disabled, and disabled while saving
-      "no Button variant for primary|bg-grey19": {
-        looks: 2,
-        sites: [
-          "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:234",
-          "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:167",
-          "screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:160",
-          "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:164",
-        ],
-      },
-      // no dim prop
-      "no Button variant for primary|opacity-50": {
-        looks: 1,
-        sites: ["screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx:385"],
-      },
-      // the caller's red over ActionBtn's grey, under the spinner
-      "bg-red draws over ActionBtn's loading fill (the caller's classes come last), where Button draws its loading fill":
-        {
-          looks: 2,
-          sites: [
-            "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:234",
-            "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
-            "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326",
-          ],
-        },
-    })
+    expect(refused).toEqual({})
   })
 })

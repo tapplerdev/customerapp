@@ -2,9 +2,11 @@
  * Rule 2: <ActionBtn ...> -> the design system's <Button ...>, by the rules
  * of src/testing/buttonLooks/__fixtures__/translate.ts, which turns one
  * ActionBtn look into Button props (proapp's, with customerapp's faces and
- * two rules of its own: a class NativeWind drops takes no prop, and a
- * caller's background over a state fill has no spelling). The codemod runs
- * that translator itself rather than a copy of its rules.
+ * rules of its own: a class NativeWind drops takes no prop; CA-W0-B's
+ * bg-grey19 while disabled (subtle), a caller's red under the spinner
+ * (brand) and opacity-50 (dim); any other caller's background over a state
+ * fill has no spelling). The codemod runs that translator itself rather
+ * than a copy of its rules.
  *
  * A site is every look its conditions can make: each combination of the
  * class strings' conditions, the variant's, and disable, isLoading,

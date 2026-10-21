@@ -459,35 +459,53 @@ describe("rule 2: ActionBtn -> Button", () => {
     expect(lookName({ label: "muted" })).toBe("Muted")
   })
 
-  it("leaves what Button can't say: bg-grey19 and opacity-50 while disabled, a caller's red under the spinner", () => {
-    const left = (body) =>
+  it("writes CA-W0-B's three spellings: bg-grey19 while disabled, opacity-50, a caller's red under the spinner", () => {
+    const out = (body) =>
       convert(body, { extra: 'import clsx from "clsx"\n', proven: "all" })
-        .sites.map((x) => [x.reason, x.detail])
     // AddNewAddressScreen.tsx:234 (and ChangePassword, MyInformation,
-    // UpdateEmail): Button has no #E5E5E5 state fill yet (CA-W0-B's)
+    // UpdateEmail): #E5E5E5 while disabled, Button's subtle state fill
+    const save = out(
+      '<ActionBtn title="Save" onPress={cb} className={`h-[42] w-full ${on ? "bg-red" : "bg-grey19"}`} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!on} />'
+    )
+    expect(save.code).toContain(
+      '<Button title="Save" onPress={cb} size="sm" label="sm" labelWeight="semibold" labelLeading={px(21)} disabledLook={disabledLookSubtleInverse} style={a.w_full} disabled={!on} />'
+    )
+    expect(save.code).toContain(
+      'const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const'
+    )
+    // FoodItemScreen.tsx:385: the whole button at half opacity, Button's dim
     expect(
-      left(
-        '<ActionBtn title="Save" onPress={cb} className={`h-[42] w-full ${on ? "bg-red" : "bg-grey19"}`} textClassName="text-13 leading-[21px] font-custom600 text-white" disable={!on} />'
-      )
-    ).toEqual([
-      ["actionbtn-look", "no Button variant for primary|bg-grey19"],
-      ["actionbtn-look", "no Button variant for primary|bg-grey19"],
-    ])
-    // FoodItemScreen.tsx:385: no dim prop yet (CA-W0-B's)
-    expect(
-      left(
+      out(
         '<ActionBtn title="Add" onPress={cb} disable={on} className={clsx("mt-[23] h-[41]", on && "opacity-50")} textClassName="text-13 leading-[16px] font-custom600" />'
-      )[0]
-    ).toEqual(["actionbtn-look", "no Button variant for primary|opacity-50"])
+      ).code
+    ).toContain(
+      '<Button title="Add" onPress={cb} disabled={on} size={px(41)} label="sm" labelWeight="semibold" dim={on ? true : undefined} style={styles.button} />'
+    )
     // GateRegisterScreen.tsx:222 and RegisterScreen.tsx:326: bg-red comes
-    // after ActionBtn's grey, so the spinner sits on red (CA-W0-B)
+    // after ActionBtn's grey, so the spinner sits on red: Button's brand
+    // loading surface
     expect(
-      left(
+      out(
         '<ActionBtn title="Join" onPress={cb} className={`mt-[40] h-[44] ${on ? "bg-red" : ""}`} isLoading={n} disable={!on} />'
-      )[0]
+      ).code
+    ).toContain(
+      '<Button title="Join" onPress={cb} size="md" loadingSurface={on ? "brand" : undefined} style={a.mt_40} isLoading={n} disabled={!on} />'
+    )
+  })
+
+  it("still leaves a caller's paint over a state's fill that Button can't spell", () => {
+    // red while disabled and not loading would be the disabled look's brand
+    // surface: no customerapp site has it (CA-W0-B), so it has no spelling
+    expect(
+      convert(
+        '<ActionBtn title="Red" onPress={cb} className="h-[44] bg-red" disable={on} />',
+        { proven: "all" }
+      ).sites.map((x) => [x.reason, x.detail])
     ).toEqual([
-      "actionbtn-look",
-      "bg-red draws over ActionBtn's loading fill (the caller's classes come last), where Button draws its loading fill",
+      [
+        "actionbtn-look",
+        "bg-red draws over ActionBtn's disabled fill (the caller's classes come last), where Button draws its disabled fill",
+      ],
     ])
   })
 
