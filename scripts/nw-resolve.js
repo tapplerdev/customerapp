@@ -48,11 +48,19 @@
  * per language, and in Arabic a 1-2 digit `leading-[Npx]` times 1.32. The
  * real takeFontStyles is loaded from ../tappler-shared/src/helpers/helpers.ts,
  * and the Latin faces are read from the setLatinFontWeights call in index.js,
- * so neither is restated here. --table prints the line height a bare `text-N`
- * gets through that guard, which is the token table's `legacy` column.
+ * so neither is restated here. customerapp's index.js registers nothing, so
+ * its Latin faces are shared's default, Montserrat (proapp registers
+ * Poppins). --table prints the line height a bare `text-N` gets through that
+ * guard, which is the token table's `legacy` column.
+ *
+ * A NOTE also says when the style names a fontFamily the app doesn't ship
+ * (ios/<app>/Info.plist UIAppFonts): customerapp's tailwind.config.js maps
+ * font-sans400/500 to TheSans-Regular and font-sans600 to TheSans-SemiBold,
+ * neither of which it ships, so the device draws the system face there.
  *
  * As a module: resolve(className), resolveDmText(className, { lang }),
- * resolveMany(classNames), legacyTable(), NwResolveError.
+ * resolveMany(classNames), legacyTable(), latinFaces(), shippedFaces(),
+ * NwResolveError.
  */
 const fs = require("fs")
 const path = require("path")
@@ -68,6 +76,7 @@ const SHARED_HELPERS = path.join(
   "helpers.ts"
 )
 const ENTRY_FILE = path.join(ROOT, "index.js")
+const IOS_DIR = path.join(ROOT, "ios")
 
 // DmText.tsx: `"text-14 text-black text-left " + userClassName`.
 const DMTEXT_GUARD = ["text-14", "text-black", "text-left"]
@@ -330,6 +339,38 @@ const problemsOf = (r) => {
 const tokensOf = (className) =>
   typeof className === "string" ? className.split(/\s+/).filter(Boolean) : []
 
+// The faces the app ships: the font files ios/<app>/Info.plist lists under
+// UIAppFonts, by file name (each file's name is its face's PostScript name
+// in both apps). A family not in it isn't registered on the device, so iOS
+// and Android draw the system face instead. null when there is no plist.
+let shipped
+const shippedFaces = () => {
+  if (shipped !== undefined) return shipped
+  shipped = null
+  if (!fs.existsSync(IOS_DIR)) return shipped
+  for (const entry of fs.readdirSync(IOS_DIR, { withFileTypes: true })) {
+    const plist = path.join(IOS_DIR, entry.name, "Info.plist")
+    if (!entry.isDirectory() || /Tests$/.test(entry.name)) continue
+    if (!fs.existsSync(plist)) continue
+    const m = fs
+      .readFileSync(plist, "utf8")
+      .match(/<key>UIAppFonts<\/key>\s*<array>([\s\S]*?)<\/array>/)
+    if (!m) continue
+    shipped = new Set(shipped || [])
+    for (const [, file] of m[1].matchAll(/<string>([^<]+)<\/string>/g))
+      shipped.add(file.trim().replace(/\.(ttf|otf)$/i, ""))
+  }
+  return shipped
+}
+
+const unshippedFaceNote = (style) => {
+  const faces = shippedFaces()
+  const family = style && style.fontFamily
+  return faces && typeof family === "string" && !faces.has(family)
+    ? `fontFamily ${family} isn't a face the app ships (Info.plist UIAppFonts), so the device draws the system face`
+    : null
+}
+
 // runtime.js reEvaluate(): string order; a transform class contributes only
 // its `transform` entries, gathered into one array appended last. `entries`
 // are the tokens NativeWind receives, in order, each with a label saying
@@ -403,11 +444,13 @@ const resolve = (className) => {
   const result = resolveEntries(className, entries)
   for (const c of result.consumed)
     c.by = "DmText/ActionBtn (takeFontStyles); NativeWind ignores it"
+  const unshipped = unshippedFaceNote(result.style)
   return {
     input: className,
     mode: "plain",
     nativewindInput: className,
     ...result,
+    notes: unshipped ? [...result.notes, unshipped] : result.notes,
   }
 }
 
@@ -491,7 +534,7 @@ const getFontHelpers = () => {
   if (fontHelpers) return fontHelpers
   if (!fs.existsSync(SHARED_HELPERS))
     throw new Error(
-      `nw-resolve: --dmtext needs tappler-shared beside proapp (${SHARED_HELPERS} not found)`
+      `nw-resolve: --dmtext needs tappler-shared beside the app (${SHARED_HELPERS} not found)`
     )
   const babel = require("@babel/core")
   const { code } = quietly(() =>
@@ -526,19 +569,33 @@ const getFontHelpers = () => {
     SHARED_HELPERS,
     path.dirname(SHARED_HELPERS)
   )
-  const { takeFontStyles, takeFontFamily, setLatinFontWeights } = mod.exports
+  const {
+    takeFontStyles,
+    takeFontFamily,
+    setLatinFontWeights,
+    getLatinFontWeights,
+  } = mod.exports
   if (
     typeof takeFontStyles !== "function" ||
-    typeof takeFontFamily !== "function"
+    typeof takeFontFamily !== "function" ||
+    typeof getLatinFontWeights !== "function"
   )
     throw new Error(
-      "nw-resolve: helpers.ts no longer exports takeFontStyles/takeFontFamily"
+      "nw-resolve: helpers.ts no longer exports takeFontStyles/takeFontFamily/getLatinFontWeights"
     )
   const registry = readLatinRegistry()
+  // customerapp's index.js registers nothing: shared's default stays.
   if (registry.weights) setLatinFontWeights(registry.weights)
-  fontHelpers = { takeFontStyles, takeFontFamily, registry }
+  fontHelpers = { takeFontStyles, takeFontFamily, getLatinFontWeights, registry }
   return fontHelpers
 }
+
+/**
+ * The Latin faces DmText draws for font-custom400..700: index.js's
+ * setLatinFontWeights call if it has one, else tappler-shared's default
+ * (Montserrat, which is what customerapp draws: it registers nothing).
+ */
+const latinFaces = () => ({ ...getFontHelpers().getLatinFontWeights() })
 
 const LANGS = ["en", "ar"]
 
@@ -617,7 +674,12 @@ const resolveDmText = (className, { lang = "en" } = {}) => {
       : `DmText (takeFontStyles): no face for this weight in ${lang}`
   }
   const notes = [...result.notes]
-  if (className && !/font-custom\d{3}/.test(className))
+  // (With a family class such as font-sans700, NativeWind's family stands.)
+  if (
+    className &&
+    !/font-custom\d{3}/.test(className) &&
+    !result.style.fontFamily
+  )
     notes.push(
       "no font-customNNN: DmText sets no fontFamily, so this text is in the system face"
     )
@@ -628,6 +690,8 @@ const resolveDmText = (className, { lang = "en" } = {}) => {
 
   const style = { ...result.style, ...font }
   const provenance = { ...result.provenance, ...fontFrom }
+  const unshipped = unshippedFaceNote(style)
+  if (unshipped) notes.push(unshipped)
   return {
     ...result,
     input: className,
@@ -829,10 +893,12 @@ module.exports = {
   resolveDmText,
   legacyTable,
   readLatinRegistry,
+  latinFaces,
+  shippedFaces,
   prefetch,
   NwResolveError,
   DMTEXT_GUARD,
-  paths: { ROOT, TAILWIND_CONFIG, SHARED_HELPERS, ENTRY_FILE },
+  paths: { ROOT, TAILWIND_CONFIG, SHARED_HELPERS, ENTRY_FILE, IOS_DIR },
   main,
 }
 

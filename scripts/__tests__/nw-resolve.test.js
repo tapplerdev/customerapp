@@ -25,6 +25,8 @@ const {
   resolveDmText,
   legacyTable,
   readLatinRegistry,
+  latinFaces,
+  shippedFaces,
   NwResolveError,
   main,
   paths,
@@ -199,7 +201,7 @@ describe("nw-resolve against NativeWind's own Babel plugin and runtime", () => {
 
 describe("what NativeWind gives, pinned", () => {
   it("flex-1 is grow 1 / shrink 1 / basis 0%, not React Native's flex: 1", () => {
-    // `flex-1 bg-white`, the commonest screen root in the app.
+    // `flex-1 bg-white`, a screen root (SignInEmailScreen.tsx:109).
     const { style } = resolve("flex-1 bg-white")
     expect(style).toEqual({
       flexGrow: 1,
@@ -211,7 +213,8 @@ describe("what NativeWind gives, pinned", () => {
   })
 
   it("keeps both transforms, in class order, in one array appended last", () => {
-    // SettingsItem.tsx:59 and SettingScreen.tsx:313, the RTL chevron flip.
+    // proapp's RTL chevron flip (customerapp's own flip, MessagesDetails:912,
+    // is a lone rotate-[180deg]).
     const { style, provenance } = resolve(
       "rotate-[180deg] scale-y-[-1] items-end"
     )
@@ -236,7 +239,7 @@ describe("what NativeWind gives, pinned", () => {
   })
 
   it("reports what NativeWind drops, with why, and keeps the rest exact", () => {
-    // MyAccountDetailsScreen.tsx:252
+    // a shape from proapp (MyAccountDetailsScreen.tsx:252)
     const details = resolve("px-[15] pt-[17] flex-between")
     expect(details.style).toEqual({
       paddingLeft: 15,
@@ -250,29 +253,47 @@ describe("what NativeWind gives, pinned", () => {
       },
     ])
 
-    // MyAccountChangePasswordScreen.tsx:132, a clsx branch
-    expect(resolve("text-grey10 font-400").dropped).toEqual([
-      { class: "font-400", reason: expect.stringMatching(/^unknown class/) },
+    // ProProfileScreen.tsx:471 and :247: names nothing defines
+    expect(resolve("ml-[10] text-12 leading-[20px] font-plain").dropped).toEqual(
+      [{ class: "font-plain", reason: expect.stringMatching(/^unknown class/) }]
+    )
+    expect(resolve("text-40 font-custom700 text-grey3").dropped).toEqual([
+      { class: "text-40", reason: expect.stringMatching(/^unknown class/) },
+    ])
+    // FoodCartScreen.tsx:206: a border width the config doesn't have
+    const cart = resolve(
+      "flex-row items-center px-[12] py-[10] bg-white border-b-0.2 border-b-grey19"
+    )
+    expect(cart.style).not.toHaveProperty("borderBottomWidth")
+    expect(cart.style.borderBottomColor).toBe("#E5E5E5")
+    expect(cart.dropped).toEqual([
+      { class: "border-b-0.2", reason: expect.stringMatching(/^unknown class/) },
     ])
 
-    // CreateFoodMenuOptionScreen.tsx:324: unitless leading, and the font
-    // class is DmText's, not a drop
-    const food = resolve("text-11 leading-[14] font-custom700")
-    expect(food.style).toEqual({ fontSize: 11, lineHeight: 14 })
-    expect(food.dropped).toEqual([
-      { class: "leading-[14]", reason: expect.stringMatching(/^unitless/) },
+    // MessagesDetailsScreen.tsx:1033: unitless leading, and the font class
+    // is DmText's, not a drop
+    const message = resolve("mx-[5] text-13 leading-[16] font-custom400")
+    expect(message.style).toEqual({
+      marginLeft: 5,
+      marginRight: 5,
+      fontSize: 13,
+      lineHeight: 22,
+    })
+    expect(message.dropped).toEqual([
+      { class: "leading-[16]", reason: expect.stringMatching(/^unitless/) },
     ])
-    expect(food.consumed).toEqual([
-      expect.objectContaining({ class: "font-custom700" }),
+    expect(message.consumed).toEqual([
+      expect.objectContaining({ class: "font-custom400" }),
     ])
 
-    // ServiceDetailSkeletonScreen.tsx:35: a bare arbitrary radius
-    const skeleton = resolve("mx-[12] mb-[16] p-[12] bg-red/5 rounded-[8]")
-    expect(skeleton.style).not.toHaveProperty("borderTopLeftRadius")
-    expect(skeleton.dropped).toEqual([
+    // RequestSummaryScreen.tsx:183: a bare arbitrary radius (the same
+    // rounded-[12] draws nothing on RequestSummary:467's ActionBtn)
+    const card = resolve("bg-white rounded-[12] border-0.5 overflow-hidden")
+    expect(card.style).not.toHaveProperty("borderTopLeftRadius")
+    expect(card.dropped).toEqual([
       {
-        class: "rounded-[8]",
-        reason: expect.stringContaining('"border-radius: 8"'),
+        class: "rounded-[12]",
+        reason: expect.stringContaining('"border-radius: 12"'),
       },
     ])
 
@@ -421,16 +442,23 @@ const registerLikeACallSite = (classNames) => {
 }
 
 describe("--dmtext against the real DmText", () => {
-  // Real call sites (file:line on origin/dev), plus three shapes no site has.
+  // Real call sites (file:line at e30b19a), plus four shapes no site has.
   const SITES = [
-    "text-13 leading-[22px] font-custom400", // MyAccountPhoneNumberScreen.tsx:89
-    " text-11 leading-[22px] font-custom500 text-red", // :103, leading space
-    "text-16 leading-[22px] font-custom600 text-black pb-[10]", // MyAccountDetailsScreen.tsx:253
-    "text-22 leading-[29px] font-custom700", // AccountUpgradesViewMyProfileScreen.tsx:281
-    "text-16 text-grey1", // MyAccountAddressScreen.tsx:269, no font class
-    "text-12 leading-[16px] font-sans700 flex-1 text-right mt-[4]", // AccountUpgradesViewElemComponent.tsx:22
-    "text-11 leading-[14] font-custom700", // CreateFoodMenuOptionScreen.tsx:324, unitless
-    "text-16 leading-[20px] font-sans400 leading-[26.4px]", // BusinessModal.tsx:89 (en branch)
+    "text-13 leading-[22px] font-custom400", // UpdateMobileNumberScreen.tsx:85
+    "px-[2] text-13 leading-[22px] font-custom600", // UpdateMobileNumberScreen.tsx:82
+    "text-20 leading-[24px] font-custom600 text-black pb-[10]", // UpdateMobileNumberScreen.tsx:94
+    "text-15 leading-[19px] font-custom500 flex-1 ml-[6]", // SearchView.tsx:192
+    " text-11 leading-[22px] font-custom500 text-red", // leading space
+    "mx-[10] text-13 text-grey3", // FiltersScreen.tsx:373, no font class
+    "font-sans700 text-18 leading-[31px] text-center", // WelcomeScreen.tsx:49
+    "mt-[11] font-montserrat600 text-18 leading-[22px] text-center", // WelcomeScreen.tsx:52
+    // TheSans-Regular: the config's face, which the app doesn't ship
+    "mt-[32] text-13 text-grey font-sans400 leading-[22px] text-center", // WelcomeScreen.tsx:83
+    // no face for 800 in either language: the system face
+    "text-24 leading-[30px] font-custom800 text-black text-center", // AuthGateScreen.tsx:71
+    "mx-[5] text-13 leading-[16] font-custom400", // MessagesDetailsScreen.tsx:1033, unitless
+    "ml-[10] text-12 leading-[20px] font-plain", // ProProfileScreen.tsx:471
+    "text-40 font-custom700 text-grey3", // ProProfileScreen.tsx:247
     "text-15 font-custom600 font-custom400", // two font classes: only the first is stripped
     "text-14 leading-[100px] font-custom500", // a 3-digit leading is never scaled
     "", // no className: DmText's default font-custom400
@@ -442,10 +470,14 @@ describe("--dmtext against the real DmText", () => {
   beforeAll(() => {
     i18n = require("locales/i18n").default
     StyleSheet = require("react-native").StyleSheet
-    // proapp's Latin faces, as index.js registers them before the app runs.
-    require(path.join(SHARED, "src", "helpers", "helpers")).setLatinFontWeights(
-      readLatinRegistry().weights
-    )
+    // The app's Latin faces, as index.js registers them before the app
+    // runs. customerapp's registers none, so shared's default (Montserrat)
+    // stands; setLatinFontWeights(null) would break every Latin lookup.
+    const { weights } = readLatinRegistry()
+    if (weights)
+      require(
+        path.join(SHARED, "src", "helpers", "helpers")
+      ).setLatinFontWeights(weights)
     registerLikeACallSite(SITES)
     DmText = loadDmText()
   })
@@ -459,7 +491,7 @@ describe("--dmtext against the real DmText", () => {
     })
     const [host] = renderer.root.findAll((n) => n.type === "Text")
     const style = StyleSheet.flatten(host.props.style)
-    renderer.unmount()
+    React.act(() => renderer.unmount())
     return style
   }
 
@@ -493,7 +525,7 @@ describe("--dmtext against the real DmText", () => {
       lineHeight: 22,
       color: "#000000",
       textAlign: "left",
-      fontFamily: "Poppins-Regular",
+      fontFamily: "Montserrat-Regular",
     })
     const ar = resolveDmText(site, { lang: "ar" })
     expect(ar.style).toEqual({
@@ -517,7 +549,7 @@ describe("--dmtext against the real DmText", () => {
     expect(two.nativewindInput).toBe(
       "text-14 text-black text-left text-15 font- font-custom400"
     )
-    expect(two.style.fontFamily).toBe("Poppins-Regular")
+    expect(two.style.fontFamily).toBe("Montserrat-Regular")
     expect(two.dropped).toEqual([])
     expect(two.consumed.map((c) => c.class)).toEqual([
       "font-custom600",
@@ -582,16 +614,60 @@ describe("--dmtext against the real DmText", () => {
     expect(found.fontDefault).toEqual(["font-custom400"])
   })
 
-  it("reads proapp's Latin faces from index.js rather than restating them", () => {
-    expect(readLatinRegistry()).toEqual({
-      weights: {
-        400: "Poppins-Regular",
-        500: "Poppins-Medium",
-        600: "Poppins-SemiBold",
-        700: "Poppins-Bold",
-      },
-      source: expect.stringMatching(/^index\.js:\d+$/),
+  it("reads index.js, which registers nothing, so DmText draws shared's Montserrat", () => {
+    // customerapp's index.js has no setLatinFontWeights call (proapp's
+    // registers Poppins): the Latin faces are tappler-shared's default.
+    expect(readLatinRegistry()).toEqual({ weights: null, source: null })
+    expect(fs.readFileSync(paths.ENTRY_FILE, "utf8")).not.toContain(
+      "setLatinFontWeights"
+    )
+    expect(latinFaces()).toEqual({
+      400: "Montserrat-Regular",
+      500: "Montserrat-Medium",
+      600: "Montserrat-SemiBold",
+      700: "Montserrat-Bold",
     })
+    expect(resolveDmText("text-14 font-custom700", { lang: "en" })).toMatchObject(
+      {
+        style: { fontFamily: "Montserrat-Bold" },
+        latinRegistry:
+          "tappler-shared default (no setLatinFontWeights in index.js)",
+      }
+    )
+  })
+
+  it("says when a class names a face the app doesn't ship, or a weight with no face", () => {
+    expect([...shippedFaces()].sort()).toEqual([
+      "Montserrat-Bold",
+      "Montserrat-Medium",
+      "Montserrat-Regular",
+      "Montserrat-SemiBold",
+      "TheSans-Bold",
+      "TheSans-Plain",
+    ])
+    // font-sans400/500 are TheSans-Regular and font-sans600 TheSans-SemiBold
+    // in tailwind.config.js: exact as NativeWind gives them, and noted.
+    const unshipped =
+      "fontFamily TheSans-Regular isn't a face the app ships (Info.plist UIAppFonts), so the device draws the system face"
+    const welcome = resolveDmText(
+      "mt-[32] text-13 text-grey font-sans400 leading-[22px] text-center",
+      { lang: "en" }
+    )
+    expect(welcome.style.fontFamily).toBe("TheSans-Regular")
+    expect(welcome.notes).toEqual([unshipped])
+    expect(resolve("font-sans600").notes).toEqual([
+      "fontFamily TheSans-SemiBold isn't a face the app ships (Info.plist UIAppFonts), so the device draws the system face",
+    ])
+    expect(resolve("font-sans700").notes).toEqual([])
+    // font-custom800: neither language has an 800, so no family at all
+    const gate = resolveDmText(
+      "text-24 leading-[30px] font-custom800 text-black text-center",
+      { lang: "ar" }
+    )
+    expect(gate.style).not.toHaveProperty("fontFamily")
+    expect(gate.notes).toEqual([
+      "no registered face for font-custom800 in ar: system face",
+    ])
   })
 
   it("generates the legacy line-height column, unscaled in Arabic", () => {
