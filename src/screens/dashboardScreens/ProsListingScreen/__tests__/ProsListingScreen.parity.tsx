@@ -11,6 +11,7 @@ import {
   rowsByPlatform,
   treeAfter,
   typeInto,
+  type BackendFixtures,
   type RenderScreenOptions,
   type Step,
 } from "testing/screenKit"
@@ -110,7 +111,7 @@ const FOOD_PARAMS = {
 }
 
 const SIGNED = screenState("data")
-const withApi = (api: object, params?: object) => ({
+const withApi = (api: BackendFixtures, params?: object) => ({
   ...SIGNED,
   api,
   route: route(params),

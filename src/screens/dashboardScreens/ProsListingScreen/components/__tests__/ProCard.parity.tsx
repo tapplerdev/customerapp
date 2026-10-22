@@ -124,7 +124,7 @@ const BASE_CASES: Case[] = [
   { state: "the food card, pickup only", pro: { ...PRO_FOOD, isDeliveryEnabled: false, distanceKm: 12.34 }, props: { foodMode: true } },
   { state: "the food card, delivery only", pro: { ...PRO_FOOD, isPickupEnabled: false, distanceKm: undefined }, props: { foodMode: true } },
   { state: "the food card, neither mode", pro: { ...PRO_FOOD, isPickupEnabled: false, isDeliveryEnabled: false }, props: { foodMode: true } },
-  { state: "the food card with a promo line and a sticker", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as ProType, props: { foodMode: true } },
+  { state: "the food card with a promo line and a sticker", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as unknown as ProType, props: { foodMode: true } },
   { state: "a non-food card is not a food card", pro: PRO_FOOD },
 ]
 

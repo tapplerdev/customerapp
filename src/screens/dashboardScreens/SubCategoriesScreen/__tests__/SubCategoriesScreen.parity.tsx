@@ -21,7 +21,7 @@ import {
   parityName,
   type ParityEnv,
 } from "testing/hostTreeParity"
-import type { ServiceType } from "types/cms"
+import type { ServiceCategoryType, ServiceType } from "types/cms"
 
 /*
  * SubCategoriesScreen (a service's categories), captured from the
@@ -35,28 +35,28 @@ import type { ServiceType } from "types/cms"
 const load = () => require("../SubCategoriesScreen")
 
 const CATEGORIES = [
-  some<ServiceType["categories"][number]>({
+  some<ServiceCategoryType>({
     id: 3041,
     nameEn: "Window cleaning",
     nameAr: "تنظيف النوافذ",
     serviceId: 204,
     placeOfService: ["customerPlace"],
   }),
-  some<ServiceType["categories"][number]>({
+  some<ServiceCategoryType>({
     id: 3042,
     nameEn: "Online tutoring for school students in every subject at any level",
     nameAr: "دروس خصوصية عبر الإنترنت لطلاب المدارس في جميع المواد وفي كل المستويات",
     serviceId: 204,
     placeOfService: ["remoteOrOnline"],
   }),
-  some<ServiceType["categories"][number]>({
+  some<ServiceCategoryType>({
     id: 3043,
     nameEn: "Gardening",
     nameAr: "البستنة",
     serviceId: 204,
     placeOfService: ["fixedLocations"],
   }),
-  some<ServiceType["categories"][number]>({
+  some<ServiceCategoryType>({
     id: 3044,
     nameEn: "Anything",
     nameAr: "أي شيء",
