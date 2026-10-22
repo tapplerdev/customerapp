@@ -4,9 +4,9 @@ import React from "react"
 
 /*
  * SkeletonLoader's class-name path, pinned to what it drew before its
- * conversion, for every prop set its call sites hand it, plus the class
- * strings W2's callers could pass (the ones its twelve-dead-class sites at
- * JobDetail used to, none of which drew).
+ * conversion, for every prop set its call sites hand it, plus the classes a
+ * caller could still pass (SkeletonLoader.handCases.tsx; none of the call
+ * sites does now: the five at JobDetail drew nothing and went in W1's prep).
  *
  * The prop sets are harvested from the call sites (testing/harvest) and
  * frozen in __fixtures__/SkeletonLoader.cases.json; their class strings are
@@ -26,6 +26,7 @@ jest.mock("react-native-localize", () =>
 /* eslint-disable import/first */
 // The harvested class strings, compiled (see the file).
 import "../__fixtures__/SkeletonLoader.classes"
+import { HAND_CASES } from "../__fixtures__/SkeletonLoader.handCases"
 import {
   PARITY_MATRIX,
   captureCommit,
@@ -81,7 +82,8 @@ const OPTIONS: HarvestOptions = {
       {
         reason: "a body line's width from ROWS (:8-14)",
         values: {
-          width: 'oneOf("95%", "90%", "85%", "92%", "88%", "80%", "75%", "94%")',
+          width:
+            'oneOf("95%", "90%", "85%", "92%", "88%", "80%", "75%", "94%")',
         },
       },
     "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129": {
@@ -132,6 +134,20 @@ if (harvesting()) {
         expectParity(
           parityName(id, env),
           hostTree(<SkeletonLoader {...(props as Props)} />, env)
+        )
+      }
+    )
+  })
+  describe("a caller's className still draws", () => {
+    const table = HAND_CASES.flatMap(({ name, props }) =>
+      PARITY_MATRIX.map((env) => ({ name, props, env }))
+    )
+    it.each(table)(
+      "$name [$env.language $env.platform]",
+      ({ name, props, env }) => {
+        expectParity(
+          parityName(name, env),
+          hostTree(<SkeletonLoader {...props} />, env)
         )
       }
     )

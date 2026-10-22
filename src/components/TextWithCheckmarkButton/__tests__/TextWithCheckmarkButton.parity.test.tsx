@@ -1,6 +1,6 @@
-import {describe, expect, it, jest} from '@jest/globals';
-import path from 'path';
-import React from 'react';
+import { describe, expect, it, jest } from "@jest/globals"
+import path from "path"
+import React from "react"
 
 /*
  * TextWithCheckmarkButton's class-name path, pinned to what it drew before
@@ -25,28 +25,28 @@ import React from 'react';
  *   yarn ds:parity:capture <this file> --force  recapture, on the old code only
  */
 
-jest.mock('react-native-localize', () =>
-  jest.requireActual('react-native-localize/mock'),
-);
-jest.mock('assets/icons/check-mark.svg', () => {
-  const {createElement} = jest.requireActual('react') as typeof React;
+jest.mock("react-native-localize", () =>
+  jest.requireActual("react-native-localize/mock")
+)
+jest.mock("assets/icons/check-mark.svg", () => {
+  const { createElement } = jest.requireActual("react") as typeof React
   return {
     __esModule: true,
-    default: (props: object) => createElement('svg:check-mark', props),
-  };
-});
+    default: (props: object) => createElement("svg:check-mark", props),
+  }
+})
 
 /* eslint-disable import/first */
 // The harvested class strings and the hand cases', compiled (see the files).
-import '../__fixtures__/TextWithCheckmarkButton.classes';
-import {HAND_CASES} from '../__fixtures__/TextWithCheckmarkButton.handCases';
+import "../__fixtures__/TextWithCheckmarkButton.classes"
+import { HAND_CASES } from "../__fixtures__/TextWithCheckmarkButton.handCases"
 import {
   PARITY_MATRIX,
   captureCommit,
   expectParity,
   hostTree,
   parityName,
-} from 'testing/hostTreeParity';
+} from "testing/hostTreeParity"
 import {
   buildProps,
   classStringsOf,
@@ -56,83 +56,83 @@ import {
   readHarvest,
   writeHarvest,
   type HarvestOptions,
-} from 'testing/harvest';
-import {describeCompiledClasses} from 'testing/harvest/compiledClasses';
-import {ControlText} from 'testing/harvest/__fixtures__/classProbes';
-import TextWithCheckmarkButton from '../TextWithCheckmarkButton';
+} from "testing/harvest"
+import { describeCompiledClasses } from "testing/harvest/compiledClasses"
+import { ControlText } from "testing/harvest/__fixtures__/classProbes"
+import TextWithCheckmarkButton from "../TextWithCheckmarkButton"
 /* eslint-enable import/first */
 
-type Props = React.ComponentProps<typeof TextWithCheckmarkButton>;
+type Props = React.ComponentProps<typeof TextWithCheckmarkButton>
 
-const FILES = harvestFilesFor(__dirname, 'TextWithCheckmarkButton');
+const FILES = harvestFilesFor(__dirname, "TextWithCheckmarkButton")
 
 // Its props before the conversion: a site passing a prop not listed stops
 // the harvest. `key` is React's, read and dropped before the render.
 const OPTIONS: HarvestOptions = {
-  srcRoot: path.resolve(__dirname, '../../..'),
-  importFrom: componentImport('TextWithCheckmarkButton'),
+  srcRoot: path.resolve(__dirname, "../../.."),
+  importFrom: componentImport("TextWithCheckmarkButton"),
   props: {
-    label: 'text',
-    isSelected: 'bool',
-    onPress: 'fn',
-    className: 'class',
-    key: 'any',
+    label: "text",
+    isSelected: "bool",
+    onPress: "fn",
+    className: "class",
+    key: "any",
   },
-};
+}
 
 if (harvesting()) {
-  describe('the harvest', () => {
-    it('writes the cases and the class strings NativeWind has to compile', () => {
-      writeHarvest(FILES, 'TextWithCheckmarkButton', OPTIONS, captureCommit());
-    });
-  });
+  describe("the harvest", () => {
+    it("writes the cases and the class strings NativeWind has to compile", () => {
+      writeHarvest(FILES, "TextWithCheckmarkButton", OPTIONS, captureCommit())
+    })
+  })
 } else {
-  const cases = readHarvest(FILES);
-  const classes = classStringsOf(cases.cases);
+  const cases = readHarvest(FILES)
+  const classes = classStringsOf(cases.cases)
 
-  if (classes.length) describeCompiledClasses(cases, FILES, classes);
+  if (classes.length) describeCompiledClasses(cases, FILES, classes)
   else {
     // No call site passes a class: the control alone (NativeWind is on).
-    it('control: NativeWind compiles a class this run loads', () => {
+    it("control: NativeWind compiles a class this run loads", () => {
       expect(
-        hostTree(<ControlText />, {language: 'en'})?.props.style,
-      ).toMatchObject({fontSize: 20});
-    });
+        hostTree(<ControlText />, { language: "en" })?.props.style
+      ).toMatchObject({ fontSize: 20 })
+    })
   }
 
-  describe('the class-name path draws as before', () => {
+  describe("the class-name path draws as before", () => {
     const table = Object.entries(cases.cases).flatMap(([id, entry]) =>
-      PARITY_MATRIX.map(env => ({id, site: entry.sites[0], entry, env})),
-    );
+      PARITY_MATRIX.map((env) => ({ id, site: entry.sites[0], entry, env }))
+    )
     it.each(table)(
-      '$id ($site) [$env.language $env.platform]',
-      ({id, entry, env}) => {
-        const {key: _key, ...props} = buildProps(entry.props, {
+      "$id ($site) [$env.language $env.platform]",
+      ({ id, entry, env }) => {
+        const { key: _key, ...props } = buildProps(entry.props, {
           opaque: () => 0,
-        });
+        })
         expectParity(
           parityName(id, env),
-          hostTree(<TextWithCheckmarkButton {...(props as Props)} />, env),
-        );
-      },
-    );
-  });
+          hostTree(<TextWithCheckmarkButton {...(props as Props)} />, env)
+        )
+      }
+    )
+  })
 
   describe("a caller's className still draws", () => {
-    const table = HAND_CASES.flatMap(({name, props}) =>
-      PARITY_MATRIX.map(env => ({name, props, env})),
-    );
+    const table = HAND_CASES.flatMap(({ name, props }) =>
+      PARITY_MATRIX.map((env) => ({ name, props, env }))
+    )
     it.each(table)(
-      '$name [$env.language $env.platform]',
-      ({name, props, env}) => {
+      "$name [$env.language $env.platform]",
+      ({ name, props, env }) => {
         expectParity(
           parityName(name, env),
           hostTree(
             <TextWithCheckmarkButton onPress={() => undefined} {...props} />,
-            env,
-          ),
-        );
-      },
-    );
-  });
+            env
+          )
+        )
+      }
+    )
+  })
 }

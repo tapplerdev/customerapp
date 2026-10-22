@@ -9,9 +9,9 @@ import React from "react"
  * site that moves to the twins draws what its class names drew.
  *
  * No harvested site passes a class (the two at ProCard:274 and
- * ProCardBase:219 drew nothing and went in W1's prep), so the second block is
- * the twin's proof where a class IS passed: className and the style it
- * stands for, drawn live against each other.
+ * ProCardBase:219 drew nothing and went in W1's prep), so the hand cases (the
+ * classes a caller could still pass, captured beside them) go through the
+ * codemod too.
  */
 
 jest.mock("react-native-localize", () =>
@@ -21,6 +21,7 @@ jest.mock("react-native-localize", () =>
 /* eslint-disable import/first */
 // The harvested class strings, compiled: a class the codemod leaves stays one.
 import "../__fixtures__/PromoLine.classes"
+import { HAND_CASES } from "../__fixtures__/PromoLine.handCases"
 import {
   PARITY_MATRIX,
   captureMode,
@@ -30,7 +31,6 @@ import {
   parityName,
 } from "testing/hostTreeParity"
 import { harvestFilesFor, readHarvest, twinCases } from "testing/harvest"
-import PromoLine from "../PromoLine"
 /* eslint-enable import/first */
 
 if (captureMode() !== "compare") {
@@ -42,7 +42,17 @@ if (captureMode() !== "compare") {
 const FIXTURE = fixtureFileFor(
   path.join(__dirname, "PromoLine.parity.test.tsx")
 )
-const cases = readHarvest(harvestFilesFor(__dirname, "PromoLine"))
+const harvested = readHarvest(harvestFilesFor(__dirname, "PromoLine"))
+const HAND = "hand"
+const cases = {
+  ...harvested,
+  cases: {
+    ...harvested.cases,
+    ...Object.fromEntries(
+      HAND_CASES.map(({ name, props }) => [name, { props, sites: [HAND] }])
+    ),
+  },
+}
 const twins = twinCases(cases, {
   source: "components/PromoLine/PromoLine",
   tag: "PromoLine",
@@ -60,6 +70,15 @@ describe("PromoLine's twins draw what its class names drew", () => {
     ).toEqual(LEFT)
   })
 
+  it("the hand cases' classes went to the style twin", () => {
+    const converted = twins.filter((twin) => twin.sites[0] === HAND)
+    expect(converted).toHaveLength(HAND_CASES.length)
+    converted.forEach((twin) => {
+      expect(twin.code).not.toContain("className=")
+      expect(twin.code).toContain("style=")
+    })
+  })
+
   const table = twins.flatMap((twin) =>
     PARITY_MATRIX.map((env) => ({ ...twin, env }))
   )
@@ -73,34 +92,22 @@ describe("PromoLine's twins draw what its class names drew", () => {
   )
 })
 
-// The class strings a caller could still write, and the style each stands for
-// (the same two the class-name test pins).
-const CLASSES: [string, React.ComponentProps<typeof PromoLine>["style"]][] = [
-  ["mt-[6]", { marginTop: 6 }],
-  ["mx-[10] mb-[8]", { marginLeft: 10, marginRight: 10, marginBottom: 8 }],
-]
-
-describe("className and its style twin draw alike", () => {
-  const table = CLASSES.flatMap(([className, style]) =>
-    PARITY_MATRIX.map((env) => ({ className, style, env }))
-  )
-  it.each(table)(
-    "$className [$env.language $env.platform]",
-    ({ className, style, env }) => {
-      expect(
-        hostTree(<PromoLine promoMessage="x" style={style} />, env)
-      ).toEqual(hostTree(<PromoLine promoMessage="x" className={className} />, env))
-    }
-  )
-
-  it("each class draws something (the rows above prove something)", () => {
-    const plain = hostTree(<PromoLine promoMessage="x" />, { language: "en" })
-    CLASSES.forEach(([className]) => {
-      expect(
-        hostTree(<PromoLine promoMessage="x" className={className} />, {
-          language: "en",
-        })
-      ).not.toEqual(plain)
+describe("each hand class draws something", () => {
+  it("its tree differs from the bare banner's", () => {
+    const { default: PromoLine } = jest.requireActual(
+      "../PromoLine"
+    ) as typeof import("../PromoLine")
+    const plain = JSON.stringify(
+      hostTree(<PromoLine promoMessage="{promo}" />, { language: "en" })
+    )
+    HAND_CASES.forEach(({ name, props }) => {
+      expect({
+        name,
+        same:
+          JSON.stringify(
+            hostTree(<PromoLine {...props} />, { language: "en" })
+          ) === plain,
+      }).toEqual({ name, same: false })
     })
   })
 })

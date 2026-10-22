@@ -10,7 +10,7 @@ import React from "react"
  * not tappler-shared's banner it draws. Its three callers pass no class now
  * (the two at ProCard:274 and ProCardBase:219 drew nothing and went in W1's
  * prep), so the cases hold the bare banner; the class path is pinned beside
- * them by hand (CLASSES), which is what a caller's className still draws.
+ * them by hand (PromoLine.handCases.tsx), which is what a caller's className still draws.
  *
  * The prop sets are harvested from the call sites (testing/harvest) and
  * frozen in __fixtures__/PromoLine.cases.json; their class strings are
@@ -33,6 +33,7 @@ jest.mock("react-native-localize", () =>
 /* eslint-disable import/first */
 // The harvested class strings, compiled (see the file).
 import "../__fixtures__/PromoLine.classes"
+import { HAND_CASES } from "../__fixtures__/PromoLine.handCases"
 import {
   PARITY_MATRIX,
   captureCommit,
@@ -67,19 +68,6 @@ const OPTIONS: HarvestOptions = {
   props: {
     promoMessage: "text",
     className: "class",
-  },
-}
-
-/**
- * The class strings a caller could still hand it (the two dead sites passed
- * "mt-[6]"-like spacing that drew nothing; a live caller's would draw).
- *
- */
-const CLASSES: Record<string, Props> = {
-  "class mt-[6]": { promoMessage: "{promo}", className: "mt-[6]" },
-  "class mx-[10] mb-[8]": {
-    promoMessage: "{promo}",
-    className: "mx-[10] mb-[8]",
   },
 }
 
@@ -120,14 +108,17 @@ if (harvesting()) {
   })
 
   describe("a caller's className still draws", () => {
-    const table = Object.entries(CLASSES).flatMap(([name, props]) =>
+    const table = HAND_CASES.flatMap(({ name, props }) =>
       PARITY_MATRIX.map((env) => ({ name, props, env }))
     )
-    it.each(table)("$name [$env.language $env.platform]", ({ name, props, env }) => {
-      expectParity(
-        parityName(name, env),
-        hostTree(<PromoLine {...props} />, env)
-      )
-    })
+    it.each(table)(
+      "$name [$env.language $env.platform]",
+      ({ name, props, env }) => {
+        expectParity(
+          parityName(name, env),
+          hostTree(<PromoLine {...props} />, env)
+        )
+      }
+    )
   })
 }
