@@ -1,9 +1,11 @@
 import React from "react"
 import { Modal } from "react-native"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
 import BigCheckIcon from "assets/icons/check-mark-big.svg"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -18,32 +20,32 @@ const SuccessModal: React.FC<Props> = ({ isVisible, onClose, title, descr }) => 
   return (
     <Modal visible={isVisible} transparent animationType="fade">
       <DmView
-        className="flex-1 items-center justify-center"
-        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        style={[a.flex_1, a.items_center, a.justify_center, { backgroundColor: "rgba(0,0,0,0.5)" }]}
         onPress={onClose}
       >
         <DmView
-          className="bg-white rounded-12 mx-[19] px-[39] pt-[30] pb-[30] self-stretch"
+          style={[styles.box, a.py_30]}
           onPress={() => {}}
         >
-          <DmView className="items-center">
+          <DmView style={a.items_center}>
             <BigCheckIcon />
           </DmView>
           {title && (
-            <DmText className="mt-[11] text-20 leading-[24px] font-custom600 text-center">
+            <Text size={20} weight="semibold" leading="tight" align="center" style={styles.text}>
               {title}
-            </DmText>
+            </Text>
           )}
           {descr && (
-            <DmText className="mt-[7] text-13 leading-[27px] font-custom500 text-center">
+            <Text size={13} weight="medium" leading={px(27)} align="center" style={styles.text2}>
               {descr}
-            </DmText>
+            </Text>
           )}
-          <ActionBtn
-            className="mt-[17] h-[41] w-full"
+          <Button
+            size={px(41)}
+            label="sm"
+            style={[styles.button, a.w_full]}
             title={t("OK")}
             onPress={onClose}
-            textClassName="text-13 leading-[16px]"
           />
         </DmView>
       </DmView>
