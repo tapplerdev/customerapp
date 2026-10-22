@@ -2,7 +2,7 @@ import React, { useEffect } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 
 import { useMarkNotificationAsReadMutation } from "services/api"
@@ -11,6 +11,8 @@ import { RootStackScreenProps } from "navigation/types"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"NotificationDetailsScreen">
 
@@ -32,46 +34,46 @@ const NotificationDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [])
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
         <DmView
           onPress={() => navigation.goBack()}
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
         >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="absolute left-0 right-0 items-center" pointerEvents="none">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.absolute, styles.notificationsWrap, a.items_center]} pointerEvents="none">
+          <Text size={16} weight="semibold" leading="legacy">
             {t("notifications")}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box} />
 
       <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <DmView className="px-[16]">
-          <DmText className="mt-[22] text-16 leading-[25px] font-custom600">
+        <DmView style={a.px_16}>
+          <Text size={16} weight="semibold" leading="loose" style={a.mt_22}>
             {notification?.title || ""}
-          </DmText>
+          </Text>
 
-          <DmText className="mt-[17] text-13 leading-[22px] font-custom700 text-red">
+          <Text size={13} weight="bold" leading={px(22)} color="brand" style={styles.text}>
             {user?.firstName ? `${t("hello")}, ${user.firstName}` : t("hello")}
-          </DmText>
+          </Text>
 
-          <DmText className="mt-[10] text-13 leading-[22px] font-custom400">
+          <Text size={13} leading={px(22)} style={a.mt_10}>
             {notification?.body || ""}
-          </DmText>
+          </Text>
 
-          <DmText className="mt-[16] text-12 leading-[20px] font-custom400 text-grey2">
+          <Text size={12} leading="loose" color="secondary" style={a.mt_16}>
             {t("cheers_tappler_team")}
-          </DmText>
+          </Text>
         </DmView>
       </AppScrollView>
     </SafeAreaView>
