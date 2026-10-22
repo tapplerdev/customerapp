@@ -73,9 +73,9 @@ const OPTIONS: HarvestOptions = {
 /**
  * The class strings a caller could still hand it (the two dead sites passed
  * "mt-[6]"-like spacing that drew nothing; a live caller's would draw).
- * Each is also a case of the twin test, as its style.
+ *
  */
-export const CLASSES: Record<string, Props> = {
+const CLASSES: Record<string, Props> = {
   "class mt-[6]": { promoMessage: "{promo}", className: "mt-[6]" },
   "class mx-[10] mb-[8]": {
     promoMessage: "{promo}",
