@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import LottieView from "lottie-react-native"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useTypedSelector } from "store"
 import { useGetCustomerMeQuery } from "services/api"
@@ -11,6 +11,7 @@ import { useRequestPushPermission } from "hooks/usePushNotifications"
 
 import successAnimation from "assets/animations/successful.json"
 import styles from "./styles"
+import { Text, Button, a } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"RequestSuccessScreen">
 
@@ -123,29 +124,31 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <DmView className="flex-1 items-center justify-center px-[40]">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
+      <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
         <LottieView
           source={successAnimation}
           autoPlay
           loop
           style={styles.lottieSize}
         />
-        <DmText className="mt-[24] text-20 font-custom600 text-black text-center">
+        <Text size={20} weight="semibold" leading="legacy" align="center" style={a.mt_24}>
           {t("we_received_your_request_v2")}
-        </DmText>
-        <DmText className="mt-[12] text-14 font-custom400 text-grey3 text-center">
+        </Text>
+        <Text size={14} leading="legacy" color="tertiary" align="center" style={a.mt_12}>
           {t("check_request_status_prefix")}{"\n"}
-          "<DmText className="text-14 font-custom600 text-red">{t("talabati")}</DmText>
+          "<Text size={14} weight="semibold" leading="legacy" color="brand">{t("talabati")}</Text>
           " {t("section")}
-        </DmText>
+        </Text>
       </DmView>
 
-      <DmView className="px-[20] mb-[30]">
-        <ActionBtn
+      <DmView style={[a.px_20, a.mb_30]}>
+        <Button
           title={t("done")}
           onPress={handleDone}
-          textClassName="text-14 font-custom600"
+          label={14}
+          labelWeight="semibold"
+          labelLeading="legacy"
         />
       </DmView>
     </SafeAreaView>

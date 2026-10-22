@@ -30,8 +30,10 @@ import {
 const load = () => require("../RequestSuccessScreen")
 const NAME = "RequestSuccessScreen"
 
-// Done is an ActionBtn before the conversion and a ds Button after it.
-const BUTTON: ParityAllowance[] = []
+// Done is an ActionBtn before the conversion and a ds Button after it; every row
+// draws it, and each shows its height and its accessibility props (emptied, all
+// twelve rows fail on exactly those two).
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 type Case = {
   state: string
