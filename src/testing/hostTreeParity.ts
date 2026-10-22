@@ -9,9 +9,11 @@
  * them before, in English and Arabic, on iOS and Android. customerapp's copy
  * of proapp's (84f2287c, with archive/ds-pass1-tools' normaliser rule).
  *
- * The render is the real one: jest runs NativeWind's Babel step and its
- * runtime, so a className resolves to the style the app gets. What the
- * session sets up, and puts back when it unmounts:
+ * The render is the real one: jest compiles with the app's own Babel config,
+ * which has had no NativeWind since W3.2, so a className reaches the host as a
+ * plain prop and draws nothing (a screen's look is what its tokens and styles
+ * give). The fixtures were captured with the plugin on, from the code before
+ * each conversion. What the session sets up, and puts back when it unmounts:
  * - the app's i18next on `en` or `ar` (jest starts it on "en-US", where
  *   DmText resolves no font family at all), and the design system's language
  *   provider on the same value
@@ -28,7 +30,8 @@
  * The tree is normalized before it is compared: functions, undefined props and
  * React elements a mock handed a host dropped, every style prop flattened (`style`, `contentContainerStyle`...;
  * an empty, false or null one dropped), an empty class string dropped (both
- * were NativeWind's wrapper's to tidy, and draw nothing either way: see
+ * were NativeWind's wrapper's to tidy when the fixtures were captured, and
+ * draw nothing either way: see
  * drawsNothing), adjacent text runs joined, keys sorted. Every other
  * prop is kept and compared, the accessibility props included (a conversion
  * that loses an accessibilityLabel fails). A SafeAreaView is resolved by
