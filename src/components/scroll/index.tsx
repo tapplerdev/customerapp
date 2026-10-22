@@ -77,50 +77,12 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
  * PickAddressScreen, keeps `import type { ScrollView }` for a ref on a
  * reanimated Animated.ScrollView, which is not one of these wrappers.)
  *
- * className MUST BE THREADED THROUGH EXPLICITLY. This is not cosmetic — leaving
- * it in {...rest} silently drops every NativeWind style on these components.
- * NativeWind v2 is a BABEL transform: it rewrites a JSX element that has a
- * className attribute into <StyledComponent component={X} className=... />, and
- * it only does that for elements it recognises as react-native components. An
- * <AppScrollView className="flex-1"> is not one, so it compiled to a plain prop
- * that RN ScrollView ignores. 18 call sites across 10 files were affected, and
- * nothing warned — a collapsed sheet was the only symptom.
- *
- * Passing it as a literal attribute on the INNER component fixes it even though
- * the value is dynamic: the plugin keys on the attribute, not on the value, so
- * the wrapper itself becomes the StyledComponent (verified against the compiled
- * output). The class names at the call sites still register into
- * NativeWindStyleSheet regardless of whether their element was wrapped, so the
- * runtime lookup resolves them.
- *
- * NATIVEWIND v4 WAS TRIED AND REVERTED. Do not re-attempt it without
- * reading this, because the failure mode is silent.
- *
- * v2 is a BABEL transform: its visitor rewrites any JSX element carrying a
- * className into <StyledComponent component={X}>, keying on the element NAME
- * (getElementName returns `.property.name`, so `Animated.View` reads as
- * "View"). That means it styles third-party components and member
- * expressions alike, which is why everything in these apps works today.
- *
- * v4 replaces that with a RUNTIME registry: react-native-css-interop keeps a
- * map of registered components and drops className on anything absent from
- * it. Registered out of the box are RN core primitives only. Everything else
- * silently renders unstyled — no error, no warning. Measured on device with a
- * paired probe: a registered DmView with bg-red painted 825k pixels while an
- * unregistered Animated.View with bg-green painted 0.
- *
- * And registering the gap is not a workaround: cssInterop and the lighter
- * remapProps, applied to reanimated Animated or RN Animated, each rendered
- * the whole app blank. The interop takes over the `style` prop and flattens
- * the useAnimatedStyle output the animation depends on.
- *
- * The bill on this codebase was 104 <MainModal> sites (react-native-modal
- * hands className to react-native-animatable`s createComponent wrapper, so
- * the m-0 that cancels its 5%-of-width margin was dropped), 11 MapView sites
- * losing flex-1, plus DropShadow, LinearGradient and 29 Animated.* sites.
- *
- * The plan is to remove NativeWind entirely in favour of a real token layer
- * in tappler-shared, not to move to v4.
+ * NO className. customerapp has drawn without NativeWind since 2026-10 (the
+ * token layer in tappler-shared replaced it), so a class would reach the
+ * scroll view as an unknown prop and style nothing: these take `style` and
+ * `contentContainerStyle`. NativeWind v4 was tried before that and reverted,
+ * because it silently drops className on any component it hasn't registered;
+ * the finding is in this file's history (8f2cea7).
  *
  * PULL-TO-REFRESH IS THE EXCEPTION. RefreshControl needs the bounce to reveal its
  * spinner, so on a list short enough to fit there would be nothing to pull.
@@ -129,25 +91,21 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
  */
 export type AppScrollViewProps = ScrollViewProps & {
   /**
-   * The scroll view, as a style, after `className`: React Native's own
-   * `style`, declared here as the class's twin. It keeps React Native's type
-   * (a call site writes `backgroundColor`, a screen's `padding`): the wrapper
-   * draws no styles of its own, so no per-side key of its own sits under a
-   * shorthand.
-   * @dsSlot className
+   * The scroll view's style: React Native's own, with its type (a call site
+   * writes `backgroundColor`, a screen's `padding`). The wrapper draws no
+   * styles of its own, so no per-side key of its own sits under a shorthand.
    */
   style?: StyleProp<ViewStyle>
 }
 
 export const AppScrollView = React.forwardRef<ScrollView, AppScrollViewProps>(
   function AppScrollView(
-    { alwaysBounceVertical = false, className, style, ...rest },
+    { alwaysBounceVertical = false, style, ...rest },
     ref,
   ) {
     return (
       <ScrollView
         ref={ref}
-        className={className}
         style={style}
         alwaysBounceVertical={alwaysBounceVertical}
         {...rest}
@@ -179,12 +137,7 @@ function asGeneric<C>(component: React.ForwardRefExoticComponent<never>): C {
 }
 
 export type AppFlatListProps<ItemT> = FlatListProps<ItemT> & {
-  /**
-   * The list, as a style, after `className`: React Native's own `style`,
-   * declared here as the class's twin, where FlatList lands the class too.
-   * It keeps React Native's type, as AppScrollView's does.
-   * @dsSlot className
-   */
+  /** The list's style: React Native's own, with its type, as AppScrollView's. */
   style?: StyleProp<ViewStyle>
 }
 
@@ -206,18 +159,12 @@ export const AppFlatList = asGeneric<
   ) => React.ReactElement
 >(
   React.forwardRef(function AppFlatListInner<ItemT>(
-    {
-      alwaysBounceVertical = false,
-      className,
-      style,
-      ...rest
-    }: AppFlatListProps<ItemT>,
+    { alwaysBounceVertical = false, style, ...rest }: AppFlatListProps<ItemT>,
     ref: React.ForwardedRef<FlatList<ItemT>>,
   ) {
     return (
       <FlatList<ItemT>
         ref={ref}
-        className={className}
         style={style}
         alwaysBounceVertical={alwaysBounceVertical}
         {...rest}
@@ -248,11 +195,7 @@ export const AppFlatList = asGeneric<
 export type AppKeyboardAwareScrollViewProps = React.ComponentProps<
   typeof KeyboardAwareScrollView
 > & {
-  /**
-   * The scroll view, as a style, after `className`: React Native's own
-   * `style`, as AppScrollView's.
-   * @dsSlot className
-   */
+  /** The scroll view's style: React Native's own, as AppScrollView's. */
   style?: StyleProp<ViewStyle>
 }
 
@@ -260,13 +203,12 @@ export const AppKeyboardAwareScrollView = React.forwardRef<
   KeyboardAwareScrollView,
   AppKeyboardAwareScrollViewProps
 >(function AppKeyboardAwareScrollView(
-  { alwaysBounceVertical = false, className, style, ...rest },
+  { alwaysBounceVertical = false, style, ...rest },
   ref,
 ) {
   return (
     <KeyboardAwareScrollView
       ref={ref}
-      className={className}
       style={style}
       alwaysBounceVertical={alwaysBounceVertical}
       {...rest}
