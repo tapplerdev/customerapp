@@ -283,6 +283,25 @@ describe("JobDetailScreen: presses", () => {
   )
 
   it.each(PARITY_MATRIX)(
+    "the loading skeleton's chevron goes back too [$language $platform]",
+    async (env) => {
+      const base = options({ state: "loading" }, env)
+      const session = await openScreen(load, {
+        ...base,
+        api: { ...base.api, getCustomerJobById: "loading" as const },
+      })
+      try {
+        await run(session, env, [
+          (root) => pressIcon(root, { icon: "svg:chevron-left" }),
+        ])
+        expect(actions(session).map((a) => a.type)).toEqual(["GO_BACK"])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
     "a selected pro opens its chat; a refused chat shows the error sheet and OK closes it [$language $platform]",
     async (env) => {
       const ok = await open({ state: "chat" }, env)
