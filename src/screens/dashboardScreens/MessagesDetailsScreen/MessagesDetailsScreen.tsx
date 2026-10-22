@@ -859,7 +859,6 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               textStyle={rtlText}
               job={glanceJob as any}
               isPickup={glanceIsPickup}
-              className="mt-[24]"
             />
           </>
         )}

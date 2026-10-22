@@ -216,7 +216,6 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
       {promoLine && promoLine.promoStickerMessage && (
         <PromoLine
           promoMessage={promoLine.promoStickerMessage}
-          className="mt-[8]"
         />
       )}
 

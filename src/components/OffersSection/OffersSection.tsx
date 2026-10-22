@@ -105,7 +105,6 @@ const OffersSection: React.FC<OffersSectionProps> = ({
   return (
     <BannerContainer
       bannerText={t("offers")}
-      className={`${compact ? "mx-0" : "mx-[10]"} ${className}`}
       borderRadius={compact ? 6 : 10}
       containerClassName={
         compact
