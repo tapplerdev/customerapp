@@ -2,26 +2,19 @@ import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
 import LegacyText from "@tappler/shared/src/components/LegacyText"
-import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
 import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import styles from "./styles"
 import { a } from "@tappler/shared/src/ds"
-
-// The answer as a slot: a caller's className lands where its classes did
-// (see classNameSlots); it has no styles of its own.
-const Answer = classNameSlot(DmView)
 
 interface ImageWithCheckmarkButtonProps {
   label: string
   imageUrl: string
   isSelected: boolean
   onPress: () => void
-  /** The answer, as classes. */
-  className?: string
   /**
-   * The answer, as a style, after `className`. Like every twin it takes one
-   * key per side or corner (see NoShorthands).
+   * The answer, as a style. Like every twin it takes one key per side or
+   * corner (see NoShorthands).
    */
   style?: StyleProp<ViewStyle & NoShorthands>
 }
@@ -30,11 +23,10 @@ const ImageWithCheckmarkButton: React.FC<ImageWithCheckmarkButtonProps> = ({
   imageUrl,
   isSelected,
   onPress,
-  className,
   style,
 }) => {
   return (
-    <Answer onPress={onPress} className={className} style={style}>
+    <DmView onPress={onPress} style={style}>
       <DmView
         style={[
           a.px_12,
@@ -64,7 +56,7 @@ const ImageWithCheckmarkButton: React.FC<ImageWithCheckmarkButtonProps> = ({
           )}
         </DmView>
       </DmView>
-    </Answer>
+    </DmView>
   )
 }
 

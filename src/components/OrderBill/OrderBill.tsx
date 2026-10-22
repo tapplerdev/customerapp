@@ -3,33 +3,26 @@ import { useTranslation } from "react-i18next"
 import type { StyleProp, ViewStyle } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
 import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import { Text, a, px, type DsTextStyle } from "@tappler/shared/src/ds"
 import { formatMoney } from "store/cart/slice"
 import { JobType } from "types/job"
 import styles from "./styles"
 
-// The bill's root as a slot: a caller's className, then `style` (see
-// classNameSlots). It has no styles of its own.
-const Root = classNameSlot(DmView)
-
 interface Props {
   job: JobType
   /** Pickup orders have no delivery fee line — the customer collects. */
   isPickup?: boolean
-  /** The bill, as classes. */
-  className?: string
   /**
-   * The bill, as a style, after `className`. Like every twin it takes one key
-   * per side or corner (see NoShorthands).
+   * The bill, as a style. Like every twin it takes one key per side or corner
+   * (see NoShorthands).
    */
   style?: StyleProp<ViewStyle & NoShorthands>
   /**
    * Applied to every text here. Callers inside a right-to-left layout pass
-   * their own alignment style (see MessagesDetailsScreen's `rtlText`), because
-   * DmText hardcodes `text-left` into its base className and a className
-   * override does not reliably beat it — the `style` prop does.
+   * their own alignment style (see MessagesDetailsScreen's `rtlText`). It was
+   * there because DmText hardcoded `text-left` and a className override did
+   * not reliably beat it; a style does.
    *
    * Without this the bill was the one block in the chat sheet aligning
    * differently from every row directly above it in Arabic.
@@ -66,7 +59,6 @@ interface Props {
 const OrderBill: React.FC<Props> = ({
   job,
   isPickup = false,
-  className = "",
   style,
   textStyle,
 }) => {
@@ -115,7 +107,7 @@ const OrderBill: React.FC<Props> = ({
   )
 
   return (
-    <Root className={className} style={style}>
+    <DmView style={style}>
       <Text
         size={13}
         weight="semibold"
@@ -162,7 +154,7 @@ const OrderBill: React.FC<Props> = ({
       {orderDiscount > 0 &&
         totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
       {totalsRow(t("order_total"), `${formatMoney(orderTotal)} ${t("EGP")}`, true)}
-    </Root>
+    </DmView>
   )
 }
 

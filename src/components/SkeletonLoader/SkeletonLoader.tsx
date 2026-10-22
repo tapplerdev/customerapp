@@ -9,23 +9,16 @@ import Animated, {
   Easing,
 } from "react-native-reanimated"
 import { DmView } from "@tappler/shared/src/components/UI"
-import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
 import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import styles from "./styles"
-
-// The wrapper as a slot: a caller's className, then `style` (see
-// classNameSlots). It has no styles of its own.
-const Wrapper = classNameSlot(DmView)
 
 interface Props {
   width?: number | string
   height?: number | string
   borderRadius?: number
-  /** The wrapper around the block, as classes (margins, flex). */
-  className?: string
   /**
-   * The wrapper, as a style, after `className`. Like every twin it takes one
-   * key per side or corner (see NoShorthands).
+   * The wrapper around the block, as a style (margins, flex). Like every twin
+   * it takes one key per side or corner (see NoShorthands).
    */
   style?: StyleProp<ViewStyle & NoShorthands>
 }
@@ -34,7 +27,6 @@ const SkeletonLoader: React.FC<Props> = ({
   width = "100%",
   height = 20,
   borderRadius = 4,
-  className = "",
   style,
 }) => {
   const shimmerTranslate = useSharedValue(-200)
@@ -81,7 +73,7 @@ const SkeletonLoader: React.FC<Props> = ({
   const shimmerColor = "rgba(255, 255, 255, 0.6)"
 
   return (
-    <Wrapper className={className} style={style}>
+    <DmView style={style}>
       <View
         style={[
           styles.container,
@@ -114,7 +106,7 @@ const SkeletonLoader: React.FC<Props> = ({
           />
         </Animated.View>
       </View>
-    </Wrapper>
+    </DmView>
   )
 }
 

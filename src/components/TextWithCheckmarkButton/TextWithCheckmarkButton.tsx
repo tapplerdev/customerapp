@@ -2,26 +2,19 @@ import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
 import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import { Text, a } from "@tappler/shared/src/ds"
 
 import styles from "./styles"
 import CheckmarkIcon from "assets/icons/check-mark.svg"
 
-// The button as a slot: a caller's className lands after its own styles (see
-// classNameSlots).
-const Box = classNameSlot(DmView)
-
 interface TextWithCheckmarkButtonProps {
   label: string
   isSelected: boolean
   onPress: () => void
-  /** The button, as classes. */
-  className?: string
   /**
-   * The button, as a style, after `className` and before its own border,
-   * which a caller's classes never reached. Like every twin it takes one key
+   * The button, as a style, after its own styles and before its own border,
+   * which a caller's style never reaches. Like every twin it takes one key
    * per side or corner (see NoShorthands).
    */
   style?: StyleProp<ViewStyle & NoShorthands>
@@ -31,15 +24,14 @@ const TextWithCheckmarkButton: React.FC<TextWithCheckmarkButtonProps> = ({
   label,
   isSelected,
   onPress,
-  className,
   style,
 }) => {
   return (
-    <Box
+    <DmView
       onPress={onPress}
-      className={className}
-      base={[styles.box, isSelected ? styles.boxSelected : styles.boxIdle]}
       style={[
+        styles.box,
+        isSelected ? styles.boxSelected : styles.boxIdle,
         style,
         {
           borderColor: isSelected ? "#CC0000" : "#000000",
@@ -64,7 +56,7 @@ const TextWithCheckmarkButton: React.FC<TextWithCheckmarkButtonProps> = ({
       >
         {label}
       </Text>
-    </Box>
+    </DmView>
   )
 }
 
