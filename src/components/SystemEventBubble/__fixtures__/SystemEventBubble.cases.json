@@ -1,0 +1,68 @@
+{
+ "component": "SystemEventBubble",
+ "capturedAt": "1d954a2",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "9bd7e70620": {
+   "props": {
+    "textKey": {
+     "$opaque": "eventTextKey"
+    },
+    "time": {
+     "$opaque": "time"
+    },
+    "incoming": false,
+    "tone": "alert"
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:224"
+   ]
+  },
+  "43de42c463": {
+   "props": {
+    "textKey": {
+     "$opaque": "eventTextKey"
+    },
+    "time": {
+     "$opaque": "time"
+    },
+    "incoming": false,
+    "tone": "progress"
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:224"
+   ]
+  },
+  "7a77fbb593": {
+   "props": {
+    "textKey": {
+     "$opaque": "eventTextKey"
+    },
+    "time": {
+     "$opaque": "time"
+    },
+    "incoming": true,
+    "tone": "alert"
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:224"
+   ]
+  },
+  "03e85c5843": {
+   "props": {
+    "textKey": {
+     "$opaque": "eventTextKey"
+    },
+    "time": {
+     "$opaque": "time"
+    },
+    "incoming": true,
+    "tone": "progress"
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:224"
+   ]
+  }
+ }
+}
