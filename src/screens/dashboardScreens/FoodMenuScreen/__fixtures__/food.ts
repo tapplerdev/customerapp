@@ -5,6 +5,8 @@
  * kit's clock like the kit's own records. Used by FoodMenu, FoodItem,
  * FoodCart, FoodCheckout and FoodOrderReview's parity tests.
  */
+import type { ReactTestInstance } from "react-test-renderer"
+
 import type { CartDraft } from "store/cart/slice"
 import type { CartItemType, FoodMenuType } from "types/food"
 
@@ -229,3 +231,33 @@ export const DRAFT_OTHER_PRO: CartDraft = {
   proId: 1999,
   proName: "Somebody Else's Kitchen",
 }
+
+/**
+ * Press the `nth` checkbox on the screen (a DmChecbox: it has no words to
+ * press by, and its row's handler is the checkbox's own onPress), outermost
+ * first, in screen order. Returns nothing, as the kit's presses do.
+ */
+export const pressCheckbox = (root: ReactTestInstance, nth: number): void => {
+  const boxes = root.findAll(
+    (node) =>
+      typeof node.props.isChecked === "boolean" &&
+      typeof node.props.variant === "string" &&
+      typeof node.props.onPress === "function",
+    { deep: false }
+  )
+  const box = boxes[nth]
+  if (!box) throw new Error(`press checkbox ${nth}: only ${boxes.length}`)
+  box.props.onPress()
+}
+
+/** The checkboxes' states, in screen order, for a row's assertion. */
+export const checkedBoxes = (root: ReactTestInstance): boolean[] =>
+  root
+    .findAll(
+      (node) =>
+        typeof node.props.isChecked === "boolean" &&
+        typeof node.props.variant === "string" &&
+        typeof node.props.onPress === "function",
+      { deep: false }
+    )
+    .map((node) => node.props.isChecked as boolean)
