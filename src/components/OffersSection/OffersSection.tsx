@@ -7,6 +7,7 @@ import BannerContainer, {
   BannerTab,
 } from "components/BannerContainer/BannerContainer"
 import { a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface OffersSectionProps {
   subscriptions: any[]
@@ -104,11 +105,7 @@ const OffersSection: React.FC<OffersSectionProps> = ({
     <BannerContainer
       bannerText={t("offers")}
       borderRadius={compact ? 6 : 10}
-      containerClassName={
-        compact
-          ? "px-[8] py-[0] flex-row items-center justify-around"
-          : "py-[2] flex-row flex-wrap items-center justify-around"
-      }
+      containerStyle={compact ? styles.boxCompact : styles.box}
     >
       {stickerProducts.map((sub: any, idx: number) => {
         const imageUrl = isAr
