@@ -25,7 +25,7 @@ jest.mock("react-native-localize", () =>
 
 /* eslint-disable import/first */
 import { HAND_CLASSED } from "../__fixtures__/BannerContainer.hand"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import {
   PARITY_MATRIX,
   captureMode,
@@ -51,7 +51,6 @@ if (captureMode() !== "compare") {
 
 /** The tags a site's element props name that draw themselves here (the rest are stand-ins). */
 const ELEMENTS = {
-  DmText: DmText as React.ComponentType<object>,
   DmView: DmView as React.ComponentType<object>,
 }
 

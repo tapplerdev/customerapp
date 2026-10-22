@@ -1,22 +1,14 @@
 /*
  * Jest only, for classGuard.parity.tsx: screens that hand an element a
- * class, or render DmText or ActionBtn, each one way a class can still
- * arrive without NativeWind to draw it, and screens that don't, through
- * tappler-shared's components, which still take a class (customerapp's calls
- * of them gave theirs up in W3.3) and hand it on as `className={undefined}`
- * (DmView, DmInput, SkeletonLoader) when a caller gives none. The class
- * strings here are the point: this file is under __fixtures__, which the
- * style ratchet skips.
+ * class, each one way a class can still arrive without NativeWind to draw
+ * it, and a screen that doesn't, through tappler-shared's components. The
+ * class strings here are the point: this file is under __fixtures__, which
+ * the style ratchet skips.
  */
 import React from "react"
 import { View } from "react-native"
 
-import {
-  ActionBtn,
-  DmInput,
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
+import { DmInput, DmView } from "@tappler/shared/src/components/UI"
 import SkeletonLoader from "@tappler/shared/src/components/SkeletonLoader"
 import { Button, Text } from "@tappler/shared/src/ds"
 import AppSkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
@@ -39,22 +31,10 @@ export const Clean = () => (
   </DmView>
 )
 
-/** A class on a shared component whose types still take one (for customerapp). */
+/** A class on a shared component, which takes none: DmView hands it to its View. */
 export const ClassOnDmView = () => (
   <DmView>
-    <DmView className="mt-[4]" />
-  </DmView>
-)
-
-export const RendersDmText = () => (
-  <DmView>
-    <DmText>Hello</DmText>
-  </DmView>
-)
-
-export const RendersActionBtn = () => (
-  <DmView>
-    <ActionBtn title="Go" onPress={() => undefined} />
+    <DmView {...untyped({ className: "mt-[4]" })} />
   </DmView>
 )
 
@@ -100,7 +80,7 @@ class Boundary extends React.Component<
 }
 
 /** A class three components down: the refusal names them all. */
-const Leaf = () => <DmView className="mt-[8]" />
+const Leaf = () => <DmView {...untyped({ className: "mt-[8]" })} />
 const Branch = () => <Leaf />
 export const NestedClass = () => <Branch />
 

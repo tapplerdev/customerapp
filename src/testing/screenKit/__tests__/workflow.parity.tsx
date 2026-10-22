@@ -13,17 +13,17 @@ import {
 } from "testing/hostTreeParity"
 
 /*
- * The wave 2 screen method, end to end, on a screen of the kit's own
- * (__fixtures__/ExampleScreen: class names, DmText, ActionBtn, the store and
- * an endpoint), as README.md in src/testing writes it out:
+ * The wave 2 screen method, end to end, on a screen of the kit's own (the
+ * store and an endpoint; written with class names, DmText and ActionBtn
+ * before its conversion, which W4 deleted along with those components: it
+ * is in git history at 96be42b), as README.md in src/testing writes it out:
  *
  * 1. Before the conversion: the screen was rendered in each state (data,
  *    empty, loading) for every row of PARITY_MATRIX, and
  *    `yarn ds:parity:capture` wrote __parity__/workflow.parity.json, with
  *    NativeWind in the build. Since W3.1 nothing renders the class-name
- *    screen: its classes draw only through NativeWind's plugin, which W3.2
- *    takes out, and the fixture is the record of what it drew
- *    (archive/ca-pass1-tools renders it).
+ *    screen: its classes drew only through NativeWind's plugin, and the
+ *    fixture is the record of what it drew.
  * 2. The conversion (__fixtures__/ExampleScreen.converted) draws the same
  *    trees, with Button's listed deltas allowed on its root only.
  * 3. A conversion one point off (__fixtures__/ExampleScreen.mutant) fails.
