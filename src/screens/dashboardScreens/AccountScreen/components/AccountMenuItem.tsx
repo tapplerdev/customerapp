@@ -14,7 +14,7 @@ interface Props {
   onPress?: () => void
   accessory?: "chevron" | "text" | "none"
   accessoryText?: string
-  textVariant?: "default" | "red"
+  textVariant?: "default" | "brand"
   showSeparator?: boolean
 }
 
@@ -38,7 +38,7 @@ const AccountMenuItem: React.FC<Props> = ({
             size={13}
             weight="medium"
             leading="tight"
-            color={textVariant === "red" ? "brand" : "primary"}
+            color={textVariant === "brand" ? "brand" : "primary"}
           >
             {label}
           </Text>

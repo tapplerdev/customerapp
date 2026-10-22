@@ -264,7 +264,7 @@ const AccountScreen: React.FC = () => {
             Icon={AccountLogoutIcon}
             label={t("logout")}
             accessory="none"
-            textVariant="red"
+            textVariant="brand"
             onPress={openLogoutModal}
             showSeparator={false}
           />
