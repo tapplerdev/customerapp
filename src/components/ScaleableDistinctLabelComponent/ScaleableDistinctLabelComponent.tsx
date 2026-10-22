@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from "react"
 import { LayoutChangeEvent } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
+import LegacyText from "@tappler/shared/src/components/LegacyText"
 import { useTranslation } from "react-i18next"
-import clsx from "clsx"
+import { a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   title?: string
-  contentClassName?: string
 }
 
 const MAX_WIDTH = 91
@@ -16,7 +17,6 @@ const MAX_FONT_SIZE = 9
 
 const ScaleableDistinctLabelComponent: React.FC<Props> = ({
   title,
-  contentClassName,
 }) => {
   const [layout, setLayout] = useState({
     viewWidth: 0,
@@ -39,23 +39,20 @@ const ScaleableDistinctLabelComponent: React.FC<Props> = ({
   }, [])
 
   return (
-    <DmView className="w-full h-[20] justify-end" onLayout={onLayoutChange}>
+    <DmView style={[a.w_full, styles.container, a.justify_end]} onLayout={onLayoutChange}>
       <DmView
-        className={clsx(
-          "items-center justify-center bg-yellow rounded-2",
-          contentClassName
-        )}
-        style={{ width: layout.viewWidth, height: layout.viewHeight }}
+        style={[a.items_center, a.justify_center, styles.textWrap, { width: layout.viewWidth, height: layout.viewHeight }]}
       >
-        <DmText
-          className="font-custom600"
+        {/* A size that follows the layout is no ds size: LegacyText */}
+        <LegacyText
+          weight="semibold"
           style={{
             fontSize: layout.textSize,
             lineHeight: layout.textSize + 2,
           }}
         >
           {title || t("distinct")}
-        </DmText>
+        </LegacyText>
       </DmView>
     </DmView>
   )
