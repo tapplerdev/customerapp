@@ -7,6 +7,7 @@ import {
   copy,
   openScreen,
   pressIcon,
+  pressText,
   pressTitled,
   renderScreen,
   rowsByPlatform,
@@ -358,6 +359,85 @@ describe("MessagesDetailsScreen, the sheets", () => {
       } finally {
         session.unmount()
       }
+    }
+  )
+
+  it.each(envs)(
+    "Upload file takes a document into the composer, which can be taken off [$env.language $env.platform]",
+    async ({ env }) => {
+      const withPicker = () => {
+        const documents = require("@react-native-documents/picker")
+        documents.pick = () =>
+          Promise.resolve([
+            {
+              uri: "file:///parity/quote.pdf",
+              type: "application/pdf",
+              name: "quote.pdf",
+            },
+          ])
+        return withCameraRoll()
+      }
+      const session = await open(WITH_OFFER_CASE, env, withPicker)
+      try {
+        await session.act(() => {
+          plus(session.root)
+        }, 400)
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "upload_file"))
+        })
+        expectParity(parityName("document pending", env), session.tree())
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:close", nth: 0 })
+        })
+        expectParity(parityName("document taken off", env), session.tree())
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "Location goes to the address picker; the camera tile and View library open their pickers [$env.language $env.platform]",
+    async ({ env }) => {
+      const opened: string[] = []
+      const withPickers = () => {
+        const crop = require("react-native-image-crop-picker")
+        crop.default.openCamera = () => {
+          opened.push("camera")
+          return new Promise(() => {})
+        }
+        crop.default.openPicker = () => {
+          opened.push("library")
+          return new Promise(() => {})
+        }
+        return withCameraRoll()
+      }
+      // Each control closes the sheet as it works: one session for each.
+      const press = async (act: (root: ReactTestInstance) => void) => {
+        const session = await open(WITH_OFFER_CASE, env, withPickers)
+        try {
+          await session.act(() => {
+            plus(session.root)
+          }, 400)
+          await session.act(() => {
+            act(session.root)
+          }, 600)
+          return session.navigation.actions
+        } finally {
+          session.unmount()
+        }
+      }
+      await press((root) => pressText(root, copy(env, "view_library")))
+      expect(opened).toEqual(["library"])
+      // The camera tile draws the camera icon and nothing else.
+      await press((root) => pressIcon(root, { icon: "svg:camera-icon" }))
+      expect(opened).toEqual(["library", "camera"])
+      const actions = await press((root) =>
+        pressText(root, copy(env, "location"))
+      )
+      expect(actions).toMatchObject([
+        { type: "NAVIGATE", payload: { name: "PickAddressScreen" } },
+      ])
     }
   )
 
