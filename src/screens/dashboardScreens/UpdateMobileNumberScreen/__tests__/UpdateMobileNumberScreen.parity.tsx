@@ -18,6 +18,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -68,6 +69,9 @@ const ok: Step = (root, env) => pressTitled(root, copy(env, "OK"))
 
 const VALID = "01012345678"
 
+// The screen's button is an ActionBtn turned into a ds Button by the conversion: Button's own height and accessibility props, on the rows that draw it.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = {
   label: string
   answer?: keyof typeof ANSWERS
@@ -94,7 +98,8 @@ describe("UpdateMobileNumberScreen", () => {
     async ({ label, answer, who, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, answer, who), env, steps)
+        await treeAfter(load, optionsFor(env, answer, who), env, steps),
+        { allow: BUTTON }
       )
     }
   )

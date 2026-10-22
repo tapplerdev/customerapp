@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "react-native"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -10,11 +10,14 @@ import FlagEgyptIcon from "assets/icons/flag-egypt.svg"
 import ChevronDownIcon from "assets/icons/chevron-down.svg"
 import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
-import clsx from "clsx"
 import { useTypedSelector } from "store"
 import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import SuccessModal from "components/SuccessModal"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
+
+const disabledLookLegacyMuted = { surface: "legacy", label: "muted" } as const
 
 type Props = RootStackScreenProps<"UpdateMobileNumberScreen">
 
@@ -65,10 +68,10 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header - just back chevron, no title */}
-      <DmView className="px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -77,54 +80,60 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
 
       {/* Current mobile number */}
-      <DmView className="flex-row items-center px-[31] mt-[10]">
+      <DmView style={[a.flex_row, a.items_center, styles.row, a.mt_10]}>
         <PhoneIcon width={16} height={16} />
-        <DmText className="px-[2] text-13 leading-[22px] font-custom600">
+        <Text size={13} weight="semibold" leading={px(22)} style={a.px_2}>
           {t("your_current_mobile_number")}
           {": "}
-          <DmText className="text-13 leading-[22px] font-custom400">
+          <Text size={13} leading={px(22)}>
             {currentMobileNumber ? `+20${currentMobileNumber}` : "—"}
-          </DmText>
-        </DmText>
+          </Text>
+        </Text>
       </DmView>
 
       {/* Title & Subtitle */}
-      <DmView className="pt-[60] px-[31]">
-        <DmView className="flex-row">
-          <DmText className="text-20 leading-[24px] font-custom600 text-black pb-[10]">
+      <DmView style={styles.box}>
+        <DmView style={a.flex_row}>
+          <Text size={20} weight="semibold" leading="tight" style={a.pb_10}>
             {t("update_mobile_number")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="flex-row">
-          <DmText className="text-11 leading-[22px] font-custom400 text-black">
+        <DmView style={a.flex_row}>
+          <Text size={11} leading={px(22)}>
             {t("we_will_send_you_a_verification_code")}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
 
       {/* Phone Input */}
-      <DmView className="px-[35] pt-[55]">
+      <DmView style={styles.box2}>
         <DmView
-          className={clsx(
-            "flex-row items-center pb-[4] border-b-1 border-grey7",
-            isAr && "flex-row-reverse"
-          )}
+          style={[
+            a.flex_row,
+            a.items_center,
+            a.pb_4,
+            a.border_b_1,
+            styles.row2,
+            isAr && styles.rowAr,
+          ]}
         >
           <DmView
-            className={clsx(
-              "flex-row items-center border-r-1 border-r-grey7 pr-[7]",
-              isAr && "flex-row-reverse border-r-0 border-l-1 border-l-grey7 pl-[7] pr-[0]"
-            )}
+            style={[
+              a.flex_row,
+              a.items_center,
+              styles.row3,
+              isAr && styles.rowAr2,
+            ]}
           >
             <FlagEgyptIcon />
-            <DmText
-              className={clsx(
-                "ml-[10] mr-[2] text-20 font-custom700 leading-[24px]",
-                isAr && "ml-[2] mr-[10]"
-              )}
+            <Text
+              size={20}
+              weight="bold"
+              leading="tight"
+              style={[a.ml_10, a.mr_2, isAr && styles.textAr]}
             >
               +20
-            </DmText>
+            </Text>
             <ChevronDownIcon
               stroke={colors.grey7}
               width={18}
@@ -141,31 +150,26 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
             maxLength={11}
             textContentType="none"
             autoComplete="off"
-            className={clsx(
-              "ml-[8] flex-1 h-[60] text-20 text-black",
-              isAr && "ml-[0] mr-[8]"
-            )}
-            style={isAr ? { textAlign: "left", writingDirection: "rtl" } : undefined}
+            style={[a.ml_8, a.flex_1, styles.input, isAr && styles.inputAr, isAr ? { textAlign: "left", writingDirection: "rtl" } : undefined]}
           />
         </DmView>
         {showMobileError && (
-          <DmText className="mt-[4] text-11 font-custom400 text-red">
+          <Text size={11} leading="legacy" color="brand" style={a.mt_4}>
             {t("invalid_mobile_format")}
-          </DmText>
+          </Text>
         )}
       </DmView>
 
       {/* Send Verification Code Button */}
-      <DmView className="px-[35] pt-[20]">
-        <ActionBtn
-          disable={!isValidMobile || isLoading}
+      <DmView style={[styles.buttonWrap, a.pt_20]}>
+        <Button
+          disabled={!isValidMobile || isLoading}
           onPress={handleSave}
           isLoading={isLoading}
-          textClassName={clsx(
-            "text-13 leading-[16px] font-custom500",
-            !isValidMobile && "text-grey10"
-          )}
-          className="h-[47] rounded-10"
+          size="lg"
+          shape="r10"
+          label="sm"
+          disabledLook={isValidMobile ? isLoading ? undefined : disabledLookLegacyMuted : disabledLookLegacyMuted}
           title={t("send_verification_code")}
         />
       </DmView>

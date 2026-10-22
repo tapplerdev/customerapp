@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "react-native"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -11,6 +11,8 @@ import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"DeleteAccountScreen">
 
@@ -26,23 +28,23 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
   }, [navigation])
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("delete_account")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       {/*
         The reason field is MULTILINE, so its return key inserts a newline
@@ -61,20 +63,20 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-      <DmView className="flex-1 px-[24] pt-[24]">
+      <DmView style={[a.flex_1, a.px_24, a.pt_24]}>
         {/* Warning text */}
-        <DmView className="flex-row">
-          <DmText className="text-13 font-custom400 text-black leading-[20px]">
+        <DmView style={a.flex_row}>
+          <Text size={13} leading="loose">
             {t("delete_account_warning")}
-          </DmText>
+          </Text>
         </DmView>
 
         {/* Reason field */}
-        <DmView className="mt-[24]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mt_24}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("reason_for_cancelling")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={reason}
@@ -82,8 +84,7 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
             placeholder={t("delete_account_reason_placeholder")}
             placeholderTextColor={colors.grey15}
             multiline
-            className="text-14 font-custom400 text-black"
-            style={[
+            style={[styles.input, 
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr", minHeight: 60 },
             ]}
@@ -91,15 +92,18 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
 
         {/* Spacer */}
-        <DmView className="flex-1" />
+        <DmView style={a.flex_1} />
 
         {/* Delete button */}
-        <DmView className="pb-[40]">
-          <ActionBtn
+        <DmView style={a.pb_40}>
+          <Button
             onPress={() => setModalVisible(true)}
-            className="h-[42] w-full bg-red"
+            size="sm"
+            label="sm"
+            labelWeight="semibold"
+            labelLeading={px(21)}
+            style={a.w_full}
             title={t("delete_my_account")}
-            textClassName="text-13 leading-[21px] font-custom600 text-white"
           />
         </DmView>
       </DmView>
@@ -116,10 +120,11 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
         titleBtnSecond={t("no")}
         onPress={() => {}}
         onPressSecond={() => setModalVisible(false)}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-        classNameBtns="h-[40]"
-        classNameBtnsWrapper="mt-[20] mx-[15]"
-        classNameModal="px-[17]"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={styles.mainModalTitle}
+        btnsStyle={styles.mainModalBtns}
+        btnsWrapperStyle={[a.mt_20, styles.mainModalBtnsWrapper]}
+        modalStyle={styles.mainModalModal}
       />
     </SafeAreaView>
   )

@@ -17,6 +17,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -42,6 +43,10 @@ const typeReason: Step = (root) =>
 const askDelete: Step = (root, env) =>
   pressTitled(root, copy(env, "delete_my_account"))
 
+// The Delete button is an ActionBtn turned into a ds Button by the conversion:
+// Button's own height and accessibility props, on every row.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 const CASES: { label: string; steps?: Step[] }[] = [
   { label: "as opened" },
   { label: "reason typed", steps: [typeReason] },
@@ -55,7 +60,8 @@ describe("DeleteAccountScreen", () => {
     async ({ label, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env), env, steps)
+        await treeAfter(load, optionsFor(env), env, steps),
+        { allow: BUTTON }
       )
     }
   )
