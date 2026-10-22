@@ -166,7 +166,12 @@ export const TALABATI_JOBS: JobType[] = [
   // an active request with offers waiting and a review to leave
   listed(8101, {
     requestedOn: HOURS_AGO(2),
-    pros: [REVIEWABLE, OPPORTUNITY, OPPORTUNITY_OFFERED],
+    // two offers waiting (one of them already reviewed), one pro to review
+    pros: [
+      REVIEWABLE,
+      OPPORTUNITY,
+      { ...OPPORTUNITY_OFFERED, review: REVIEWED.review },
+    ],
   }),
   // active, no area, nothing else
   listed(8102, {
@@ -174,7 +179,11 @@ export const TALABATI_JOBS: JobType[] = [
     address: { address: { streetAddress: "1 Street" } },
     pros: [SELECTED_WAITING],
   }),
-  listed(8103, { status: "completed", requestedOn: DAYS_AGO(5), pros: [REVIEWED] }),
+  listed(8103, {
+    status: "completed",
+    requestedOn: DAYS_AGO(5),
+    pros: [REVIEWED],
+  }),
   listed(8104, { status: "cancelled", requestedOn: DAYS_AGO(6) }),
   listed(8105, { status: "cancelledByPro", requestedOn: DAYS_AGO(7) }),
   listed(8106, { status: "declined", requestedOn: DAYS_AGO(8) }),
@@ -186,7 +195,13 @@ export const TALABATI_JOBS: JobType[] = [
     requestedOn: DAYS_AGO(2),
     serviceCategoryId: CATEGORY_FOOD.id,
     serviceCategory: JOB_FOOD.serviceCategory,
-    pros: [{ ...JOB_FOOD.pros![0], selectionStatus: "proRejected", status: undefined }],
+    pros: [
+      {
+        ...JOB_FOOD.pros![0],
+        selectionStatus: "proRejected",
+        status: undefined,
+      },
+    ],
   }),
   listed(8111, {
     requestedOn: DAYS_AGO(3),
@@ -275,7 +290,10 @@ export const FOOD_CANCELLED_BY_CUSTOMER = foodJob({
 export const FOOD_CANCELLED_BY_KITCHEN = foodJob({
   status: "cancelled",
   pros: [
-    foodPro({ status: "cancelled", foodOrderCancelReason: "customerNotAnswering" }),
+    foodPro({
+      status: "cancelled",
+      foodOrderCancelReason: "customerNotAnswering",
+    }),
   ],
 })
 export const FOOD_DECLINED = foodJob({
