@@ -14,6 +14,7 @@ import {
   typeInto,
   wait,
   type HttpFixtures,
+  type RenderScreenOptions,
   type Step,
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
@@ -86,7 +87,7 @@ const hereFixtures = ({ reverse = [EGYPT], search = [EGYPT, SECOND] }: Here): Ht
 const optionsFor = (
   env: ParityEnv,
   here: Here = {},
-  extra: { insets?: object; location?: object } = {}
+  extra: Pick<RenderScreenOptions, "insets" | "location"> = {}
 ) => ({
   ...screenState("data"),
   lang: env.language,
@@ -117,7 +118,7 @@ const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 type Case = {
   label: string
   here?: Here
-  extra?: { insets?: object; location?: object }
+  extra?: Pick<RenderScreenOptions, "insets" | "location">
   steps?: Step[]
 }
 const CASES: Case[] = [

@@ -14,6 +14,7 @@ import {
   typeInto,
   wait,
   type HttpFixtures,
+  type RenderScreenOptions,
   type Step,
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
@@ -78,7 +79,7 @@ const optionsFor = (
   env: ParityEnv,
   props: Record<string, unknown>,
   here: Here = {},
-  location?: object
+  location?: RenderScreenOptions["location"]
 ) => ({
   ...screenState("data"),
   lang: env.language,
