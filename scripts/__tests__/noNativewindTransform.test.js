@@ -26,6 +26,11 @@ const os = require("os")
 const path = require("path")
 const babel = require("@babel/core")
 
+// The plugin's own function, to tell it when a config hands it over as a
+// value (`plugins: [require("nativewind/babel")]`), which has no name or file
+// for Babel to resolve (proapp's review-w3-4 F3).
+const NATIVEWIND_PLUGIN = require("nativewind/babel")
+
 const ROOT = path.resolve(__dirname, "..", "..")
 const SHARED = path.resolve(ROOT, "..", "tappler-shared")
 
@@ -86,9 +91,11 @@ const resolved = (filename, envName, caller, withPlugin) => {
   )
   return [...resolvedOptions.plugins, ...resolvedOptions.presets].map(
     (item) =>
-      `${item.file ? item.file.request : item.name || "?"} -> ${
-        item.file ? item.file.resolved : "?"
-      }`
+      item.value === NATIVEWIND_PLUGIN
+        ? "nativewind/babel (handed over as a function) -> ?"
+        : `${item.file ? item.file.request : item.name || "?"} -> ${
+            item.file ? item.file.resolved : "?"
+          }`
   )
 }
 const nativewindIn = (entries) => entries.filter((e) => /nativewind/i.test(e))
