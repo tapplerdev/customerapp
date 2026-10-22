@@ -6,7 +6,7 @@ import RangeSlider from "components/RangeSlider/RangeSlider"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { FiltersParams } from "navigation/types"
 import { QuestionOptionType, ServiceQuestionType } from "types/cms"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -18,6 +18,8 @@ import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 import CloseIcon from "assets/icons/close.svg"
 import TickIcon from "assets/icons/tick.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 export type FilterValues = {
   proType?: string
@@ -199,22 +201,23 @@ const FiltersContent: React.FC<ContentProps> = ({
     <DmView
       key={key}
       onPress={onPress}
-      className="px-[13] py-[7] rounded-5 mr-[8] flex-row items-center"
-      style={{
+      style={[dsStyles.container, a.mr_8, a.flex_row, a.items_center, {
         backgroundColor: isSelected ? "#F5F5F5" : colors.white,
         borderWidth: isSelected ? 1.5 : 1,
         borderColor: isSelected ? colors.black : "#E0E0E0",
-      }}
+      }]}
     >
       {isSelected && (
         <TickIcon width={12} height={12} color={colors.black} style={{ marginRight: 5 }} />
       )}
-      <DmText
-        className={`text-12 leading-[15px] ${isSelected ? "font-custom700" : "font-custom400"}`}
+      <Text
+        size={12}
+        weight={isSelected ? "bold" : "regular"}
+        leading="tight"
         style={{ color: isSelected ? colors.black : colors.grey }}
       >
         {label}
-      </DmText>
+      </Text>
     </DmView>
   )
 
@@ -247,49 +250,48 @@ const FiltersContent: React.FC<ContentProps> = ({
       until you guessed to tap elsewhere.
     */
     <SafeAreaView
-      className="flex-1 bg-white"
       edges={[]}
-      style={{ paddingBottom: keyboardInset }}
+      style={[a.flex_1, dsStyles.safeArea, { paddingBottom: keyboardInset }]}
     >
       {/* Header */}
-      <DmView className="items-center pt-[12] pb-[10] px-[16]">
-        <DmView className="flex-row items-center justify-center w-full">
-          <DmView className="flex-1">
+      <DmView style={[a.items_center, a.pt_12, a.pb_10, a.px_16]}>
+        <DmView style={[a.flex_row, a.items_center, a.justify_center, a.w_full]}>
+          <DmView style={a.flex_1}>
             <DmView
               onPress={handleClose}
-              className="w-[32] h-[32] items-center justify-center"
+              style={[dsStyles.iconWrap, a.items_center, a.justify_center]}
               hitSlop={HIT_SLOP_DEFAULT}
             >
               <CloseIcon width={14} height={14} color={colors.black} />
             </DmView>
           </DmView>
-          <DmView className="flex-row items-center">
-            <DmText className="text-15 leading-[19px] font-custom700 text-black">
+          <DmView style={[a.flex_row, a.items_center]}>
+            <Text size={15} weight="bold" leading="tight">
               {t("filters")}
-            </DmText>
+            </Text>
             {activeCount > 0 && (
-              <DmView className="ml-[6] w-[18] h-[18] rounded-full bg-black items-center justify-center">
-                <DmText className="text-10 font-custom700" style={{ color: colors.white }}>
+              <DmView style={[a.ml_6, dsStyles.textWrap, a.items_center, a.justify_center]}>
+                <Text size={10} weight="bold" leading="legacy" style={{ color: colors.white }}>
                   {activeCount}
-                </DmText>
+                </Text>
               </DmView>
             )}
           </DmView>
-          <DmView className="flex-1 items-end">
+          <DmView style={[a.flex_1, a.items_end]}>
             <DmView onPress={handleResetAll} hitSlop={HIT_SLOP_DEFAULT}>
-              <DmText className="text-13 leading-[16px] font-custom600 text-red">
+              <Text size={13} weight="semibold" leading="tight" color="brand">
                 {t("reset_all")}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </DmView>
       </DmView>
 
-      <DmView className="h-[1] bg-grey5" />
+      <DmView style={dsStyles.box} />
 
       <AppScrollView
         ref={scrollRef}
-        className="flex-1"
+        style={a.flex_1}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
         keyboardShouldPersistTaps="handled"
@@ -298,43 +300,42 @@ const FiltersContent: React.FC<ContentProps> = ({
         {/* Food: fulfillment mode (moved here from the results header) */}
         {isFoodCategory && (
           <>
-            <DmView className="px-[20] mb-[18]">
-              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+            <DmView style={[a.px_20, a.mb_18]}>
+              <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
                 {t("fulfillment")}
-              </DmText>
-              <DmView className="flex-row">
+              </Text>
+              <DmView style={a.flex_row}>
                 {(["all", "delivery", "pickup"] as const).map((mode) =>
                   renderChip(t(mode), fulfillment === mode, () => setFulfillment(mode), mode)
                 )}
               </DmView>
             </DmView>
-            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+            <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
           </>
         )}
 
         {/* Locked context: filters answered upfront (read-only here; they drive the cascade below) */}
         {upfrontSelections?.map((sel, idx) => (
           <React.Fragment key={`upfront-${idx}`}>
-            <DmView className="px-[20] mb-[18]">
-              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+            <DmView style={[a.px_20, a.mb_18]}>
+              <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
                 {isAr && sel.questionTextAr ? sel.questionTextAr : sel.questionText}
-                <DmText className="font-custom400" style={{ fontSize: 11, color: colors.grey }}> · {t("chosen_earlier")}</DmText>
-              </DmText>
-              <DmView className="flex-row flex-wrap">
+                <Text size={11} leading={{ fixed: px(22) }} style={{ color: colors.grey }}> · {t("chosen_earlier")}</Text>
+              </Text>
+              <DmView style={[a.flex_row, a.flex_wrap]}>
                 {sel.options.map((o) => (
                   <DmView
                     key={o.key}
-                    className="px-[13] py-[7] rounded-5 mr-[8] mb-[8]"
-                    style={{ backgroundColor: "#F5F5F5", borderWidth: 1, borderColor: "#E0E0E0" }}
+                    style={[dsStyles.container, a.mr_8, a.mb_8, { backgroundColor: "#F5F5F5", borderWidth: 1, borderColor: "#E0E0E0" }]}
                   >
-                    <DmText className="leading-[15px] font-custom600" style={{ fontSize: 12, color: colors.grey }}>
+                    <Text size={12} weight="semibold" leading="tight" style={{ color: colors.grey }}>
                       {isAr && o.labelAr ? o.labelAr : o.label}
-                    </DmText>
+                    </Text>
                   </DmView>
                 ))}
               </DmView>
             </DmView>
-            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+            <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
           </React.Fragment>
         ))}
 
@@ -352,14 +353,13 @@ const FiltersContent: React.FC<ContentProps> = ({
               boundMax > boundMin
             return (
               <React.Fragment key={question.id}>
-                <DmView className="px-[20] mb-[18]">
-                  <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+                <DmView style={[a.px_20, a.mb_18]}>
+                  <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
                     {filterTitle(question)}
-                  </DmText>
-                  <DmView className="flex-row items-center">
+                  </Text>
+                  <DmView style={[a.flex_row, a.items_center]}>
                     <DmView
-                      className="flex-1 px-[14]"
-                      style={{ borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }}
+                      style={[a.flex_1, a.px_14, { borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }]}
                     >
                       <TextInput
                         value={range.min != null ? String(range.min) : ""}
@@ -370,10 +370,9 @@ const FiltersContent: React.FC<ContentProps> = ({
                         style={{ paddingVertical: 9, fontSize: 13, color: colors.black }}
                       />
                     </DmView>
-                    <DmText className="mx-[10] text-13 text-grey3">–</DmText>
+                    <Text size={13} leading="legacy" color="tertiary" family="system" style={a.mx_10}>–</Text>
                     <DmView
-                      className="flex-1 px-[14]"
-                      style={{ borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }}
+                      style={[a.flex_1, a.px_14, { borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }]}
                     >
                       <TextInput
                         value={range.max != null ? String(range.max) : ""}
@@ -386,7 +385,7 @@ const FiltersContent: React.FC<ContentProps> = ({
                     </DmView>
                   </DmView>
                   {hasBounds && (
-                    <DmView className="mt-[18] px-[4]">
+                    <DmView style={[a.mt_18, a.px_4]}>
                       <RangeSlider
                         min={boundMin}
                         max={boundMax}
@@ -401,7 +400,7 @@ const FiltersContent: React.FC<ContentProps> = ({
                     </DmView>
                   )}
                 </DmView>
-                <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+                <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
               </React.Fragment>
             )
           }
@@ -412,10 +411,10 @@ const FiltersContent: React.FC<ContentProps> = ({
           if (!visibleOptions?.length) return null
           return (
             <React.Fragment key={question.id}>
-              <DmView className="px-[20] mb-[18]">
-                <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+              <DmView style={[a.px_20, a.mb_18]}>
+                <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
                   {filterTitle(question)}
-                </DmText>
+                </Text>
                 <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {visibleOptions.map((o) =>
                     renderChip(
@@ -427,16 +426,16 @@ const FiltersContent: React.FC<ContentProps> = ({
                   )}
                 </AppScrollView>
               </DmView>
-              <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+              <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
             </React.Fragment>
           )
         })}
 
         {/* Pro Type */}
-        <DmView className="px-[20] mb-[18]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+        <DmView style={[a.px_20, a.mb_18]}>
+          <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
             {t("pro_type")}
-          </DmText>
+          </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("pro_type_all"), !proType, () => setProType(undefined))}
             {renderChip(t("individual"), proType === "individual", () =>
@@ -448,16 +447,16 @@ const FiltersContent: React.FC<ContentProps> = ({
           </AppScrollView>
         </DmView>
 
-        <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+        <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
 
         {/* Distance — only shown for location-based service types
             (pro-to-customer, customer-to-pro, delivery); hidden for online/fixed */}
         {isPhysical && (
           <>
-            <DmView className="px-[20] mb-[18]">
-              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+            <DmView style={[a.px_20, a.mb_18]}>
+              <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
                 {t("distance_km")}
-              </DmText>
+              </Text>
               <Slider
                 value={distanceKm}
                 onValueChange={(val) => setDistanceKm(Math.round(val))}
@@ -470,8 +469,7 @@ const FiltersContent: React.FC<ContentProps> = ({
               />
               {/* Editable distance box — type a value or use the slider */}
               <DmView
-                className="mt-[14] flex-row items-center px-[14]"
-                style={{ alignSelf: "flex-start", minWidth: 120, borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }}
+                style={[a.mt_14, a.flex_row, a.items_center, a.px_14, { alignSelf: "flex-start", minWidth: 120, borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }]}
               >
                 <TextInput
                   value={distanceInput}
@@ -483,20 +481,20 @@ const FiltersContent: React.FC<ContentProps> = ({
                   selectTextOnFocus
                   style={{ flex: 1, paddingVertical: 9, fontSize: 13, color: colors.black }}
                 />
-                <DmText className="text-12 leading-[15px] font-custom500 text-grey3 ml-[6]">
+                <Text size={12} weight="medium" leading="tight" color="tertiary" style={a.ml_6}>
                   km
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
-            <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+            <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
           </>
         )}
 
         {/* Minimum Rating */}
-        <DmView className="px-[20] mb-[18]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+        <DmView style={[a.px_20, a.mb_18]}>
+          <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
             {t("minimum_rating")}
-          </DmText>
+          </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("any"), !minRating, () => setMinRating(undefined))}
             {renderChip("3+ ★", minRating === 3, () =>
@@ -511,13 +509,13 @@ const FiltersContent: React.FC<ContentProps> = ({
           </AppScrollView>
         </DmView>
 
-        <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+        <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
 
         {/* Response Time */}
-        <DmView className="px-[20] mb-[18]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+        <DmView style={[a.px_20, a.mb_18]}>
+          <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
             {t("response_time")}
-          </DmText>
+          </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("any"), !maxResponseTimeHours, () => setMaxResponseTimeHours(undefined))}
             {renderChip(t("under_1_hour"), maxResponseTimeHours === 1, () =>
@@ -532,13 +530,13 @@ const FiltersContent: React.FC<ContentProps> = ({
           </AppScrollView>
         </DmView>
 
-        <DmView className="mx-[20] h-[1] bg-grey5 mb-[18]" />
+        <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
 
         {/* Payment Method */}
-        <DmView className="px-[20] mb-[18]">
-          <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[10]">
+        <DmView style={[a.px_20, a.mb_18]}>
+          <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
             {t("payment_method")}
-          </DmText>
+          </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
             {renderChip(t("any"), !creditCardPayment, () => setCreditCardPayment(false))}
             {renderChip(t("credit_card"), creditCardPayment, () => setCreditCardPayment(!creditCardPayment))}
@@ -548,14 +546,16 @@ const FiltersContent: React.FC<ContentProps> = ({
 
       {/* Bottom button */}
       <DmView
-        className="px-[16] pt-[14] bg-white"
-        style={[styles.buttonShadow, { paddingBottom: insets.bottom + 12 }]}
+        style={[a.px_16, a.pt_14, dsStyles.safeArea, styles.buttonShadow, { paddingBottom: insets.bottom + 12 }]}
       >
-        <ActionBtn
+        <Button
           title={t("show_results")}
           onPress={handleShowResults}
-          className="h-[46] rounded-10"
-          textClassName="text-14 font-custom600"
+          size={px(46)}
+          shape="r10"
+          label={14}
+          labelWeight="semibold"
+          labelLeading="legacy"
         />
       </DmView>
     </SafeAreaView>

@@ -187,9 +187,10 @@ type Case = {
   allow?: ParityAllowance[]
 }
 
-// Button's two listed deltas, on the four states whose tree holds a Button this conversion makes:
-// Continue (a pro selected; and the shortlist-notice row, which selects one) and the gate's
-// Try again. Emptied or cut to one, each of those rows fails; no other row needs them.
+// Button's two listed deltas, on the states whose tree holds a Button a conversion made: Continue
+// (a pro selected; and the shortlist-notice row, which selects one), the gate's Try again (the
+// listing's conversion), and Show results on every row with the filters sheet open (its own).
+// Emptied or cut to one, each of those rows fails; no other row needs them.
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const CASES: Case[] = [
@@ -223,15 +224,15 @@ const CASES: Case[] = [
   { state: "the editor, See matches", options: withApi(RICH), steps: [jobBanner(1, 4), option("Repair"), seeMatches, wait(1000)] },
   { state: "the editor with a single place", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }), steps: [jobBanner(1, 1)] },
   // The filters
-  { state: "the filters", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon] },
-  { state: "the filters, online (no distance)", options: withApi(RICH), steps: [filtersIcon] },
-  { state: "the filters, pro type and rating picked", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, chip("Individual"), chip("4+ ★")] },
-  { state: "the filters, a budget typed", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 0, "250"), (root) => typeInto(root, 1, "700"), (root) => typeInto(root, 3, "40")] },
-  { state: "the filters, a distance typed", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 4, "12")] },
-  { state: "the filters, any brand picked", options: withApi(RICH), steps: [filtersIcon, chip("Any brand")] },
-  { state: "the filters after the flow: the upfront pick chosen earlier", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000), filtersIcon] },
-  { state: "the food filters", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon] },
-  { state: "the food filters, delivery and a cuisine picked", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Delivery"), chip("Italian")] },
+  { state: "the filters", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon] , allow: BUTTON },
+  { state: "the filters, online (no distance)", options: withApi(RICH), steps: [filtersIcon] , allow: BUTTON },
+  { state: "the filters, pro type and rating picked", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, chip("Individual"), chip("4+ ★")] , allow: BUTTON },
+  { state: "the filters, a budget typed", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 0, "250"), (root) => typeInto(root, 1, "700"), (root) => typeInto(root, 3, "40")] , allow: BUTTON },
+  { state: "the filters, a distance typed", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 4, "12")] , allow: BUTTON },
+  { state: "the filters, any brand picked", options: withApi(RICH), steps: [filtersIcon, chip("Any brand")] , allow: BUTTON },
+  { state: "the filters after the flow: the upfront pick chosen earlier", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000), filtersIcon] , allow: BUTTON },
+  { state: "the food filters", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon] , allow: BUTTON },
+  { state: "the food filters, delivery and a cuisine picked", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Delivery"), chip("Italian")] , allow: BUTTON },
   { state: "the food filters applied: the pickup list", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Pickup"), showResults, wait(1000)] },
   { state: "the filters applied: individuals only", options: withApi(RICH), steps: [filtersIcon, chip("Individual"), showResults, wait(1000)] },
   { state: "the filters applied, the answer still on its way (the overlay)", options: withApi({ ...RICH, getProsForCategory: (args: unknown) => urlOf(args).includes("proType") ? "loading" : prosFor(PROS)(args) }), steps: [filtersIcon, chip("Individual"), showResults, wait(300)] },
