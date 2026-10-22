@@ -13,5 +13,7 @@ repeat.
 
 | Site | Element | Class | Why it renders nothing |
 | --- | --- | --- | --- |
+| src/components/ImageWithCheckmarkButton/ImageWithCheckmarkButton.tsx:43 | DmView | `rounded-[8]` | Tailwind generates "border-radius: 8", which NativeWind 2.0.11 has no React Native style for (a bare number; the px form, rounded-[8px], is what maps) |
+| src/components/ImageWithTextButton/ImageWithTextButton.tsx:37 | DmView | `rounded-[8]` | Tailwind generates "border-radius: 8", which NativeWind 2.0.11 has no React Native style for (a bare number; the px form, rounded-[8px], is what maps) |
 | src/components/LogoutModal/LogoutModal.tsx:47 | MainModal | `font-custom700` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
 | src/components/MessagesComponent/MessagesComponent.tsx:158 | DmView | `rounded-[3]` | Tailwind generates "border-radius: 3", which NativeWind 2.0.11 has no React Native style for (a bare number; the px form, rounded-[3px], is what maps) |
