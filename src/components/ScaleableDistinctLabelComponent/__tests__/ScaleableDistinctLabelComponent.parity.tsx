@@ -19,7 +19,11 @@ import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
 
 const load = () => require("../ScaleableDistinctLabelComponent")
 
-const CASES: { name: string; props: object; width?: number }[] = [
+const CASES: {
+  name: string
+  props: Record<string, unknown>
+  width?: number
+}[] = [
   { name: "before layout", props: {} },
   { name: "91 wide", props: {}, width: 91 },
   { name: "60 wide", props: {}, width: 60 },
