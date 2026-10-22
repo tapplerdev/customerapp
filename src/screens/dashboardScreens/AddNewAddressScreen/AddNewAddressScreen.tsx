@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "react-native"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -10,6 +10,10 @@ import { useCreateCustomerAddressMutation } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
+
+const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
 
 type Props = RootStackScreenProps<"AddNewAddressScreen">
 
@@ -83,23 +87,23 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("add_new_address")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       {/*
         KeyboardAwareScrollView, not a plain ScrollView, and flexGrow is exactly
@@ -118,19 +122,18 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         keyboardShouldPersistTaps="handled"
       >
         {/* Place Nick Name */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("place_nick_name")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={nickname}
             onChangeText={setNickname}
             placeholder={t("place_nick_name_placeholder")}
             placeholderTextColor={colors.grey15}
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -138,19 +141,18 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Address */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("address")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={address}
             onChangeText={setAddress}
             placeholder={t("address_placeholder")}
             placeholderTextColor={colors.grey15}
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -158,19 +160,18 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* City */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("city")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={city}
             onChangeText={setCity}
             placeholder={t("city_placeholder")}
             placeholderTextColor={colors.grey15}
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -178,19 +179,18 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Governorate */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("governorate")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={governorate}
             onChangeText={setGovernorate}
             placeholder={t("governorate")}
             placeholderTextColor={colors.grey15}
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -198,30 +198,37 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Place Type */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("place_type")}
-            </DmText>
+            </Text>
           </DmView>
-          <DmView className="flex-row flex-wrap mt-[4]">
+          <DmView style={[a.flex_row, a.flex_wrap, a.mt_4]}>
             {PLACE_TYPES.map((pt) => {
               const isSelected = placeType === pt.key
               return (
                 <DmView
                   key={pt.key}
-                  className={`mr-[10] mb-[8] px-[16] py-[8] rounded-20 border-1 ${
-                    isSelected ? "bg-red border-red" : "bg-white border-grey1"
-                  }`}
+                  style={[
+                    a.mr_10,
+                    a.mb_8,
+                    a.px_16,
+                    a.py_8,
+                    styles.container,
+                    a.border_1,
+                    isSelected ? styles.containerSelected : styles.containerNotSelected,
+                  ]}
                   onPress={() => setPlaceType(pt.key)}
                 >
-                  <DmText
-                    className={`text-13 font-custom500 ${
-                      isSelected ? "text-white" : "text-black"
-                    }`}
+                  <Text
+                    size={13}
+                    weight="medium"
+                    leading="legacy"
+                    color={isSelected ? "inverse" : "primary"}
                   >
                     {isAr ? pt.labelAr : pt.labelEn}
-                  </DmText>
+                  </Text>
                 </DmView>
               )
             })}
@@ -229,14 +236,19 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Spacer + Add Address Button */}
-        <DmView className="flex-1" />
-        <DmView className="px-[16] pb-[40]">
-          <ActionBtn
+        <DmView style={a.flex_1} />
+        <DmView style={[a.px_16, a.pb_40]}>
+          <Button
             onPress={handleAddAddress}
-            className={`h-[42] w-full ${isFilled ? "bg-red" : "bg-grey19"}`}
+            size="sm"
+            label="sm"
+            labelWeight="semibold"
+            labelLeading={px(21)}
+            disabledLook={isFilled ? isLoading ? undefined : disabledLookSubtleInverse : disabledLookSubtleInverse}
+            loadingSurface={isFilled ? "brand" : undefined}
+            style={a.w_full}
             title={t("add_address")}
-            textClassName="text-13 leading-[21px] font-custom600 text-white"
-            disable={!isFilled}
+            disabled={!isFilled}
             isLoading={isLoading}
           />
         </DmView>

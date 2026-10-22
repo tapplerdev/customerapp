@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 
-import { ActionBtn, DmAuthInput, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmAuthInput, DmView } from "@tappler/shared/src/components/UI"
 import ErrorModal from "components/ErrorModal"
 import { useAuthMutation, useLazyGetCustomerMeQuery } from "services/api"
 import { setTokens } from "store/auth/slice"
@@ -14,6 +14,8 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import HideIcon from "assets/icons/hide-password.svg"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import { gateSignInScreenStyles } from "./styles"
 
 const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navigation, parentNav }) => {
   const { t, i18n } = useTranslation()
@@ -73,16 +75,20 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={[]}>
+    <SafeAreaView style={[a.flex_1, gateSignInScreenStyles.safeArea]} edges={[]}>
       <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 27, paddingHorizontal: 19 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <DmView className="mt-[18]">
+        <DmView style={a.mt_18}>
           {/* Back button */}
           <DmView
-            className="w-[32] h-[32] items-center justify-center"
+            style={[
+              gateSignInScreenStyles.iconWrap,
+              a.items_center,
+              a.justify_center,
+            ]}
             hitSlop={HIT_SLOP_DEFAULT}
             onPress={() => navigation.goBack()}
           >
@@ -93,12 +99,12 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
           </DmView>
 
           {/* Title */}
-          <DmText className="mt-[40] font-custom600 text-16 leading-[19px]">
+          <Text size={16} weight="semibold" leading="tight" style={a.mt_40}>
             {t("log_in_to_your_account")}
-          </DmText>
+          </Text>
 
           {/* Form */}
-          <DmView className="pr-[2]">
+          <DmView style={a.pr_2}>
             <Controller
               control={control}
               rules={{ required: true }}
@@ -107,7 +113,7 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
                   value={value}
                   placeholder={t("your_email")}
                   onChangeText={onChange}
-                  wrapperClassName="mt-[24]"
+                  wrapperStyle={a.mt_24}
                   keyboardType="email-address"
                   autoComplete="off"
                 />
@@ -122,7 +128,7 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
                   value={value}
                   placeholder={t("your_password")}
                   onChangeText={onChange}
-                  wrapperClassName="mt-[8]"
+                  wrapperStyle={a.mt_8}
                   onIconPress={() => setPasswordVisible(!isPasswordVisible)}
                   secureTextEntry={isPasswordVisible}
                   autoComplete="off"
@@ -134,13 +140,14 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
           </DmView>
 
           {/* Login button */}
-          <DmView className="px-[34]">
-            <ActionBtn
-              className="mt-[32] h-[44]"
+          <DmView style={gateSignInScreenStyles.buttonWrap}>
+            <Button
+              size="md"
+              style={a.mt_32}
               onPress={() => handleSubmit(() => onSubmit())()}
               title={t("log_In")}
               isLoading={isLoading}
-              disable={isLoading}
+              disabled={isLoading}
             />
           </DmView>
         </DmView>

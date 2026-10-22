@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -14,6 +14,8 @@ import AccountMenuItem from "screens/dashboardScreens/AccountScreen/components/A
 import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
 import { useLazyGetCustomerMeQuery } from "services/api"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"AccountDetailsScreen">
 
@@ -32,24 +34,24 @@ const AccountDetailsScreen: React.FC<Props> = ({ navigation }) => {
   }, [navigation])
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header with back button */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("account_details")}
-          </DmText>
+          </Text>
         </DmView>
         {/* Invisible spacer to center title */}
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       {/* Menu Items */}
       <DmView>

@@ -1,11 +1,12 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 
 import LocationRedIcon from "assets/icons/location-red.svg"
 import styles from "./styles"
+import { Text, Button, a } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"SaveAddressSheetScreen">
 
@@ -47,48 +48,52 @@ const SaveAddressSheetScreen: React.FC<Props> = ({ route, navigation }) => {
     // the inset again made the sheet 34pt taller than its content on a
     // home-indicator device. AuthGateScreen, the other fitToContents sheet in
     // this app, has always used a plain value for the same reason.
-    <DmView className="bg-white px-[24] pt-[24] pb-[24]">
-      <DmView className="flex-row items-center">
+    <DmView style={[styles.container, a.p_24]}>
+      <DmView style={[a.flex_row, a.items_center]}>
         <LocationRedIcon width={20} height={20} />
-        <DmText className="mx-[8] text-16 font-custom600 text-black">
+        <Text size={16} weight="semibold" leading="legacy" style={a.mx_8}>
           {t("save_this_address")}
-        </DmText>
+        </Text>
       </DmView>
 
-      <DmText className="mt-[6] text-13 font-custom400 text-grey3">
+      <Text size={13} leading="legacy" color="tertiary" style={a.mt_6}>
         {t("save_address_descr")}
-      </DmText>
+      </Text>
 
       <DmView
-        className="mt-[16] px-[14] py-[12] rounded-10"
-        style={styles.addressPreviewBg}
+        style={[a.mt_16, a.px_14, a.py_12, styles.box, styles.addressPreviewBg]}
       >
-        <DmText className="text-13 font-custom500 text-black">
+        <Text size={13} weight="medium" leading="legacy">
           {address?.address}
-        </DmText>
+        </Text>
         {(address?.city || address?.governorate) && (
-          <DmText className="text-12 font-custom400 text-grey3 mt-[3]">
+          <Text size={12} leading="legacy" color="tertiary" style={styles.text}>
             {[address.city, address.governorate].filter(Boolean).join(", ")}
-          </DmText>
+          </Text>
         )}
       </DmView>
 
-      <DmView className="flex-row mt-[20]">
-        <DmView className="flex-1 mr-[10]">
-          <ActionBtn
+      <DmView style={[a.flex_row, a.mt_20]}>
+        <DmView style={[a.flex_1, a.mr_10]}>
+          <Button
             title={t("no_thanks")}
             onPress={() => navigation.goBack()}
+            size="md"
+            shape="r10"
             variant="white"
-            className="h-[44] rounded-10"
-            textClassName="text-13 font-custom500"
+            label="sm"
+            labelLeading="legacy"
           />
         </DmView>
-        <DmView className="flex-1">
-          <ActionBtn
+        <DmView style={a.flex_1}>
+          <Button
             title={t("save")}
             onPress={handleSave}
-            className="h-[44] rounded-10"
-            textClassName="text-13 font-custom600"
+            size="md"
+            shape="r10"
+            label="sm"
+            labelWeight="semibold"
+            labelLeading="legacy"
           />
         </DmView>
       </DmView>

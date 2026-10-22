@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { TextInput } from "react-native"
-import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -12,6 +12,10 @@ import { useTypedSelector } from "store"
 import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
+
+const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
 
 type Props = RootStackScreenProps<"MyInformationScreen">
 
@@ -51,40 +55,39 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("my_information")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       <AppScrollView
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* First Name */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("first_name")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={firstName}
             onChangeText={setFirstName}
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -92,17 +95,16 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
 
         {/* Last Name */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("last_name")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={lastName}
             onChangeText={setLastName}
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -110,59 +112,63 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
 
         {/* Email Address */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row items-center justify-between">
-            <DmView className="flex-row">
-              <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={[a.flex_row, a.items_center, a.justify_between]}>
+            <DmView style={a.flex_row}>
+              <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
                 {t("email_address")}
-              </DmText>
+              </Text>
             </DmView>
             <DmView onPress={() => navigation.navigate("UpdateEmailScreen")}>
-              <DmText className="text-13 font-custom500 text-red">
+              <Text size={13} weight="medium" leading="legacy" color="brand">
                 {t("change")}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
-          <DmView className="flex-row">
-            <DmText className="text-14 font-custom400 text-grey15 pb-[8] border-b-[0.7px] border-b-grey19">
+          <DmView style={a.flex_row}>
+            <Text size={14} leading="legacy" style={[styles.text, a.pb_8]}>
               {user?.email || ""}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
 
         {/* Gender */}
-        <DmView className="mb-[28]">
-          <DmView className="flex-row items-center">
-            <DmView className="flex-row">
-              <DmText className="text-11 font-custom700 text-black">
+        <DmView style={a.mb_28}>
+          <DmView style={[a.flex_row, a.items_center]}>
+            <DmView style={a.flex_row}>
+              <Text size={11} weight="bold" leading="legacy">
                 {t("gender")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmView className="flex-row items-center" style={{ marginStart: 20 }}>
+            <DmView style={[a.flex_row, a.items_center, { marginStart: 20 }]}>
               <DmChecbox
                 title={t("female")}
                 onPress={() => setGender("female")}
                 isChecked={gender === "female"}
-                textClassName="text-13 font-custom400"
+                textType={{ size: 13, leading: "legacy", weight: "regular" }}
               />
               <DmChecbox
                 title={t("male")}
                 onPress={() => setGender("male")}
                 isChecked={gender === "male"}
-                className="ml-[20]"
-                textClassName="text-13 font-custom400"
+                style={a.ml_20}
+                textType={{ size: 13, leading: "legacy", weight: "regular" }}
               />
             </DmView>
           </DmView>
         </DmView>
 
         {/* Save Button */}
-        <ActionBtn
+        <Button
           onPress={handleSave}
-          className={`h-[42] w-full ${hasChanges && !isLoading ? "bg-red" : "bg-grey19"}`}
+          size="sm"
+          label="sm"
+          labelWeight="semibold"
+          labelLeading={px(21)}
+          disabledLook={disabledLookSubtleInverse}
+          style={a.w_full}
           title={t("save")}
-          textClassName="text-13 leading-[21px] font-custom600 text-white"
-          disable={!hasChanges || isLoading}
+          disabled={!hasChanges || isLoading}
           isLoading={isLoading}
         />
       </AppScrollView>
