@@ -94,6 +94,16 @@ a TS2578 (an unused `@ts-expect-error`, which the no-plugin control's
 ClassNameOnView carries) as new: it is what fails if the nativewind types come
 back.
 
+### The DmText/ActionBtn scan (back since review-ca-w3 F1)
+
+`buttonLooks/legacyPrimitives.ts` reads the AST of every app file and fails on
+any way to bring DmText or ActionBtn back: a name, a string, a path, a barrel
+taken whole (however spelled: trailing `/`, `/index.ts`), a computed-key
+destructure, or an import from `src/testing` or a `__fixtures__` folder, which
+the scan itself skips. It needs no NativeWind, and its suite
+(`buttonLooks/__tests__/legacyPrimitives.test.ts`) runs in `yarn test`. It is
+the one check that sees a DmText in a state no kit row draws.
+
 ### The archive tag (W3.4)
 
 W3.4 deleted from customerapp everything that needed NativeWind to run: the
@@ -101,8 +111,8 @@ codemod (`scripts/ds-codemod.js` and `ds-codemod/`, `yarn ds:codemod`,
 `ds:codemod:parity`), `nw-resolve.js` (`ds:resolve`), `nw-wrap-probe.js`
 (`ds:probe`), `ds-colors.js` (`ds:colors`), their fixtures and suites,
 `testing/nativewind.ts`, `buttonLooks`' harvest, translator, rewrites,
-legacyPrimitives, handLooks and `*.pass1` suites (B's two JSON files and
-`frozenLooks.test.ts` stay), `harvest/freezeTwins.ts`, `harvestJsxProps.ts`,
+handLooks and `*.pass1` suites (B's two JSON files and `frozenLooks.test.ts`
+stay; `legacyPrimitives.ts` and its suite came back, see below), `harvest/freezeTwins.ts`, `harvestJsxProps.ts`,
 every `*.pass1.test.*` half, `jest.pass1.config.js` (`yarn test:pass1-tools`)
 and `tailwind.config.js`. `src/styles/dsColors.ts` is kept by hand since; its
 header says what pins it.
