@@ -12,8 +12,8 @@
  * comparison, a call) where a boolean is read: a `?:` test, a `!`, the left
  * of `&&`/`||`, a clsx object value, or a `bool` prop.
  *
- * What it settles itself: strings, numbers, templates, `+`, clsx (the real
- * one), `?:`, `&&`, `||`, `??`, `!`, object and array literals, JSX elements
+ * What it settles itself: strings, numbers, templates, `+`, clsx (its own
+ * rule, written out below), `?:`, `&&`, `||`, `??`, `!`, object and array literals, JSX elements
  * (their attributes and text), arrow functions, named constants given in
  * `constants`. How an unsettled value is read depends on its prop's kind:
  *
@@ -35,8 +35,32 @@
 import crypto from "crypto"
 import fs from "fs"
 import path from "path"
-import clsx from "clsx"
 import ts from "typescript"
+
+/**
+ * clsx's rule, written out (the package left the build in W4): a string or a
+ * number as it comes, an array flattened, an object's keys that hold a truthy
+ * value, anything falsy left out, all joined with one space.
+ */
+const clsx = (...inputs: unknown[]): string => {
+  let out = ""
+  const add = (input: unknown) => {
+    if (!input) return
+    if (typeof input === "string" || typeof input === "number") {
+      out += out ? ` ${input}` : String(input)
+    } else if (Array.isArray(input)) {
+      input.forEach(add)
+    } else if (typeof input === "object") {
+      Object.entries(input as Record<string, unknown>).forEach(
+        ([key, flag]) => {
+          if (flag) out += out ? ` ${key}` : key
+        }
+      )
+    }
+  }
+  inputs.forEach(add)
+  return out
+}
 
 export type PropKind =
   | "text"
@@ -393,7 +417,7 @@ class SiteEvaluator {
         }
         return value
       })
-      return clsx(...(args as unknown as Parameters<typeof clsx>))
+      return clsx(...args)
     }
     if (isCallTo(node, "oneOf")) {
       if (!choiceKey) return this.fail("oneOf() outside a rewrite", node)

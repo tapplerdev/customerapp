@@ -3,7 +3,7 @@
  * there by its line number.
  */
 import React from "react"
-import clsx from "clsx"
+declare function clsx(...args: unknown[]): string
 import { Text } from "react-native"
 import Widget from "./Widget"
 
