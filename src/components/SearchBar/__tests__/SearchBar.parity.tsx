@@ -1,9 +1,16 @@
 /* eslint-disable global-require, @typescript-eslint/no-var-requires --
    the kit loads each render's modules in the render's registry. */
-import { describe, it } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 import path from "path"
 
-import { renderScreen, rowsByPlatform } from "testing/screenKit"
+import {
+  copy,
+  openScreen,
+  pressIcon,
+  pressText,
+  renderScreen,
+  rowsByPlatform,
+} from "testing/screenKit"
 import {
   PARITY_MATRIX,
   captureCommit,
@@ -92,6 +99,34 @@ if (harvesting()) {
         props: row.props,
       })
       expectParity(parityName(row.name, row.env), tree)
+    })
+  })
+
+  // The converted views' handlers run (a handler lost in the conversion
+  // draws the same tree: functions don't show in it).
+  describe("the bar and the filter icon take a press", () => {
+    it.each(PARITY_MATRIX)("[$language $platform]", async (env) => {
+      const onPress = jest.fn()
+      const onFilterPress = jest.fn()
+      const session = await openScreen(load, {
+        lang: env.language,
+        platform: env.platform,
+        navigation: "none",
+        props: { onPress, onFilterPress },
+      })
+      try {
+        await session.act(() => {
+          pressText(session.root, copy(env, "search_for_a_service"))
+        })
+        expect(onPress).toHaveBeenCalledTimes(1)
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:categories" })
+        })
+        expect(onFilterPress).toHaveBeenCalledTimes(1)
+        expect(onPress).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
     })
   })
 }
