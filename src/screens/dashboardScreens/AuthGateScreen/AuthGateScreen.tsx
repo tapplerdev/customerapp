@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import { RootStackScreenProps } from "navigation/types"
@@ -13,6 +13,8 @@ import LucideSend from "assets/icons/lucide-send.svg"
 import LucideBell from "assets/icons/lucide-bell.svg"
 import LucideMessage from "assets/icons/lucide-message-circle.svg"
 import LucideTag from "assets/icons/lucide-tag.svg"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 type Props = RootStackScreenProps<"AuthGateScreen">
 
@@ -41,15 +43,15 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <DmView className="flex-1 bg-white">
+    <DmView style={[a.flex_1, dsStyles.container]}>
       {/* Top spacing (no grabber) */}
-      <DmView className="pt-[12]" />
+      <DmView style={a.pt_12} />
 
       {/* Close button */}
-      <DmView className="absolute top-[12] right-[16] z-10">
+      <DmView style={[a.absolute, dsStyles.boxWrap]}>
         <DmView
           onPress={() => navigation.goBack()}
-          className="w-[32] h-[32] rounded-full bg-grey5 items-center justify-center"
+          style={[dsStyles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
         >
           <CloseIcon width={12} height={12} color={colors.black} />
@@ -57,73 +59,76 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
       </DmView>
 
       {/* Hero icon */}
-      <DmView className="items-center mt-[20]">
+      <DmView style={[a.items_center, a.mt_20]}>
         <DmView
-          className="w-[72] h-[72] rounded-[20] items-center justify-center"
-          style={styles.heroIcon}
+          style={[dsStyles.lucideSendWrap, a.items_center, a.justify_center, styles.heroIcon]}
         >
           <LucideSend width={36} height={36} color={colors.red} />
         </DmView>
       </DmView>
 
       {/* Title + subtitle */}
-      <DmView className="items-center px-[20] mt-[18]">
-        <DmText className="text-24 leading-[30px] font-custom800 text-black text-center">
+      <DmView style={[a.items_center, a.px_20, a.mt_18]}>
+        <Text size={24} align="center" family="system">
           {t("almost_there")}
-        </DmText>
-        <DmText className="text-14 leading-[20px] font-custom400 text-grey3 text-center mt-[6]" numberOfLines={1}>
+        </Text>
+        <Text size={14} leading="loose" color="tertiary" align="center" style={a.mt_6} numberOfLines={1}>
           {t("create_free_account_subtitle")}
-        </DmText>
+        </Text>
       </DmView>
 
       {/* Value props */}
-      <DmView className="px-[22] mt-[18]">
+      <DmView style={[a.px_22, a.mt_18]}>
         {valueProps.map((vp, idx) => (
-          <DmView key={idx} className="flex-row items-center mb-[14]">
+          <DmView key={idx} style={[a.flex_row, a.items_center, a.mb_14]}>
             <DmView
-              className="w-[40] h-[40] rounded-[12] items-center justify-center mr-[14]"
-              style={styles.vpIcon}
+              style={[dsStyles.box, a.items_center, a.justify_center, a.mr_14, styles.vpIcon]}
             >
               {vp.icon}
             </DmView>
-            <DmView className="flex-1">
-              <DmText className="text-14 leading-[18px] font-custom700 text-black">
+            <DmView style={a.flex_1}>
+              <Text size={14} weight="bold">
                 {vp.title}
-              </DmText>
-              <DmText className="text-12 leading-[16px] font-custom400 text-grey3 mt-[2]">
+              </Text>
+              <Text size={12} color="tertiary" style={a.mt_2}>
                 {vp.desc}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         ))}
       </DmView>
 
       {/* Spacer */}
-      <DmView className="flex-1" />
+      <DmView style={a.flex_1} />
 
       {/* CTAs */}
-      <DmView className="px-[22] pb-[16]">
+      <DmView style={[a.px_22, a.pb_16]}>
         <DmView
           onPress={handleSignUp}
-          className="h-[52] rounded-[26] bg-red items-center justify-center"
-          style={styles.signUpShadow}
+          style={[dsStyles.signUpWrap, a.items_center, a.justify_center, styles.signUpShadow]}
         >
-          <DmText className="text-16 font-custom700 text-white">
+          <Text size={16} weight="bold" leading="legacy" color="inverse">
             {t("sign_up")}
-          </DmText>
+          </Text>
         </DmView>
         <DmView
           onPress={handleLogIn}
-          className="h-[52] rounded-[26] bg-white items-center justify-center mt-[10] border-1 border-red"
+          style={[
+            dsStyles.logInWrap,
+            a.items_center,
+            a.justify_center,
+            a.mt_10,
+            a.border_1,
+          ]}
         >
-          <DmText className="text-16 font-custom700 text-red">
+          <Text size={16} weight="bold" leading="legacy" color="brand">
             {t("log_in")}
-          </DmText>
+          </Text>
         </DmView>
 
-        <DmText className="text-12 leading-[18px] font-custom400 text-grey3 text-center mt-[14]">
+        <Text size={12} leading={px(18)} color="tertiary" align="center" style={a.mt_14}>
           {t("terms_privacy_agreement")}
-        </DmText>
+        </Text>
       </DmView>
     </DmView>
   )

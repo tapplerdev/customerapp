@@ -14,7 +14,7 @@ import {
 import type { FlatList } from "react-native"
 // Using RN's built-in KeyboardAvoidingView (react-native-keyboard-controller not installed in customer app yet)
 import { KeyboardAvoidingView } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import FastImage from "react-native-fast-image"
@@ -77,6 +77,7 @@ import { useTypedSelector } from "store"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 import { AppFlatList, AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
 
 // Short, soft reflow when the input bar swaps its bottom padding as the
 // keyboard comes and goes. Kept in lockstep with proapp.
@@ -338,28 +339,28 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const renderAttachmentSheetContent = () => (
     <>
       {context.isJobInactive && (
-        <DmView className="px-[18] pb-[10]">
-          <DmText className="text-11 font-custom400 text-grey3 text-center" style={styles.italic}>
+        <DmView style={[a.px_18, a.pb_10]}>
+          <Text size={11} leading="legacy" color="tertiary" align="center" style={styles.italic}>
             {t("attachments_unavailable")}
-          </DmText>
+          </Text>
         </DmView>
       )}
 
       <DmView style={context.isJobInactive ? { opacity: 0.3 } : undefined}>
         {/* Photos & videos header */}
-        <DmView className="flex-row items-center justify-between px-[14] pb-[10]">
-          <DmText className="text-14 font-custom600 text-black">
+        <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_14, a.pb_10]}>
+          <Text size={14} weight="semibold" leading="legacy">
             {t("photos_and_videos")}
-          </DmText>
+          </Text>
           <DmView onPress={context.isJobInactive ? undefined : handleGalleryPress}>
-            <DmText className="text-13 font-custom700 text-red">
+            <Text size={13} weight="bold" leading="legacy" color="brand">
               {t("view_library")}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
 
         {/* Photo strip */}
-        <DmView className="px-[14] pb-[14]">
+        <DmView style={[a.px_14, a.pb_14]}>
           <AppFlatList
             horizontal
             data={attachments.recentPhotos}
@@ -368,8 +369,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             ListHeaderComponent={
               <DmView
                 onPress={context.isJobInactive ? undefined : handleCameraPress}
-                className="items-center justify-center rounded-6 bg-grey36 mr-[6]"
-                style={styles.photoStripItem}
+                style={[a.items_center, a.justify_center, styles.iconWrap, a.mr_6, styles.photoStripItem]}
               >
                 <CameraIcon width={24} height={20} />
               </DmView>
@@ -382,17 +382,21 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               return (
                 <DmView
                   onPress={context.isJobInactive || atMax ? undefined : () => attachments.toggleRecentPhoto(item.uri)}
-                  className="mr-[6] rounded-6 overflow-hidden"
-                  style={[styles.photoStripItem, atMax && !isSelected ? { opacity: 0.4 } : undefined]}
+                  style={[a.mr_6, styles.container, a.overflow_hidden, styles.photoStripItem, atMax && !isSelected ? { opacity: 0.4 } : undefined]}
                 >
                   <RNImage source={{ uri: item.uri }} style={styles.photoStripImage} />
                   {isSelected && (
                     <DmView
-                      className="absolute top-[4] right-[4] w-[22] h-[22] rounded-full bg-red items-center justify-center"
+                      style={[
+                        a.absolute,
+                        styles.textWrap,
+                        a.items_center,
+                        a.justify_center,
+                      ]}
                     >
-                      <DmText className="text-10 font-custom700 text-white">
+                      <Text size={10} weight="bold" leading="legacy" color="inverse">
                         {selIndex + 1}
-                      </DmText>
+                      </Text>
                     </DmView>
                   )}
                 </DmView>
@@ -401,30 +405,30 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           />
         </DmView>
 
-        <DmView className="h-[0.7] bg-grey19 mx-[14]" />
+        <DmView style={[styles.box, a.mx_14]} />
 
         {/* Upload file option */}
         <DmView
-          className="flex-row items-center px-[18] py-[14]"
+          style={[a.flex_row, a.items_center, a.px_18, a.py_14]}
           onPress={context.isJobInactive ? undefined : handleUploadFile}
         >
           <DocumentIcon fill={colors.red} width={18} height={20} />
-          <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
+          <Text size={14} weight="medium" style={a.ml_14}>
             {t("upload_file")}
-          </DmText>
+          </Text>
         </DmView>
 
-        <DmView className="h-[0.7] bg-grey19" style={{ marginStart: 18 }} />
+        <DmView style={[styles.box, { marginStart: 18 }]} />
 
         {/* Location option */}
         <DmView
-          className="flex-row items-center px-[18] py-[14]"
+          style={[a.flex_row, a.items_center, a.px_18, a.py_14]}
           onPress={context.isJobInactive ? undefined : handleLocationPress}
         >
           <LocationIcon width={18} height={20} />
-          <DmText className="ml-[14] text-14 leading-[18px] font-custom500 text-black">
+          <Text size={14} weight="medium" style={a.ml_14}>
             {t("location")}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
     </>
@@ -590,10 +594,10 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const renderItem = ({ item }: { item: FlatItem }) => {
     if (item.type === "date") {
       return (
-        <DmView className="items-center justify-center py-[8]">
-          <DmText className="text-11 leading-[14px] font-custom600 text-black">
+        <DmView style={[a.items_center, a.justify_center, a.py_8]}>
+          <Text size={11} weight="semibold" leading="tight">
             {item.label}
-          </DmText>
+          </Text>
         </DmView>
       )
     }
@@ -614,11 +618,10 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const plusButton = (
     <DmView
       onPress={handleOpenAttachmentSheet}
-      className="bg-grey26 items-center justify-center"
-      style={styles.plusButton}
+      style={[styles.box2, a.items_center, a.justify_center, styles.plusButton]}
     >
-      <DmView className="absolute bg-grey2" style={styles.plusHorizontal} />
-      <DmView className="absolute bg-grey2" style={styles.plusVertical} />
+      <DmView style={[a.absolute, styles.box3, styles.plusHorizontal]} />
+      <DmView style={[a.absolute, styles.box3, styles.plusVertical]} />
     </DmView>
   )
 
@@ -727,8 +730,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     .filter(Boolean) as { key: number; label?: string; value?: string }[]
 
   const requestSheetContent = (
-    <DmView className="flex-1 bg-white" style={styles.sheetContentRound}>
-      <DmView className="items-end px-[24] pt-[16] pb-[2]">
+    <DmView style={[a.flex_1, styles.box4, styles.sheetContentRound]}>
+      <DmView style={[a.items_end, a.px_24, a.pt_16, a.pb_2]}>
         <DmView onPress={closeRequestSheet} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <CloseIcon width={13} height={13} />
         </DmView>
@@ -746,7 +749,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       >
         {/* Map hero — Airbnb's photo-hero slot, static + lazy-mounted */}
         {glanceHasCoords && requestSheetOpened && (
-          <DmView className="mt-[14]" style={styles.requestHero} pointerEvents="none">
+          <DmView style={[a.mt_14, styles.requestHero]} pointerEvents="none">
             <MapView
               style={styles.glanceMap}
               liteMode
@@ -766,48 +769,48 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           </DmView>
         )}
 
-        <DmText className="mt-[16] text-20 leading-[25px] font-custom600 text-black" numberOfLines={2} style={rtlText}>
+        <Text size={20} weight="semibold" leading={px(25)} numberOfLines={2} style={[a.mt_16, rtlText]}>
           {moreServiceName}
-        </DmText>
-        <DmText className="mt-[3] text-13 leading-[17px] font-custom400 text-grey3" style={rtlText}>
+        </Text>
+        <Text size={13} leading={px(17)} color="tertiary" style={[styles.text, rtlText]}>
           {context.proName}
-        </DmText>
+        </Text>
         {context.offerAmount != null && (
-          <DmView className="self-start bg-red rounded-full px-[10] py-[3] mt-[8]">
-            <DmText className="text-11 leading-[14px] font-custom600 text-white">
+          <DmView style={[a.self_start, styles.textWrap2, a.px_10, a.mt_8]}>
+            <Text size={11} weight="semibold" leading="tight" color="inverse">
               {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {!!glanceWhen && (
-          <DmView className="flex-row items-center mt-[18] rounded-13 bg-grey58 px-[14] py-[12]">
-            <DmView className="w-[36] h-[36] rounded-full bg-white items-center justify-center">
+          <DmView style={[a.flex_row, a.items_center, a.mt_18, styles.row, a.px_14, a.py_12]}>
+            <DmView style={[styles.iconWrap2, a.items_center, a.justify_center]}>
               <ClockIcon width={17} height={17} />
             </DmView>
-            <DmView className="flex-1 mx-[12]">
-              <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+            <DmView style={[a.flex_1, a.mx_12]}>
+              <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
                 {t("date_and_time")}
-              </DmText>
-              <DmText className="mt-[2] text-14 leading-[18px] font-custom600 text-black" style={rtlText}>
+              </Text>
+              <Text size={14} weight="semibold" style={[a.mt_2, rtlText]}>
                 {glanceWhen}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         )}
 
         {!!requestAddress && (
-          <DmView className="flex-row items-center mt-[10] rounded-13 bg-grey58 px-[14] py-[12]">
-            <DmView className="w-[36] h-[36] rounded-full bg-white items-center justify-center">
+          <DmView style={[a.flex_row, a.items_center, a.mt_10, styles.row, a.px_14, a.py_12]}>
+            <DmView style={[styles.iconWrap2, a.items_center, a.justify_center]}>
               <LocationIcon width={17} height={17} />
             </DmView>
-            <DmView className="flex-1 mx-[12]">
-              <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+            <DmView style={[a.flex_1, a.mx_12]}>
+              <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
                 {t("address")}
-              </DmText>
-              <DmText className="mt-[2] text-13 leading-[18px] font-custom400 text-black" style={rtlText}>
+              </Text>
+              <Text size={13} style={[a.mt_2, rtlText]}>
                 {requestAddress}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         )}
@@ -826,12 +829,12 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         {!!glanceFoodItems.length && (
           <>
             {!!glanceJob?.paymentMethod && (
-              <DmView className="flex-row items-center mt-[10] rounded-13 bg-grey58 px-[14] py-[12]">
-                <DmView className="flex-1">
-                  <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+              <DmView style={[a.flex_row, a.items_center, a.mt_10, styles.row, a.px_14, a.py_12]}>
+                <DmView style={a.flex_1}>
+                  <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
                     {t("payment_method")}
-                  </DmText>
-                  <DmText className="mt-[2] text-13 leading-[18px] font-custom400 text-black" style={rtlText}>
+                  </Text>
+                  <Text size={13} style={[a.mt_2, rtlText]}>
                     {/* NOT t(paymentMethod): the stored value is "creditCard",
                         and there is no such key — it rendered the raw string.
                         The four keys below all exist, and this is exactly what
@@ -839,19 +842,19 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                     {glanceJob.paymentMethod === "creditCard"
                       ? t(glanceIsPickup ? "card_on_pickup" : "card_on_delivery")
                       : t(glanceIsPickup ? "cash_on_pickup" : "cash_on_delivery")}
-                  </DmText>
+                  </Text>
                 </DmView>
               </DmView>
             )}
 
             {!!glanceJob?.orderNotes && (
-              <DmView className="mt-[10] rounded-13 bg-grey58 px-[14] py-[12]">
-                <DmText className="text-11 leading-[14px] font-custom600 text-grey2" style={rtlText}>
+              <DmView style={[a.mt_10, styles.row, a.px_14, a.py_12]}>
+                <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
                   {t("order_notes")}
-                </DmText>
-                <DmText className="mt-[2] text-13 leading-[18px] font-custom400 text-black" style={rtlText}>
+                </Text>
+                <Text size={13} style={[a.mt_2, rtlText]}>
                   {glanceJob.orderNotes}
-                </DmText>
+                </Text>
               </DmView>
             )}
 
@@ -859,35 +862,30 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               textStyle={rtlText}
               job={glanceJob as any}
               isPickup={glanceIsPickup}
-              className="mt-[24]"
             />
           </>
         )}
 
         {requestQARows.length > 0 && (
           <>
-            <DmText className="mt-[24] text-16 leading-[20px] font-custom600 text-black" style={rtlText}>
+            <Text size={16} weight="semibold" style={[a.mt_24, rtlText]}>
               {t("request_specifications")}
-            </DmText>
-            <DmView className="mt-[12] rounded-13 bg-grey58 px-[14] py-[4]">
+            </Text>
+            <DmView style={[a.mt_12, styles.row, a.px_14, a.py_4]}>
               {requestQARows.map((row, rowIndex) => (
                 <DmView
                   key={row.key}
-                  className={
-                    rowIndex < requestQARows.length - 1
-                      ? "py-[11] border-b-0.5 border-grey29"
-                      : "py-[11]"
-                  }
+                  style={rowIndex < requestQARows.length - 1 ? styles.containerLength : styles.containerNotLength}
                 >
                   {!!row.label && (
-                    <DmText className="text-13 leading-[17px] font-custom600 text-black" style={rtlText}>
+                    <Text size={13} weight="semibold" leading={px(17)} style={rtlText}>
                       {row.label}
-                    </DmText>
+                    </Text>
                   )}
                   {!!row.value && (
-                    <DmText className="mt-[3] text-13 leading-[18px] font-custom400 text-grey2" style={rtlText}>
+                    <Text size={13} color="secondary" style={[styles.text, rtlText]}>
                       {row.value}
-                    </DmText>
+                    </Text>
                   )}
                 </DmView>
               ))}
@@ -899,23 +897,23 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   )
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.box4]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* Header */}
-        <DmView className="bg-white">
-          <DmView className="flex-row items-center px-[20] pt-[10] pb-[14]">
+        <DmView style={styles.box4}>
+          <DmView style={[a.flex_row, a.items_center, a.px_20, a.pt_10, a.pb_14]}>
             <DmView
               onPress={() => navigation.goBack()}
-              className={I18nManager.isRTL ? "rotate-[180deg]" : ""}
+              style={I18nManager.isRTL && styles.iconWrapRtl}
             >
               <ChevronLeftIcon color={colors.red} />
             </DmView>
 
             <DmView
-              className="flex-1 flex-row items-center px-[10]"
+              style={[a.flex_1, a.flex_row, a.items_center, a.px_10]}
               onPress={async () => {
                 if (!context.pro?.id) return
                 try {
@@ -930,7 +928,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               }}
             >
               {context.pro?.profilePhoto150 || context.pro?.profilePhoto ? (
-                <DmView className="w-[36] h-[36] rounded-full overflow-hidden mr-[10]">
+                <DmView style={[styles.imageWrap, a.overflow_hidden, a.mr_10]}>
                   <FastImage
                     source={{ uri: context.pro.profilePhoto150 || context.pro.profilePhoto }}
                     style={styles.headerAvatar}
@@ -938,23 +936,25 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                   />
                 </DmView>
               ) : (
-                <DmView className="w-[36] h-[36] rounded-full bg-red items-center justify-center mr-[10]">
-                  <DmText className="text-white text-14 font-custom600">
+                <DmView style={[styles.textWrap3, a.items_center, a.justify_center, a.mr_10]}>
+                  <Text size={14} weight="semibold" leading="legacy" color="inverse">
                     {context.proName.charAt(0)}
-                  </DmText>
+                  </Text>
                 </DmView>
               )}
-              <DmView className="flex-1">
-                <DmText
-                  className="font-custom600 text-black text-16 leading-[19px] text-left"
+              <DmView style={a.flex_1}>
+                <Text
+                  size={16}
+                  weight="semibold"
+                  leading="tight"
                   numberOfLines={1}
                 >
                   {context.proName}
-                </DmText>
+                </Text>
                 {!!context.lastSeenText && (
-                  <DmText className="font-custom400 text-grey3 text-11 leading-[14px] text-left">
+                  <Text size={11} leading="tight" color="tertiary">
                     {context.lastSeenText}
-                  </DmText>
+                  </Text>
                 )}
               </DmView>
             </DmView>
@@ -968,12 +968,19 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 message with no job still has a menu worth opening. */}
             <DmView
               onPress={() => setMenuVisible(true)}
-              className="self-start h-[30] flex-row items-center justify-center px-[6]"
+              style={[
+                a.self_start,
+                styles.row2,
+                a.flex_row,
+                a.items_center,
+                a.justify_center,
+                a.px_6,
+              ]}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-              <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
-              <DmView className="bg-black rounded-full w-[6] h-[6] mx-[1]" />
+              <DmView style={styles.box5} />
+              <DmView style={styles.box5} />
+              <DmView style={styles.box5} />
             </DmView>
           </DmView>
 
@@ -991,25 +998,25 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               the PRO's offer, not the reader's. */}
           {context.offerAmount != null && (
             <DmView
-              className="mt-[4] mb-[4] ml-[55] border-0.3 border-black rounded-5 h-[38] flex-row items-center overflow-hidden"
-              style={{ width: "70%" }}
+              style={[a.my_4, styles.row3, a.flex_row, a.items_center, a.overflow_hidden, { width: "70%" }]}
               onPress={() => setOfferHistoryVisible(true)}
             >
-              <DmView className="w-2/5 h-full items-center justify-center bg-red5">
-                <DmText className="text-13 leading-[16px] font-custom600 text-white tracking-[0.3px]">
+              <DmView style={[styles.offerWrap, a.h_full, a.items_center, a.justify_center]}>
+                <Text size={13} weight="semibold" leading="tight" color="inverse" style={styles.offer}>
                   {t("offer")}
-                </DmText>
+                </Text>
               </DmView>
-              <DmView className="w-3/5 h-full flex-row items-center justify-center">
-                <DmText className="text-22 leading-[27px] font-custom500">
+              <DmView style={[styles.row4, a.h_full, a.flex_row, a.items_center, a.justify_center]}>
+                <Text size={22} weight="medium" leading="tight">
                   {context.offerAmount}
-                </DmText>
-                <DmText
-                  className="ml-[4] text-11 leading-[14px] font-custom400"
-                  style={{ marginTop: 4 }}
+                </Text>
+                <Text
+                  size={11}
+                  leading="tight"
+                  style={[a.ml_4, { marginTop: 4 }]}
                 >
                   {t("EGP")}
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
           )}
@@ -1027,27 +1034,27 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               sheet rather than navigating to RequestDetailsScreen; the sheet is
               what replaced that flow (see the More sheet's card comment). */}
           {context.hasJob && (
-            <DmView className="px-[16] pt-[8] pb-[10] flex-row justify-around items-center">
-              <DmView className="flex-row items-center">
+            <DmView style={[a.px_16, a.pt_8, a.pb_10, a.flex_row, styles.row5, a.items_center]}>
+              <DmView style={[a.flex_row, a.items_center]}>
                 <CallIcon width={22} height={22} />
-                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
+                <Text size={13} leading="legacy" style={styles.call}>
                   {t("call")}
-                </DmText>
+                </Text>
               </DmView>
-              <DmView className="flex-row items-center">
+              <DmView style={[a.flex_row, a.items_center]}>
                 <ReviewsIcon width={32} height={20} />
-                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
+                <Text size={13} leading="legacy" style={styles.call}>
                   {t("my_review")}
-                </DmText>
+                </Text>
               </DmView>
               <DmView
-                className="flex-row items-center"
+                style={[a.flex_row, a.items_center]}
                 onPress={openRequestSheet}
               >
                 <DetailsIcon width={20} height={24} />
-                <DmText className="mx-[5] text-13 leading-[16] font-custom400">
+                <Text size={13} leading="legacy" style={styles.call}>
                   {t("my_request")}
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
           )}
@@ -1058,33 +1065,41 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               cancellations excluded deliberately). */}
           {chatPreview.chat.job?.status === "ended" && (
             <DmView
-              className="flex-row items-center px-[14] py-[10] border-t-0.5 border-grey4"
+              style={[
+                a.flex_row,
+                a.items_center,
+                a.px_14,
+                a.py_10,
+                styles.row6,
+              ]}
               onPress={handleRepostRequest}
             >
-              <DmText
-                className="text-13 leading-[16px] font-custom400 text-grey2"
+              <Text
+                size={13}
+                leading="tight"
+                color="secondary"
                 style={{ textAlign: "left" }}
               >
                 {t("request_ended")}
-              </DmText>
-              <DmView className="flex-1" />
-              <DmText className="text-12 leading-[15px] font-custom600 text-red">
+              </Text>
+              <DmView style={a.flex_1} />
+              <Text size={12} weight="semibold" leading="tight" color="brand">
                 {`${t("repost_request")} ›`}
-              </DmText>
+              </Text>
             </DmView>
           )}
-          <DmView className="border-b-0.5 border-grey4" />
+          <DmView style={styles.box6} />
         </DmView>
 
         {/* Messages list */}
-        <DmView className="flex-1" style={styles.relative}>
+        <DmView style={[a.flex_1, styles.relative]}>
           <AppFlatList
             ref={flatListRef}
             data={groups.flatData}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             inverted
-            className="flex-1 bg-white"
+            style={[a.flex_1, styles.box4]}
             contentContainerStyle={
               groups.flatData.length === 0
                 ? { flex: 1, justifyContent: "center" }
@@ -1100,20 +1115,23 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             maxToRenderPerBatch={10}
             ListFooterComponent={
               isLoadingMore ? (
-                <DmView className="py-[16] items-center">
+                <DmView style={[a.py_16, a.items_center]}>
                   <ActivityIndicator size="small" color={colors.red} />
                 </DmView>
               ) : null
             }
             ListEmptyComponent={
-              <DmView className="items-center px-[30]">
-                <DmView className="px-[20] py-[16] rounded-12" style={styles.emptyBg}>
-                  <DmText
-                    className="text-13 font-custom400 text-grey3 text-center leading-[20px]"
+              <DmView style={[a.items_center, a.px_30]}>
+                <DmView style={[a.px_20, a.py_16, styles.requestSentToProInfoWrap, styles.emptyBg]}>
+                  <Text
+                    size={13}
+                    leading="loose"
+                    color="tertiary"
+                    align="center"
                     style={styles.italic}
                   >
                     {t("request_sent_to_pro_info")}
-                  </DmText>
+                  </Text>
                 </DmView>
               </DmView>
             }
@@ -1123,8 +1141,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           {showScrollDown && (
             <DmView
               onPress={scrollToBottom}
-              className="absolute bottom-[16] right-[16] w-[36] h-[36] rounded-full bg-white items-center justify-center"
-              style={styles.scrollFab}
+              style={[a.absolute, styles.iconWrap3, a.items_center, a.justify_center, styles.scrollFab]}
             >
               <ChevronDownIcon width={16} height={16} color={colors.black} />
             </DmView>
@@ -1133,17 +1150,16 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Error banner */}
         {sendError && (
-          <DmView className="bg-red px-[16] py-[8]" onPress={() => setSendError(null)}>
-            <DmText className="text-12 font-custom500 text-white text-center">
+          <DmView style={[styles.tapToDismissWrap, a.px_16, a.py_8]} onPress={() => setSendError(null)}>
+            <Text size={12} weight="medium" leading="legacy" color="inverse" align="center">
               {sendError} — {t("tap_to_dismiss")}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {/* Input bar — the rounded outer sheet (see inputBarSheet) */}
         <DmView
-          className="w-full bg-white"
-          style={[
+          style={[a.w_full, styles.box4, 
             styles.inputBarSheet,
             styles.inputBarShadow,
             // Keyboard up: it covers the home-indicator area, so the safe-area
@@ -1153,7 +1169,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             { paddingBottom: isKeyboardVisible ? 12 : insets.bottom + 10 },
           ]}
         >
-          <DmView className="px-[20] pt-[12]">
+          <DmView style={[a.px_20, a.pt_12]}>
             {/* WhatsApp-style: + / field / send on one row, focused or not.
                 The field is one line tall until the text fills it, then grows
                 a line at a time and scrolls after six (styles). The row is
@@ -1161,7 +1177,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 replaced the focus reflow that dropped + and send to a toolbar
                 row under the text (2026-10-06 ticket). */}
             <DmView style={styles.composerCard}>
-              <DmView className="flex-row items-end">
+              <DmView style={[a.flex_row, a.items_end]}>
                 {plusButton}
                 <TextInput
                   ref={inputRef}
@@ -1184,7 +1200,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
           {/* Pending attachments preview */}
           {attachments.pending.length > 0 && (
-            <DmView className="flex-row flex-wrap px-[20] pt-[8] pb-[2]">
+            <DmView style={[a.flex_row, a.flex_wrap, a.px_20, a.pt_8, a.pb_2]}>
               {attachments.pending.map((attachment, index) => (
                 <DmView key={index} style={styles.pendingWrapper}>
                   <DmView style={styles.pendingThumb}>
@@ -1194,17 +1210,16 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                         style={styles.pendingImage}
                       />
                     ) : (
-                      <DmView className="w-full h-full bg-grey4 items-center justify-center rounded-8">
+                      <DmView style={[a.w_full, a.h_full, styles.iconWrap4, a.items_center, a.justify_center]}>
                         <DocumentIcon width={24} height={30} />
                       </DmView>
                     )}
                   </DmView>
                   <DmView
-                    className="absolute"
-                    style={[styles.pendingClose, I18nManager.isRTL ? { left: 5, right: undefined } : undefined]}
+                    style={[a.absolute, styles.pendingClose, I18nManager.isRTL ? { left: 5, right: undefined } : undefined]}
                     onPress={() => attachments.remove(index)}
                   >
-                    <DmView className="w-[18] h-[18] rounded-full border-1 border-grey2 bg-white items-center justify-center">
+                    <DmView style={[styles.iconWrap5, a.border_1, a.items_center, a.justify_center]}>
                       <CloseIcon width={8} height={8} />
                     </DmView>
                   </DmView>
@@ -1229,8 +1244,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       >
         {/* No grabber — swipe-down still dismisses (pan is on the whole sheet) */}
         <DmView
-          className="bg-white rounded-t-12 pt-[10]"
-          style={{ paddingBottom: insets.bottom + 2 }}
+          style={[styles.box7, a.pt_10, { paddingBottom: insets.bottom + 2 }]}
         >
           {renderAttachmentSheetContent()}
         </DmView>
@@ -1327,10 +1341,11 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             setCancelFeedbackVisible(true)
           }
         }}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-        classNameBtns="h-[40]"
-        classNameBtnsWrapper="mt-[20] mx-[15]"
-        classNameModal="px-[17]"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={styles.mainModalTitle}
+        btnsStyle={styles.mainModalBtns}
+        btnsWrapperStyle={[a.mt_20, styles.mainModalBtnsWrapper]}
+        modalStyle={styles.mainModalModal}
       />
 
       <CancelJobFeedbackModal

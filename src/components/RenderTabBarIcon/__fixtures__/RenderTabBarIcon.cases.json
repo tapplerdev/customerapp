@@ -1,0 +1,86 @@
+{
+ "component": "RenderTabBarIcon",
+ "capturedAt": "408d88f",
+ "elements": 4,
+ "files": 1,
+ "cases": {
+  "2515bc9e0e": {
+   "props": {
+    "focused": false,
+    "type": "messages",
+    "badge": {
+     "$opaque": "totalUnread"
+    }
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:66"
+   ]
+  },
+  "5c9e54ee2e": {
+   "props": {
+    "focused": true,
+    "type": "messages",
+    "badge": {
+     "$opaque": "totalUnread"
+    }
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:66"
+   ]
+  },
+  "71747af01e": {
+   "props": {
+    "focused": false,
+    "type": "account"
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:75"
+   ]
+  },
+  "cc1fac1670": {
+   "props": {
+    "focused": false,
+    "type": "home"
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:48"
+   ]
+  },
+  "39e127f0f7": {
+   "props": {
+    "focused": false,
+    "type": "talabati"
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:57"
+   ]
+  },
+  "76c8a76f33": {
+   "props": {
+    "focused": true,
+    "type": "account"
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:75"
+   ]
+  },
+  "dcd848dc13": {
+   "props": {
+    "focused": true,
+    "type": "home"
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:48"
+   ]
+  },
+  "0b818a084b": {
+   "props": {
+    "focused": true,
+    "type": "talabati"
+   },
+   "sites": [
+    "navigation/HomeTabs.tsx:57"
+   ]
+  }
+ }
+}

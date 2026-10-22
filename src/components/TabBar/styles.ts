@@ -1,4 +1,5 @@
 import { Dimensions, StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 const itemWidth = (SCREEN_WIDTH - 48) / 4
@@ -15,6 +16,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
+  },
+  box: {
+    backgroundColor: colors.white,
+  },
+  box2: {
+    height: 20,
+  },
+  text: {
+    color: colors.grey17,
+  },
+  textFocused: {
+    color: colors.black,
   },
 })
 

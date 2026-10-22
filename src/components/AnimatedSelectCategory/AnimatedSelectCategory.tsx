@@ -1,8 +1,12 @@
 import React, { useCallback, useRef, useState } from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
+import {
+  withType,
+  type SizeBringsLeading,
+} from "@tappler/shared/src/components/classNameSlots"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 
-import clsx from "clsx"
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,8 +14,26 @@ import Animated, {
 } from "react-native-reanimated"
 import colors from "@tappler/shared/src/styles/colors"
 import { LayoutChangeEvent } from "react-native"
-import type { ScrollView } from "react-native"
+import type { ScrollView, StyleProp } from "react-native"
 import { AppScrollView } from "components/scroll"
+import {
+  Text,
+  a,
+  px,
+  type DsTextProps,
+  type DsTextStyle,
+  type TextSizeOrPx,
+  type TextType,
+} from "@tappler/shared/src/ds"
+import styles from "./styles"
+
+/** A tab's title unless the caller says otherwise: 11, semibold, centred, leading 14. */
+const CATEGORY_TEXT = {
+  size: 11,
+  leading: px(14),
+  weight: "semibold",
+  align: "center",
+} as const satisfies TextType
 
 // Ported from proapp (menu section tabs with the sliding red underline).
 //
@@ -28,8 +50,10 @@ import { AppScrollView } from "components/scroll"
 interface Props {
   categories: string[]
   setSelectedCategory: (item: number) => void
-  className?: string
-  textClassName?: string
+  /** The titles' spacing and colour, after their own. */
+  textStyle?: StyleProp<DsTextStyle & NoShorthands>
+  /** The titles' typography, over their own (default 11, semibold, centred, leading 14). */
+  textType?: Partial<TextType> & SizeBringsLeading
   showLines?: boolean
 }
 
@@ -38,10 +62,15 @@ type TabLayout = { x: number; width: number }
 const AnimatedSelectCategory: React.FC<Props> = ({
   categories,
   setSelectedCategory,
-  className,
-  textClassName,
+  textStyle,
+  textType,
   showLines = true,
 }) => {
+  // The caller's textType over the titles' own, key by key.
+  const categoryText = withType<TextType>(
+    CATEGORY_TEXT,
+    textType
+  ) as DsTextProps<TextSizeOrPx>
   const scrollRef = useRef<ScrollView>(null)
   const layouts = useRef<TabLayout[]>([])
   const [activeIdx, setActiveIdx] = useState(0)
@@ -89,7 +118,7 @@ const AnimatedSelectCategory: React.FC<Props> = ({
   }
 
   return (
-    <DmView className={clsx("", className)}>
+    <DmView>
       <AppScrollView
         ref={scrollRef}
         horizontal
@@ -97,24 +126,19 @@ const AnimatedSelectCategory: React.FC<Props> = ({
         contentContainerStyle={{ paddingHorizontal: 14 }}
       >
         <DmView>
-          <DmView className="flex-row items-center">
+          <DmView style={[a.flex_row, a.items_center]}>
             {categories.map((item, idx) => (
               <DmView
                 key={idx}
-                className="px-[12] py-[4]"
+                style={[a.px_12, a.py_4]}
                 onLayout={handleLayout(idx)}
                 onPress={() => handlePress(idx)}
               >
                 {/* No numberOfLines — the tab is sized to the label now, so
                     there is nothing to truncate. */}
-                <DmText
-                  className={clsx(
-                    textClassName ||
-                      "text-11 leading-[14px] font-custom600 text-center"
-                  )}
-                >
+                <Text {...categoryText} style={textStyle}>
                   {item}
-                </DmText>
+                </Text>
               </DmView>
             ))}
           </DmView>
@@ -125,7 +149,7 @@ const AnimatedSelectCategory: React.FC<Props> = ({
               tab; a baseline drawn here would only span the content width, so
               the container supplies that. */}
           {showLines && (
-            <DmView className="mt-[9]">
+            <DmView style={styles.animatedWrap}>
               <Animated.View style={anim} />
             </DmView>
           )}

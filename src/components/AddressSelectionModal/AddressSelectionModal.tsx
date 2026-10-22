@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react"
 import { Platform } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -11,6 +11,8 @@ import { CustomerSavedAddress } from "types/auth"
 import LocationIcon from "assets/icons/location-red.svg"
 import SearchIcon from "assets/icons/search-red.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface AddressInfo {
   address: string
@@ -70,16 +72,16 @@ const AddressSelectionModal: React.FC<Props> = ({
   const sheetContent = (
     <>
         {/* Header Section — transparent bg with white text */}
-        <DmView className="px-[18] pt-[20] pb-[16] rounded-t-12">
-          <DmView className="flex-row items-center mb-[8]">
+        <DmView style={[a.px_18, a.pt_20, a.pb_16, styles.box]}>
+          <DmView style={[a.flex_row, a.items_center, a.mb_8]}>
             <LocationIcon width={22} height={22} />
-            <DmText className="ml-[4] text-18 leading-[22px] font-custom700 text-white flex-1">
+            <Text size={18} weight="bold" leading="tight" color="inverse" style={[a.ml_4, a.flex_1]}>
               {t("choose_service_address")}
-            </DmText>
+            </Text>
           </DmView>
-          <DmText className="text-12 leading-[18px] font-custom400 text-white">
+          <Text size={12} leading={px(18)} color="inverse">
             {t("use_your_registered_address_or_add_new")}
-          </DmText>
+          </Text>
         </DmView>
 
         {/*
@@ -97,66 +99,65 @@ const AddressSelectionModal: React.FC<Props> = ({
           side.
         */}
         <DmView
-          className="bg-white rounded-t-28 overflow-hidden"
-          style={{ paddingBottom: insets.bottom + 2, maxHeight: 550 }}
+          style={[styles.scrollWrap, a.overflow_hidden, { paddingBottom: insets.bottom + 2, maxHeight: 550 }]}
         >
         <AppScrollView showsVerticalScrollIndicator={false}>
           {/* Last used address */}
           {!!lastUsedAddress && (
             <>
-              <DmView className="px-[18] py-[12]" onPress={handleSelectLastUsed}>
-                <DmText className="text-12 leading-[26px] font-custom700 text-black">
+              <DmView style={[a.px_18, a.py_12]} onPress={handleSelectLastUsed}>
+                <Text size={12} weight="bold" leading={px(26)}>
                   {t("last_used_address")}
-                </DmText>
-                <DmText className="text-12 leading-[16px] font-custom400 text-black mt-[2]">
+                </Text>
+                <Text size={12} style={a.mt_2}>
                   {lastUsedAddress.address}
-                </DmText>
+                </Text>
                 {(lastUsedAddress.city || lastUsedAddress.governorate) && (
-                  <DmText className="text-11 leading-[16px] font-custom400 text-grey3">
+                  <Text size={11} leading="loose" color="tertiary">
                     {lastUsedAddress.city ? `${lastUsedAddress.city}, ` : ""}
                     {lastUsedAddress.governorate || ""}
-                  </DmText>
+                  </Text>
                 )}
               </DmView>
-              <DmView className="h-[1] bg-grey5 ml-[18]" />
+              <DmView style={[styles.box2, a.ml_18]} />
             </>
           )}
 
           {/* Saved account addresses (max 2) */}
           {filteredSavedAddresses.map((saved) => (
             <React.Fragment key={saved.id}>
-              <DmView className="px-[18] py-[12]" onPress={() => handleSelectSaved(saved)}>
-                <DmText className="text-12 leading-[26px] font-custom700 text-black">
+              <DmView style={[a.px_18, a.py_12]} onPress={() => handleSelectSaved(saved)}>
+                <Text size={12} weight="bold" leading={px(26)}>
                   {saved.name}
-                </DmText>
-                <DmText className="text-12 leading-[16px] font-custom400 text-black mt-[2]">
+                </Text>
+                <Text size={12} style={a.mt_2}>
                   {saved.address.streetAddress || ""}
-                </DmText>
+                </Text>
                 {(saved.address.city || saved.address.governorate) && (
-                  <DmText className="text-11 leading-[16px] font-custom400 text-grey3">
+                  <Text size={11} leading="loose" color="tertiary">
                     {saved.address.city ? `${saved.address.city}, ` : ""}
                     {saved.address.governorate || ""}
-                  </DmText>
+                  </Text>
                 )}
               </DmView>
-              <DmView className="h-[1] bg-grey5 ml-[18]" />
+              <DmView style={[styles.box2, a.ml_18]} />
             </React.Fragment>
           ))}
 
           {/* New Location */}
           <DmView
-            className="px-[18] py-[18] flex-row items-center justify-between"
+            style={[a.p_18, a.flex_row, a.items_center, a.justify_between]}
             onPress={onSelectNewLocation}
           >
-            <DmView className="flex-1">
-              <DmText className="text-12 leading-[16px] font-custom700 text-black">
+            <DmView style={a.flex_1}>
+              <Text size={12} weight="bold">
                 {t("new_location")}
-              </DmText>
-              <DmText className="text-12 leading-[16px] font-custom400 text-grey3 mt-[3]">
+              </Text>
+              <Text size={12} color="tertiary" style={styles.chooseAnotherAddress}>
                 {t("choose_another_address")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmView className="mr-[18]">
+            <DmView style={a.mr_18}>
               <SearchIcon width={16} height={16} />
             </DmView>
           </DmView>

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals"
 import React, { act } from "react"
+import { StyleSheet } from "react-native"
 import TestRenderer from "react-test-renderer"
 
 import type { ProType } from "types/pro"
@@ -100,7 +101,8 @@ const tabLabels = (card: Node) =>
   findAll(card, (n) =>
     (n.children ?? []).some((c) => typeof c === "string" && /^OFFERS?$/.test(c))
   ).map((n) => (n.children ?? []).filter((c) => typeof c === "string").join(""))
-const isBand = (n: Node) => n.props.style?.backgroundColor === "#FFF8F8"
+const isBand = (n: Node) =>
+  StyleSheet.flatten(n.props.style)?.backgroundColor === "#FFF8F8"
 
 describe("ProCard: the OFFERS tab", () => {
   beforeAll(async () => {
@@ -114,7 +116,12 @@ describe("ProCard: the OFFERS tab", () => {
     expect(tabLabels(card)).toEqual(["OFFER", "OFFERS"])
     // The footer band: the tab right over the stickers' band.
     const footer = kids(card)[kids(card).length - 1]
-    expect(footer.props.className).toBe("mt-[14] overflow-hidden")
+    expect(StyleSheet.flatten(footer.props.style)).toMatchObject({
+      marginTop: 14,
+      overflow: "hidden",
+      marginHorizontal: -15,
+      marginBottom: -12,
+    })
     const [tab, band] = kids(kids(footer)[0])
     expect(tabLabels(tab)).toEqual(["OFFERS"])
     expect(isBand(band)).toBe(true)

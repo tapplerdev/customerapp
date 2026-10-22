@@ -1,0 +1,70 @@
+{
+ "component": "QuestionComponent",
+ "capturedAt": "ca6eb23",
+ "elements": 3,
+ "files": 3,
+ "cases": {
+  "b9fa39da74": {
+   "props": {
+    "item": {
+     "$opaque": "question"
+    },
+    "onChangeAnswer": {
+     "$fn": true
+    },
+    "answers": {
+     "$opaque": "answers"
+    },
+    "hideBorders": true,
+    "compact": true,
+    "allQuestions": {
+     "$opaque": "allQuestions"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen.tsx:234"
+   ]
+  },
+  "a4e4063e93": {
+   "props": {
+    "key": {
+     "$opaque": "currentStep.question.id"
+    },
+    "item": {
+     "$opaque": "currentStep.question"
+    },
+    "onChangeAnswer": {
+     "$fn": true
+    },
+    "answers": {
+     "$opaque": "ctx.answers"
+    },
+    "allQuestions": {
+     "$opaque": "ctx.steps.flatMap((s) => s.type === \"question\" ? [s.question] : [] )"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen.tsx:291"
+   ]
+  },
+  "1d5e68050b": {
+   "props": {
+    "key": {
+     "$opaque": "currentQuestion.id"
+    },
+    "item": {
+     "$opaque": "currentQuestion"
+    },
+    "onChangeAnswer": {
+     "$fn": true
+    },
+    "answers": {
+     "$opaque": "questionsAnswers"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:353"
+   ]
+  }
+ }
+}

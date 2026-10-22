@@ -1,0 +1,42 @@
+{
+ "component": "OfferHistorySheet",
+ "capturedAt": "b5dd2eb",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "7ef9756213": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "jobId": {
+     "$opaque": "context.jobId"
+    },
+    "proId": {
+     "$opaque": "chatPreview.chat.proId"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1260"
+   ]
+  },
+  "fee012ed61": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "jobId": {
+     "$opaque": "context.jobId"
+    },
+    "proId": {
+     "$opaque": "chatPreview.chat.proId"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1260"
+   ]
+  }
+ }
+}

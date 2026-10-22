@@ -2,8 +2,10 @@ import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Calendar } from "react-native-calendars"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 export type TimeSlot = { start: string; end: string }
 
@@ -185,30 +187,38 @@ const CalendarTimePicker: React.FC<Props> = ({
       />
 
       {/* Time slots */}
-      <DmView className="mt-[16]" style={{ paddingHorizontal: inset }}>
-        <DmText className="text-14 font-custom600 text-black mb-[10]">
+      <DmView style={[a.mt_16, { paddingHorizontal: inset }]}>
+        <Text size={14} weight="semibold" leading="legacy" style={a.mb_10}>
           {t("select_time")}
-        </DmText>
-        <DmView className="flex-row flex-wrap gap-[8]">
+        </Text>
+        {/* NativeWind's gap-[8] drew -8 left and top on the row and 8 left and
+            top on each window; styles.gapRow / gapChild draw the same. */}
+        <DmView style={[a.flex_row, a.flex_wrap, styles.gapRow]}>
           {TIME_SLOTS.map((slot, index) => {
             const isSelected = selectedSlotIndex === index
             const tooEarly = isSlotTooEarlyOn(floor, selectedDate, slot)
             return (
               <DmView
                 key={index}
-                className={`px-[14] py-[10] rounded-8 border-1 ${
-                  isSelected ? "border-red bg-red/10" : "border-grey1"
-                }`}
-                style={tooEarly ? { opacity: 0.35 } : undefined}
+                style={[
+                  a.px_14,
+                  a.py_10,
+                  styles.container,
+                  a.border_1,
+                  isSelected ? styles.containerSelected : styles.containerNotSelected,
+                  tooEarly ? { opacity: 0.35 } : undefined,
+                  styles.gapChild,
+                ]}
                 onPress={tooEarly ? undefined : () => handleSlotPress(index)}
               >
-                <DmText
-                  className={`text-12 font-custom500 ${
-                    isSelected ? "text-red" : "text-black"
-                  }`}
+                <Text
+                  size={12}
+                  weight="medium"
+                  leading="legacy"
+                  color={isSelected ? "brand" : "primary"}
                 >
                   {slot.label}
-                </DmText>
+                </Text>
               </DmView>
             )
           })}
@@ -216,18 +226,24 @@ const CalendarTimePicker: React.FC<Props> = ({
 
         {showAnyTime && (
           <DmView
-            className={`mt-[16] px-[14] py-[12] rounded-8 border-1 ${
-              isAnyTime ? "border-red bg-red/10" : "border-grey1"
-            }`}
+            style={[
+              a.mt_16,
+              a.px_14,
+              a.py_12,
+              styles.container,
+              a.border_1,
+              isAnyTime ? styles.containerSelected : styles.containerNotSelected,
+            ]}
             onPress={handleAnyTimePress}
           >
-            <DmText
-              className={`text-13 font-custom500 ${
-                isAnyTime ? "text-red" : "text-black"
-              }`}
+            <Text
+              size={13}
+              weight="medium"
+              leading="legacy"
+              color={isAnyTime ? "brand" : "primary"}
             >
               {t("any_time")}
-            </DmText>
+            </Text>
           </DmView>
         )}
       </DmView>

@@ -1,17 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import {
-  Animated,
-  LayoutAnimation,
-  Platform,
-  TextInput,
-  UIManager,
-} from "react-native"
+import { Animated, LayoutAnimation, Platform, TextInput, UIManager, StyleSheet } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useIsFocused } from "@react-navigation/native"
 import FastImage from "react-native-fast-image"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { api, useCancelJobMutation, useGetChatsQuery, useGetCustomerJobByIdQuery, useLazyOpenChatQuery, useRespondToOpportunityMutation } from "services/api"
 import useJobPros from "hooks/useJobPros"
@@ -44,6 +38,7 @@ import FoodOrderView, {
 } from "./components/FoodOrderView"
 import JobMenuSheet from "./components/JobMenuSheet"
 import { AppFlatList } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -396,13 +391,12 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     return (
       <DmView
-        className="px-[14] py-[14]"
         onPress={isDeclined ? undefined : () => handleOpenChat(item)}
-        style={isDeclined ? { opacity: 0.55 } : undefined}
+        style={[a.p_14, isDeclined ? { opacity: 0.55 } : undefined]}
       >
-        <DmView className="flex-row items-start">
+        <DmView style={[a.flex_row, a.items_start]}>
           <DmView>
-            <DmView className="w-[85] h-[85] rounded-2 overflow-hidden bg-grey8">
+            <DmView style={[styles.box, a.overflow_hidden]}>
               {!!photoUrl && (
                 <FastImage
                   source={{ uri: photoUrl }}
@@ -412,63 +406,62 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               {isDeclined && (
                 <DmView
-                  className="absolute top-0 left-0 right-0 bottom-0"
-                  style={{ backgroundColor: "rgba(240,240,240,0.55)" }}
+                  style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(240,240,240,0.55)" }]}
                 />
               )}
             </DmView>
             {isFeatured && (
-              <DmView className="absolute top-[-8] self-center">
+              <DmView style={[a.absolute, styles.boxWrap, a.self_center]}>
                 <DmView
-                  className="h-[18] px-[6] rounded-5 bg-yellow items-center justify-center"
-                  style={styles.featuredBadgeBorder}
+                  style={[styles.featuredWrap, a.px_6, a.items_center, a.justify_center, styles.featuredBadgeBorder]}
                 >
-                  <DmText className="text-10 leading-[13px] font-custom700 uppercase">
+                  <Text size={10} weight="bold" style={styles.featured}>
                     {t("featured")}
-                  </DmText>
+                  </Text>
                 </DmView>
               </DmView>
             )}
           </DmView>
-          <DmView className="flex-1 ml-[10]">
-            <DmText className="text-14 leading-[16px] font-custom700 text-black" style={styles.nameMarginTop}>
+          <DmView style={[a.flex_1, a.ml_10]}>
+            <Text size={14} weight="bold" leading={px(16)} style={styles.nameMarginTop}>
               {displayName}
-            </DmText>
-            <DmView className={`${isAr ? "mt-[2]" : "mt-[6]"} flex-row items-center`}>
+            </Text>
+            <DmView style={[isAr ? a.mt_2 : a.mt_6, a.flex_row, a.items_center]}>
               {isCompany ? (
                 <BusinessIcon width={14} height={14} />
               ) : (
                 <IndividualIcon width={14} height={14} />
               )}
-              <DmText className="ml-[4] text-12 leading-[15px] font-custom500">
+              <Text size={12} weight="medium" leading="tight" style={a.ml_4}>
                 {t(isCompany ? "business" : "individual")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmView className={isAr ? "mt-[2]" : "mt-[8]"}>
+            <DmView style={isAr ? a.mt_2 : a.mt_8}>
               <RateComponent rate={overallScore} reviewsCount={reviewsCount} itemSize={11} />
             </DmView>
             {isDeclined ? (
-              <DmText
-                className={`${isAr ? "mt-[2]" : "mt-[8]"} text-12 leading-[16px] font-custom400 text-grey3`}
-                style={{ fontStyle: "italic", textAlign: "left" }}
+              <Text
+                size={12}
+                color="tertiary"
+                style={[isAr ? a.mt_2 : a.mt_8, { fontStyle: "italic", textAlign: "left" }]}
               >
                 {t("pro_declined_this_job")}
-              </DmText>
+              </Text>
             ) : (
-              <DmView className={`${isAr ? "mt-[2]" : "mt-[8]"} flex-row items-center justify-between`}>
-                <DmView className="flex-row items-center">
-                  <DmView className="px-[8] py-[3] mr-[6]" style={[styles.offerBadgeBorder, { borderColor: colors.red }]}>
-                    <DmText className="text-12 font-custom500">{t("offer_amount")}</DmText>
+              <DmView style={[isAr ? a.mt_2 : a.mt_8, a.flex_row, a.items_center, a.justify_between]}>
+                <DmView style={[a.flex_row, a.items_center]}>
+                  <DmView style={[a.px_8, styles.offerAmountWrap, a.mr_6, styles.offerBadgeBorder, { borderColor: colors.red }]}>
+                    <Text size={12} weight="medium" leading="legacy">{t("offer_amount")}</Text>
                   </DmView>
-                  <DmText className="text-14 font-custom700 text-black">
+                  <Text size={14} weight="bold" leading="legacy">
                     {offerAmount ? `${offerAmount} ${t("EGP")}` : t("no_offer_yet")}
-                  </DmText>
+                  </Text>
                 </DmView>
                 {unreadCount > 0 && (
                   <DmView>
                     <MailIcon width={22} height={16} />
-                    <DmView className="absolute top-[-8] right-[-8] w-[18] h-[18] rounded-full bg-red items-center justify-center">
-                      <DmText className="text-9 font-custom700 text-white">{unreadCount}</DmText>
+                    <DmView style={[a.absolute, styles.textWrap, a.items_center, a.justify_center]}>
+                      <Text size={9} weight="bold" leading="legacy" color="inverse">{unreadCount}</Text>
                     </DmView>
                   </DmView>
                 )}
@@ -476,7 +469,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
           </DmView>
         </DmView>
-        <DmView className="mt-[14] h-[0.5] bg-grey19" />
+        <DmView style={[a.mt_14, styles.box2]} />
       </DmView>
     )
   }
@@ -495,7 +488,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const trustDocs = pro.documents?.filter((d) => d.type === "trust" && d.status === "approved") || []
 
     return (
-      <DmView className="px-[12] py-[12]">
+      <DmView style={a.p_12}>
         <ProCardBase
           displayName={displayName}
           photoUrl={photoUrl}
@@ -530,10 +523,10 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     // cards) so loaded content lands in place instead of after a spinner
     // flash. The back button stays real — the user can always leave.
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <DmView className="flex-row items-center px-[16] py-[12]">
+      <SafeAreaView style={[a.flex_1, styles.safeArea]}>
+        <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
           <DmView
-            className="w-[32] h-[32] items-center justify-center"
+            style={[styles.iconWrap, a.items_center, a.justify_center]}
             hitSlop={HIT_SLOP_DEFAULT}
             onPress={handleGoBack}
           >
@@ -542,27 +535,27 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
             />
           </DmView>
-          <DmView className="flex-1 items-center">
+          <DmView style={[a.flex_1, a.items_center]}>
             <SkeletonLoader width={130} height={16} borderRadius={4} />
-            <SkeletonLoader width={90} height={11} borderRadius={4} className="mt-[6]" />
+            <SkeletonLoader width={90} height={11} borderRadius={4} />
           </DmView>
-          <DmView className="w-[32] h-[32]" />
+          <DmView style={styles.iconWrap} />
         </DmView>
-        <DmView className="items-center mt-[14]">
+        <DmView style={[a.items_center, a.mt_14]}>
           <SkeletonLoader width="85%" height={42} borderRadius={8} />
         </DmView>
-        <DmView className="mt-[12] h-[0.5] bg-grey19" />
-        <DmView className="px-[16] pt-[18]">
+        <DmView style={[a.mt_12, styles.box2]} />
+        <DmView style={[a.px_16, a.pt_18]}>
           <SkeletonLoader width={140} height={18} borderRadius={4} />
-          <SkeletonLoader width={230} height={13} borderRadius={4} className="mt-[8]" />
+          <SkeletonLoader width={230} height={13} borderRadius={4} />
           {[0, 1].map((i) => (
-            <DmView key={i} className="flex-row mt-[22]">
+            <DmView key={i} style={[a.flex_row, a.mt_22]}>
               <SkeletonLoader width={85} height={85} borderRadius={4} />
-              <DmView className="flex-1 ml-[12]">
+              <DmView style={[a.flex_1, a.ml_12]}>
                 <SkeletonLoader width="55%" height={15} borderRadius={4} />
-                <SkeletonLoader width="35%" height={12} borderRadius={4} className="mt-[8]" />
-                <SkeletonLoader width="45%" height={12} borderRadius={4} className="mt-[8]" />
-                <SkeletonLoader width="30%" height={16} borderRadius={8} className="mt-[10]" />
+                <SkeletonLoader width="35%" height={12} borderRadius={4} />
+                <SkeletonLoader width="45%" height={12} borderRadius={4} />
+                <SkeletonLoader width="30%" height={16} borderRadius={8} />
               </DmView>
             </DmView>
           ))}
@@ -575,11 +568,11 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   // breakdown. The pros tabs/offers machinery doesn't apply to a menu order.
   if (localJob?.foodOrderItems?.length) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView style={[a.flex_1, styles.safeArea]}>
         <Animated.View style={{ flex: 1, opacity: contentFade }}>
-          <DmView className="flex-row items-center px-[16] py-[12]">
+          <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
             <DmView
-              className="w-[32] h-[32] items-center justify-center"
+              style={[styles.iconWrap, a.items_center, a.justify_center]}
               hitSlop={HIT_SLOP_DEFAULT}
               onPress={handleGoBack}
             >
@@ -588,27 +581,27 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
               />
             </DmView>
-            <DmView className="flex-1 items-center">
-              <DmText className="text-16 font-custom600 text-black">
+            <DmView style={[a.flex_1, a.items_center]}>
+              <Text size={16} weight="semibold" leading="legacy">
                 {categoryName}
-              </DmText>
-              <DmText className="text-11 font-custom400 text-grey3">
+              </Text>
+              <Text size={11} leading="legacy" color="tertiary">
                 {t("order")}: {jobId}
-              </DmText>
+              </Text>
             </DmView>
             <DmView
-              className="w-[32] h-[32] items-center justify-center"
+              style={[styles.iconWrap, a.items_center, a.justify_center]}
               hitSlop={HIT_SLOP_DEFAULT}
               onPress={() => setFoodMenuVisible(true)}
             >
-              <DmView className="flex-row">
-                <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
-                <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
-                <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
+              <DmView style={a.flex_row}>
+                <DmView style={styles.box3} />
+                <DmView style={styles.box3} />
+                <DmView style={styles.box3} />
               </DmView>
             </DmView>
           </DmView>
-          <DmView className="h-[0.5] bg-grey19" />
+          <DmView style={styles.box2} />
           <MainModal
             isVisible={isCancelModalVisible}
             onClose={() => setCancelModalVisible(false)}
@@ -621,10 +614,11 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onPressSecond={() => setCancelModalVisible(false)}
             onModalHide={handleFoodConfirmHidden}
             isLoading={isCancellingFood}
-            classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-            classNameBtns="h-[40]"
-            classNameBtnsWrapper="mt-[20] mx-[15]"
-            classNameModal="px-[17]"
+            titleType={{ size: 14, leading: px(22) }}
+            titleStyle={styles.mainModalTitle}
+            btnsStyle={styles.mainModalBtns}
+            btnsWrapperStyle={[a.mt_20, styles.mainModalBtnsWrapper]}
+            modalStyle={styles.mainModalModal}
           />
           <JobMenuSheet
             isVisible={isFoodMenuVisible}
@@ -673,9 +667,10 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             title={t("order_cancelled")}
             descr={t("order_cancelled_descr")}
             titleBtn={t("done")}
-            classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-            classNameBtn="h-[40]"
-            classNameModal="px-[17]"
+            titleType={{ size: 14, leading: px(22) }}
+            titleStyle={styles.mainModalTitle}
+            actionBtnStyle={styles.mainModalBtns}
+            modalStyle={styles.mainModalModal}
           />
           <ErrorModal
             isVisible={isErrorModalVisible}
@@ -691,12 +686,12 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       <Animated.View style={{ flex: 1, opacity: contentFade }}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleGoBack}
         >
@@ -705,76 +700,72 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {categoryName}
-          </DmText>
-          <DmText className="text-11 font-custom400 text-grey3">
+          </Text>
+          <Text size={11} leading="legacy" color="tertiary">
             {t("request_id")}: {jobId}
-          </DmText>
+          </Text>
         </DmView>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => {
             setMenuVisible(true)
             prefetchJobDetails(jobId, { ifOlderThan: 60 })
           }}
         >
-          <DmView className="flex-row">
-            <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
-            <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
-            <DmView className="bg-black rounded-full w-[5] h-[5] mx-[1]" />
+          <DmView style={a.flex_row}>
+            <DmView style={styles.box3} />
+            <DmView style={styles.box3} />
+            <DmView style={styles.box3} />
           </DmView>
         </DmView>
       </DmView>
 
       {/* Tabs */}
-      <DmView className="items-center mt-[14]">
+      <DmView style={[a.items_center, a.mt_14]}>
         <DmView style={styles.tabsWrapper}>
           {/* OFFERS badge centered above Other Pros half */}
           <DmView
-            className="absolute top-[-12] bg-red px-[8] py-[3] rounded-3 z-10"
-            style={[styles.offersBadgeShadow, { left: 205 }]}
+            style={[a.absolute, styles.textWrap2, a.px_8, styles.offersBadgeShadow, { left: 205 }]}
           >
-            <DmText className="text-9 font-custom700 text-white">
+            <Text size={9} weight="bold" leading="legacy" color="inverse">
               {t("offers").toUpperCase()}
-            </DmText>
+            </Text>
           </DmView>
 
           <DmView
-            className="flex-row"
-            style={styles.tabContainer}
+            style={[a.flex_row, styles.tabContainer]}
           >
             <DmView
-              className="flex-1 items-center justify-center"
-              style={{
+              style={[a.flex_1, a.items_center, a.justify_center, {
                 backgroundColor: activeTab === "selected" ? "#4A4A4A" : "transparent",
                 borderRadius: 5,
-              }}
+              }]}
               onPress={() => setActiveTab("selected")}
             >
-              <DmText className={`text-12 font-custom600 ${activeTab === "selected" ? "text-white" : "text-black"}`}>
+              <Text size={12} weight="semibold" leading="legacy" color={activeTab === "selected" ? "inverse" : "primary"}>
                 {t("selected_pros_tab")}
-              </DmText>
+              </Text>
             </DmView>
             <DmView
-              className="flex-1 items-center justify-center"
-              style={{
+              style={[a.flex_1, a.items_center, a.justify_center, {
                 backgroundColor: activeTab === "other" ? "#4A4A4A" : "transparent",
                 borderRadius: 5,
-              }}
+              }]}
               onPress={() => setActiveTab("other")}
             >
-              <DmText className={`text-12 font-custom600 ${activeTab === "other" ? "text-white" : "text-black"}`}>
+              <Text size={12} weight="semibold" leading="legacy" color={activeTab === "other" ? "inverse" : "primary"}>
                 {t("other_pros_tab")}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </DmView>
       </DmView>
 
-      <DmView className="mt-[12] h-[0.5] bg-grey19" />
+      <DmView style={[a.mt_12, styles.box2]} />
 
       {/* Rescue status card (Claude Design "Concept B"): sits between the
           tabs and the section header, in the screen's card language. Icon
@@ -782,42 +773,43 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           action. Row auto-mirrors under forceRTL, chevron flips. */}
       {(isEnded || isStranded) && (
         <DmView
-          className="mx-[16] mt-[12] flex-row items-center"
-          style={styles.rescueCard}
+          style={[a.mx_16, a.mt_12, a.flex_row, a.items_center, styles.rescueCard]}
         >
-          <DmView className="items-center justify-center" style={styles.rescueIconTile}>
+          <DmView style={[a.items_center, a.justify_center, styles.rescueIconTile]}>
             {isEnded ? (
               <ClockRedIcon width={20} height={20} />
             ) : (
               <UsersRedIcon width={20} height={20} />
             )}
           </DmView>
-          <DmView className="flex-1 mx-[12]">
-            <DmText
-              className="text-13 leading-[17px] font-custom700 text-black"
+          <DmView style={[a.flex_1, a.mx_12]}>
+            <Text
+              size={13}
+              weight="bold"
+              leading={px(17)}
               style={{ textAlign: "left" }}
             >
               {isEnded ? t("request_ended") : t("pros_declined_banner")}
-            </DmText>
-            <DmText
-              className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2"
-              style={{ textAlign: "left" }}
+            </Text>
+            <Text
+              size={11}
+              color="secondary"
+              style={[a.mt_2, { textAlign: "left" }]}
             >
               {isEnded ? t("request_ended_descr") : t("pros_declined_descr")}
-            </DmText>
+            </Text>
           </DmView>
           <DmView
-            className="rounded-full px-[16] py-[9]"
-            style={styles.rescuePill}
+            style={[styles.textWrap3, a.px_16, styles.rescuePill]}
             onPress={
               isEnded
                 ? () => repostFromJob(jobId)
                 : () => setFindProsModalVisible(true)
             }
           >
-            <DmText className="text-12 leading-[15px] font-custom600 text-white">
+            <Text size={12} weight="semibold" leading="tight" color="inverse">
               {`${isEnded ? t("repost") : t("find_pros")} ${isAr ? "‹" : "›"}`}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
       )}
@@ -845,14 +837,13 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             }}
           />
           <DmView
-            className="px-[28] py-[14] rounded-10"
-            style={{ backgroundColor: colors.red }}
+            style={[a.px_28, a.py_14, styles.textWrap4, { backgroundColor: colors.red }]}
           >
-            <DmText className="text-12 font-custom600 text-white">
+            <Text size={12} weight="semibold" leading="legacy" color="inverse">
               {bannerType === "new_offers"
                 ? t("you_received_new_offers")
                 : t("pro_moved_to_selected")}
-            </DmText>
+            </Text>
           </DmView>
         </Animated.View>
       )}
@@ -866,22 +857,22 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
         bounces={false}
         ListHeaderComponent={
-          <DmView className="px-[14] mt-[16] mb-[8]">
-            <DmText className="text-16 font-custom600 text-black">
+          <DmView style={[a.px_14, a.mt_16, a.mb_8]}>
+            <Text size={16} weight="semibold" leading="legacy">
               {activeTab === "selected" ? t("selected_pros_tab") : t("other_pros_tab")}
-            </DmText>
-            <DmText className="mt-[2] text-12 font-custom400 text-grey3">
+            </Text>
+            <Text size={12} leading="legacy" color="tertiary" style={a.mt_2}>
               {activeTab === "selected"
                 ? t("the_pros_you_selected")
                 : t("other_pros_who_sent_offers")}
-            </DmText>
+            </Text>
           </DmView>
         }
         ListEmptyComponent={
-          <DmView className="items-center justify-center py-[40]">
-            <DmText className="text-14 font-custom400 text-grey3">
+          <DmView style={[a.items_center, a.justify_center, a.py_40]}>
+            <Text size={14} leading="legacy" color="tertiary">
               {activeTab === "selected" ? t("no_selected_pros") : t("no_offers_yet")}
-            </DmText>
+            </Text>
           </DmView>
         }
       />
@@ -907,9 +898,10 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         title={t("job_cancelled")}
         descr={t("job_cancelled_descr")}
         titleBtn={t("done")}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-        classNameBtn="h-[40]"
-        classNameModal="px-[17]"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={styles.mainModalTitle}
+        actionBtnStyle={styles.mainModalBtns}
+        modalStyle={styles.mainModalModal}
       />
 
       {/* Cancel confirmation modal */}
@@ -932,10 +924,11 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             setCancelFeedbackVisible(true)
           }
         }}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-        classNameBtns="h-[40]"
-        classNameBtnsWrapper="mt-[20] mx-[15]"
-        classNameModal="px-[17]"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={styles.mainModalTitle}
+        btnsStyle={styles.mainModalBtns}
+        btnsWrapperStyle={[a.mt_20, styles.mainModalBtnsWrapper]}
+        modalStyle={styles.mainModalModal}
       />
 
       {/* Find-other-pros confirmation: the cancel is irreversible, so say
@@ -951,10 +944,11 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         onPress={handleConfirmFindOtherPros}
         onPressSecond={() => !isRescueBusy && setFindProsModalVisible(false)}
         onModalHide={handleFindProsHidden}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-        classNameBtns="h-[40]"
-        classNameBtnsWrapper="mt-[20] mx-[15]"
-        classNameModal="px-[17]"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={styles.mainModalTitle}
+        btnsStyle={styles.mainModalBtns}
+        btnsWrapperStyle={[a.mt_20, styles.mainModalBtnsWrapper]}
+        modalStyle={styles.mainModalModal}
       />
 
       {/* Cancel feedback modal — shared with the chat's ••• menu */}

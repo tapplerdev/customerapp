@@ -1,0 +1,86 @@
+{
+ "component": "SuccessModal",
+ "capturedAt": "de62cbc",
+ "elements": 3,
+ "files": 3,
+ "cases": {
+  "d7c4384c26": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "title": "t:email_updated",
+    "descr": "t:email_updated_successfully"
+   },
+   "sites": [
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:180"
+   ]
+  },
+  "20883e4fc6": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "title": "t:email_updated",
+    "descr": "t:email_updated_successfully"
+   },
+   "sites": [
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:180"
+   ]
+  },
+  "26915cf924": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "title": "t:mobile_updated",
+    "descr": "t:mobile_updated_successfully"
+   },
+   "sites": [
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:177"
+   ]
+  },
+  "3d628e6698": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "title": "t:mobile_updated",
+    "descr": "t:mobile_updated_successfully"
+   },
+   "sites": [
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:177"
+   ]
+  },
+  "fd8e49e316": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "title": "t:password_changed",
+    "descr": "t:password_changed_successfully"
+   },
+   "sites": [
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:183"
+   ]
+  },
+  "dc378bac44": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "title": "t:password_changed",
+    "descr": "t:password_changed_successfully"
+   },
+   "sites": [
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:183"
+   ]
+  }
+ }
+}

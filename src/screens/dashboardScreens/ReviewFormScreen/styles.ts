@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   profilePhoto: { width: 100, height: 100 },
@@ -31,4 +32,82 @@ export default StyleSheet.create({
     borderWidth: 2,
   },
   fullSize: { width: "100%", height: "100%" },
+  safeArea: {
+    backgroundColor: colors.white,
+  },
+  iconWrap: {
+    width: 32,
+    height: 32,
+  },
+  box: {
+    width: 32,
+  },
+  imageWrap: {
+    width: 100,
+    height: 100,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+  },
+  textWrap: {
+    width: 100,
+    height: 100,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.grey8,
+  },
+  box2: {
+    height: 0.5,
+    backgroundColor: colors.grey19,
+  },
+  inputWrap: {
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 4,
+  },
+  imageWrap2: {
+    width: 80,
+    height: 80,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  boxWrap: {
+    top: -8,
+    right: -8,
+  },
+  iconWrap2: {
+    width: 20,
+    height: 20,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    borderTopColor: colors.grey2,
+    borderRightColor: colors.grey2,
+    borderBottomColor: colors.grey2,
+    borderLeftColor: colors.grey2,
+    backgroundColor: colors.white,
+  },
+  boxWrap2: {
+    zIndex: 10,
+  },
+  iconWrap3: {
+    width: 32,
+    height: 32,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.white,
+  },
+  boxWrap3: {
+    left: 0,
+    right: 0,
+  },
 })

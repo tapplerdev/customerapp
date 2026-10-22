@@ -4,6 +4,8 @@ import {
   ScrollView,
   type FlatListProps,
   type ScrollViewProps,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 
@@ -75,71 +77,69 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
  * PickAddressScreen, keeps `import type { ScrollView }` for a ref on a
  * reanimated Animated.ScrollView, which is not one of these wrappers.)
  *
- * className MUST BE THREADED THROUGH EXPLICITLY. This is not cosmetic — leaving
- * it in {...rest} silently drops every NativeWind style on these components.
- * NativeWind v2 is a BABEL transform: it rewrites a JSX element that has a
- * className attribute into <StyledComponent component={X} className=... />, and
- * it only does that for elements it recognises as react-native components. An
- * <AppScrollView className="flex-1"> is not one, so it compiled to a plain prop
- * that RN ScrollView ignores. 18 call sites across 10 files were affected, and
- * nothing warned — a collapsed sheet was the only symptom.
- *
- * Passing it as a literal attribute on the INNER component fixes it even though
- * the value is dynamic: the plugin keys on the attribute, not on the value, so
- * the wrapper itself becomes the StyledComponent (verified against the compiled
- * output). The class names at the call sites still register into
- * NativeWindStyleSheet regardless of whether their element was wrapped, so the
- * runtime lookup resolves them.
- *
- * NATIVEWIND v4 WAS TRIED AND REVERTED. Do not re-attempt it without
- * reading this, because the failure mode is silent.
- *
- * v2 is a BABEL transform: its visitor rewrites any JSX element carrying a
- * className into <StyledComponent component={X}>, keying on the element NAME
- * (getElementName returns `.property.name`, so `Animated.View` reads as
- * "View"). That means it styles third-party components and member
- * expressions alike, which is why everything in these apps works today.
- *
- * v4 replaces that with a RUNTIME registry: react-native-css-interop keeps a
- * map of registered components and drops className on anything absent from
- * it. Registered out of the box are RN core primitives only. Everything else
- * silently renders unstyled — no error, no warning. Measured on device with a
- * paired probe: a registered DmView with bg-red painted 825k pixels while an
- * unregistered Animated.View with bg-green painted 0.
- *
- * And registering the gap is not a workaround: cssInterop and the lighter
- * remapProps, applied to reanimated Animated or RN Animated, each rendered
- * the whole app blank. The interop takes over the `style` prop and flattens
- * the useAnimatedStyle output the animation depends on.
- *
- * The bill on this codebase was 104 <MainModal> sites (react-native-modal
- * hands className to react-native-animatable`s createComponent wrapper, so
- * the m-0 that cancels its 5%-of-width margin was dropped), 11 MapView sites
- * losing flex-1, plus DropShadow, LinearGradient and 29 Animated.* sites.
- *
- * The plan is to remove NativeWind entirely in favour of a real token layer
- * in tappler-shared, not to move to v4.
+ * NO className. customerapp has drawn without NativeWind since 2026-10 (the
+ * token layer in tappler-shared replaced it), so a class would reach the
+ * scroll view as an unknown prop and style nothing: these take `style` and
+ * `contentContainerStyle`. NativeWind v4 was tried before that and reverted,
+ * because it silently drops className on any component it hasn't registered;
+ * the finding is in this file's history (8f2cea7).
  *
  * PULL-TO-REFRESH IS THE EXCEPTION. RefreshControl needs the bounce to reveal its
  * spinner, so on a list short enough to fit there would be nothing to pull.
  * TalabatiScreen and NotificationsScreen pass alwaysBounceVertical explicitly for
  * that reason — do not remove it there.
  */
-export const AppScrollView = React.forwardRef<ScrollView, ScrollViewProps>(
+export type AppScrollViewProps = ScrollViewProps & {
+  /**
+   * The scroll view's style: React Native's own, with its type (a call site
+   * writes `backgroundColor`, a screen's `padding`). The wrapper draws no
+   * styles of its own, so no per-side key of its own sits under a shorthand.
+   */
+  style?: StyleProp<ViewStyle>
+}
+
+export const AppScrollView = React.forwardRef<ScrollView, AppScrollViewProps>(
   function AppScrollView(
-    { alwaysBounceVertical = false, className, ...rest },
+    { alwaysBounceVertical = false, style, ...rest },
     ref,
   ) {
     return (
       <ScrollView
         ref={ref}
-        className={className}
+        style={style}
         alwaysBounceVertical={alwaysBounceVertical}
         {...rest}
       />
     )
   },
 )
+
+/**
+ * The standard idiom for a generic forwardRef component, and it IS a real
+ * assertion — worth knowing exactly what it trades away before copying it.
+ *
+ * It is needed because `React.forwardRef`'s own type signature is not
+ * generic-preserving: without it every caller collapses to FlatList<unknown> and
+ * loses all `data` / `renderItem` checking (verified with a probe — `item.nope`
+ * stops erroring). A call around forwardRef rather than `as` on it: the
+ * codemod reads the render function inside `React.forwardRef(...)`, which it
+ * cannot through a cast.
+ *
+ * What it asserts is NOT the render function's signature. The render function
+ * is `(props, ref) => Element`; this declares a one-parameter component. And
+ * forwardRef returns an OBJECT (`{$$typeof, render}`), not a callable, so
+ * `AppFlatList({...})` type-checks and then throws at runtime. It also drops the
+ * exotic-component members, so `AppFlatList.displayName = "..."` will not
+ * compile. Use it as JSX only, which is the only way anything uses it here.
+ */
+function asGeneric<C>(component: React.ForwardRefExoticComponent<never>): C {
+  return component as unknown as C
+}
+
+export type AppFlatListProps<ItemT> = FlatListProps<ItemT> & {
+  /** The list's style: React Native's own, with its type, as AppScrollView's. */
+  style?: StyleProp<ViewStyle>
+}
 
 /**
  * A plain prop, NOT renderScrollComponent. FlatList destructures only
@@ -149,40 +149,29 @@ export const AppScrollView = React.forwardRef<ScrollView, ScrollViewProps>(
  * (@react-native/virtualized-lists/Lists/VirtualizedList.js:1066,1249). So the
  * prop arrives through the documented "inherits ScrollView props" contract with
  * RN's own three-branch render path untouched.
- */
-function AppFlatListInner<ItemT>(
-  { alwaysBounceVertical = false, className, ...rest }: FlatListProps<ItemT>,
-  ref: React.ForwardedRef<FlatList<ItemT>>,
-) {
-  return (
-    <FlatList<ItemT>
-      ref={ref}
-      className={className}
-      alwaysBounceVertical={alwaysBounceVertical}
-      {...rest}
-    />
-  )
-}
-
-/**
- * The standard idiom for a generic forwardRef component, and it IS a real
- * assertion — worth knowing exactly what it trades away before copying it.
  *
- * It is needed because `React.forwardRef`'s own type signature is not
- * generic-preserving: without it every caller collapses to FlatList<unknown> and
- * loses all `data` / `renderItem` checking (verified with a probe — `item.nope`
- * stops erroring).
- *
- * What it asserts is NOT the inner function's signature. The inner function is
- * `(props, ref) => Element`; this declares a one-parameter component. And
- * forwardRef returns an OBJECT (`{$$typeof, render}`), not a callable, so
- * `AppFlatList({...})` type-checks and then throws at runtime. It also drops the
- * exotic-component members, so `AppFlatList.displayName = "..."` will not
- * compile. Use it as JSX only, which is the only way anything uses it here.
+ * The render function is written inside the forwardRef call, where the codemod
+ * reads the component's props.
  */
-export const AppFlatList = React.forwardRef(AppFlatListInner) as <ItemT>(
-  props: FlatListProps<ItemT> & React.RefAttributes<FlatList<ItemT>>,
-) => React.ReactElement
+export const AppFlatList = asGeneric<
+  <ItemT>(
+    props: AppFlatListProps<ItemT> & React.RefAttributes<FlatList<ItemT>>,
+  ) => React.ReactElement
+>(
+  React.forwardRef(function AppFlatListInner<ItemT>(
+    { alwaysBounceVertical = false, style, ...rest }: AppFlatListProps<ItemT>,
+    ref: React.ForwardedRef<FlatList<ItemT>>,
+  ) {
+    return (
+      <FlatList<ItemT>
+        ref={ref}
+        style={style}
+        alwaysBounceVertical={alwaysBounceVertical}
+        {...rest}
+      />
+    )
+  }),
+)
 
 /**
  * Wraps KeyboardAwareScrollView rather than re-composing its HOC.
@@ -203,21 +192,24 @@ export const AppFlatList = React.forwardRef(AppFlatListInner) as <ItemT>(
  * with react-native-keyboard-controller, which takes a `ScrollViewComponent` prop
  * instead. This wrapper is the seam where that swap happens.
  */
-type AppKeyboardAwareScrollViewProps = React.ComponentProps<
+export type AppKeyboardAwareScrollViewProps = React.ComponentProps<
   typeof KeyboardAwareScrollView
->
+> & {
+  /** The scroll view's style: React Native's own, as AppScrollView's. */
+  style?: StyleProp<ViewStyle>
+}
 
 export const AppKeyboardAwareScrollView = React.forwardRef<
   KeyboardAwareScrollView,
   AppKeyboardAwareScrollViewProps
 >(function AppKeyboardAwareScrollView(
-  { alwaysBounceVertical = false, className, ...rest },
+  { alwaysBounceVertical = false, style, ...rest },
   ref,
 ) {
   return (
     <KeyboardAwareScrollView
       ref={ref}
-      className={className}
+      style={style}
       alwaysBounceVertical={alwaysBounceVertical}
       {...rest}
     />

@@ -1,6 +1,6 @@
 import React from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 
 import HomeIcon from "assets/icons/home.svg"
 import HomeActiveIcon from "assets/icons/home-active.svg"
@@ -10,6 +10,8 @@ import MessagesIcon from "assets/icons/messages.svg"
 import MessagesActiveIcon from "assets/icons/messages-active.svg"
 import AccountIcon from "assets/icons/account.svg"
 import AccountActiveIcon from "assets/icons/account-active.svg"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   type: "home" | "talabati" | "messages" | "account"
@@ -31,13 +33,13 @@ const RenderTabBarIcon: React.FC<Props> = ({ type, focused, badge }) => {
     }
   }
   return (
-    <DmView className="w-[22] h-[22] items-center justify-center">
+    <DmView style={[styles.container, a.items_center, a.justify_center]}>
       {renderIcon()}
       {!!badge && badge > 0 && (
-        <DmView className="absolute top-[-8] right-[-12] bg-red rounded-full min-w-[18] h-[18] items-center justify-center px-[4]">
-          <DmText className="text-10 leading-[13px] text-white font-custom700">
+        <DmView style={[a.absolute, styles.textWrap, a.items_center, a.justify_center, a.px_4]}>
+          <Text size={10} weight="bold" color="inverse">
             {badge > 99 ? "99+" : badge}
-          </DmText>
+          </Text>
         </DmView>
       )}
     </DmView>

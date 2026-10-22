@@ -1,0 +1,25 @@
+{
+ "component": "PromoLine",
+ "capturedAt": "e2817f1",
+ "elements": 3,
+ "files": 3,
+ "cases": {
+  "ac3f251b0a": {
+   "props": {
+    "promoMessage": "{promoLine.promoStickerMessage}"
+   },
+   "sites": [
+    "components/ProCardBase/ProCardBase.tsx:217",
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:312"
+   ]
+  },
+  "fdf058dc32": {
+   "props": {
+    "promoMessage": "{subscriptions.find((s: any) => s.product?.subType === \"promoLine\").promoStickerMessage}"
+   },
+   "sites": [
+    "screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx:272"
+   ]
+  }
+ }
+}

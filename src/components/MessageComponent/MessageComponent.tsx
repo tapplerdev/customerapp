@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react"
 import SystemEventBubble from "components/SystemEventBubble/SystemEventBubble"
-import clsx from "clsx"
 import {
   ActivityIndicator,
   Animated,
@@ -10,7 +9,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import OfferUpdateCard, {
   parseOfferUpdate,
@@ -28,6 +27,8 @@ import ImageViewerModal from "components/ImageViewerModal/ImageViewerModal"
 import DocumentViewerModal from "@tappler/shared/src/components/DocumentViewerModal"
 
 import DocumentIcon from "assets/icons/job-details.svg"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import { messageComponentStyles } from "./styles"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 const BUBBLE_MAX_WIDTH = SCREEN_WIDTH - 129
@@ -183,19 +184,14 @@ const MessageComponent: React.FC<Props> = React.memo(
               it. Follows whichever side its line lands on. */}
           {showTimestamp && !offerUpdate && !isExpiryEvent && (
             <DmView
-              className={`pb-[4] pt-[4] ${
-                isOwnAction
-                  ? isAr
-                    ? "items-start pl-[49]"
-                    : "items-end pr-[49]"
-                  : isAr
-                    ? "items-end pr-[49]"
-                    : "items-start pl-[49]"
-              }`}
+              style={[
+                a.py_4,
+                isOwnAction ? (isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr) : (isAr ? messageComponentStyles.textWrapOwnActionNotAr : messageComponentStyles.textWrapOwnActionAr),
+              ]}
             >
-              <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
+              <Text size={10} color="tertiary">
                 {time}
-              </DmText>
+              </Text>
             </DmView>
           )}
           {eventTextKey ? (
@@ -210,16 +206,10 @@ const MessageComponent: React.FC<Props> = React.memo(
             // as though they had cancelled their own order. The class string
             // below was byte-identical to the customer's own bubble.
             <DmView
-              className={clsx(
-                "flex",
-                isProAction
-                  ? isAr
-                    ? "items-end pr-[49] ml-[80]"
-                    : "items-start pl-[49] mr-[80]"
-                  : isAr
-                    ? "items-start pl-[49] mr-[80]"
-                    : "items-end pr-[49] ml-[80]"
-              )}
+              style={[
+                messageComponentStyles.systemEventBubbleWrap,
+                isProAction ? (isAr ? messageComponentStyles.systemEventBubbleWrapProActionAr : messageComponentStyles.systemEventBubbleWrapProActionNotAr) : (isAr ? messageComponentStyles.systemEventBubbleWrapProActionNotAr : messageComponentStyles.systemEventBubbleWrapProActionAr),
+              ]}
             >
               <SystemEventBubble
                 textKey={eventTextKey}
@@ -237,10 +227,10 @@ const MessageComponent: React.FC<Props> = React.memo(
             // mirrored. Pinned, not mirrored by RTL — the isAr classes are
             // pre-flipped so it lands on the physical left in both languages.
             <DmView
-              className={clsx(
-                "flex",
-                isAr ? "items-end pr-[49] ml-[80]" : "items-start pl-[49] mr-[80]"
-              )}
+              style={[
+                messageComponentStyles.systemEventBubbleWrap,
+                isAr ? messageComponentStyles.systemEventBubbleWrapProActionAr : messageComponentStyles.systemEventBubbleWrapProActionNotAr,
+              ]}
             >
               <OfferUpdateCard
                 previous={offerUpdate.previous}
@@ -255,19 +245,14 @@ const MessageComponent: React.FC<Props> = React.memo(
             // had accepted something. Anything else here is the pro's doing and
             // stays on the incoming side.
             <DmView
-              className={`flex ${
-                isOwnAction
-                  ? isAr
-                    ? "pl-[49] items-start"
-                    : "pr-[49] items-end"
-                  : isAr
-                    ? "pr-[49] items-end"
-                    : "pl-[49] items-start"
-              }`}
+              style={[
+                messageComponentStyles.systemEventBubbleWrap,
+                isOwnAction ? (isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr) : (isAr ? messageComponentStyles.textWrapOwnActionNotAr : messageComponentStyles.textWrapOwnActionAr),
+              ]}
             >
-              <DmText className="text-11 leading-[14px] font-custom400 text-red">
+              <Text size={11} leading="tight" color="brand">
                 {t(item.text || "")}
-              </DmText>
+              </Text>
             </DmView>
           )}
         </DmView>
@@ -314,7 +299,7 @@ const MessageComponent: React.FC<Props> = React.memo(
       if (imageFiles.length === 2) {
         const halfW = (bubbleWidth - gap) / 2
         return (
-          <DmView className="flex-row" style={{ height: gridHeight }}>
+          <DmView style={[a.flex_row, { height: gridHeight }]}>
             <FadeInImageTile uri={imageFiles[0].url720 || imageFiles[0].url} width={halfW} height={gridHeight} onPress={() => handleImagePress(0)} />
             <DmView style={{ width: gap }} />
             <FadeInImageTile uri={imageFiles[1].url720 || imageFiles[1].url} width={halfW} height={gridHeight} onPress={() => handleImagePress(1)} />
@@ -327,7 +312,7 @@ const MessageComponent: React.FC<Props> = React.memo(
         const rightW = bubbleWidth / 3
         const halfH = (gridHeight - gap) / 2
         return (
-          <DmView className="flex-row" style={{ height: gridHeight }}>
+          <DmView style={[a.flex_row, { height: gridHeight }]}>
             <FadeInImageTile uri={imageFiles[0].url720 || imageFiles[0].url} width={leftW} height={gridHeight} onPress={() => handleImagePress(0)} />
             <DmView style={{ width: gap }} />
             <DmView style={{ width: rightW }}>
@@ -345,7 +330,7 @@ const MessageComponent: React.FC<Props> = React.memo(
       const rightItems = imageFiles.slice(1, 4)
       const rightItemH = (gridHeight - gap * (rightItems.length - 1)) / rightItems.length
       return (
-        <DmView className="flex-row" style={{ height: gridHeight }}>
+        <DmView style={[a.flex_row, { height: gridHeight }]}>
           <FadeInImageTile uri={imageFiles[0].url720 || imageFiles[0].url} width={leftW} height={gridHeight} onPress={() => handleImagePress(0)} />
           <DmView style={{ width: gap }} />
           <DmView style={{ width: rightW }}>
@@ -369,34 +354,35 @@ const MessageComponent: React.FC<Props> = React.memo(
           <DmView
             key={file.id}
             onPress={() => handleDocPress(file)}
-            className="flex-row items-center"
-            style={{ padding: 10, width: bubbleWidth }}
+            style={[a.flex_row, a.items_center, { padding: 10, width: bubbleWidth }]}
           >
             <DmView
-              className="items-center justify-center"
-              style={{
+              style={[a.items_center, a.justify_center, {
                 width: 36,
                 height: 36,
                 borderRadius: 6,
                 backgroundColor: isMyMessage ? "#4A4A4A" : "#E0E0E0",
-              }}
+              }]}
             >
               <DocumentIcon width={18} height={18} color={isMyMessage ? "#FFFFFF" : "#000000"} />
             </DmView>
-            <DmView className="flex-1 ml-[10]">
-              <DmText
-                className="text-13 font-custom600"
+            <DmView style={[a.flex_1, a.ml_10]}>
+              <Text
+                size={13}
+                weight="semibold"
+                leading="legacy"
                 style={{ color: textColor }}
                 numberOfLines={1}
               >
                 {file.originalName || file.fileName}
-              </DmText>
-              <DmText
-                className="text-11 font-custom400 mt-[2]"
-                style={{ color: isMyMessage ? "#AAAAAA" : "#737385" }}
+              </Text>
+              <Text
+                size={11}
+                leading="legacy"
+                style={[a.mt_2, { color: isMyMessage ? "#AAAAAA" : "#737385" }]}
               >
                 {ext.toUpperCase()}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         )
@@ -434,10 +420,10 @@ const MessageComponent: React.FC<Props> = React.memo(
           >
             <MapPinMarker coordinate={{ latitude: item.location.latitude, longitude: item.location.longitude }} />
           </MapView>
-          <DmView className="px-[14] py-[6]">
-            <DmText className="text-12 font-custom500" style={{ color: linkColor }}>
+          <DmView style={[a.px_14, a.py_6]}>
+            <Text size={12} weight="medium" leading="legacy" style={{ color: linkColor }}>
               {t("view_on_maps")} {"\u203A"}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
       )
@@ -449,25 +435,20 @@ const MessageComponent: React.FC<Props> = React.memo(
         {/* Timestamp */}
         {showTimestamp && (
           <DmView
-            className={`pb-[4] pt-[4] ${
-              isMyMessage
-                ? isAr ? "items-start pl-[49]" : "items-end pr-[49]"
-                : isAr ? "items-end pr-[53]" : "items-start pl-[53]"
-            }`}
+            style={[
+              a.py_4,
+              isMyMessage ? (isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr) : (isAr ? messageComponentStyles.textWrapNotMyMessageAr : messageComponentStyles.textWrapNotMyMessageNotAr),
+            ]}
           >
-            <DmText className="text-10 leading-[13px] font-custom400 text-grey3">
+            <Text size={10} color="tertiary">
               {time}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {/* Bubble — own pinned physical-right, others physical-left (see note above) */}
         <DmView
-          className={
-            isMyMessage
-              ? isAr ? "items-start pl-[49] mr-[80]" : "items-end pr-[49] ml-[80]"
-              : isAr ? "items-end pr-[53] pl-[80]" : "items-start pl-[53] pr-[80]"
-          }
+          style={isMyMessage ? (isAr ? messageComponentStyles.systemEventBubbleWrapProActionNotAr : messageComponentStyles.systemEventBubbleWrapProActionAr) : (isAr ? messageComponentStyles.boxWrapNotMyMessageAr : messageComponentStyles.boxWrapNotMyMessageNotAr)}
         >
           <DmView
             style={[
@@ -482,25 +463,19 @@ const MessageComponent: React.FC<Props> = React.memo(
           >
             {/* Attachment whose file rows no longer exist — see note above */}
             {isOrphanedAttachment ? (
-              <DmView className="flex-row items-center">
+              <DmView style={[a.flex_row, a.items_center]}>
                 <DocumentIcon
                   width={14}
                   height={14}
                   color={isMyMessage ? "#AAAAAA" : "#737385"}
                 />
-                <DmText
-                  className="font-custom400"
-                  style={{
-                    fontSize: 12,
-                    lineHeight: 16,
-                    marginStart: 8,
-                    fontStyle: "italic",
-                    color: isMyMessage ? "#AAAAAA" : "#737385",
-                    textAlign: isAr ? "right" : "left",
-                  }}
+                <Text
+                  size={12}
+                  leading={{ fixed: px(16) }}
+                  style={{ marginStart: 8, fontStyle: "italic", color: isMyMessage ? "#AAAAAA" : "#737385", textAlign: isAr ? "right" : "left" }}
                 >
                   {t("attachment_unavailable")}
-                </DmText>
+                </Text>
               </DmView>
             ) : hasMedia && isUploading ? (
               <DmView>
@@ -509,7 +484,7 @@ const MessageComponent: React.FC<Props> = React.memo(
                   {renderDocuments()}
                   {renderLocation()}
                 </DmView>
-                <DmView style={StyleSheet.absoluteFill} className="items-center justify-center">
+                <DmView style={[a.items_center, a.justify_center, StyleSheet.absoluteFill]}>
                   <ActivityIndicator size="small" color={isMyMessage ? "#FFFFFF" : "#000000"} />
                 </DmView>
               </DmView>
@@ -549,10 +524,10 @@ const MessageComponent: React.FC<Props> = React.memo(
 
         {/* Read receipt */}
         {showReadReceipt && (
-          <DmView className={`pt-[3] ${isAr ? "items-start pl-[49]" : "items-end pr-[49]"}`}>
-            <DmText className="text-9 leading-[12px] font-custom400 text-black">
+          <DmView style={[messageComponentStyles.readByWrap, isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr]}>
+            <Text size={9}>
               {t("read_by")} {readByName}
-            </DmText>
+            </Text>
           </DmView>
         )}
 

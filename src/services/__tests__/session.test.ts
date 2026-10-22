@@ -8,9 +8,12 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 // Every step records itself here, so the tests assert the ORDER, not timing.
 const mockOrder: string[] = []
 const mockDeleteToken = jest.fn<() => Promise<void>>()
+// The modular API session.ts calls (Firebase 26 deleted the namespaced one,
+// which this test used to mock as the default export).
 jest.mock("@react-native-firebase/messaging", () => ({
   __esModule: true,
-  default: () => ({ deleteToken: mockDeleteToken }),
+  getMessaging: () => ({}),
+  deleteToken: () => mockDeleteToken(),
 }))
 
 const mockRemove = jest.fn<() => Promise<void>>()

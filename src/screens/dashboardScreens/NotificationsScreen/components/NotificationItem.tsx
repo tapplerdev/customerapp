@@ -1,11 +1,12 @@
 import React from "react"
 import moment from "moment"
-import clsx from "clsx"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { localizeDateString } from "helpers/digits"
 import { NotificationsItemType } from "types/notification"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   item: NotificationsItemType
@@ -29,35 +30,34 @@ const NotificationItem: React.FC<Props> = ({ item, onPress }) => {
 
   return (
     <DmView onPress={() => onPress(item)}>
-      <DmView className="px-[16] py-[18]">
-        <DmText
-          className={clsx(
-            "text-12 leading-[15px]",
-            isUnread ? "font-custom700" : "font-custom400"
-          )}
+      <DmView style={[a.px_16, a.py_18]}>
+        <Text
+          size={12}
+          weight={isUnread ? "bold" : "regular"}
+          leading="tight"
         >
           {formatDate(item.createdAt)}
-        </DmText>
-        <DmText
-          className={clsx(
-            "mt-[5] text-13 leading-[16px]",
-            isUnread ? "font-custom700" : "font-custom400"
-          )}
+        </Text>
+        <Text
+          size={13}
+          weight={isUnread ? "bold" : "regular"}
+          leading="tight"
+          style={styles.text}
           numberOfLines={1}
         >
           {item.title}
-        </DmText>
-        <DmText
-          className={clsx(
-            "mt-[5] text-12 leading-[15px]",
-            isUnread ? "font-custom700" : "font-custom400"
-          )}
+        </Text>
+        <Text
+          size={12}
+          weight={isUnread ? "bold" : "regular"}
+          leading="tight"
+          style={styles.text}
           numberOfLines={1}
         >
           {item.body}
-        </DmText>
+        </Text>
       </DmView>
-      <DmView className="h-[0.5] bg-grey19" />
+      <DmView style={styles.box} />
     </DmView>
   )
 }

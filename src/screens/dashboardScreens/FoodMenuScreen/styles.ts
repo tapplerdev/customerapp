@@ -36,6 +36,46 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  container: {
+    marginBottom: 36.5,
+  },
+  safeArea: {
+    backgroundColor: colors.white,
+  },
+  row: {
+    backgroundColor: colors.white,
+    borderBottomColor: colors.grey19,
+  },
+  iconWrap: {
+    width: 32,
+    height: 32,
+  },
+  box: {
+    width: 32,
+  },
+  boxWrap: {
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.white,
+  },
+  box2: {
+    height: 50,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 8,
+    backgroundColor: colors.red,
+  },
+  textWrap: {
+    width: 30,
+    height: 30,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    backgroundColor: colors.white,
+  },
 })
 
 export default styles

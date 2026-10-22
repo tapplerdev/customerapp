@@ -1,0 +1,27 @@
+{
+ "component": "SearchBar",
+ "capturedAt": "20c4112",
+ "elements": 2,
+ "files": 2,
+ "cases": {
+  "d4cb723b38": {
+   "props": {
+    "onPress": {
+     "$fn": true
+    },
+    "onFilterPress": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/HomeScreen/HomeScreen.tsx:65"
+   ]
+  },
+  "bf21a9e8fb": {
+   "props": {},
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:37"
+   ]
+  }
+ }
+}

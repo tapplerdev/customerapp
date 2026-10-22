@@ -1,0 +1,67 @@
+{
+ "component": "RateComponent",
+ "capturedAt": "51c287f",
+ "elements": 5,
+ "files": 4,
+ "cases": {
+  "f65d181803": {
+   "props": {
+    "rate": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "itemSize": 11
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:448"
+   ]
+  },
+  "ccdb773bf4": {
+   "props": {
+    "rate": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "itemSize": 12,
+    "showFullReviewText": true
+   },
+   "sites": [
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:206"
+   ]
+  },
+  "7d74192593": {
+   "props": {
+    "rate": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "itemSize": 12
+   },
+   "sites": [
+    "components/ProCardBase/ProCardBase.tsx:129",
+    "screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx:175"
+   ]
+  },
+  "157b9f28bf": {
+   "props": {
+    "rate": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "itemSize": 14,
+    "showFullReviewText": true
+   },
+   "sites": [
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:286"
+   ]
+  }
+ }
+}

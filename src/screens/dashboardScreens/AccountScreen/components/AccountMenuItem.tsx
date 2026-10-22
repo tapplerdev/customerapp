@@ -2,9 +2,11 @@ import React from "react"
 import { I18nManager } from "react-native"
 import { SvgProps } from "react-native-svg"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import colors from "@tappler/shared/src/styles/colors"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   Icon: React.FC<SvgProps>
@@ -12,7 +14,7 @@ interface Props {
   onPress?: () => void
   accessory?: "chevron" | "text" | "none"
   accessoryText?: string
-  textVariant?: "default" | "red"
+  textVariant?: "default" | "brand"
   showSeparator?: boolean
 }
 
@@ -27,18 +29,19 @@ const AccountMenuItem: React.FC<Props> = ({
 }) => {
   return (
     <DmView onPress={onPress}>
-      <DmView className="h-[50] flex-row items-center justify-between px-[24]">
-        <DmView className="flex-row items-center">
-          <DmView className="w-[50] items-start justify-center">
+      <DmView style={[styles.row, a.flex_row, a.items_center, a.justify_between, a.px_24]}>
+        <DmView style={[a.flex_row, a.items_center]}>
+          <DmView style={[styles.iconWrap, a.items_start, a.justify_center]}>
             <Icon width={24} height={24} />
           </DmView>
-          <DmText
-            className={`text-13 leading-[16px] font-custom500 ${
-              textVariant === "red" ? "text-red" : "text-black"
-            }`}
+          <Text
+            size={13}
+            weight="medium"
+            leading="tight"
+            color={textVariant === "brand" ? "brand" : "primary"}
           >
             {label}
-          </DmText>
+          </Text>
         </DmView>
 
         {accessory === "chevron" && (
@@ -47,16 +50,15 @@ const AccountMenuItem: React.FC<Props> = ({
           </DmView>
         )}
         {accessory === "text" && (
-          <DmText className="text-13 leading-[16px] font-custom400 text-black">
+          <Text size={13} leading="tight">
             {accessoryText}
-          </DmText>
+          </Text>
         )}
       </DmView>
 
       {showSeparator && (
         <DmView
-          className="border-b-1 border-b-grey19"
-          style={{ marginEnd: 15 }}
+          style={[a.border_b_1, styles.box, { marginEnd: 15 }]}
         />
       )}
     </DmView>

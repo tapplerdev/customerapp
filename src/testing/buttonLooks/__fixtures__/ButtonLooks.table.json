@@ -1,0 +1,1717 @@
+{
+ "from": "__fixtures__/ButtonLooks.translate.ts over the cases, the classes drawn by NativeWind with customerapp's tailwind config",
+ "capturedAt": "c7d37cf6",
+ "looks": {
+  "a3428b3b9b": {
+   "key": "{\"Icon\":true,\"className\":\"rounded-10\",\"onPress\":true,\"textClassName\":\"text-13\",\"variant\":\"white\"}",
+   "sites": [
+    "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:128"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "shape": "r10",
+    "variant": "white",
+    "label": "sm",
+    "labelLeading": "legacy",
+    "icon": {
+     "$el": "EmailIcon",
+     "props": {
+      "width": 22,
+      "height": 22
+     }
+    }
+   },
+   "written": "shape=\"r10\" variant=\"white\" label=\"sm\" labelLeading=\"legacy\" icon={<EmailIcon width={22} height={22} />}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "ccf0d59c1a": {
+   "key": "{\"Icon\":true,\"className\":\"mt-[10] rounded-10\",\"onPress\":true,\"textClassName\":\"text-13\",\"variant\":\"white\"}",
+   "sites": [
+    "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:136"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "shape": "r10",
+    "style": {
+     "marginTop": 10
+    },
+    "variant": "white",
+    "label": "sm",
+    "labelLeading": "legacy",
+    "icon": {
+     "$el": "FacebookIcon",
+     "props": {
+      "width": 22,
+      "height": 22
+     }
+    }
+   },
+   "written": "shape=\"r10\" style={{ marginTop: 10 }} variant=\"white\" label=\"sm\" labelLeading=\"legacy\" icon={<FacebookIcon width={22} height={22} />}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "cbc48468db": {
+   "key": "{\"Icon\":true,\"className\":\"mt-[10] rounded-10\",\"onPress\":true,\"textClassName\":\"text-13\",\"variant\":\"white\"}",
+   "sites": [
+    "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:144"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "shape": "r10",
+    "style": {
+     "marginTop": 10
+    },
+    "variant": "white",
+    "label": "sm",
+    "labelLeading": "legacy",
+    "icon": {
+     "$el": "GoogleIcon",
+     "props": {
+      "width": 22,
+      "height": 22
+     }
+    }
+   },
+   "written": "shape=\"r10\" style={{ marginTop: 10 }} variant=\"white\" label=\"sm\" labelLeading=\"legacy\" icon={<GoogleIcon width={22} height={22} />}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "51ad239ecc": {
+   "key": "{\"Icon\":true,\"className\":\"mt-[66] rounded-10\",\"onPress\":true,\"textClassName\":\"text-13\",\"variant\":\"white\"}",
+   "sites": [
+    "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:154"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "shape": "r10",
+    "style": {
+     "marginTop": 66
+    },
+    "variant": "white",
+    "label": "sm",
+    "labelLeading": "legacy",
+    "icon": {
+     "$el": "GuestIcon",
+     "props": {
+      "width": 22,
+      "height": 22
+     }
+    }
+   },
+   "written": "shape=\"r10\" style={{ marginTop: 66 }} variant=\"white\" label=\"sm\" labelLeading=\"legacy\" icon={<GuestIcon width={22} height={22} />}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "7aae071c87": {
+   "key": "{\"className\":\"h-[20] self-auto bg-red2 rounded-4 px-[8]\",\"classNameTextWrapper\":\"mx-[0]\",\"textClassName\":\"text-11 leading-[14px] font-custom700 text-white\"}",
+   "sites": [
+    "components/FoodMenuItemRow/FoodMenuItemRow.tsx:82"
+   ],
+   "props": {
+    "title": "Button title",
+    "size": 20,
+    "shape": "r4",
+    "paddingX": 8,
+    "style": {
+     "alignSelf": "auto"
+    },
+    "variant": "rose",
+    "label": 11,
+    "labelWeight": "bold",
+    "labelInset": 0
+   },
+   "written": "size={px(20)} shape=\"r4\" paddingX={8} style={{ alignSelf: \"auto\" }} variant=\"rose\" label={11} labelWeight=\"bold\" labelInset={0}",
+   "allow": [
+    "buttonHeight"
+   ]
+  },
+  "d949052e37": {
+   "key": "{\"className\":\"h-[20] self-auto bg-red2 rounded-4\",\"textClassName\":\"text-11 leading-[14px] font-custom700 text-white\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx:350"
+   ],
+   "props": {
+    "title": "Button title",
+    "size": 20,
+    "shape": "r4",
+    "style": {
+     "alignSelf": "auto"
+    },
+    "variant": "rose",
+    "label": 11,
+    "labelWeight": "bold"
+   },
+   "written": "size={px(20)} shape=\"r4\" style={{ alignSelf: \"auto\" }} variant=\"rose\" label={11} labelWeight=\"bold\"",
+   "allow": [
+    "buttonHeight"
+   ]
+  },
+  "3fc5b254a9": {
+   "key": "{\"className\":\"h-[38] rounded-10\",\"onPress\":true,\"textClassName\":\"text-12 font-custom600 text-black\",\"variant\":\"bordered\"}",
+   "sites": [
+    "components/ProCardBase/ProCardBase.tsx:227"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 38,
+    "shape": "r10",
+    "variant": "bordered",
+    "label": 12,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy",
+    "labelColor": "primary"
+   },
+   "written": "size={px(38)} shape=\"r10\" variant=\"bordered\" label={12} labelWeight=\"semibold\" labelLeading=\"legacy\" labelColor=\"primary\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "a7dbb7ad06": {
+   "key": "{\"className\":\"h-[38] rounded-10\",\"onPress\":true,\"textClassName\":\"text-12 font-custom600\",\"variant\":\"bordered\"}",
+   "sites": [
+    "components/ProCardBase/ProCardBase.tsx:236"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 38,
+    "shape": "r10",
+    "variant": "bordered",
+    "label": 12,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "size={px(38)} shape=\"r10\" variant=\"bordered\" label={12} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "7a6b9f5f44": {
+   "key": "{\"className\":\"h-[42] w-full\",\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600\"}",
+   "sites": [
+    "screens/PickAddressScreen/components/MapPickerView.tsx:177",
+    "screens/PickAddressScreen/components/MapPickerWithSearchView.tsx:531"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": false,
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21
+   },
+   "written": "isLoading={false} size=\"sm\" style={{ width: \"100%\" }} label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "97939daddb": {
+   "key": "{\"className\":\"h-[42] w-full bg-grey19\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600 text-white\"}",
+   "sites": [
+    "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:234",
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:167",
+    "screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:160",
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:164"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21,
+    "disabledLook": {
+     "surface": "subtle",
+     "label": "inverse"
+    }
+   },
+   "written": "disabled isLoading={false} size=\"sm\" style={{ width: \"100%\" }} label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)} disabledLook={{ surface: \"subtle\", label: \"inverse\" }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "0317ebbdbb": {
+   "key": "{\"className\":\"h-[42] w-full bg-grey19\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600 text-white\"}",
+   "sites": [
+    "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:234",
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:167",
+    "screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:160",
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:164"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21,
+    "disabledLook": {
+     "surface": "subtle",
+     "label": "inverse"
+    }
+   },
+   "written": "disabled isLoading size=\"sm\" style={{ width: \"100%\" }} label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)} disabledLook={{ surface: \"subtle\", label: \"inverse\" }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "6b22f6cae9": {
+   "key": "{\"className\":\"h-[42] w-full bg-grey4\",\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600\"}",
+   "sites": [
+    "screens/PickAddressScreen/components/MapPickerView.tsx:177",
+    "screens/PickAddressScreen/components/MapPickerWithSearchView.tsx:531"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": true,
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "loadingSurface": "shade",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21
+   },
+   "written": "isLoading size=\"sm\" style={{ width: \"100%\" }} loadingSurface=\"shade\" label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "73d1432c36": {
+   "key": "{\"className\":\"h-[42] w-full bg-red\",\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600 text-white\"}",
+   "sites": [
+    "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:234",
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:167",
+    "screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:160",
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:164"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21
+   },
+   "written": "disabled={false} isLoading={false} size=\"sm\" style={{ width: \"100%\" }} label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "beb3c7b65b": {
+   "key": "{\"className\":\"h-[42] w-full bg-red\",\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600 text-white\"}",
+   "sites": [
+    "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:234"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": true,
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "loadingSurface": "brand",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21
+   },
+   "written": "disabled={false} isLoading size=\"sm\" style={{ width: \"100%\" }} loadingSurface=\"brand\" label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "0f7de9e55f": {
+   "key": "{\"className\":\"h-[42] w-full bg-red\",\"onPress\":true,\"textClassName\":\"text-13 leading-[21px] font-custom600 text-white\"}",
+   "sites": [
+    "screens/dashboardScreens/DeleteAccountScreen/DeleteAccountScreen.tsx:98"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": "sm",
+    "style": {
+     "width": "100%"
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": 21
+   },
+   "written": "size=\"sm\" style={{ width: \"100%\" }} label=\"sm\" labelWeight=\"semibold\" labelLeading={px(21)}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "0c0027ac36": {
+   "key": "{\"className\":\"h-[42]\",\"onPress\":true,\"textClassName\":\"text-13 font-custom600\"}",
+   "sites": [
+    "components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx:146"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": "sm",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled={false} isLoading={false} size=\"sm\" label=\"sm\" labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "aa5167ca77": {
+   "key": "{\"className\":\"h-[42]\",\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 font-custom600\"}",
+   "sites": [
+    "components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx:146"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": true,
+    "size": "sm",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled={false} isLoading size=\"sm\" label=\"sm\" labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "ced84bf9b3": {
+   "key": "{\"className\":\"h-[42]\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-13 font-custom600\"}",
+   "sites": [
+    "components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx:146"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": "sm",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled isLoading={false} size=\"sm\" label=\"sm\" labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "f7241c89e8": {
+   "key": "{\"className\":\"h-[42]\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 font-custom600\"}",
+   "sites": [
+    "components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx:146"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": "sm",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled isLoading size=\"sm\" label=\"sm\" labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "ad01b7c400": {
+   "key": "{\"className\":\"h-[44] rounded-10\",\"onPress\":true,\"textClassName\":\"text-13 font-custom500\",\"variant\":\"white\"}",
+   "sites": [
+    "screens/dashboardScreens/SaveAddressSheetScreen/SaveAddressSheetScreen.tsx:78"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": "md",
+    "shape": "r10",
+    "variant": "white",
+    "label": "sm",
+    "labelLeading": "legacy"
+   },
+   "written": "size=\"md\" shape=\"r10\" variant=\"white\" label=\"sm\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "ac6f3bdd17": {
+   "key": "{\"className\":\"h-[44] rounded-10\",\"onPress\":true,\"textClassName\":\"text-13 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/SaveAddressSheetScreen/SaveAddressSheetScreen.tsx:87"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": "md",
+    "shape": "r10",
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "size=\"md\" shape=\"r10\" label=\"sm\" labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "983e5cc6ff": {
+   "key": "{\"className\":\"h-[44]\",\"onPress\":true,\"textClassName\":\"text-14 leading-[18px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:843"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "size": "md",
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "normal"
+   },
+   "written": "disabled={false} size=\"md\" label={14} labelWeight=\"semibold\" labelLeading=\"normal\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "5ef2593166": {
+   "key": "{\"className\":\"h-[44]\",\"disable\":true,\"textClassName\":\"text-14 leading-[18px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:843"
+   ],
+   "props": {
+    "title": "Button title",
+    "disabled": true,
+    "size": "md",
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "normal"
+   },
+   "written": "disabled size=\"md\" label={14} labelWeight=\"semibold\" labelLeading=\"normal\"",
+   "allow": [
+    "buttonHeight",
+    "buttonDisabledView"
+   ]
+  },
+  "539bad3085": {
+   "key": "{\"className\":\"h-[44]\",\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:102"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": "md"
+   },
+   "written": "size=\"md\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "c5da7b03ad": {
+   "key": "{\"className\":\"h-[46] rounded-10\",\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:554"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 46,
+    "shape": "r10",
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "size={px(46)} shape=\"r10\" label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "110870a79c": {
+   "key": "{\"className\":\"h-[47] rounded-10\",\"onPress\":true,\"textClassName\":\"text-13 leading-[16px] font-custom500\"}",
+   "sites": [
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:160"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": "lg",
+    "shape": "r10",
+    "label": "sm"
+   },
+   "written": "disabled={false} isLoading={false} size=\"lg\" shape=\"r10\" label=\"sm\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "f53aedfa6a": {
+   "key": "{\"className\":\"h-[47] rounded-10\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[16px] font-custom500 text-grey10\"}",
+   "sites": [
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:160"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": "lg",
+    "shape": "r10",
+    "label": "sm",
+    "disabledLook": {
+     "surface": "legacy",
+     "label": "muted"
+    }
+   },
+   "written": "disabled isLoading={false} size=\"lg\" shape=\"r10\" label=\"sm\" disabledLook={{ surface: \"legacy\", label: \"muted\" }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "18098c1473": {
+   "key": "{\"className\":\"h-[47] rounded-10\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[16px] font-custom500 text-grey10\"}",
+   "sites": [
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:160"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": "lg",
+    "shape": "r10",
+    "label": "sm",
+    "disabledLook": {
+     "surface": "legacy",
+     "label": "muted"
+    }
+   },
+   "written": "disabled isLoading size=\"lg\" shape=\"r10\" label=\"sm\" disabledLook={{ surface: \"legacy\", label: \"muted\" }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "08a8bd7b49": {
+   "key": "{\"className\":\"h-[47] rounded-10\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-13 leading-[16px] font-custom500\"}",
+   "sites": [
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:160"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": "lg",
+    "shape": "r10",
+    "label": "sm"
+   },
+   "written": "disabled isLoading size=\"lg\" shape=\"r10\" label=\"sm\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "3cb7c9b8da": {
+   "key": "{\"className\":\"h-[48] rounded-10\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "components/CalendarTimeSheet/CalendarTimeSheet.tsx:112"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "size": 48,
+    "shape": "r10",
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled size={px(48)} shape=\"r10\" label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "e7d7ae4a1d": {
+   "key": "{\"className\":\"h-[48] rounded-10 bg-red\",\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "components/CalendarTimeSheet/CalendarTimeSheet.tsx:112"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "size": 48,
+    "shape": "r10",
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled={false} size={px(48)} shape=\"r10\" label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "c136ed54e8": {
+   "key": "{\"className\":\"h-[48]\",\"onPress\":true,\"textClassName\":\"text-15 leading-[19px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:226"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": 48,
+    "label": "md",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled={false} isLoading={false} size={px(48)} label=\"md\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "63b1886283": {
+   "key": "{\"className\":\"h-[48]\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-15 leading-[19px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:226"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": 48,
+    "label": "md",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled isLoading={false} size={px(48)} label=\"md\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "5438b08bcb": {
+   "key": "{\"className\":\"h-[48]\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-15 leading-[19px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:226"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": 48,
+    "label": "md",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled isLoading size={px(48)} label=\"md\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "02a53881b2": {
+   "key": "{\"className\":\"h-[48]\",\"onPress\":true,\"textClassName\":\"text-15 leading-[19px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodCartScreen/FoodCartScreen.tsx:286"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 48,
+    "label": "md",
+    "labelWeight": "semibold"
+   },
+   "written": "size={px(48)} label=\"md\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "f6d3394778": {
+   "key": "{\"className\":\"h-[50] rounded-[12]\",\"onPress\":true,\"textClassName\":\"text-16 font-custom700\"}",
+   "sites": [
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:467"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": 50,
+    "labelWeight": "bold"
+   },
+   "written": "disabled={false} isLoading={false} size={px(50)} labelWeight=\"bold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ],
+   "dropped": [
+    "rounded-[12]"
+   ]
+  },
+  "c727a7a201": {
+   "key": "{\"className\":\"h-[50] rounded-[12]\",\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom700\"}",
+   "sites": [
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:467"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": true,
+    "size": 50,
+    "labelWeight": "bold"
+   },
+   "written": "disabled={false} isLoading size={px(50)} labelWeight=\"bold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ],
+   "dropped": [
+    "rounded-[12]"
+   ]
+  },
+  "022141fea5": {
+   "key": "{\"className\":\"h-[50] rounded-[12]\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom700\"}",
+   "sites": [
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:467"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": 50,
+    "labelWeight": "bold"
+   },
+   "written": "disabled isLoading={false} size={px(50)} labelWeight=\"bold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ],
+   "dropped": [
+    "rounded-[12]"
+   ]
+  },
+  "a9e738847a": {
+   "key": "{\"className\":\"h-[50] rounded-[12]\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom700\"}",
+   "sites": [
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:467"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": 50,
+    "labelWeight": "bold"
+   },
+   "written": "disabled isLoading size={px(50)} labelWeight=\"bold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ],
+   "dropped": [
+    "rounded-[12]"
+   ]
+  },
+  "23cc125a6d": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:368"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled={false} isLoading={false} size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "7cbff530fb": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:368"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": true,
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled={false} isLoading size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "9e9c075030": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen.tsx:308"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled={false} size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "04d8f5bc55": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:368"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled isLoading={false} size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "1994b6fed3": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:368"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled isLoading size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "6f0224be48": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"disable\":true,\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen.tsx:308"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "d65ae524ad": {
+   "key": "{\"className\":\"h-[52] rounded-10\",\"onPress\":true,\"textClassName\":\"text-16 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen.tsx:261"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 52,
+    "shape": "r10",
+    "labelWeight": "semibold"
+   },
+   "written": "size={px(52)} shape=\"r10\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "d6e0ccd1a3": {
+   "key": "{\"className\":\"ml-[10] flex-1 mr-[10] ml-[0]\",\"onPress\":true,\"textClassName\":\"font-sans700\"}",
+   "sites": [
+    "screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx:70"
+   ],
+   "props": {
+    "title": "عربي",
+    "onPress": {
+     "$fn": true
+    },
+    "style": {
+     "flexBasis": "0%",
+     "flexGrow": 1,
+     "flexShrink": 1,
+     "marginLeft": 0,
+     "marginRight": 10
+    },
+    "labelWeight": "bold",
+    "labelFamily": "arabic"
+   },
+   "written": "style={{ flexBasis: \"0%\", flexGrow: 1, flexShrink: 1, marginLeft: 0, marginRight: 10 }} labelWeight=\"bold\" labelFamily=\"arabic\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "0426848e1e": {
+   "key": "{\"className\":\"ml-[10] flex-1\",\"onPress\":true,\"textClassName\":\"font-sans700 leading-[25px]\"}",
+   "sites": [
+    "screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx:70"
+   ],
+   "props": {
+    "title": "عربي",
+    "onPress": {
+     "$fn": true
+    },
+    "style": {
+     "flexBasis": "0%",
+     "flexGrow": 1,
+     "flexShrink": 1,
+     "marginLeft": 10
+    },
+    "labelWeight": "bold",
+    "labelFamily": "arabic",
+    "labelLeading": "loose"
+   },
+   "written": "style={{ flexBasis: \"0%\", flexGrow: 1, flexShrink: 1, marginLeft: 10 }} labelWeight=\"bold\" labelFamily=\"arabic\" labelLeading=\"loose\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "23305f299f": {
+   "key": "{\"className\":\"mr-[10] flex-1 ml-[10] mr-[0]\",\"onPress\":true,\"textClassName\":\"font-montserrat500\"}",
+   "sites": [
+    "screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx:61"
+   ],
+   "props": {
+    "title": "English",
+    "onPress": {
+     "$fn": true
+    },
+    "style": {
+     "flexBasis": "0%",
+     "flexGrow": 1,
+     "flexShrink": 1,
+     "marginLeft": 10,
+     "marginRight": 0
+    },
+    "labelFamily": "latin"
+   },
+   "written": "style={{ flexBasis: \"0%\", flexGrow: 1, flexShrink: 1, marginLeft: 10, marginRight: 0 }} labelFamily=\"latin\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "9372077150": {
+   "key": "{\"className\":\"mr-[10] flex-1\",\"onPress\":true,\"textClassName\":\"font-montserrat500\"}",
+   "sites": [
+    "screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx:61"
+   ],
+   "props": {
+    "title": "English",
+    "onPress": {
+     "$fn": true
+    },
+    "style": {
+     "flexBasis": "0%",
+     "flexGrow": 1,
+     "flexShrink": 1,
+     "marginRight": 10
+    },
+    "labelFamily": "latin"
+   },
+   "written": "style={{ flexBasis: \"0%\", flexGrow: 1, flexShrink: 1, marginRight: 10 }} labelFamily=\"latin\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "eb21d0d1d9": {
+   "key": "{\"className\":\"mt-[12] h-[44]\",\"onPress\":true,\"variant\":\"white\"}",
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:107"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": "md",
+    "style": {
+     "marginTop": 12
+    },
+    "variant": "white"
+   },
+   "written": "size=\"md\" style={{ marginTop: 12 }} variant=\"white\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "1ac704a883": {
+   "key": "{\"className\":\"mt-[17] h-[41] w-full\",\"onPress\":true,\"textClassName\":\"text-13 leading-[16px]\"}",
+   "sites": [
+    "components/SuccessModal/SuccessModal.tsx:42"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 41,
+    "style": {
+     "marginTop": 17,
+     "width": "100%"
+    },
+    "label": "sm"
+   },
+   "written": "size={px(41)} style={{ marginTop: 17, width: \"100%\" }} label=\"sm\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "0ff470a68e": {
+   "key": "{\"className\":\"mt-[20] h-[41] px-[40]\",\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/FoodCartScreen/FoodCartScreen.tsx:235",
+    "screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx:280"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 41,
+    "paddingX": 40,
+    "style": {
+     "marginTop": 20
+    }
+   },
+   "written": "size={px(41)} paddingX={40} style={{ marginTop: 20 }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "0099e08ef9": {
+   "key": "{\"className\":\"mt-[20] rounded-5 h-[41] px-[40]\",\"onPress\":true,\"textClassName\":\"text-13 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1060"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 41,
+    "shape": "r5",
+    "paddingX": 40,
+    "style": {
+     "marginTop": 20
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "size={px(41)} shape=\"r5\" paddingX={40} style={{ marginTop: 20 }} label=\"sm\" labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "a6c326fb63": {
+   "key": "{\"className\":\"mt-[23] h-[41] opacity-50\",\"disable\":true,\"textClassName\":\"text-13 leading-[16px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx:385"
+   ],
+   "props": {
+    "title": "Button title",
+    "disabled": true,
+    "size": 41,
+    "style": {
+     "marginTop": 23
+    },
+    "label": "sm",
+    "labelWeight": "semibold",
+    "dim": true
+   },
+   "written": "disabled size={px(41)} style={{ marginTop: 23 }} label=\"sm\" labelWeight=\"semibold\" dim",
+   "allow": [
+    "buttonHeight",
+    "buttonDisabledView"
+   ]
+  },
+  "5f23601f70": {
+   "key": "{\"className\":\"mt-[23] h-[41]\",\"onPress\":true,\"textClassName\":\"text-13 leading-[16px] font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx:385"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "size": 41,
+    "style": {
+     "marginTop": 23
+    },
+    "label": "sm",
+    "labelWeight": "semibold"
+   },
+   "written": "disabled={false} size={px(41)} style={{ marginTop: 23 }} label=\"sm\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "19264352cb": {
+   "key": "{\"className\":\"mt-[32] h-[44]\",\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
+    "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:192"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": "md",
+    "style": {
+     "marginTop": 32
+    }
+   },
+   "written": "disabled={false} isLoading={false} size=\"md\" style={{ marginTop: 32 }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "06cc6fe240": {
+   "key": "{\"className\":\"mt-[32] h-[44]\",\"disable\":true,\"isLoading\":true,\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
+    "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:192"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": "md",
+    "style": {
+     "marginTop": 32
+    }
+   },
+   "written": "disabled isLoading size=\"md\" style={{ marginTop: 32 }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "cd66bddb0f": {
+   "key": "{\"className\":\"mt-[40] h-[44]\",\"disable\":true,\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "size": "md",
+    "style": {
+     "marginTop": 40
+    }
+   },
+   "written": "disabled isLoading={false} size=\"md\" style={{ marginTop: 40 }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "c380c14451": {
+   "key": "{\"className\":\"mt-[40] h-[44]\",\"disable\":true,\"isLoading\":true,\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "size": "md",
+    "style": {
+     "marginTop": 40
+    }
+   },
+   "written": "disabled isLoading size=\"md\" style={{ marginTop: 40 }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "f698f9e711": {
+   "key": "{\"className\":\"mt-[40] h-[44] bg-red\",\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "size": "md",
+    "style": {
+     "marginTop": 40
+    }
+   },
+   "written": "disabled={false} isLoading={false} size=\"md\" style={{ marginTop: 40 }}",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "baa183a4ff": {
+   "key": "{\"className\":\"mt-[40] h-[44] bg-red\",\"isLoading\":true,\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": true,
+    "size": "md",
+    "style": {
+     "marginTop": 40
+    },
+    "loadingSurface": "brand"
+   },
+   "written": "disabled={false} isLoading size=\"md\" style={{ marginTop: 40 }} loadingSurface=\"brand\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "ea73f60103": {
+   "key": "{\"className\":\"mt-[66] rounded-10\",\"descr\":true,\"onPress\":true,\"textClassName\":\"text-13\",\"variant\":\"white\"}",
+   "sites": [
+    "screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx:163"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "shape": "r10",
+    "style": {
+     "marginTop": 66
+    },
+    "variant": "white",
+    "label": "sm",
+    "labelLeading": "legacy",
+    "description": "Description"
+   },
+   "written": "shape=\"r10\" style={{ marginTop: 66 }} variant=\"white\" label=\"sm\" labelLeading=\"legacy\" description=\"Description\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "bd9515163b": {
+   "key": "{\"className\":\"rounded-10 h-[34]\",\"onPress\":true}",
+   "sites": [
+    "screens/dashboardScreens/ProsListingScreen/components/TooltipComponent.tsx:57"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": 34,
+    "shape": "r10"
+   },
+   "written": "size={px(34)} shape=\"r10\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "60cc1b315d": {
+   "key": "{\"className\":\"w-full mt-[20] bg-black rounded-5 h-[47]\",\"onPress\":true,\"textClassName\":\"font-custom600\"}",
+   "sites": [
+    "components/MessageBlockedModal/MessageBlockedModal.tsx:47"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "size": "lg",
+    "shape": "r5",
+    "style": {
+     "marginTop": 20,
+     "width": "100%"
+    },
+    "variant": "dark",
+    "labelWeight": "semibold"
+   },
+   "written": "size=\"lg\" shape=\"r5\" style={{ marginTop: 20, width: \"100%\" }} variant=\"dark\" labelWeight=\"semibold\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "012c078671": {
+   "key": "{\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx:324"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": false,
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled={false} isLoading={false} label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "3b7382dbf9": {
+   "key": "{\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx:324"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": false,
+    "isLoading": true,
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled={false} isLoading label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "5287eb0326": {
+   "key": "{\"disable\":true,\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx:324"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": false,
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled isLoading={false} label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "e8311b9800": {
+   "key": "{\"disable\":true,\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx:324"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "disabled": true,
+    "isLoading": true,
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "disabled isLoading label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "d882de8f94": {
+   "key": "{\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:373"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": false,
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "isLoading={false} label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "f327ff7010": {
+   "key": "{\"isLoading\":true,\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:373"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": true,
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "isLoading label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  },
+  "97ab9f262a": {
+   "key": "{\"onPress\":true,\"textClassName\":\"text-14 font-custom600\"}",
+   "sites": [
+    "components/LeaveReviewModal/LeaveReviewModal.tsx:48",
+    "screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx:131",
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:996",
+    "screens/dashboardScreens/RequestSuccessScreen/RequestSuccessScreen.tsx:145",
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:354"
+   ],
+   "props": {
+    "title": "Button title",
+    "onPress": {
+     "$fn": true
+    },
+    "label": 14,
+    "labelWeight": "semibold",
+    "labelLeading": "legacy"
+   },
+   "written": "label={14} labelWeight=\"semibold\" labelLeading=\"legacy\"",
+   "allow": [
+    "buttonHeight",
+    "buttonAccessibility"
+   ]
+  }
+ }
+}

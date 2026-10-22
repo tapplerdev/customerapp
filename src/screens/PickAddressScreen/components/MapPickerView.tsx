@@ -1,4 +1,4 @@
-import { ActionBtn, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import React, { useCallback, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import DropShadow from "react-native-drop-shadow"
@@ -10,11 +10,13 @@ import MapPinPicker from "components/MapPinPicker/MapPinPicker"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import styles from "../styles"
-import { Alert, Platform } from "react-native"
+import { Alert, Platform, StyleSheet } from "react-native"
 import useLocation from "@tappler/shared/src/hooks/useLocation"
 
 import { searchAddressByPosition } from "services/here-maps-api"
 import { isEgyptCountry } from "@tappler/shared/src/helpers/helpers"
+import { Button, a, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 interface Props {
   initPosition?: MapPosition | undefined
@@ -107,13 +109,13 @@ const MapPickerView: React.FC<Props> = ({
 
   return (
     <>
-      <SafeAreaView className="w-full flex-1 bg-white">
-        <DmView className="w-full flex-1">
-          <DmView className="w-full flex-1">
+      <SafeAreaView style={[a.w_full, a.flex_1, dsStyles.safeArea]}>
+        <DmView style={[a.w_full, a.flex_1]}>
+          <DmView style={[a.w_full, a.flex_1]}>
             {initPosition && (
               <>
                 <MapView
-                  className="flex-1"
+                  style={a.flex_1}
                   ref={mapRef}
                   provider={PROVIDER_GOOGLE}
                   initialRegion={{
@@ -132,7 +134,7 @@ const MapPickerView: React.FC<Props> = ({
                   mapType="standard"
                 />
                 <DmView
-                  className="absolute left-0 top-0 right-0 bottom-0"
+                  style={StyleSheet.absoluteFill}
                   pointerEvents="none"
                 >
                   <MapPinPicker
@@ -141,29 +143,39 @@ const MapPickerView: React.FC<Props> = ({
                   />
                 </DmView>
                 <DropShadow
-                  className="absolute left-[8] top-[8] w-[48] h-[48] rounded-full"
-                  style={[
+                  style={[a.absolute, dsStyles.shadow, 
                     styles.closeShadow,
                     isAndroid && styles.closeShadowAndroid,
                   ]}
                 >
                   <DmView
                     onPress={onClosePressed}
-                    className="w-full h-full rounded-full bg-white items-center justify-center"
+                    style={[
+                      a.w_full,
+                      a.h_full,
+                      dsStyles.iconWrap,
+                      a.items_center,
+                      a.justify_center,
+                    ]}
                   >
                     <CloseIcon />
                   </DmView>
                 </DropShadow>
                 <DropShadow
-                  className="absolute right-[16] bottom-[70] w-[44] h-[44] rounded-full"
-                  style={[
+                  style={[a.absolute, dsStyles.shadow2, 
                     styles.myLocationShadow,
                     isAndroid && styles.myLocationShadowAndroid,
                   ]}
                 >
                   <DmView
                     onPress={onGoToMyLocation}
-                    className="w-full h-full rounded-full bg-white items-center justify-center"
+                    style={[
+                      a.w_full,
+                      a.h_full,
+                      dsStyles.iconWrap,
+                      a.items_center,
+                      a.justify_center,
+                    ]}
                   >
                     <MyLocationIcon />
                   </DmView>
@@ -173,14 +185,16 @@ const MapPickerView: React.FC<Props> = ({
           </DmView>
         </DmView>
       </SafeAreaView>
-      <DmView className="w-full px-[16] py-[30]">
-        <ActionBtn
+      <DmView style={[a.w_full, a.px_16, a.py_30]}>
+        <Button
           onPress={onConfirmAddress}
-          className={`h-[42] w-full ${
-            addressConfirming ? "bg-grey4" : ""
-          }`}
+          size="sm"
+          label="sm"
+          labelWeight="semibold"
+          labelLeading={px(21)}
+          loadingSurface="shade"
+          style={a.w_full}
           title={t("confirm_my_location")}
-          textClassName="text-13 leading-[21px] font-custom600"
           isLoading={addressConfirming}
         />
       </DmView>

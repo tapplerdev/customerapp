@@ -4,7 +4,7 @@ import Animated, { FadeInUp } from "react-native-reanimated"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -13,6 +13,8 @@ import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import TapplerLogo from "assets/icons/tappler-logo-red.svg"
 import SearchIcon from "assets/icons/search-red.svg"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 type Props = RootStackScreenProps<"TapplyAIScreen">
 
@@ -23,16 +25,16 @@ const TapplyAIScreen: React.FC<Props> = ({ navigation }) => {
   const fontStyles = takeFontStyles("font-custom400", i18n.language)
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView style={[a.flex_1, dsStyles.safeArea]} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* Back button */}
-        <DmView className="px-[16] pt-[8]">
+        <DmView style={[a.px_16, a.pt_8]}>
           <DmView
             onPress={() => navigation.goBack()}
-            className="w-[32] h-[32] items-center justify-center"
+            style={[dsStyles.iconWrap, a.items_center, a.justify_center]}
             hitSlop={HIT_SLOP_DEFAULT}
           >
             <ChevronLeftIcon
@@ -43,31 +45,30 @@ const TapplyAIScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
 
         {/* Spacer top */}
-        <DmView className="flex-1" />
+        <DmView style={a.flex_1} />
 
         {/* Logo + greeting — centered */}
         <Animated.View
           entering={FadeInUp.duration(400).delay(100)}
-          className="items-center"
+          style={a.items_center}
         >
           <TapplerLogo width={80} height={80} />
 
-          <DmText className="text-22 leading-[28px] font-custom700 text-black mt-[16]">
+          <Text size={22} weight="bold" leading={px(28)} style={a.mt_16}>
             {t("hi_im_tapply")}
-          </DmText>
-          <DmText className="text-14 leading-[20px] font-custom400 text-grey3 mt-[4]">
+          </Text>
+          <Text size={14} leading="loose" color="tertiary" style={a.mt_4}>
             {t("how_can_i_help")}
-          </DmText>
+          </Text>
         </Animated.View>
 
         {/* Spacer bottom */}
-        <DmView className="flex-1" />
+        <DmView style={a.flex_1} />
 
         {/* Search input */}
-        <DmView className="px-[16]" style={{ paddingBottom: insets.bottom + 16 }}>
+        <DmView style={[a.px_16, { paddingBottom: insets.bottom + 16 }]}>
           <DmView
-            className="h-[46] bg-white flex-row items-center px-[14]"
-            style={styles.searchInput}
+            style={[dsStyles.row, a.flex_row, a.items_center, a.px_14, styles.searchInput]}
           >
             <SearchIcon width={16} height={16} />
             <TextInput

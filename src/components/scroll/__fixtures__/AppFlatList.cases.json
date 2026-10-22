@@ -1,0 +1,942 @@
+{
+ "component": "AppFlatList",
+ "capturedAt": "x",
+ "elements": 15,
+ "files": 14,
+ "cases": {
+  "2ac04811e1": {
+   "props": {
+    "data": {
+     "$opaque": "searchResults"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "flex-1 items-center justify-center pt-[18]"
+     },
+     "children": [
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "text-14 leading-[18px] font-custom400 text-red"
+       },
+       "children": "t:no_address_found"
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/PickAddressScreen/components/SearchView.tsx:172"
+   ]
+  },
+  "8b314d595d": {
+   "props": {
+    "data": {
+     "$opaque": "activePros"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "showsVerticalScrollIndicator": false,
+    "bounces": false,
+    "ListHeaderComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "px-[14] mt-[16] mb-[8]"
+     },
+     "children": [
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "text-16 font-custom600 text-black"
+       },
+       "children": "t:other_pros_tab"
+      },
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "mt-[2] text-12 font-custom400 text-grey3"
+       },
+       "children": "t:other_pros_who_sent_offers"
+      }
+     ]
+    },
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center justify-center py-[40]"
+     },
+     "children": [
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "text-14 font-custom400 text-grey3"
+       },
+       "children": "t:no_offers_yet"
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:861"
+   ]
+  },
+  "3a6195fe76": {
+   "props": {
+    "data": {
+     "$opaque": "listData"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "keyboardShouldPersistTaps": "handled",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "getItemLayout": {
+     "$fn": true
+    },
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "flex-1 items-center justify-center pt-[80]"
+     },
+     "children": [
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "text-14 font-custom500 text-grey3"
+       },
+       "children": "t:no_results_found"
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:207"
+   ]
+  },
+  "9f3df10ae4": {
+   "props": {
+    "data": {
+     "$opaque": "activePros"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "showsVerticalScrollIndicator": false,
+    "bounces": false,
+    "ListHeaderComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "px-[14] mt-[16] mb-[8]"
+     },
+     "children": [
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "text-16 font-custom600 text-black"
+       },
+       "children": "t:selected_pros_tab"
+      },
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "mt-[2] text-12 font-custom400 text-grey3"
+       },
+       "children": "t:the_pros_you_selected"
+      }
+     ]
+    },
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center justify-center py-[40]"
+     },
+     "children": [
+      {
+       "$el": "DmText",
+       "props": {
+        "className": "text-14 font-custom400 text-grey3"
+       },
+       "children": "t:no_selected_pros"
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:861"
+   ]
+  },
+  "2bc46d8910": {
+   "props": {
+    "ref": {
+     "$opaque": "flatListRef"
+    },
+    "data": {
+     "$opaque": "groups.flatData"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "inverted": true,
+    "className": "flex-1 bg-white",
+    "contentContainerStyle": {
+     "flex": 1,
+     "justifyContent": "center"
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.3,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "keyboardDismissMode": "interactive",
+    "removeClippedSubviews": true,
+    "windowSize": 10,
+    "maxToRenderPerBatch": 10,
+    "ListFooterComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "py-[16] items-center"
+     },
+     "children": [
+      {
+       "$el": "ActivityIndicator",
+       "props": {
+        "size": "small",
+        "color": {
+         "$opaque": "colors.red"
+        }
+       }
+      }
+     ]
+    },
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center px-[30]"
+     },
+     "children": [
+      {
+       "$el": "DmView",
+       "props": {
+        "className": "px-[20] py-[16] rounded-12",
+        "style": {
+         "$opaque": "styles.emptyBg"
+        }
+       },
+       "children": [
+        {
+         "$el": "DmText",
+         "props": {
+          "className": "text-13 font-custom400 text-grey3 text-center leading-[20px]",
+          "style": {
+           "$opaque": "styles.italic"
+          }
+         },
+         "children": "t:request_sent_to_pro_info"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1080"
+   ]
+  },
+  "69b2e40d8b": {
+   "props": {
+    "ref": {
+     "$opaque": "flatListRef"
+    },
+    "data": {
+     "$opaque": "groups.flatData"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "inverted": true,
+    "className": "flex-1 bg-white",
+    "contentContainerStyle": {
+     "paddingBottom": 10
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.3,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "keyboardDismissMode": "interactive",
+    "removeClippedSubviews": true,
+    "windowSize": 10,
+    "maxToRenderPerBatch": 10,
+    "ListFooterComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "py-[16] items-center"
+     },
+     "children": [
+      {
+       "$el": "ActivityIndicator",
+       "props": {
+        "size": "small",
+        "color": {
+         "$opaque": "colors.red"
+        }
+       }
+      }
+     ]
+    },
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center px-[30]"
+     },
+     "children": [
+      {
+       "$el": "DmView",
+       "props": {
+        "className": "px-[20] py-[16] rounded-12",
+        "style": {
+         "$opaque": "styles.emptyBg"
+        }
+       },
+       "children": [
+        {
+         "$el": "DmText",
+         "props": {
+          "className": "text-13 font-custom400 text-grey3 text-center leading-[20px]",
+          "style": {
+           "$opaque": "styles.italic"
+          }
+         },
+         "children": "t:request_sent_to_pro_info"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1080"
+   ]
+  },
+  "99e93e3cc1": {
+   "props": {
+    "ref": {
+     "$opaque": "flatListRef"
+    },
+    "data": {
+     "$opaque": "groups.flatData"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "inverted": true,
+    "className": "flex-1 bg-white",
+    "contentContainerStyle": {
+     "flex": 1,
+     "justifyContent": "center"
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.3,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "keyboardDismissMode": "interactive",
+    "removeClippedSubviews": true,
+    "windowSize": 10,
+    "maxToRenderPerBatch": 10,
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center px-[30]"
+     },
+     "children": [
+      {
+       "$el": "DmView",
+       "props": {
+        "className": "px-[20] py-[16] rounded-12",
+        "style": {
+         "$opaque": "styles.emptyBg"
+        }
+       },
+       "children": [
+        {
+         "$el": "DmText",
+         "props": {
+          "className": "text-13 font-custom400 text-grey3 text-center leading-[20px]",
+          "style": {
+           "$opaque": "styles.italic"
+          }
+         },
+         "children": "t:request_sent_to_pro_info"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1080"
+   ]
+  },
+  "a5f394d7f1": {
+   "props": {
+    "ref": {
+     "$opaque": "flatListRef"
+    },
+    "data": {
+     "$opaque": "groups.flatData"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "inverted": true,
+    "className": "flex-1 bg-white",
+    "contentContainerStyle": {
+     "paddingBottom": 10
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.3,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "keyboardDismissMode": "interactive",
+    "removeClippedSubviews": true,
+    "windowSize": 10,
+    "maxToRenderPerBatch": 10,
+    "ListEmptyComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center px-[30]"
+     },
+     "children": [
+      {
+       "$el": "DmView",
+       "props": {
+        "className": "px-[20] py-[16] rounded-12",
+        "style": {
+         "$opaque": "styles.emptyBg"
+        }
+       },
+       "children": [
+        {
+         "$el": "DmText",
+         "props": {
+          "className": "text-13 font-custom400 text-grey3 text-center leading-[20px]",
+          "style": {
+           "$opaque": "styles.italic"
+          }
+         },
+         "children": "t:request_sent_to_pro_info"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1080"
+   ]
+  },
+  "dd9c756d9f": {
+   "props": {
+    "data": {
+     "$opaque": "allNotifications"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.5,
+    "ListFooterComponent": {
+     "$opaque": "renderFooter"
+    },
+    "ListEmptyComponent": {
+     "$opaque": "renderEmpty"
+    },
+    "contentContainerStyle": {
+     "flex": 1
+    },
+    "showsVerticalScrollIndicator": false,
+    "alwaysBounceVertical": true,
+    "refreshControl": {
+     "$el": "RefreshControl",
+     "props": {
+      "refreshing": {
+       "$opaque": "isPullRefreshing"
+      },
+      "onRefresh": {
+       "$fn": true
+      },
+      "tintColor": {
+       "$opaque": "colors.red"
+      }
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsScreen.tsx:207"
+   ]
+  },
+  "9e9c0c4ed1": {
+   "props": {
+    "data": {
+     "$opaque": "allNotifications"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.5,
+    "ListFooterComponent": {
+     "$opaque": "renderFooter"
+    },
+    "ListEmptyComponent": {
+     "$opaque": "renderEmpty"
+    },
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "showsVerticalScrollIndicator": false,
+    "alwaysBounceVertical": true,
+    "refreshControl": {
+     "$el": "RefreshControl",
+     "props": {
+      "refreshing": {
+       "$opaque": "isPullRefreshing"
+      },
+      "onRefresh": {
+       "$fn": true
+      },
+      "tintColor": {
+       "$opaque": "colors.red"
+      }
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsScreen.tsx:207"
+   ]
+  },
+  "77f14da763": {
+   "props": {
+    "data": {
+     "$opaque": "MOCK_ARCHIVED_CHATS"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "ListEmptyComponent": {
+     "$opaque": "renderEmpty"
+    },
+    "contentContainerStyle": {
+     "flex": 1
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ArchivedMessagesScreen/ArchivedMessagesScreen.tsx:75"
+   ]
+  },
+  "561b54bb66": {
+   "props": {
+    "data": {
+     "$opaque": "filteredChats"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "ListEmptyComponent": {
+     "$opaque": "renderEmpty"
+    },
+    "getItemLayout": {
+     "$fn": true
+    },
+    "contentContainerStyle": {
+     "flex": 1
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx:168"
+   ]
+  },
+  "83434298c5": {
+   "props": {
+    "data": {
+     "$opaque": "MOCK_ARCHIVED_CHATS"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "ListEmptyComponent": {
+     "$opaque": "renderEmpty"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ArchivedMessagesScreen/ArchivedMessagesScreen.tsx:75"
+   ]
+  },
+  "24f7bd2523": {
+   "props": {
+    "data": {
+     "$opaque": "filteredChats"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "ListEmptyComponent": {
+     "$opaque": "renderEmpty"
+    },
+    "getItemLayout": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx:168"
+   ]
+  },
+  "6d810d33f6": {
+   "props": {
+    "horizontal": true,
+    "data": {
+     "$opaque": "attachments.recentPhotos"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "showsHorizontalScrollIndicator": false,
+    "ListHeaderComponent": {
+     "$el": "DmView",
+     "props": {
+      "onPress": {
+       "$fn": true
+      },
+      "className": "items-center justify-center rounded-6 bg-grey36 mr-[6]",
+      "style": {
+       "$opaque": "styles.photoStripItem"
+      }
+     },
+     "children": [
+      {
+       "$el": "CameraIcon",
+       "props": {
+        "width": 24,
+        "height": 20
+       }
+      }
+     ]
+    },
+    "renderItem": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:363"
+   ]
+  },
+  "3ec5a84f98": {
+   "props": {
+    "horizontal": true,
+    "data": {
+     "$opaque": "attachments.recentPhotos"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "showsHorizontalScrollIndicator": false,
+    "ListHeaderComponent": {
+     "$el": "DmView",
+     "props": {
+      "className": "items-center justify-center rounded-6 bg-grey36 mr-[6]",
+      "style": {
+       "$opaque": "styles.photoStripItem"
+      }
+     },
+     "children": [
+      {
+       "$el": "CameraIcon",
+       "props": {
+        "width": 24,
+        "height": 20
+       }
+      }
+     ]
+    },
+    "renderItem": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:363"
+   ]
+  },
+  "e439bc3635": {
+   "props": {
+    "data": {
+     "$opaque": "jobs"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "showsVerticalScrollIndicator": false,
+    "alwaysBounceVertical": true,
+    "viewabilityConfig": {
+     "$opaque": "viewabilityConfig"
+    },
+    "onViewableItemsChanged": {
+     "$fn": true
+    },
+    "refreshControl": {
+     "$el": "RefreshControl",
+     "props": {
+      "refreshing": {
+       "$opaque": "isPullRefreshing"
+      },
+      "onRefresh": {
+       "$fn": true
+      },
+      "tintColor": {
+       "$opaque": "colors.red"
+      }
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:392"
+   ]
+  },
+  "c5dcf46bcc": {
+   "props": {
+    "ref": {
+     "$opaque": "flatListRef"
+    },
+    "data": {
+     "$opaque": "sections"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "showsVerticalScrollIndicator": false,
+    "onScrollToIndexFailed": {
+     "$fn": true
+    },
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingTop": 24,
+     "paddingBottom": {
+      "$opaque": "60 + insets.bottom + (basketVisible ? 70 : 0)"
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen.tsx:246"
+   ]
+  },
+  "6a078862ae": {
+   "props": {
+    "horizontal": true,
+    "showsHorizontalScrollIndicator": false,
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingRight": 15
+    },
+    "data": {
+     "$opaque": "workPhotos"
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "renderItem": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:341"
+   ]
+  },
+  "2a7469952b": {
+   "props": {
+    "data": {
+     "$opaque": "filteredCategories"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "keyboardShouldPersistTaps": "handled",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 0
+    },
+    "keyboardDismissMode": "on-drag"
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:286"
+   ]
+  },
+  "17f8b34449": {
+   "props": {
+    "data": {
+     "$opaque": "filteredCategories"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "keyboardShouldPersistTaps": "handled",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": {
+      "$opaque": "keyboardInset"
+     }
+    },
+    "keyboardDismissMode": "interactive"
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:286"
+   ]
+  },
+  "2f01c246d4": {
+   "props": {
+    "data": {
+     "$opaque": "images"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "horizontal": true,
+    "pagingEnabled": true,
+    "showsHorizontalScrollIndicator": false,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "initialScrollIndex": {
+     "$opaque": "initialIndex"
+    },
+    "getItemLayout": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/ImageViewerModal/ImageViewerModal.tsx:62"
+   ]
+  },
+  "79bfa42e15": {
+   "props": {
+    "data": {
+     "$opaque": "searchResults"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyboardShouldPersistTaps": "handled"
+   },
+   "sites": [
+    "screens/PickAddressScreen/components/MapPickerWithSearchView.tsx:620"
+   ]
+  },
+  "ef2781ddc9": {
+   "props": {
+    "data": {
+     "$opaque": "service.categories"
+    },
+    "renderItem": {
+     "$fn": true
+    },
+    "keyExtractor": {
+     "$fn": true
+    },
+    "showsVerticalScrollIndicator": false
+   },
+   "sites": [
+    "screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx:76"
+   ]
+  }
+ }
+}

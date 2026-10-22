@@ -1,53 +1,61 @@
 import React from "react"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
-import clsx from "clsx"
+import type { StyleProp, ViewStyle } from "react-native"
+
+import { DmView } from "@tappler/shared/src/components/UI"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
+import { Text, a } from "@tappler/shared/src/ds"
+
+import styles from "./styles"
 import CheckmarkIcon from "assets/icons/check-mark.svg"
 
 interface TextWithCheckmarkButtonProps {
   label: string
   isSelected: boolean
   onPress: () => void
-  className?: string
+  /**
+   * The button, as a style, after its own styles and before its own border,
+   * which a caller's style never reaches. Like every twin it takes one key
+   * per side or corner (see NoShorthands).
+   */
+  style?: StyleProp<ViewStyle & NoShorthands>
 }
 
 const TextWithCheckmarkButton: React.FC<TextWithCheckmarkButtonProps> = ({
   label,
   isSelected,
   onPress,
-  className,
+  style,
 }) => {
   return (
     <DmView
       onPress={onPress}
-      className={clsx(
-        "px-[20] py-[12] flex-row items-center self-start",
-        isSelected
-          ? "bg-pink"
-          : "bg-white",
-        className
-      )}
-      style={{
-        borderColor: isSelected ? "#CC0000" : "#000000",
-        borderWidth: 0.75,
-        borderRadius: 10,
-        overflow: 'hidden',
-      }}
+      style={[
+        styles.box,
+        isSelected ? styles.boxSelected : styles.boxIdle,
+        style,
+        {
+          borderColor: isSelected ? "#CC0000" : "#000000",
+          borderWidth: 0.75,
+          borderRadius: 10,
+          overflow: "hidden",
+        },
+      ]}
     >
       {isSelected && (
-        <DmView className="mr-[8]">
+        <DmView style={a.mr_8}>
           <CheckmarkIcon width={14} height={14} fill="#000000" />
         </DmView>
       )}
 
-      <DmText
-        className={clsx(
-          "text-11 font-custom500",
-          isSelected ? "text-black" : "text-grey2"
-        )}
+      <Text
+        size={11}
+        weight="medium"
+        leading="legacy"
+        color={isSelected ? "primary" : "secondary"}
         numberOfLines={1}
       >
         {label}
-      </DmText>
+      </Text>
     </DmView>
   )
 }

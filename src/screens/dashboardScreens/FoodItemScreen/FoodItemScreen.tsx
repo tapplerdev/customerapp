@@ -1,12 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react"
 
 // Components
-import {
-  ActionBtn,
-  DmChecbox,
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
@@ -31,13 +26,13 @@ import {
 } from "types/food"
 
 // Styles & Assets
-import clsx from "clsx"
 import styles from "./styles"
 import colors from "@tappler/shared/src/styles/colors"
 import CloseIcon from "assets/icons/close.svg"
 import PlusIcon from "assets/icons/plus.svg"
 import MinusIcon from "assets/icons/minus.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodItemScreen">
 
@@ -194,63 +189,64 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
   const renderOption = (option: FoodOptionType, index: number) => {
     const selectedChoices = selected[option.name] || []
     return (
-      <DmView key={option.id ?? index} className="mt-[16.5]">
-        <DmView className="flex-row items-center justify-between">
-          <DmText className="text-14 leading-[18px] font-custom600">
+      <DmView key={option.id ?? index} style={styles.container}>
+        <DmView style={[a.flex_row, a.items_center, a.justify_between]}>
+          <Text size={14} weight="semibold">
             {option.name}
-          </DmText>
+          </Text>
           <DmView
-            className={clsx(
-              "py-[3] px-[15] rounded-14 bg-pink1",
-              !option.isRequired && "bg-grey36"
-            )}
+            style={[
+              styles.textWrap,
+              !option.isRequired && styles.textWrapNotRequired,
+            ]}
           >
-            <DmText
-              className={clsx(
-                "text-11 leading-[16px] font-custom400 text-red",
-                !option.isRequired && "text-black"
-              )}
+            <Text
+              size={11}
+              leading="loose"
+              color={option.isRequired ? "brand" : "primary"}
             >
               {t(option.isRequired ? "required" : "optional")}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
-        <DmText className="mt-[10] mb-[14] text-11 leading-[14px] font-custom400 text-grey2">
+        <Text size={11} leading="tight" color="secondary" style={[a.mt_10, a.mb_14]}>
           {renderChoiceLimitText(option)}
-        </DmText>
+        </Text>
         {option.choices.map((choice, idx) => {
           const isChecked = selectedChoices.some((c) => c.name === choice.name)
           return (
             <DmView
               key={choice.id ?? idx}
-              className={clsx(
-                "mt-[14] flex-row items-center justify-between",
-                idx === 0 && "mt-[0]"
-              )}
+              style={[
+                a.mt_14,
+                a.flex_row,
+                a.items_center,
+                a.justify_between,
+                idx === 0 && a.mt_0,
+              ]}
             >
-              <DmText className="flex-1 text-13 leading-[16px] font-custom400">
+              <Text size={13} leading="tight" style={a.flex_1}>
                 {choice.name}
-              </DmText>
-              <DmView className="flex-row items-center">
+              </Text>
+              <DmView style={[a.flex_row, a.items_center]}>
                 {!!Number(choice.price) && (
                   <>
                     {hasDiscount(choice) && (
-                      <DmText className="mx-[10] text-13 leading-[16px] font-custom400 text-red">
+                      <Text size={13} leading="tight" color="brand" style={a.mx_10}>
                         + {formatMoney(effectiveUnitPrice(choice))} {t("EGP")}
-                      </DmText>
+                      </Text>
                     )}
-                    <DmText
-                      className={clsx(
-                        "text-13 leading-[16px] font-custom400",
-                        hasDiscount(choice) && "line-through"
-                      )}
+                    <Text
+                      size={13}
+                      leading="tight"
+                      style={hasDiscount(choice) ? styles.eGPChoice : undefined}
                     >
                       + {choice.price} {t("EGP")}
-                    </DmText>
+                    </Text>
                   </>
                 )}
                 <DmChecbox
-                  className="ml-[10]"
+                  style={a.ml_10}
                   variant={Number(option.maxQty) > 1 ? "square" : "circle"}
                   isChecked={isChecked}
                   onPress={() => handleToggleChoice(option, choice)}
@@ -265,7 +261,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView style={[a.flex_1, styles.safeArea]}>
         <LoadingOverlay />
       </SafeAreaView>
     )
@@ -273,28 +269,31 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (!menuItem) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-[40]">
-        <DmText className="text-16 font-custom600 text-grey3 text-center">
+      <SafeAreaView style={[a.flex_1, styles.safeArea, a.items_center, a.justify_center, a.px_40]}>
+        <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
           {t("menu_unavailable")}
-        </DmText>
-        <ActionBtn
+        </Text>
+        <Button
           title={t("back")}
-          className="mt-[20] h-[41] px-[40]"
+          size={px(41)}
+          paddingX={40}
+          style={a.mt_20}
           onPress={() => navigation.goBack()}
         />
       </SafeAreaView>
     )
   }
 
+  // The struck price's three looks all hang on this, read once.
+  const menuItemDiscounted = hasDiscount(menuItem)
+
   return (
     <SafeAreaView
-      className="flex-1 bg-white justify-between"
       edges={["bottom"]}
-      style={{ paddingBottom: insets.bottom > 45 ? 0 : 45 - insets.bottom }}
+      style={[a.flex_1, styles.safeArea, a.justify_between, { paddingBottom: insets.bottom > 45 ? 0 : 45 - insets.bottom }]}
     >
       <DmView
-        className="absolute left-[18] w-[28] h-[28] rounded-full bg-white items-center justify-center"
-        style={[styles.closeButton, { top: (insets.top || 35) + 10 }]}
+        style={[a.absolute, styles.iconWrap, a.items_center, a.justify_center, styles.closeButton, { top: (insets.top || 35) + 10 }]}
         onPress={() => navigation.goBack()}
       >
         <CloseIcon fill={colors.red} />
@@ -311,84 +310,101 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
             withSkeleton
           />
         </DmView>
-        <DmView className="px-[14]">
-          <DmText className="text-18 leading-[22px] font-custom600 mt-[16]">
+        <DmView style={a.px_14}>
+          <Text size={18} weight="semibold" leading="tight" style={a.mt_16}>
             {menuItem.name}
-          </DmText>
-          <DmView className="mt-[8] flex-row items-center">
+          </Text>
+          <DmView style={[a.mt_8, a.flex_row, a.items_center]}>
             {Number(menuItem.price) > 0 ? (
               <>
                 {hasDiscount(menuItem) && (
-                  <DmText className="text-18 leading-[22px] font-custom500">
+                  <Text size={18} weight="medium" leading="tight">
                     {formatMoney(effectiveUnitPrice(menuItem))} {t("EGP")}
-                  </DmText>
+                  </Text>
                 )}
-                <DmText
-                  className={clsx(
-                    "text-18 leading-[22px] font-custom500",
-                    hasDiscount(menuItem) &&
-                      "ml-[17] text-grey2 font-custom400 line-through"
-                  )}
+                <Text
+                  size={18}
+                  weight={menuItemDiscounted ? "regular" : "medium"}
+                  leading="tight"
+                  color={menuItemDiscounted ? "secondary" : undefined}
+                  style={
+                    menuItemDiscounted ? styles.eGPStruck : undefined
+                  }
                 >
                   {menuItem.price} {t("EGP")}
-                </DmText>
+                </Text>
               </>
             ) : (
-              <DmText className="text-18 leading-[22px] font-custom500 text-grey2">
+              <Text size={18} weight="medium" leading="tight" color="secondary">
                 {t("price_on_selection")}
-              </DmText>
+              </Text>
             )}
           </DmView>
           {!!menuItem.description && (
-            <DmText className="my-[8] text-13 leading-[20px] font-custom400">
+            <Text size={13} leading="loose" style={a.my_8}>
               {menuItem.description}
-            </DmText>
+            </Text>
           )}
         </DmView>
         {menuItem.isPreOrderOnly && (
-          <DmView className="flex-row items-center py-[9] px-[14] border-t-grey35 border-b-grey35 border-t-0.5 border-b-0.5">
-            <ActionBtn
+          <DmView style={[a.flex_row, a.items_center, styles.row, a.px_14]}>
+            <Button
               title={t("pre_order")}
-              className="h-[20] self-auto bg-red2 rounded-4"
-              textClassName="text-11 leading-[14px] font-custom700 text-white"
+              size={px(20)}
+              shape="r4"
+              variant="rose"
+              label={11}
+              labelWeight="bold"
+              style={styles.button}
             />
-            <DmText className="flex-1 ml-[7] text-14 leading-[18px] font-custom600">
+            <Text size={14} weight="semibold" style={[a.flex_1, styles.itemPreparedOnOrderOnly]}>
               {t("item_prepared_on_order_only")}
-            </DmText>
+            </Text>
           </DmView>
         )}
-        <DmView className="px-[14]">
+        <DmView style={a.px_14}>
           {(menuItem.options || []).map(renderOption)}
         </DmView>
       </AppScrollView>
-      <DmView className="bg-white px-[28]" style={styles.footerShadow}>
-        <DmView className="mt-[24] flex-row items-center justify-center">
+      <DmView style={[styles.safeArea, a.px_28, styles.footerShadow]}>
+        <DmView style={[a.mt_24, a.flex_row, a.items_center, a.justify_center]}>
           <DmView
             onPress={count > 1 ? () => setCount(count - 1) : undefined}
-            className={clsx(
-              "items-center justify-center w-[23] h-[23] border-1 rounded-full",
-              count <= 1 && "opacity-40"
-            )}
+            style={[
+              a.items_center,
+              a.justify_center,
+              styles.iconWrap2,
+              a.border_1,
+              count <= 1 && styles.iconWrapCount,
+            ]}
           >
             <MinusIcon />
           </DmView>
-          <DmText className="px-[32] text-17 leading-[21px] font-custom700">
+          <Text size={px(17)} weight="bold" leading={px(21)} style={a.px_32}>
             {count}
-          </DmText>
+          </Text>
           <DmView
             onPress={count < 30 ? () => setCount(count + 1) : undefined}
-            className="items-center justify-center w-[23] h-[23] border-1 border-red rounded-full"
+            style={[
+              a.items_center,
+              a.justify_center,
+              styles.iconWrap3,
+              a.border_1,
+            ]}
           >
             <PlusIcon color={colors.red} />
           </DmView>
         </DmView>
-        <ActionBtn
-          disable={missingRequired}
+        <Button
+          disabled={missingRequired}
           title={t("add_to_cart_for_egp_count", {
             price: formatMoney(totalPrice * count),
           })}
-          className={clsx("mt-[23] h-[41]", missingRequired && "opacity-50")}
-          textClassName="text-13 leading-[16px] font-custom600"
+          size={px(41)}
+          label="sm"
+          labelWeight="semibold"
+          dim={missingRequired ? true : undefined}
+          style={styles.button2}
           onPress={missingRequired ? undefined : handleAddToCart}
         />
       </DmView>

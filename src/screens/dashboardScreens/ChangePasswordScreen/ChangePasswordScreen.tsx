@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "react-native"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -13,6 +13,10 @@ import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import SuccessModal from "components/SuccessModal"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
+
+const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
 
 type Props = RootStackScreenProps<"ChangePasswordScreen">
 
@@ -67,34 +71,34 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("change_password")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Current Password */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("current_password")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={currentPassword}
@@ -102,8 +106,7 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
@@ -111,11 +114,11 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
 
         {/* Enter New Password */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("enter_new_password")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={newPassword}
@@ -123,25 +126,24 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
           />
           {showMinLengthError && (
-            <DmText className="mt-[4] text-11 font-custom400 text-red">
+            <Text size={11} leading="legacy" color="brand" style={a.mt_4}>
               {t("password_min_length")}
-            </DmText>
+            </Text>
           )}
         </DmView>
 
         {/* Repeat new Password */}
-        <DmView className="mb-[20]">
-          <DmView className="flex-row">
-            <DmText className="text-11 font-custom700 text-black mb-[6]">
+        <DmView style={a.mb_20}>
+          <DmView style={a.flex_row}>
+            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
               {t("repeat_new_password")}
-            </DmText>
+            </Text>
           </DmView>
           <TextInput
             value={repeatPassword}
@@ -149,27 +151,30 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            className="text-14 font-custom400 text-black pb-[8] border-b-[0.7px] border-b-grey19"
-            style={[
+            style={[styles.input, a.pb_8, 
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
               { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
             ]}
           />
           {showMismatchError && (
-            <DmText className="mt-[4] text-11 font-custom400 text-red">
+            <Text size={11} leading="legacy" color="brand" style={a.mt_4}>
               {t("passwords_do_not_match")}
-            </DmText>
+            </Text>
           )}
         </DmView>
 
         {/* Send Button */}
-        <DmView className="px-[16] mt-[32]">
-          <ActionBtn
+        <DmView style={[a.px_16, a.mt_32]}>
+          <Button
             onPress={handleSave}
-            className={`h-[42] w-full ${isFilled && !hasClientError && !isLoading ? "bg-red" : "bg-grey19"}`}
+            size="sm"
+            label="sm"
+            labelWeight="semibold"
+            labelLeading={px(21)}
+            disabledLook={disabledLookSubtleInverse}
+            style={a.w_full}
             title={t("send")}
-            textClassName="text-13 leading-[21px] font-custom600 text-white"
-            disable={!isFilled || hasClientError || isLoading}
+            disabled={!isFilled || hasClientError || isLoading}
             isLoading={isLoading}
           />
         </DmView>

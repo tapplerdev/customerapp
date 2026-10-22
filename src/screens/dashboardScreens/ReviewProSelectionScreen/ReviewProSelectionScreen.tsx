@@ -3,13 +3,15 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useGetCustomerJobByIdQuery } from "services/api"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
 import CloseIcon from "assets/icons/close.svg"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"ReviewProSelectionScreen">
 
@@ -34,36 +36,36 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
           <CloseIcon width={14} height={14} fill={colors.red} />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {categoryName}
-          </DmText>
-          <DmText className="text-11 font-custom400 text-grey3">
+          </Text>
+          <Text size={11} leading="legacy" color="tertiary">
             {t("request_id")}: {jobId}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
 
       {/* Title */}
-      <DmView className="px-[16] mt-[20]">
-        <DmText className="text-18 font-custom700 text-black text-center">
+      <DmView style={[a.px_16, a.mt_20]}>
+        <Text size={18} weight="bold" leading="legacy" align="center">
           {t("select_pro_to_review")}
-        </DmText>
+        </Text>
       </DmView>
 
       {/* Pro list */}
-      <DmView className="mt-[30] items-center">
+      <DmView style={[a.mt_30, a.items_center]}>
         {reviewablePros.map((jobPro) => {
           const pro = jobPro.pro
           if (!pro) return null
@@ -73,11 +75,11 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
           return (
             <DmView
               key={jobPro.proId}
-              className="items-center mb-[30]"
+              style={[a.items_center, a.mb_30]}
               onPress={() => handleSelectPro(jobPro.proId)}
             >
               {photoUrl ? (
-                <DmView className="w-[90] h-[90] rounded-full overflow-hidden">
+                <DmView style={[styles.imageWrap, a.overflow_hidden]}>
                   <FastImage
                     source={{ uri: photoUrl }}
                     style={{ width: 90, height: 90 }}
@@ -85,15 +87,15 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
                   />
                 </DmView>
               ) : (
-                <DmView className="w-[90] h-[90] rounded-full bg-grey8 items-center justify-center">
-                  <DmText className="text-30 font-custom700 text-grey3">
+                <DmView style={[styles.textWrap, a.items_center, a.justify_center]}>
+                  <Text size={30} weight="bold" leading="legacy" color="tertiary">
                     {displayName?.charAt(0)}
-                  </DmText>
+                  </Text>
                 </DmView>
               )}
-              <DmText className="mt-[8] text-14 font-custom600 text-black">
+              <Text size={14} weight="semibold" leading="legacy" style={a.mt_8}>
                 {displayName}
-              </DmText>
+              </Text>
             </DmView>
           )
         })}

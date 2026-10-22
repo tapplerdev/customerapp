@@ -3,7 +3,7 @@ import { Keyboard, StyleSheet } from "react-native"
 import { useTranslation } from "react-i18next"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
@@ -14,6 +14,8 @@ import CalendarTimePicker, {
 import { AppScrollView } from "components/scroll"
 
 import CloseIcon from "assets/icons/close.svg"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -75,15 +77,15 @@ const CalendarTimeSheet: React.FC<Props> = ({
       onClose={onClose}
       height={sheetHeight}
     >
-      <DmView className="flex-1 bg-white" style={styles.round}>
+      <DmView style={[a.flex_1, dsStyles.box, styles.round]}>
         {/* Header. The ✕ matters: a near-full sheet leaves only the status
             bar's strip of dim to tap. */}
-        <DmView className="flex-row items-center px-[20] pt-[20] pb-[10]">
-          <DmText className="flex-1 text-18 font-custom600 text-black">
+        <DmView style={[a.flex_row, a.items_center, a.px_20, a.pt_20, a.pb_10]}>
+          <Text size={18} weight="semibold" leading="legacy" style={a.flex_1}>
             {t("select_date_time")}
-          </DmText>
+          </Text>
           <DmView
-            className="w-[32] h-[32] items-center justify-center"
+            style={[dsStyles.iconWrap, a.items_center, a.justify_center]}
             onPress={onClose}
             hitSlop={HIT_SLOP_DEFAULT}
           >
@@ -92,7 +94,7 @@ const CalendarTimeSheet: React.FC<Props> = ({
         </DmView>
 
         <AppScrollView
-          className="flex-1"
+          style={a.flex_1}
           bounces={false}
           showsVerticalScrollIndicator={false}
         >
@@ -106,15 +108,17 @@ const CalendarTimeSheet: React.FC<Props> = ({
 
         {/* Pinned under the scroll, so it never scrolls away or off screen. */}
         <DmView
-          className="px-[20] pt-[10]"
-          style={{ paddingBottom: insets.bottom + 10 }}
+          style={[a.px_20, a.pt_10, { paddingBottom: insets.bottom + 10 }]}
         >
-          <ActionBtn
+          <Button
             title={t("confirm")}
             onPress={handleConfirm}
-            disable={!selection}
-            className={`h-[48] rounded-10 ${selection ? "bg-red" : ""}`}
-            textClassName="text-14 font-custom600"
+            disabled={!selection}
+            size={px(48)}
+            shape="r10"
+            label={14}
+            labelWeight="semibold"
+            labelLeading="legacy"
           />
         </DmView>
       </DmView>

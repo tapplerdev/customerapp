@@ -3,8 +3,10 @@ import { TextInput } from "react-native"
 import { useTranslation } from "react-i18next"
 
 import { MainModal } from "@tappler/shared/src/components"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import CancelFeedbackIcon from "assets/icons/cancel-feedback.svg"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type CancelState = {
   cancelReasons: readonly string[]
@@ -59,7 +61,7 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
       preventBackdropPressable={cancel.isSubmitting}
       onBackButtonPress={close}
       onModalHide={onModalHide}
-      classNameModal="px-[0] items-center"
+      modalStyle={[a.px_0, a.items_center]}
       /*
        * The reason field is MULTILINE, so its return key inserts a newline
        * rather than dismissing, and Submit sits directly beneath it — so
@@ -82,51 +84,53 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
           width the card had under react-native-modal, which applied the
           centring to both of its own wrappers. */}
       <DmView>
-        <DmView className="mx-[24] self-stretch">
+        <DmView style={[a.mx_24, styles.box]}>
           {/* Close X — outside modal card */}
           {/* `disabled`, not a missing onPress: DmView swaps between a
               touchable and a plain View on onPress, which would remount it. */}
           <DmView
-            className="self-end mb-[10]"
+            style={[a.self_end, a.mb_10]}
             onPress={onClose}
             disabled={cancel.isSubmitting}
           >
-            <DmText className="text-22 text-white">✕</DmText>
+            <Text size={22} leading="legacy" color="inverse" family="system">✕</Text>
           </DmView>
 
-          <DmView className="bg-white rounded-12 px-[20] pt-[24] pb-[20]">
-            <DmView className="items-center">
+          <DmView style={[styles.list, a.px_20, a.pt_24, a.pb_20]}>
+            <DmView style={a.items_center}>
               <CancelFeedbackIcon width={60} height={60} />
             </DmView>
 
-            <DmText className="mt-[12] text-16 font-custom700 text-black text-center">
+            <Text size={16} weight="bold" leading="legacy" align="center" style={a.mt_12}>
               {t("your_opinion_matters")}
-            </DmText>
+            </Text>
 
-            <DmText className="mt-[12] text-13 font-custom600 text-black">
+            <Text size={13} weight="semibold" leading="legacy" style={a.mt_12}>
               {t("what_is_reason_cancellation")}
-            </DmText>
+            </Text>
 
             {cancel.cancelReasons.map((reason) => (
               <DmView
                 key={reason}
-                className="flex-row items-center mt-[12]"
+                style={[a.flex_row, a.items_center, a.mt_12]}
                 onPress={() => cancel.toggleReason(reason)}
               >
                 <DmView
-                  className={`w-[22] h-[22] rounded-full border-1 items-center justify-center ${
-                    cancel.selectedReasons.includes(reason)
-                      ? "border-red"
-                      : "border-grey1"
-                  }`}
+                  style={[
+                    styles.box2,
+                    a.border_1,
+                    a.items_center,
+                    a.justify_center,
+                    cancel.selectedReasons.includes(reason) ? styles.boxReason : styles.boxNotReason,
+                  ]}
                 >
                   {cancel.selectedReasons.includes(reason) && (
-                    <DmView className="w-[12] h-[12] rounded-full bg-red" />
+                    <DmView style={styles.box3} />
                   )}
                 </DmView>
-                <DmText className="ml-[10] text-13 font-custom400 text-black flex-1">
+                <Text size={13} leading="legacy" style={[a.ml_10, a.flex_1]}>
                   {t(reason)}
-                </DmText>
+                </Text>
               </DmView>
             ))}
 
@@ -137,19 +141,20 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
                 placeholder={t("write_other_reason")}
                 placeholderTextColor="#999"
                 multiline
-                className="mt-[12] border-1 border-grey5 rounded-4 px-[12] py-[10] text-13 min-h-[70]"
-                style={{ textAlignVertical: "top" }}
+                style={[a.mt_12, a.border_1, styles.input, a.px_12, a.py_10, { textAlignVertical: "top" }]}
               />
             )}
 
-            <DmView className="mt-[16]">
-              <ActionBtn
+            <DmView style={a.mt_16}>
+              <Button
                 title={t("submit")}
                 onPress={cancel.handleSubmitCancel}
-                disable={!cancel.canSubmit}
+                disabled={!cancel.canSubmit}
                 isLoading={cancel.isSubmitting}
-                className="h-[42]"
-                textClassName="text-13 font-custom600"
+                size="sm"
+                label="sm"
+                labelWeight="semibold"
+                labelLeading="legacy"
               />
             </DmView>
           </DmView>

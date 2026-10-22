@@ -2,12 +2,14 @@ import React from "react"
 import { TextInput, TouchableOpacity } from "react-native"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 
 import SearchIcon from "assets/icons/search-red.svg"
 import CategoriesIcon from "assets/icons/categories.svg"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   value?: string
@@ -16,7 +18,6 @@ interface Props {
   onPress?: () => void
   onFilterPress?: () => void
   placeholder?: string
-  className?: string
 }
 
 const SearchBar: React.FC<Props> = ({
@@ -26,20 +27,16 @@ const SearchBar: React.FC<Props> = ({
   onPress,
   onFilterPress,
   placeholder,
-  className,
 }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const fontStyles = takeFontStyles("font-custom400", i18n.language)
 
   return (
-    <DmView
-      className={`flex-row items-center mt-[10] mx-[16] ${className ?? ""}`}
-    >
+    <DmView style={[a.flex_row, a.items_center, a.mt_10, a.mx_16]}>
       <DmView
-        className="flex-1 h-[42] bg-white flex-row items-center px-[14]"
         onPress={onPress}
-        style={{
+        style={[a.flex_1, styles.row, a.flex_row, a.items_center, a.px_14, {
           borderRadius: 21,
           borderWidth: 1,
           borderColor: "#E0E0E0",
@@ -48,16 +45,24 @@ const SearchBar: React.FC<Props> = ({
           shadowOpacity: 0.12,
           shadowRadius: 4,
           elevation: 3,
-        }}
+        }]}
       >
         <SearchIcon width={16} height={16} />
         {onPress ? (
-          <DmText
-            className="flex-1 text-14 font-custom400"
-            style={[fontStyles, { marginHorizontal: 8, color: colors.grey3, textAlign: isAr ? "right" : "left" }]}
+          <Text
+            size={14}
+            leading="legacy"
+            style={[
+              a.flex_1,
+              {
+                marginHorizontal: 8,
+                color: colors.grey3,
+                textAlign: isAr ? "right" : "left",
+              },
+            ]}
           >
             {placeholder ?? t("search_for_a_service")}
-          </DmText>
+          </Text>
         ) : (
           <TextInput
             value={value}
@@ -83,7 +88,7 @@ const SearchBar: React.FC<Props> = ({
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={onFilterPress}
-        className="h-[33] items-center justify-center ml-[15]"
+        style={[styles.iconWrap, a.items_center, a.justify_center]}
       >
         <CategoriesIcon width={32} height={30} style={isAr ? { transform: [{ scaleX: -1 }] } : undefined} />
       </TouchableOpacity>

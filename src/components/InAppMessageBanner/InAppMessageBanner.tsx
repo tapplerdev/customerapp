@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Animated, Dimensions, TouchableOpacity } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { PanGestureHandler, State } from "react-native-gesture-handler"
 import FastImage from "react-native-fast-image"
@@ -10,6 +10,8 @@ import { navigateFromRef, navigationRef } from "navigation/navigationRef"
 import { setActiveChat } from "services/chatCache"
 import { useTypedSelector } from "store"
 import { ChatPreviewType } from "types/chat"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const DURATION = 5000
 
@@ -263,18 +265,17 @@ const InAppMessageBanner: React.FC = () => {
       >
         <TouchableOpacity activeOpacity={0.9} onPress={handlePress}>
           <DmView
-            className="bg-white rounded-12 overflow-hidden border-0.5 border-grey5"
-            style={{
+            style={[styles.boxWrap, a.overflow_hidden, {
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 3 },
               shadowOpacity: 0.18,
               shadowRadius: 8,
               elevation: 6,
-            }}
+            }]}
           >
-            <DmView className="flex-row items-center p-[14]">
+            <DmView style={[a.flex_row, a.items_center, a.p_14]}>
               {photo ? (
-                <DmView className="w-[40] h-[40] rounded-full overflow-hidden mr-[12]">
+                <DmView style={[styles.imageWrap, a.overflow_hidden, a.mr_12]}>
                   <FastImage
                     source={{ uri: photo }}
                     style={{ width: 40, height: 40 }}
@@ -282,28 +283,31 @@ const InAppMessageBanner: React.FC = () => {
                   />
                 </DmView>
               ) : (
-                <DmView className="w-[40] h-[40] rounded-full bg-red items-center justify-center mr-[12]">
-                  <DmText className="text-white text-16 font-custom600">
+                <DmView style={[styles.textWrap, a.items_center, a.justify_center, a.mr_12]}>
+                  <Text size={16} weight="semibold" leading="legacy" color="inverse">
                     {(banner.title || "Tappler").charAt(0)}
-                  </DmText>
+                  </Text>
                 </DmView>
               )}
-              <DmView className="flex-1">
-                <DmView className="flex-row items-center justify-between mb-[2]">
-                  <DmText
-                    className="text-15 font-custom600 text-black flex-1"
+              <DmView style={a.flex_1}>
+                <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mb_2]}>
+                  <Text
+                    size={15}
+                    weight="semibold"
+                    leading="legacy"
+                    style={a.flex_1}
                     numberOfLines={1}
                   >
                     {/* A config row seeded with a body but no title is a real
                         state (see useChatSocket) — fall back rather than
                         rendering a blank bold line above the message. */}
                     {banner.title || "Tappler"}
-                  </DmText>
-                  <DmText className="text-11 font-custom400 text-grey3 ml-[8]">now</DmText>
+                  </Text>
+                  <Text size={11} leading="legacy" color="tertiary" style={a.ml_8}>now</Text>
                 </DmView>
-                <DmText className="text-13 font-custom400 text-grey2" numberOfLines={2}>
+                <Text size={13} leading="legacy" color="secondary" numberOfLines={2}>
                   {banner.body}
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
           </DmView>

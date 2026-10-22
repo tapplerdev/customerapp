@@ -1,0 +1,48 @@
+{
+ "component": "MessageBlockedModal",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "bac269d93b": {
+   "props": {
+    "isVisible": false,
+    "description": {
+     "$opaque": "blockedModalText"
+    },
+    "onClose": {
+     "$fn": true
+    },
+    "onEdit": {
+     "$fn": true
+    },
+    "onClosed": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1253"
+   ]
+  },
+  "93a2dc5a28": {
+   "props": {
+    "isVisible": true,
+    "description": {
+     "$opaque": "blockedModalText"
+    },
+    "onClose": {
+     "$fn": true
+    },
+    "onEdit": {
+     "$fn": true
+    },
+    "onClosed": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1253"
+   ]
+  }
+ }
+}

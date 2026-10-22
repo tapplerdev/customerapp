@@ -1,0 +1,26 @@
+{
+ "component": "MapPinPicker",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "e20dbed835": {
+   "props": {
+    "showInstruction": false,
+    "pinSize": "medium"
+   },
+   "sites": [
+    "screens/PickAddressScreen/components/MapPickerView.tsx:138"
+   ]
+  },
+  "6e471a3297": {
+   "props": {
+    "showInstruction": true,
+    "pinSize": "medium"
+   },
+   "sites": [
+    "screens/PickAddressScreen/components/MapPickerView.tsx:138"
+   ]
+  }
+ }
+}

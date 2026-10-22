@@ -1,7 +1,8 @@
 import React from "react"
 
 import { ActivityIndicator } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
+import LegacyText from "@tappler/shared/src/components/LegacyText"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 import { useTranslation } from "react-i18next"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -10,6 +11,8 @@ import moment from "moment"
 import { useGetOfferHistoryQuery } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import TagRedIcon from "assets/icons/tag-red.svg"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -47,17 +50,17 @@ const OfferHistorySheet: React.FC<Props> = ({
   return (
     <NativeActionSheet isVisible={isVisible} onClose={onClose}>
       <DmView
-        className="bg-white rounded-t-12 px-[16] pt-[18]"
-        style={{ paddingBottom: insets.bottom + 16 }}
+        style={[styles.list, a.px_16, a.pt_18, { paddingBottom: insets.bottom + 16 }]}
       >
-        <DmText
-          className="text-16 leading-[20px] font-custom700 text-black mb-[12]"
-          style={rtlText}
+        <Text
+          size={16}
+          weight="bold"
+          style={[a.mb_12, rtlText]}
         >
           {t("offer_history_title")}
-        </DmText>
+        </Text>
         {isLoading ? (
-          <DmView className="py-[24] items-center">
+          <DmView style={[a.py_24, a.items_center]}>
             <ActivityIndicator size="small" color={colors.red} />
           </DmView>
         ) : (
@@ -70,45 +73,43 @@ const OfferHistorySheet: React.FC<Props> = ({
             return (
               <DmView
                 key={offer.id}
-                className="flex-row items-center rounded-12 px-[12] py-[11] mb-[8]"
-                style={{
+                style={[a.flex_row, a.items_center, styles.container, a.px_12, a.mb_8, {
                   backgroundColor: "#FAF9F7",
                   borderWidth: 1,
                   borderColor: "#E6E3DE",
                   opacity: isCurrent ? 1 : 0.85,
-                }}
+                }]}
               >
                 <TagRedIcon width={15} height={15} />
-                <DmView className="ml-[10] flex-1">
+                <DmView style={[a.ml_10, a.flex_1]}>
                   {/* Row mirrors naturally under force-RTL: each Text is a
                       single atomic segment, so bidi can't reshuffle glyphs */}
                   <DmView
-                    className="flex-row items-center"
-                    style={{ alignSelf: "flex-start" }}
+                    style={[a.flex_row, a.items_center, { alignSelf: "flex-start" }]}
                   >
-                    <DmText
-                      className="font-custom700"
-                      style={{
-                        fontSize: 17,
-                        lineHeight: 21,
-                        color: isCurrent ? "#1A1A1A" : "#6A6A6A",
-                      }}
+                    <Text
+                      size={px(17)}
+                      weight="bold"
+                      leading={{ fixed: px(21) }}
+                      style={{ color: isCurrent ? "#1A1A1A" : "#6A6A6A" }}
                     >
                       {`${offer.ratePerHour} `}
-                    </DmText>
-                    <DmText
-                      className="font-custom400"
-                      style={{ fontSize: 11, lineHeight: 16, color: "#8C8C8C" }}
+                    </Text>
+                    <Text
+                      size={11}
+                      leading={{ fixed: px(16) }}
+                      style={{ color: "#8C8C8C" }}
                     >
                       {t("EGP")}
-                    </DmText>
+                    </Text>
                     {isCurrent && (
                       <DmView
-                        className="ml-[6] rounded-8 px-[6] py-[1]"
-                        style={{ backgroundColor: "#E1F5EE" }}
+                        style={[a.ml_6, styles.textWrap, a.px_6, { backgroundColor: "#E1F5EE" }]}
                       >
-                        <DmText
-                          className="font-custom600"
+                        {/* 9.5 is off the ds scale: LegacyText, the bridge
+                            pass 2 turns into Text */}
+                        <LegacyText
+                          weight="semibold"
                           style={{
                             fontSize: 9.5,
                             lineHeight: 13,
@@ -117,41 +118,38 @@ const OfferHistorySheet: React.FC<Props> = ({
                           }}
                         >
                           {t("current").toUpperCase()}
-                        </DmText>
+                        </LegacyText>
                       </DmView>
                     )}
                   </DmView>
-                  <DmText
-                    className="mt-[2] font-custom400"
-                    style={{
-                      fontSize: 11,
-                      lineHeight: 14,
-                      color: "#8C8C8C",
-                      textAlign: "left",
-                    }}
+                  <Text
+                    size={11}
+                    leading="legacy"
+                    style={[a.mt_2, { color: "#8C8C8C", textAlign: "left" }]}
                   >
                     {moment(offer.createdAt).format("DD/MM · h:mm A")}
-                  </DmText>
+                  </Text>
                 </DmView>
                 {delta != null && delta !== 0 ? (
                   <DmView
-                    className="rounded-10 px-[8] py-[2]"
-                    style={{ backgroundColor: "#E1F5EE" }}
+                    style={[styles.textWrap2, a.px_8, a.py_2, { backgroundColor: "#E1F5EE" }]}
                   >
-                    <DmText
-                      className="font-custom400"
-                      style={{ fontSize: 11, lineHeight: 15, color: "#0F6E56" }}
+                    <Text
+                      size={11}
+                      leading={{ fixed: px(15) }}
+                      style={{ color: "#0F6E56" }}
                     >
                       {`${delta > 0 ? "+" : "−"}${Math.abs(delta)} ${t("EGP")}`}
-                    </DmText>
+                    </Text>
                   </DmView>
                 ) : isFirst ? (
-                  <DmText
-                    className="font-custom400"
+                  // 10.5 is off the ds scale: LegacyText
+                  <LegacyText
+                    weight="regular"
                     style={{ fontSize: 10.5, lineHeight: 14, color: "#B3B3B3" }}
                   >
                     {t("first_offer")}
-                  </DmText>
+                  </LegacyText>
                 ) : null}
               </DmView>
             )

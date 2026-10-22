@@ -1,9 +1,9 @@
 import React, { useState } from "react"
-import { StyleSheet } from "react-native"
+import { Pressable, StyleSheet } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -18,6 +18,8 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 type DateTypeOption = "notDecided" | "hours48" | "week" | "furtherOut" | "specificDates"
 
@@ -263,28 +265,30 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   const dateOptions = allDateOptions.filter((opt) => allowedBackendTypes.has(opt.backendType))
 
   const renderDateStep = () => (
-    <DmView className="px-[14]">
-      <DmText className="text-22 leading-[28px] font-custom700 mb-[24]">
+    <DmView style={atoms.px_14}>
+      <Text size={22} weight="bold" leading={px(28)} style={atoms.mb_24}>
         {t("when_do_you_need_job")}
-      </DmText>
+      </Text>
       {dateOptions.map((option) => (
         <DmView key={option.key}>
           <DmChecbox
-            className="py-[14]"
-            textClassName="flex-1 text-14 leading-[18px] font-custom400"
+            style={atoms.py_14}
+            textType={{ size: 14, leading: "normal", weight: "regular" }}
+            textStyle={atoms.flex_1}
             variant="circle"
             title={option.label}
             onPress={() => handleSelectDateOption(option.key)}
             isChecked={selectedDateOption === option.key}
           />
           {selectedDateOption === option.key && selectedDate && (
-            <DmView className="ml-[36] mb-[8]">
-              <DmText
-                className="text-13 leading-[16px] font-custom500 text-red"
-                onPress={() => setCalendarVisible(true)}
-              >
-                {selectedDate}{selectedTimeSlot ? `  •  ${selectedTimeSlot.start} - ${selectedTimeSlot.end}` : ""}
-              </DmText>
+            <DmView style={[dsStyles.textWrap, atoms.mb_8]}>
+              {/* DmText's own wrapper for a pressable text: a Pressable that gets
+                  only the handler, around a Text that gets none. */}
+              <Pressable onPress={() => setCalendarVisible(true)}>
+                <Text size={13} weight="medium" leading="tight" color="brand">
+                  {selectedDate}{selectedTimeSlot ? `  •  ${selectedTimeSlot.start} - ${selectedTimeSlot.end}` : ""}
+                </Text>
+              </Pressable>
             </DmView>
           )}
         </DmView>
@@ -306,11 +310,11 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView style={[atoms.flex_1, dsStyles.safeArea]} edges={["top"]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
+      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_16, atoms.py_12]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[dsStyles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleBack}
         >
@@ -319,13 +323,13 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[atoms.flex_1, atoms.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("details")}
-          </DmText>
+          </Text>
         </DmView>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[dsStyles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleClose}
         >
@@ -334,10 +338,9 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
       </DmView>
 
       {/* Progress bar */}
-      <DmView className="h-[3] bg-grey5">
+      <DmView style={dsStyles.boxWrap}>
         <DmView
-          className="h-[3] bg-red"
-          style={{ width: `${Math.round(progress * 100)}%` }}
+          style={[dsStyles.box, { width: `${Math.round(progress * 100)}%` }]}
         />
       </DmView>
 
@@ -362,16 +365,16 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
 
       {/* Bottom button */}
       <DmView
-        className="px-[16] pt-[17] bg-white"
-        style={[styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
+        style={[atoms.px_16, dsStyles.buttonWrap, styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
       >
-        <ActionBtn
+        <Button
           title={stepIndex === totalSteps - 1 ? t("continue") : t("next")}
           onPress={handleNext}
           isLoading={isCheckingMatch}
-          disable={!isCurrentAnswered}
-          className="h-[52] rounded-10"
-          textClassName="text-16 font-custom600"
+          disabled={!isCurrentAnswered}
+          size={px(52)}
+          shape="r10"
+          labelWeight="semibold"
         />
       </DmView>
 
@@ -392,10 +395,11 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         descr={t("pros_cannot_do_job")}
         titleBtn={t("see_matching_pros")}
         onPress={handleMismatchConfirm}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
-        classNameBtns="h-[40]"
-        classNameBtnsWrapper="mt-[20] mx-[15]"
-        classNameModal="px-[17]"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={dsStyles.mainModalTitle}
+        btnsStyle={dsStyles.mainModalBtns}
+        btnsWrapperStyle={[atoms.mt_20, dsStyles.mainModalBtnsWrapper]}
+        modalStyle={dsStyles.mainModalModal}
       />
     </SafeAreaView>
   )

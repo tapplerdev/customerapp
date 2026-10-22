@@ -1,0 +1,24 @@
+{
+ "component": "OfferUpdateCard",
+ "capturedAt": "899ecbc",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "c64c1a1472": {
+   "props": {
+    "previous": {
+     "$opaque": "offerUpdate.previous"
+    },
+    "next": {
+     "$opaque": "offerUpdate.next"
+    },
+    "time": {
+     "$opaque": "time"
+    }
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:245"
+   ]
+  }
+ }
+}

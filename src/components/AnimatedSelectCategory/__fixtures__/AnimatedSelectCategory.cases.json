@@ -1,0 +1,22 @@
+{
+ "component": "AnimatedSelectCategory",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "3d826d23fe": {
+   "props": {
+    "categories": {
+     "$opaque": "sectionTitles"
+    },
+    "setSelectedCategory": {
+     "$fn": true
+    },
+    "textClassName": "text-13 leading-[16px] font-custom500 text-center"
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen.tsx:240"
+   ]
+  }
+ }
+}

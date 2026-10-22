@@ -1,10 +1,12 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 
 import LeaveReviewIcon from "assets/icons/leave-review.svg"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -22,33 +24,35 @@ const LeaveReviewModal: React.FC<Props> = ({
   const { t } = useTranslation()
 
   const content = (
-    <DmView className="bg-white rounded-t-20 px-[24] pt-[16] pb-[40]">
+    <DmView style={[styles.box, a.px_24, a.pt_16, a.pb_40]}>
       {/* Close */}
-      <DmView onPress={onClose} className="mb-[16] self-start">
-        <DmText className="text-20 font-custom600 text-black">✕</DmText>
+      <DmView onPress={onClose} style={[a.mb_16, a.self_start]}>
+        <Text size={20} weight="semibold" leading="legacy">✕</Text>
       </DmView>
 
       {/* Review icon */}
-      <DmView className="items-center mb-[16]">
+      <DmView style={[a.items_center, a.mb_16]}>
         <LeaveReviewIcon width={80} height={80} />
       </DmView>
 
       {/* Title */}
-      <DmView className="items-center mb-[24]">
-        <DmText className="text-18 font-custom600 text-black text-center">
+      <DmView style={[a.items_center, a.mb_24]}>
+        <Text size={18} weight="semibold" leading="legacy" align="center">
           {t("how_was_your_service_for")}
-        </DmText>
-        <DmText className="text-18 font-custom600 text-red text-center mt-[4]">
+        </Text>
+        <Text size={18} weight="semibold" leading="legacy" color="brand" align="center" style={a.mt_4}>
           {categoryName}?
-        </DmText>
+        </Text>
       </DmView>
 
       {/* Leave Review button */}
-      <DmView className="px-[40]">
-        <ActionBtn
+      <DmView style={a.px_40}>
+        <Button
           title={t("leave_review")}
           onPress={onLeaveReview}
-          textClassName="text-14 font-custom600"
+          label={14}
+          labelWeight="semibold"
+          labelLeading="legacy"
         />
       </DmView>
     </DmView>

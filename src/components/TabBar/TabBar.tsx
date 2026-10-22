@@ -1,12 +1,12 @@
 import React from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs"
 import DropShadow from "react-native-drop-shadow"
 
 import styles from "./styles"
-import clsx from "clsx"
 import { TFunction } from "i18next"
+import { Text, a, px } from "@tappler/shared/src/ds"
 
 const TabBar = ({
   state,
@@ -31,16 +31,15 @@ const TabBar = ({
     */
     <DropShadow style={styles.shadow}>
     <DmView
-      className="bg-white"
-      style={{
+      style={[styles.box, {
         paddingBottom:
           insets.bottom > 31
             ? insets.bottom - (insets.bottom - 31)
             : 31 - insets.bottom,
-      }}
+      }]}
     >
-      <DmView className="h-[20]" />
-      <DmView className="flex-row justify-between">
+      <DmView style={styles.box2} />
+      <DmView style={[a.flex_row, a.justify_between]}>
         {state.routes.map((route, index) => {
           const focused = state.index === index
           const { options } = descriptors[route.key]
@@ -58,20 +57,18 @@ const TabBar = ({
                 }
               }}
               key={route.key}
-              className="items-center justify-center"
-              style={styles.item}
+              style={[a.items_center, a.justify_center, styles.item]}
             >
               {!!options.tabBarIcon &&
                 options.tabBarIcon({ focused, color: "", size: 24 })}
-              <DmText
-                className={clsx(
-                  "mt-[2] text-grey17 text-11 leading-[18px]",
-                  !focused && "font-custom500",
-                  focused && "text-black font-custom600"
-                )}
+              <Text
+                size={11}
+                weight={focused ? "semibold" : "medium"}
+                leading={px(18)}
+                style={[a.mt_2, styles.text, focused && styles.textFocused]}
               >
                 {t(route.name)}
-              </DmText>
+              </Text>
             </DmView>
           )
         })}

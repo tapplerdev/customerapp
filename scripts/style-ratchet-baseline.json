@@ -1,0 +1,790 @@
+{
+  "version": 1,
+  "note": "Written by `yarn ds:ratchet --update`. Counts per file; directories are their sums.",
+  "scanned": [
+    "src"
+  ],
+  "metrics": [
+    "className",
+    "px",
+    "legacy",
+    "familySystem",
+    "colorLiteral",
+    "primitives",
+    "bridge",
+    "classKey",
+    "classProp",
+    "classImport",
+    "primitiveImport"
+  ],
+  "totals": {
+    "className": 0,
+    "px": 111,
+    "legacy": 270,
+    "familySystem": 15,
+    "colorLiteral": 157,
+    "primitives": 0,
+    "bridge": 5,
+    "classKey": 0,
+    "classProp": 0,
+    "classImport": 0,
+    "primitiveImport": 0
+  },
+  "directories": {
+    "src": {
+      "px": 111,
+      "legacy": 270,
+      "familySystem": 15,
+      "colorLiteral": 157,
+      "bridge": 5
+    },
+    "src/components": {
+      "px": 30,
+      "legacy": 50,
+      "familySystem": 1,
+      "colorLiteral": 65,
+      "bridge": 4
+    },
+    "src/components/AddressSelectionModal": {
+      "px": 3
+    },
+    "src/components/AnimatedSelectCategory": {
+      "px": 1
+    },
+    "src/components/BannerContainer": {
+      "legacy": 1
+    },
+    "src/components/CalendarTimePicker": {
+      "legacy": 3
+    },
+    "src/components/CalendarTimeSheet": {
+      "px": 1,
+      "legacy": 2
+    },
+    "src/components/CancelJobFeedbackModal": {
+      "legacy": 5,
+      "familySystem": 1,
+      "colorLiteral": 1
+    },
+    "src/components/ChipButton": {
+      "px": 1,
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/components/FoodMenuItemRow": {
+      "px": 2,
+      "colorLiteral": 1
+    },
+    "src/components/ImageViewerModal": {
+      "colorLiteral": 3
+    },
+    "src/components/ImageWithCheckmarkButton": {
+      "colorLiteral": 3,
+      "bridge": 1
+    },
+    "src/components/ImageWithTextButton": {
+      "colorLiteral": 2
+    },
+    "src/components/InAppMessageBanner": {
+      "legacy": 4,
+      "colorLiteral": 1
+    },
+    "src/components/LeaveReviewModal": {
+      "legacy": 4
+    },
+    "src/components/LoadingOverlay": {
+      "colorLiteral": 3
+    },
+    "src/components/LogoutModal": {
+      "px": 1
+    },
+    "src/components/MessageComponent": {
+      "px": 1,
+      "legacy": 4,
+      "colorLiteral": 13
+    },
+    "src/components/MessagesComponent": {
+      "legacy": 8
+    },
+    "src/components/OfferHistorySheet": {
+      "px": 4,
+      "legacy": 4,
+      "colorLiteral": 11,
+      "bridge": 2
+    },
+    "src/components/OfferUpdateCard": {
+      "px": 4,
+      "legacy": 4,
+      "colorLiteral": 1
+    },
+    "src/components/OffersSection": {
+      "colorLiteral": 1
+    },
+    "src/components/OrderBill": {
+      "px": 4
+    },
+    "src/components/ProCardBase": {
+      "px": 3,
+      "legacy": 7,
+      "colorLiteral": 8
+    },
+    "src/components/QuestionComponent": {
+      "legacy": 1,
+      "colorLiteral": 1
+    },
+    "src/components/ScaleableDistinctLabelComponent": {
+      "bridge": 1
+    },
+    "src/components/SearchBar": {
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/components/SearchLocationModal": {
+      "colorLiteral": 3
+    },
+    "src/components/SearchMessagesComponent": {
+      "px": 1,
+      "colorLiteral": 1
+    },
+    "src/components/SkeletonLoader": {
+      "colorLiteral": 1
+    },
+    "src/components/SplashOverlay": {
+      "colorLiteral": 1
+    },
+    "src/components/SuccessModal": {
+      "px": 2,
+      "colorLiteral": 1
+    },
+    "src/components/SystemEventBubble": {
+      "px": 1,
+      "colorLiteral": 2
+    },
+    "src/components/TabBar": {
+      "px": 1,
+      "colorLiteral": 1
+    },
+    "src/components/TextWithCheckmarkButton": {
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/screens": {
+      "px": 81,
+      "legacy": 220,
+      "familySystem": 14,
+      "colorLiteral": 92,
+      "bridge": 1
+    },
+    "src/screens/PickAddressScreen": {
+      "px": 4,
+      "colorLiteral": 3
+    },
+    "src/screens/PickAddressScreen/components": {
+      "px": 4,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens": {
+      "px": 75,
+      "legacy": 198,
+      "familySystem": 13,
+      "colorLiteral": 88
+    },
+    "src/screens/dashboardScreens/AboutAppScreen": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/AccountDetailsScreen": {
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/AccountScreen": {
+      "legacy": 6
+    },
+    "src/screens/dashboardScreens/AddNewAddressScreen": {
+      "px": 1,
+      "legacy": 7
+    },
+    "src/screens/dashboardScreens/AllQuestionsScreen": {
+      "px": 1,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ArchivedMessagesScreen": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/AuthGateScreen": {
+      "px": 1,
+      "legacy": 7,
+      "familySystem": 1,
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/CategoriesScreen": {
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/ChangePasswordScreen": {
+      "px": 1,
+      "legacy": 6
+    },
+    "src/screens/dashboardScreens/DeleteAccountScreen": {
+      "px": 2,
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/FiltersScreen": {
+      "px": 2,
+      "legacy": 4,
+      "familySystem": 1,
+      "colorLiteral": 8
+    },
+    "src/screens/dashboardScreens/FoodCartScreen": {
+      "px": 3,
+      "legacy": 1,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodCheckoutScreen": {
+      "px": 6,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodItemScreen": {
+      "px": 5,
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/FoodMenuScreen": {
+      "legacy": 1,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodOrderReviewScreen": {
+      "px": 3,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/HomeScreen": {
+      "px": 2,
+      "legacy": 5,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/HomeScreen/components": {
+      "px": 2,
+      "legacy": 3,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/JobDetailScreen": {
+      "px": 13,
+      "legacy": 15,
+      "colorLiteral": 9
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/components": {
+      "px": 6,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/MessagesDetailsScreen": {
+      "px": 4,
+      "legacy": 9,
+      "colorLiteral": 16
+    },
+    "src/screens/dashboardScreens/MessagesScreen": {
+      "px": 1,
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/MyInformationScreen": {
+      "px": 1,
+      "legacy": 9
+    },
+    "src/screens/dashboardScreens/MySavedAddressesScreen": {
+      "px": 2,
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/NotificationDetailsScreen": {
+      "px": 2,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/NotificationsScreen": {
+      "legacy": 4
+    },
+    "src/screens/dashboardScreens/ProProfileScreen": {
+      "legacy": 2,
+      "familySystem": 1,
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ProsListingScreen": {
+      "px": 4,
+      "legacy": 10,
+      "colorLiteral": 15
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components": {
+      "px": 1,
+      "legacy": 5,
+      "colorLiteral": 7
+    },
+    "src/screens/dashboardScreens/QuestionStepScreen": {
+      "px": 2,
+      "legacy": 1,
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/RequestDetailsScreen": {
+      "px": 4,
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/RequestSuccessScreen": {
+      "legacy": 4
+    },
+    "src/screens/dashboardScreens/RequestSummaryScreen": {
+      "px": 5,
+      "legacy": 23,
+      "familySystem": 10,
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/ReviewFormScreen": {
+      "px": 1,
+      "legacy": 11,
+      "colorLiteral": 6
+    },
+    "src/screens/dashboardScreens/ReviewProSelectionScreen": {
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/SaveAddressSheetScreen": {
+      "legacy": 6,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/SearchAnimationScreen": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ServiceRequestDetailsScreen": {
+      "px": 3,
+      "legacy": 1,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/SubCategoriesScreen": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/TalabatiScreen": {
+      "legacy": 17,
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/TapplyAIScreen": {
+      "px": 1,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/UpdateEmailScreen": {
+      "px": 1,
+      "legacy": 7
+    },
+    "src/screens/dashboardScreens/UpdateMobileNumberScreen": {
+      "px": 3,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/ViewAddressScreen": {
+      "px": 1,
+      "legacy": 12
+    },
+    "src/screens/onboardingScreens": {
+      "px": 2,
+      "legacy": 22,
+      "familySystem": 1,
+      "colorLiteral": 1,
+      "bridge": 1
+    },
+    "src/screens/onboardingScreens/AuthWelcomeScreen": {
+      "legacy": 12
+    },
+    "src/screens/onboardingScreens/GuestLocationScreen": {
+      "legacy": 4,
+      "colorLiteral": 1
+    },
+    "src/screens/onboardingScreens/RegisterScreen": {
+      "legacy": 5
+    },
+    "src/screens/onboardingScreens/WelcomeScreen": {
+      "px": 2,
+      "legacy": 1,
+      "familySystem": 1,
+      "bridge": 1
+    }
+  },
+  "files": {
+    "src/components/AddressSelectionModal/AddressSelectionModal.tsx": {
+      "px": 3
+    },
+    "src/components/AnimatedSelectCategory/AnimatedSelectCategory.tsx": {
+      "px": 1
+    },
+    "src/components/BannerContainer/BannerContainer.tsx": {
+      "legacy": 1
+    },
+    "src/components/CalendarTimePicker/CalendarTimePicker.tsx": {
+      "legacy": 3
+    },
+    "src/components/CalendarTimeSheet/CalendarTimeSheet.tsx": {
+      "px": 1,
+      "legacy": 2
+    },
+    "src/components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx": {
+      "legacy": 5,
+      "familySystem": 1,
+      "colorLiteral": 1
+    },
+    "src/components/ChipButton/ChipButton.tsx": {
+      "px": 1,
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/components/FoodMenuItemRow/FoodMenuItemRow.tsx": {
+      "px": 2
+    },
+    "src/components/FoodMenuItemRow/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/ImageViewerModal/ImageViewerModal.tsx": {
+      "colorLiteral": 3
+    },
+    "src/components/ImageWithCheckmarkButton/ImageWithCheckmarkButton.tsx": {
+      "colorLiteral": 2,
+      "bridge": 1
+    },
+    "src/components/ImageWithCheckmarkButton/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/ImageWithTextButton/ImageWithTextButton.tsx": {
+      "colorLiteral": 2
+    },
+    "src/components/InAppMessageBanner/InAppMessageBanner.tsx": {
+      "legacy": 4,
+      "colorLiteral": 1
+    },
+    "src/components/LeaveReviewModal/LeaveReviewModal.tsx": {
+      "legacy": 4
+    },
+    "src/components/LoadingOverlay/styles.ts": {
+      "colorLiteral": 3
+    },
+    "src/components/LogoutModal/LogoutModal.tsx": {
+      "px": 1
+    },
+    "src/components/MessageComponent/MessageComponent.tsx": {
+      "px": 1,
+      "legacy": 4,
+      "colorLiteral": 13
+    },
+    "src/components/MessagesComponent/MessagesComponent.tsx": {
+      "legacy": 8
+    },
+    "src/components/OfferHistorySheet/OfferHistorySheet.tsx": {
+      "px": 4,
+      "legacy": 4,
+      "colorLiteral": 11,
+      "bridge": 2
+    },
+    "src/components/OfferUpdateCard/OfferUpdateCard.tsx": {
+      "px": 4,
+      "legacy": 4,
+      "colorLiteral": 1
+    },
+    "src/components/OffersSection/OffersSection.tsx": {
+      "colorLiteral": 1
+    },
+    "src/components/OrderBill/OrderBill.tsx": {
+      "px": 4
+    },
+    "src/components/ProCardBase/ProCardBase.tsx": {
+      "px": 3,
+      "legacy": 7
+    },
+    "src/components/ProCardBase/styles.ts": {
+      "colorLiteral": 8
+    },
+    "src/components/QuestionComponent/QuestionComponent.tsx": {
+      "legacy": 1
+    },
+    "src/components/QuestionComponent/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/ScaleableDistinctLabelComponent/ScaleableDistinctLabelComponent.tsx": {
+      "bridge": 1
+    },
+    "src/components/SearchBar/SearchBar.tsx": {
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/components/SearchLocationModal/SearchLocationModal.tsx": {
+      "colorLiteral": 3
+    },
+    "src/components/SearchMessagesComponent/SearchMessagesComponent.tsx": {
+      "px": 1,
+      "colorLiteral": 1
+    },
+    "src/components/SkeletonLoader/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/SplashOverlay/SplashOverlay.tsx": {
+      "colorLiteral": 1
+    },
+    "src/components/SuccessModal/SuccessModal.tsx": {
+      "px": 2,
+      "colorLiteral": 1
+    },
+    "src/components/SystemEventBubble/SystemEventBubble.tsx": {
+      "px": 1,
+      "colorLiteral": 2
+    },
+    "src/components/TabBar/TabBar.tsx": {
+      "px": 1
+    },
+    "src/components/TabBar/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/components/TextWithCheckmarkButton/TextWithCheckmarkButton.tsx": {
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/screens/PickAddressScreen/components/MapPickerView.tsx": {
+      "px": 1
+    },
+    "src/screens/PickAddressScreen/components/MapPickerWithSearchView.tsx": {
+      "px": 2,
+      "colorLiteral": 1
+    },
+    "src/screens/PickAddressScreen/components/SearchView.tsx": {
+      "px": 1
+    },
+    "src/screens/PickAddressScreen/styles.ts": {
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/AboutAppScreen/AboutAppScreen.tsx": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/AccountDetailsScreen/AccountDetailsScreen.tsx": {
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx": {
+      "legacy": 6
+    },
+    "src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx": {
+      "px": 1,
+      "legacy": 7
+    },
+    "src/screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen.tsx": {
+      "px": 1,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ArchivedMessagesScreen/ArchivedMessagesScreen.tsx": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/AuthGateScreen/AuthGateScreen.tsx": {
+      "px": 1,
+      "legacy": 2,
+      "familySystem": 1,
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx": {
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx": {
+      "legacy": 1,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx": {
+      "px": 1,
+      "legacy": 6
+    },
+    "src/screens/dashboardScreens/DeleteAccountScreen/DeleteAccountScreen.tsx": {
+      "px": 2,
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx": {
+      "px": 2,
+      "legacy": 4,
+      "familySystem": 1,
+      "colorLiteral": 8
+    },
+    "src/screens/dashboardScreens/FoodCartScreen/FoodCartScreen.tsx": {
+      "px": 3,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/FoodCartScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx": {
+      "px": 6
+    },
+    "src/screens/dashboardScreens/FoodCheckoutScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodItemScreen/FoodItemScreen.tsx": {
+      "px": 5,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/FoodItemScreen/styles.ts": {
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen.tsx": {
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/FoodMenuScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx": {
+      "px": 3
+    },
+    "src/screens/dashboardScreens/FoodOrderReviewScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/HomeScreen/HomeScreen.tsx": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/HomeScreen/components/PresetCard.tsx": {
+      "px": 2,
+      "legacy": 2,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/HomeScreen/components/PresetSection.tsx": {
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx": {
+      "px": 7,
+      "legacy": 14,
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/components/FoodOrderView.tsx": {
+      "px": 6,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/JobDetailScreen/styles.ts": {
+      "colorLiteral": 6
+    },
+    "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx": {
+      "px": 4,
+      "legacy": 9
+    },
+    "src/screens/dashboardScreens/MessagesDetailsScreen/styles.ts": {
+      "colorLiteral": 16
+    },
+    "src/screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx": {
+      "px": 1,
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx": {
+      "px": 1,
+      "legacy": 9
+    },
+    "src/screens/dashboardScreens/MySavedAddressesScreen/MySavedAddressesScreen.tsx": {
+      "px": 2,
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/NotificationDetailsScreen/NotificationDetailsScreen.tsx": {
+      "px": 2,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/NotificationsScreen/NotificationsScreen.tsx": {
+      "legacy": 4
+    },
+    "src/screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx": {
+      "legacy": 2,
+      "familySystem": 1
+    },
+    "src/screens/dashboardScreens/ProProfileScreen/styles.ts": {
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx": {
+      "px": 3,
+      "legacy": 5,
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx": {
+      "legacy": 3,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components/TooltipComponent.tsx": {
+      "px": 1,
+      "legacy": 2,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/components/styles.ts": {
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/ProsListingScreen/styles.ts": {
+      "colorLiteral": 5
+    },
+    "src/screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen.tsx": {
+      "px": 2,
+      "legacy": 1,
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/RequestDetailsScreen/RequestDetailsScreen.tsx": {
+      "px": 4,
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/RequestSuccessScreen/RequestSuccessScreen.tsx": {
+      "legacy": 4
+    },
+    "src/screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx": {
+      "px": 5,
+      "legacy": 23,
+      "familySystem": 10,
+      "colorLiteral": 4
+    },
+    "src/screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx": {
+      "px": 1,
+      "legacy": 11,
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ReviewFormScreen/styles.ts": {
+      "colorLiteral": 3
+    },
+    "src/screens/dashboardScreens/ReviewProSelectionScreen/ReviewProSelectionScreen.tsx": {
+      "legacy": 5
+    },
+    "src/screens/dashboardScreens/SaveAddressSheetScreen/SaveAddressSheetScreen.tsx": {
+      "legacy": 6
+    },
+    "src/screens/dashboardScreens/SaveAddressSheetScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/SearchAnimationScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx": {
+      "px": 3,
+      "legacy": 1,
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx": {
+      "legacy": 2
+    },
+    "src/screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx": {
+      "legacy": 17,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/TalabatiScreen/styles.ts": {
+      "colorLiteral": 1
+    },
+    "src/screens/dashboardScreens/TapplyAIScreen/TapplyAIScreen.tsx": {
+      "px": 1,
+      "colorLiteral": 2
+    },
+    "src/screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx": {
+      "px": 1,
+      "legacy": 7
+    },
+    "src/screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx": {
+      "px": 3,
+      "legacy": 1
+    },
+    "src/screens/dashboardScreens/ViewAddressScreen/ViewAddressScreen.tsx": {
+      "px": 1,
+      "legacy": 12
+    },
+    "src/screens/onboardingScreens/AuthWelcomeScreen/AuthWelcomeScreen.tsx": {
+      "legacy": 12
+    },
+    "src/screens/onboardingScreens/GuestLocationScreen/GuestLocationScreen.tsx": {
+      "legacy": 4,
+      "colorLiteral": 1
+    },
+    "src/screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx": {
+      "legacy": 5
+    },
+    "src/screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx": {
+      "px": 2,
+      "legacy": 1,
+      "familySystem": 1,
+      "bridge": 1
+    }
+  }
+}

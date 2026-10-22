@@ -1,0 +1,74 @@
+{
+ "component": "CalendarTimeSheet",
+ "capturedAt": "unknown",
+ "elements": 2,
+ "files": 2,
+ "cases": {
+  "f81e22af93": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onConfirm": {
+     "$fn": true
+    },
+    "hideSpecialOptions": true,
+    "earliestAt": {
+     "$opaque": "earliestAt"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:869"
+   ]
+  },
+  "281817039f": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onConfirm": {
+     "$fn": true
+    },
+    "hideSpecialOptions": true,
+    "earliestAt": {
+     "$opaque": "earliestAt"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:869"
+   ]
+  },
+  "12b55b1857": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onConfirm": {
+     "$fn": true
+    },
+    "hideSpecialOptions": true
+   },
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:379"
+   ]
+  },
+  "9cabc44ab9": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onConfirm": {
+     "$fn": true
+    },
+    "hideSpecialOptions": true
+   },
+   "sites": [
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:379"
+   ]
+  }
+ }
+}

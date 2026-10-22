@@ -1,6 +1,7 @@
 import React from "react"
+import type { StyleProp, ViewStyle } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
-import clsx from "clsx"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import styles from "./styles"
 
@@ -9,32 +10,34 @@ interface ImageWithTextButtonProps {
   imageUrl: string
   isSelected: boolean
   onPress: () => void
-  className?: string
+  /**
+   * The answer, as a style. Like every twin it takes one key per side or
+   * corner (see NoShorthands).
+   */
+  style?: StyleProp<ViewStyle & NoShorthands>
 }
 
 const ImageWithTextButton: React.FC<ImageWithTextButtonProps> = ({
   imageUrl,
   isSelected,
   onPress,
-  className,
+  style,
 }) => {
   return (
-    <DmView onPress={onPress} className={clsx(className)}>
+    <DmView onPress={onPress} style={style}>
       <DmView
-        className={clsx(
-          isSelected ? "bg-pink" : "bg-white"
-        )}
-        style={[styles.borderBase, { borderColor: isSelected ? "#CC0000" : "#D9D9D9" }]}
+        style={[
+          isSelected ? styles.boxSelected : styles.boxNotSelected,
+          styles.borderBase,
+          { borderColor: isSelected ? "#CC0000" : "#D9D9D9" },
+        ]}
       >
         {imageUrl ? (
           <DmView style={styles.scaledImage}>
-            <SvgUriContainer
-              uri={imageUrl}
-              width={100}
-            />
+            <SvgUriContainer uri={imageUrl} width={100} />
           </DmView>
         ) : (
-          <DmView className="w-[60] h-[60] bg-grey29 rounded-[8]" />
+          <DmView style={styles.box} />
         )}
       </DmView>
     </DmView>

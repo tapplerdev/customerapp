@@ -1,0 +1,36 @@
+{
+ "component": "OrderBill",
+ "capturedAt": "8f3e032",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "454d02b261": {
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "glanceJob"
+    },
+    "isPickup": false
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ]
+  },
+  "3d3f59b60f": {
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "glanceJob"
+    },
+    "isPickup": true
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ]
+  }
+ }
+}

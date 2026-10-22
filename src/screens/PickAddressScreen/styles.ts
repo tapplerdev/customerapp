@@ -43,3 +43,9 @@ export default StyleSheet.create({
     shadowRadius: 2,
   },
 })
+
+export const pickAddressScreenStyles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: colors.white,
+  },
+})

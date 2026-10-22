@@ -7,7 +7,7 @@ import MapPinMarker from "@tappler/shared/src/components/MapPinMarker"
 import LinearGradient from "react-native-linear-gradient"
 import moment from "moment"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps, SelectedProInfo } from "navigation/types"
 import { useCreateJobMutation, useGetServiceByIdQuery } from "services/api"
 import { useTypedSelector } from "store"
@@ -22,6 +22,8 @@ import StarIcon from "assets/icons/star.svg"
 import CheckMarkIcon from "assets/icons/check-mark.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 const RED = "#CC0000"
 const RED_SOFT = "#FFF8F8"
@@ -128,32 +130,32 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   // ── When card variant ──
   const renderWhenCard = () => {
     let iconBg = PINK2
-    let iconContent = <DmText className="text-20">📅</DmText>
+    let iconContent = <Text size={20} leading="legacy" family="system">📅</Text>
     let title = ""
     let subtitle = ""
-    let titleColor = "text-black"
+    let titleColor: "primary" | "brand" = "primary"
 
     if (dateType === "asap") {
       iconBg = RED
-      iconContent = <DmText className="text-20">⚡</DmText>
+      iconContent = <Text size={20} leading="legacy" family="system">⚡</Text>
       title = t("as_soon_as_possible")
       subtitle = t("pros_respond_fastest") || "Pros respond fastest in this mode"
-      titleColor = "text-red"
+      titleColor = "brand"
     } else if (dateType === "hours48") {
       iconBg = PINK2
-      iconContent = <DmText className="text-20">🕐</DmText>
+      iconContent = <Text size={20} leading="legacy" family="system">🕐</Text>
       title = t("within_48_hours")
       const deadline = moment().add(48, "hours").format("ddd, MMM D · h:mm A")
       subtitle = `By ${deadline}`
     } else if (dateType === "week") {
       iconBg = PINK2
-      iconContent = <DmText className="text-20">📅</DmText>
+      iconContent = <Text size={20} leading="legacy" family="system">📅</Text>
       title = t("within_a_week")
       const deadline = moment().add(7, "days").format("ddd, MMM D")
       subtitle = `By ${deadline}`
     } else if (dateType === "notDecided" || !dateType) {
       iconBg = BG2
-      iconContent = <DmText className="text-20 text-grey3">?</DmText>
+      iconContent = <Text size={20} leading="legacy" color="tertiary" family="system">?</Text>
       title = t("havent_decided_yet")
       subtitle = t("pros_will_suggest_time") || "Pros will suggest a time when they reply"
     } else if (selectedDate) {
@@ -161,18 +163,18 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       const d = moment(selectedDate)
       iconBg = "white"
       iconContent = (
-        <DmView className="items-center">
-          <DmView className="bg-red px-[6] py-[2] rounded-t-[4]">
-            <DmText className="text-8 font-custom800 text-white tracking-wider">
+        <DmView style={a.items_center}>
+          <DmView style={[dsStyles.textWrap, a.px_6, a.py_2]}>
+            <Text size={px(8)} color="inverse" family="system" style={dsStyles.text}>
               {d.format("MMM").toUpperCase()}
-            </DmText>
+            </Text>
           </DmView>
-          <DmText className="text-16 font-custom800 text-black leading-[18]">
+          <Text size={16} leading="legacy" family="system">
             {d.format("D")}
-          </DmText>
-          <DmText className="text-8 font-custom700 text-grey3 tracking-wider">
+          </Text>
+          <Text size={px(8)} weight="bold" color="tertiary" style={dsStyles.text}>
             {d.format("ddd").toUpperCase()}
-          </DmText>
+          </Text>
         </DmView>
       )
       title = d.format("ddd, MMM D, YYYY")
@@ -180,26 +182,25 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
     }
 
     return (
-      <DmView className="bg-white rounded-[12] border-0.5 overflow-hidden" style={{ borderColor: BORDER1 }}>
-        <DmView className="flex-row items-center p-[14]">
+      <DmView style={[dsStyles.container, a.overflow_hidden, { borderColor: BORDER1 }]}>
+        <DmView style={[a.flex_row, a.items_center, a.p_14]}>
           <DmView
-            className="w-[56] h-[56] rounded-[12] items-center justify-center mr-[12]"
-            style={{
+            style={[dsStyles.box, a.items_center, a.justify_center, a.mr_12, {
               backgroundColor: iconBg,
               ...(dateType === "notDecided" || !dateType ? { borderWidth: 1, borderStyle: "dashed", borderColor: "#D9D9D9" } : {}),
               ...(selectedDate && !dateType ? { borderWidth: 1, borderColor: BORDER1 } : {}),
-            }}
+            }]}
           >
             {iconContent}
           </DmView>
-          <DmView className="flex-1">
-            <DmText className={`text-15 font-custom800 ${titleColor}`} style={{ letterSpacing: -0.2 }}>
+          <DmView style={a.flex_1}>
+            <Text size={15} leading="legacy" family="system" color={titleColor} style={{ letterSpacing: -0.2 }}>
               {title}
-            </DmText>
+            </Text>
             {!!subtitle && (
-              <DmText className="text-12 font-custom500 mt-[2]" style={{ color: FG3 }}>
+              <Text size={12} weight="medium" leading="legacy" style={[a.mt_2, { color: FG3 }]}>
                 {subtitle}
-              </DmText>
+              </Text>
             )}
           </DmView>
         </DmView>
@@ -221,45 +222,44 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       <DmView
         key={pro.id}
         onPress={() => handleProPress(pro)}
-        className="flex-row items-center px-[12] py-[14]"
-        style={!isLast ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER } : undefined}
+        style={[a.flex_row, a.items_center, a.px_12, a.py_14, !isLast ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER } : undefined]}
       >
         {/* Avatar */}
         {pro.photo ? (
           <Image
             source={{ uri: pro.photo }}
-            className="w-[40] h-[40] rounded-full mr-[12]"
+            style={[dsStyles.image, a.mr_12]}
           />
         ) : (
-          <DmView className="w-[40] h-[40] rounded-full mr-[12] items-center justify-center" style={{ backgroundColor: PINK }}>
-            <DmText className="text-16 font-custom700 text-red">{initial}</DmText>
+          <DmView style={[dsStyles.image, a.mr_12, a.items_center, a.justify_center, { backgroundColor: PINK }]}>
+            <Text size={16} weight="bold" leading="legacy" color="brand">{initial}</Text>
           </DmView>
         )}
 
         {/* Name + rating */}
-        <DmView className="flex-1">
-          <DmText className="text-14 font-custom700 text-black">{pro.name}</DmText>
-          <DmView className="flex-row items-center mt-[2]">
+        <DmView style={a.flex_1}>
+          <Text size={14} weight="bold" leading="legacy">{pro.name}</Text>
+          <DmView style={[a.flex_row, a.items_center, a.mt_2]}>
             {pro.rating ? (
               <>
                 <StarIcon width={12} height={12} color="#FF9D00" />
-                <DmText className="text-12 font-custom700 ml-[3]" style={{ color: FG3 }}>
+                <Text size={12} weight="bold" leading="legacy" style={[dsStyles.text2, { color: FG3 }]}>
                   {pro.rating.toFixed(1)}
-                </DmText>
+                </Text>
                 {pro.reviewsCount ? (
-                  <DmText className="text-12 font-custom400 ml-[2]" style={{ color: FG3 }}>
+                  <Text size={12} leading="legacy" style={[a.ml_2, { color: FG3 }]}>
                     · {pro.reviewsCount} {t("reviews")}
-                  </DmText>
+                  </Text>
                 ) : null}
               </>
             ) : (
-              <DmText className="text-12 font-custom400" style={{ color: FG3 }}>
+              <Text size={12} leading="legacy" style={{ color: FG3 }}>
                 {t("new_pro")}
-              </DmText>
+              </Text>
             )}
-            <DmText className="text-12 font-custom400 ml-[4]" style={{ color: FG3 }}>
+            <Text size={12} leading="legacy" style={[a.ml_4, { color: FG3 }]}>
               · {pro.proType === "company" ? t("business") : t("individual")}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
 
@@ -267,8 +267,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         {prosState.length > 1 && (
           <DmView
             onPress={() => handleRemovePro(pro.id)}
-            className="w-[30] h-[30] rounded-full items-center justify-center border-0.5"
-            style={{ borderColor: BORDER1 }}
+            style={[dsStyles.iconWrap, a.items_center, a.justify_center, { borderColor: BORDER1 }]}
             hitSlop={HIT_SLOP_DEFAULT}
           >
             <CloseIcon width={10} height={10} color={FG3} />
@@ -280,13 +279,13 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // ── Section header ──
   const renderSectionHeader = (label: string, count?: number, showEdit?: boolean) => (
-    <DmView className="flex-row items-center justify-between mb-[8]">
-      <DmText className="text-11 font-custom700 tracking-wider" style={{ color: FG3, textTransform: "uppercase" }}>
+    <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mb_8]}>
+      <Text size={11} weight="bold" leading="legacy" style={[dsStyles.text, { color: FG3, textTransform: "uppercase" }]}>
         {label}{count !== undefined ? ` · ${count}` : ""}
-      </DmText>
+      </Text>
       {showEdit && (
         <DmView onPress={handleGoBack} hitSlop={HIT_SLOP_DEFAULT}>
-          <DmText className="text-12 font-custom700 text-red">{t("edit")}</DmText>
+          <Text size={12} weight="bold" leading="legacy" color="brand">{t("edit")}</Text>
         </DmView>
       )}
     </DmView>
@@ -298,11 +297,11 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   })
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView style={[a.flex_1, dsStyles.safeArea]} edges={["top"]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12] bg-white border-b-0.5" style={{ borderBottomColor: BORDER1 }}>
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12, dsStyles.row, { borderBottomColor: BORDER1 }]}>
         <DmView
-          className="w-[44] h-[44] items-center justify-center"
+          style={[dsStyles.iconWrap2, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleGoBack}
         >
@@ -311,12 +310,12 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-17 font-custom700 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={px(17)} weight="bold">
             {t("review_request")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[44]" />
+        <DmView style={dsStyles.box2} />
       </DmView>
 
       <AppScrollView
@@ -325,10 +324,10 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         style={{ backgroundColor: BG2 }}
       >
         {/* Hero — Map with fade + service title */}
-        <DmView className="bg-white" style={{ borderBottomWidth: 1, borderBottomColor: BORDER1 }}>
-          <DmView className="h-[180]" pointerEvents="none">
+        <DmView style={[dsStyles.safeArea, { borderBottomWidth: 1, borderBottomColor: BORDER1 }]}>
+          <DmView style={dsStyles.box3} pointerEvents="none">
             <MapView
-              className="flex-1"
+              style={a.flex_1}
               scrollEnabled={false}
               zoomEnabled={false}
               rotateEnabled={false}
@@ -355,43 +354,43 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Title block overlapping the map fade */}
-          <DmView className="px-[16] pb-[16]" style={{ marginTop: -60 }}>
-            <DmView className="flex-row items-center bg-red px-[10] py-[5] rounded-full self-start mb-[8]">
-              <DmText className="text-11 font-custom700 text-white tracking-wider" style={{ textTransform: "uppercase" }}>
+          <DmView style={[a.px_16, a.pb_16, { marginTop: -60 }]}>
+            <DmView style={[a.flex_row, a.items_center, dsStyles.yourRequestRow, a.px_10, a.self_start, a.mb_8]}>
+              <Text size={11} weight="bold" leading="legacy" color="inverse" style={[dsStyles.text, { textTransform: "uppercase" }]}>
                 {t("your_request")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmText className="text-24 font-custom800 text-black" style={{ lineHeight: 28, letterSpacing: -0.3 }}>
+            <Text size={24} leading={{ fixed: px(28) }} family="system" style={{ letterSpacing: -0.3 }}>
               {categoryName}
-            </DmText>
-            <DmView className="flex-row items-center mt-[6]">
+            </Text>
+            <DmView style={[a.flex_row, a.items_center, a.mt_6]}>
               <LocationIcon width={12} height={12} />
-              <DmText className="text-13 font-custom500 ml-[4]" style={{ color: FG3 }}>
+              <Text size={13} weight="medium" leading="legacy" style={[a.ml_4, { color: FG3 }]}>
                 {address.address}{address.city ? ` · ${address.city}` : ""}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </DmView>
 
         {/* Sections */}
-        <DmView className="px-[16] mt-[20]">
+        <DmView style={[a.px_16, a.mt_20]}>
           {/* When section */}
           {renderSectionHeader(t("when"))}
           {renderWhenCard()}
 
           {/* Selected professionals */}
-          <DmView className="mt-[24]">
+          <DmView style={a.mt_24}>
             {renderSectionHeader(t("selected_pros"), prosState.length, true)}
-            <DmView className="bg-white rounded-[12] border-0.5 overflow-hidden" style={{ borderColor: BORDER1 }}>
+            <DmView style={[dsStyles.container, a.overflow_hidden, { borderColor: BORDER1 }]}>
               {prosState.map((pro, idx) => renderProRow(pro, idx, idx === prosState.length - 1))}
             </DmView>
           </DmView>
 
           {/* Your answers */}
           {answeredQuestions.length > 0 && (
-            <DmView className="mt-[24]">
+            <DmView style={a.mt_24}>
               {renderSectionHeader(t("your_answers"), answeredQuestions.length)}
-              <DmView className="bg-white rounded-[12] border-0.5 overflow-hidden" style={{ borderColor: BORDER1 }}>
+              <DmView style={[dsStyles.container, a.overflow_hidden, { borderColor: BORDER1 }]}>
                 {answeredQuestions.map((qa, idx) => {
                   const question = customerQuestions.find((q) => q.id === qa.questionId)
                   const questionText = question
@@ -425,20 +424,19 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                   return (
                     <DmView
                       key={qa.questionId}
-                      className="flex-row px-[14] py-[14]"
-                      style={idx < answeredQuestions.length - 1 ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER } : undefined}
+                      style={[a.flex_row, a.p_14, idx < answeredQuestions.length - 1 ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER } : undefined]}
                     >
                       {/* Numbered circle */}
-                      <DmView className="w-[22] h-[22] rounded-full bg-red items-center justify-center mr-[12] mt-[1]">
-                        <DmText className="text-11 font-custom800 text-white">{idx + 1}</DmText>
+                      <DmView style={[dsStyles.textWrap2, a.items_center, a.justify_center, a.mr_12]}>
+                        <Text size={11} leading="legacy" color="inverse" family="system">{idx + 1}</Text>
                       </DmView>
-                      <DmView className="flex-1">
-                        <DmText className="text-12 font-custom600" style={{ color: FG3 }}>
+                      <DmView style={a.flex_1}>
+                        <Text size={12} weight="semibold" leading="legacy" style={{ color: FG3 }}>
                           {questionText}
-                        </DmText>
-                        <DmText className="text-14 font-custom600 text-black mt-[4]">
+                        </Text>
+                        <Text size={14} weight="semibold" leading="legacy" style={a.mt_4}>
                           {displayValue}
-                        </DmText>
+                        </Text>
                       </DmView>
                     </DmView>
                   )
@@ -449,10 +447,10 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Notes */}
           {!!notes && (
-            <DmView className="mt-[24]">
+            <DmView style={a.mt_24}>
               {renderSectionHeader(t("notes"))}
-              <DmView className="bg-white rounded-[12] border-0.5 p-[14] overflow-hidden" style={{ borderColor: BORDER1 }}>
-                <DmText className="text-13 font-custom400 text-black">{notes}</DmText>
+              <DmView style={[dsStyles.container, a.p_14, a.overflow_hidden, { borderColor: BORDER1 }]}>
+                <Text size={13} leading="legacy">{notes}</Text>
               </DmView>
             </DmView>
           )}
@@ -461,16 +459,15 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Sticky footer */}
       <DmView
-        className="bg-white px-[15] pt-[12]"
-        style={[styles.footerShadow, { paddingBottom: insets.bottom + 15 }]}
+        style={[dsStyles.buttonWrap, a.pt_12, styles.footerShadow, { paddingBottom: insets.bottom + 15 }]}
       >
-        <ActionBtn
+        <Button
           title={t("send_request")}
           onPress={handleSubmit}
           isLoading={isLoading}
-          disable={prosState.length === 0}
-          className="h-[50] rounded-[12]"
-          textClassName="text-16 font-custom700"
+          disabled={prosState.length === 0}
+          size={px(50)}
+          labelWeight="bold"
         />
       </DmView>
 

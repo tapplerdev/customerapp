@@ -1,7 +1,7 @@
 import React, { useMemo } from "react"
 
 // Components
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 
@@ -31,6 +31,7 @@ import PlusIcon from "assets/icons/plus.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodCartScreen">
 
@@ -99,32 +100,35 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
     return (
       <DmView
         key={line.uid}
-        className="px-[16] py-[18] border-b-0.5 border-b-grey14"
+        style={[a.px_16, a.py_18, styles.container]}
       >
         {/* Top: name + options + badge | thumbnail */}
-        <DmView className="flex-row">
-          <DmView className="flex-1 mr-[12]">
-            <DmText className="text-15 leading-[19px] font-custom600">
+        <DmView style={a.flex_row}>
+          <DmView style={[a.flex_1, a.mr_12]}>
+            <Text size={15} weight="semibold" leading="tight">
               {line.name}
-            </DmText>
+            </Text>
             {choiceNames.map((name, idx) => (
-              <DmText
+              <Text
                 key={idx}
-                className="mt-[3] text-13 leading-[17px] font-custom400 text-grey2"
+                size={13}
+                leading={px(17)}
+                color="secondary"
+                style={styles.text}
               >
                 {name}
-              </DmText>
+              </Text>
             ))}
             {line.isPreOrderOnly && (
-              <DmView className="mt-[8] self-start bg-red2 rounded-4 px-[8] py-[3]">
-                <DmText className="text-11 leading-[14px] font-custom700 text-white">
+              <DmView style={[a.mt_8, a.self_start, styles.preOrderWrap, a.px_8]}>
+                <Text size={11} weight="bold" leading="tight" color="inverse">
                   {t("pre_order")}
-                </DmText>
+                </Text>
               </DmView>
             )}
           </DmView>
 
-          <DmView className="overflow-hidden rounded-8" style={styles.thumb}>
+          <DmView style={[a.overflow_hidden, styles.imageWrap, styles.thumb]}>
             <CachedImage
               uri={line.photo || undefined}
               style={styles.thumb}
@@ -135,36 +139,35 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Bottom: price (left) on the same line as the stepper (right) */}
-        <DmView className="mt-[14] flex-row items-center justify-between">
-          <DmView className="flex-1 flex-row items-center flex-wrap">
-            <DmText className="text-14 leading-[18px] font-custom400">
+        <DmView style={[a.mt_14, a.flex_row, a.items_center, a.justify_between]}>
+          <DmView style={[a.flex_1, a.flex_row, a.items_center, a.flex_wrap]}>
+            <Text size={14}>
               {formatMoney(effectiveTotal)}{" "}
               {t("EGP")}
-            </DmText>
+            </Text>
             {showStrike && (
-              <DmText className="ml-[10] text-14 leading-[18px] font-custom400 text-grey2 line-through">
+              <Text size={14} color="secondary" style={[a.ml_10, styles.eGP]}>
                 {formatMoney(originalTotal)}{" "}
                 {t("EGP")}
-              </DmText>
+              </Text>
             )}
           </DmView>
 
           {/* Bordered stepper (matches the cart mockup) */}
           <DmView
-            className="flex-row items-center justify-between border-1 border-grey14 rounded-8 px-[6] h-[34]"
-            style={styles.stepper}
+            style={[a.flex_row, a.items_center, a.justify_between, a.border_1, styles.row, a.px_6, styles.stepper]}
           >
             <DmView
-              className="w-[24] h-[34] items-center justify-center"
+              style={[styles.iconWrap, a.items_center, a.justify_center]}
               onPress={() => changeQuantity(line, -1)}
             >
               <TrashRedIcon width={15} height={15} />
             </DmView>
-            <DmText className="text-14 leading-[17px] font-custom700">
+            <Text size={14} weight="bold" leading="tight">
               {line.quantity}
-            </DmText>
+            </Text>
             <DmView
-              className="w-[24] h-[34] items-center justify-center"
+              style={[styles.iconWrap, a.items_center, a.justify_center]}
               onPress={
                 line.quantity < 30 ? () => changeQuantity(line, 1) : undefined
               }
@@ -178,34 +181,28 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
-    <DmView className="flex-row items-center justify-between mt-[12]">
-      <DmText
-        className={
-          bold
-            ? "text-16 leading-[20px] font-custom700"
-            : "text-14 leading-[18px] font-custom400"
-        }
+    <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_12]}>
+      <Text
+        size={bold ? 16 : 14}
+        weight={bold ? "bold" : "regular"}
       >
         {label}
-      </DmText>
-      <DmText
-        className={
-          bold
-            ? "text-16 leading-[20px] font-custom700"
-            : "text-14 leading-[18px] font-custom400"
-        }
+      </Text>
+      <Text
+        size={bold ? 16 : 14}
+        weight={bold ? "bold" : "regular"}
       >
         {value}
-      </DmText>
+      </Text>
     </DmView>
   )
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView style={[a.flex_1, styles.safeArea]} edges={["top"]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[12] py-[10] bg-white border-b-0.2 border-b-grey19">
+      <DmView style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row2]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap2, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
@@ -214,27 +211,29 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 leading-[20px] font-custom700">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="bold">
             {cart.categoryName || t("food_menu")}
-          </DmText>
+          </Text>
           {!!cart.proName && (
-            <DmText className="mt-[2] text-12 leading-[15px] font-custom400 text-grey2">
+            <Text size={12} leading="tight" color="secondary" style={a.mt_2}>
               {cart.proName}
-            </DmText>
+            </Text>
           )}
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
 
       {cart.items.length === 0 ? (
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("basket_empty")}
-          </DmText>
-          <ActionBtn
+          </Text>
+          <Button
             title={t("back")}
-            className="mt-[20] h-[41] px-[40]"
+            size={px(41)}
+            paddingX={40}
+            style={a.mt_20}
             onPress={() => navigation.goBack()}
           />
         </DmView>
@@ -244,14 +243,14 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 24 }}
           >
-            <DmText className="px-[16] pt-[20] pb-[6] text-22 leading-[27px] font-custom700">
+            <Text size={22} weight="bold" leading="tight" style={[a.px_16, a.pt_20, a.pb_6]}>
               {t("your_cart")}
-            </DmText>
+            </Text>
 
             {cart.items.map(renderLine)}
 
             {/* Totals */}
-            <DmView className="px-[16] pt-[16]">
+            <DmView style={[a.px_16, a.pt_16]}>
               {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
               {/* Zeroed on pickup, and a 0 renders as "Free" — a claim the
                   business never made. Hide the row instead. */}
@@ -267,7 +266,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
                   t("discount"),
                   `- ${formatMoney(orderDiscount)} ${t("EGP")}`
                 )}
-              <DmView className="h-[0.7] bg-grey14 mt-[14]" />
+              <DmView style={[styles.box2, a.mt_14]} />
               {totalsRow(
                 t("order_total"),
                 `${formatMoney(total)} ${t("EGP")}`,
@@ -280,13 +279,13 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
               white container, shadow cast upward onto the content it covers.
               The button keeps its own pill radius. */}
           <DmView
-            className="px-[16] pt-[14] bg-white"
-            style={[styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
+            style={[a.px_16, a.pt_14, styles.safeArea, styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
           >
-            <ActionBtn
+            <Button
               title={t("continue")}
-              className="h-[48]"
-              textClassName="text-15 leading-[19px] font-custom600"
+              size={px(48)}
+              label="md"
+              labelWeight="semibold"
               onPress={() => navigation.navigate("FoodCheckoutScreen", { proId })}
             />
           </DmView>

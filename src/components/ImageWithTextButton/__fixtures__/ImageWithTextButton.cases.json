@@ -1,0 +1,44 @@
+{
+ "component": "ImageWithTextButton",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "a9e124d537": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:300"
+   ]
+  },
+  "cf5d65aa21": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:300"
+   ]
+  }
+ }
+}

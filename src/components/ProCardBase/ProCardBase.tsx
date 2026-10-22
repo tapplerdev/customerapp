@@ -2,7 +2,7 @@ import React from "react"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
 
-import { DmText, DmView, ActionBtn } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import RateComponent from "components/RateComponent/RateComponent"
 import OffersSection from "components/OffersSection/OffersSection"
@@ -15,6 +15,7 @@ import BusinessIcon from "assets/icons/business.svg"
 import MailIcon from "assets/icons/mail.svg"
 
 import styles from "./styles"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 interface ProCardBaseProps {
   // Pro data
@@ -77,15 +78,14 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
   return (
     <DmView
-      className="bg-white rounded-20 px-[15] pt-[15] pb-[12]"
-      style={styles.cardShadow}
+      style={[styles.container, a.pb_12, styles.cardShadow]}
       onPress={showSelectPassButtons ? undefined : onPress}
     >
       {/* Top section: photo + info */}
-      <DmView className="flex-row">
+      <DmView style={a.flex_row}>
         {/* Profile photo */}
         <DmView>
-          <DmView className="w-[85] h-[85] rounded-2 overflow-hidden bg-grey8">
+          <DmView style={[styles.box, a.overflow_hidden]}>
             {!!photoUrl && (
               <FastImage
                 source={{ uri: photoUrl }}
@@ -95,37 +95,36 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
             )}
           </DmView>
           {isFeatured && (
-            <DmView className="absolute top-[-8] self-center">
+            <DmView style={[a.absolute, styles.boxWrap, a.self_center]}>
               <DmView
-                className="h-[18] px-[6] rounded-5 bg-yellow items-center justify-center"
-                style={styles.featuredBadgeBorder}
+                style={[styles.featuredWrap, a.px_6, a.items_center, a.justify_center, styles.featuredBadgeBorder]}
               >
-                <DmText className="text-10 leading-[13px] font-custom700 uppercase">
+                <Text size={10} weight="bold" style={styles.featured}>
                   {t("featured")}
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
           )}
         </DmView>
 
         {/* Info */}
-        <DmView className="flex-1 ml-[10]">
-          <DmText className="text-14 leading-[17px] font-custom700 text-black">
+        <DmView style={[a.flex_1, a.ml_10]}>
+          <Text size={14} weight="bold" leading="tight">
             {displayName}
-          </DmText>
+          </Text>
 
-          <DmView className="mt-[4] flex-row items-center">
+          <DmView style={[a.mt_4, a.flex_row, a.items_center]}>
             {isCompany ? (
               <BusinessIcon width={14} height={14} />
             ) : (
               <IndividualIcon width={14} height={14} />
             )}
-            <DmText className="ml-[4] text-10 leading-[13px] font-custom400">
+            <Text size={10} style={a.ml_4}>
               {t(isCompany ? "business" : "individual")}
-            </DmText>
+            </Text>
           </DmView>
 
-          <DmView className="mt-[6]">
+          <DmView style={a.mt_6}>
             <RateComponent
               rate={overallScore}
               reviewsCount={reviewsCount}
@@ -135,38 +134,39 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
           {/* Description */}
           {!!informationAbout && (
-            <DmText
-              className="mt-[6] text-10 leading-[15px] font-custom400"
+            <Text
+              size={10}
+              leading="loose"
+              style={a.mt_6}
               numberOfLines={2}
             >
               {informationAbout}
-            </DmText>
+            </Text>
           )}
 
           {/* Offer badge + amount */}
           {showOfferBadge && (
-            <DmView className="mt-[8] flex-row items-center justify-between">
-              <DmView className="flex-row items-center">
+            <DmView style={[a.mt_8, a.flex_row, a.items_center, a.justify_between]}>
+              <DmView style={[a.flex_row, a.items_center]}>
                 <DmView
-                  className="px-[8] py-[3] mr-[6]"
-                  style={[styles.offerBadgeBorder, { borderColor: colors.red }]}
+                  style={[a.px_8, styles.offerAmountWrap, a.mr_6, styles.offerBadgeBorder, { borderColor: colors.red }]}
                 >
-                  <DmText className="text-12 font-custom500">
+                  <Text size={12} weight="medium" leading="legacy">
                     {t("offer_amount")}
-                  </DmText>
+                  </Text>
                 </DmView>
-                <DmText className="text-14 font-custom700 text-black">
+                <Text size={14} weight="bold" leading="legacy">
                   {offerAmount ? `${offerAmount} EGP` : t("no_offer_yet")}
-                </DmText>
+                </Text>
               </DmView>
 
               {unreadCount > 0 && (
                 <DmView>
                   <MailIcon width={22} height={16} />
-                  <DmView className="absolute top-[-8] right-[-8] w-[18] h-[18] rounded-full bg-red items-center justify-center">
-                    <DmText className="text-9 font-custom700 text-white">
+                  <DmView style={[a.absolute, styles.textWrap, a.items_center, a.justify_center]}>
+                    <Text size={9} weight="bold" leading="legacy" color="inverse">
                       {unreadCount}
-                    </DmText>
+                    </Text>
                   </DmView>
                 </DmView>
               )}
@@ -177,34 +177,34 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
       {/* Opportunity notes bubble with triangle pointer */}
       {showOpportunityNotes && !!opportunityNotes && (
-        <DmView className="mt-[4]" style={{ position: "relative" }}>
+        <DmView style={[a.mt_4, { position: "relative" }]}>
           <ChatBubbleIcon width="100%" height={undefined} style={{ aspectRatio: 340.5 / 63.727 }} preserveAspectRatio="none" />
-          <DmView className="absolute left-0 right-0 top-[12] bottom-0 px-[18] justify-center">
-            <DmText className="text-12 leading-[18px] font-custom400 text-black" numberOfLines={2}>
+          <DmView style={[a.absolute, styles.textWrap2, a.px_18, a.justify_center]}>
+            <Text size={12} leading={px(18)} numberOfLines={2}>
               {opportunityNotes}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
       )}
 
       {/* Trust badges */}
       {trustDocs.length > 0 && (
-        <DmView className="mt-[10] flex-row flex-wrap">
+        <DmView style={[a.mt_10, a.flex_row, a.flex_wrap]}>
           {trustDocs.map((doc) => {
             const imageUrl = isAr
               ? doc.trustDocumentData?.trustProduct?.pictureAr
               : doc.trustDocumentData?.trustProduct?.pictureEn
             return (
-              <DmView key={doc.id} className="mr-[10]">
+              <DmView key={doc.id} style={a.mr_10}>
                 {imageUrl ? (
                   <SvgUriContainer width={160} height={40} uri={imageUrl} />
                 ) : (
-                  <DmText className="text-10 font-custom600 text-grey3">
+                  <Text size={10} weight="semibold" leading="legacy" color="tertiary">
                     {isAr
                       ? doc.trustDocumentData?.trustProduct?.descriptionAr
                       : doc.trustDocumentData?.trustProduct?.descriptionEn
                       || t("background_checked")}
-                  </DmText>
+                  </Text>
                 )}
               </DmView>
             )
@@ -216,29 +216,35 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
       {promoLine && promoLine.promoStickerMessage && (
         <PromoLine
           promoMessage={promoLine.promoStickerMessage}
-          className="mt-[8]"
         />
       )}
 
       {/* SELECT ME / PASS buttons */}
       {showSelectPassButtons && !isRejected && (
-        <DmView className="mt-[12] flex-row items-center">
-          <DmView className="flex-1 mr-[8]" style={styles.buttonShadow}>
-            <ActionBtn
+        <DmView style={[a.mt_12, a.flex_row, a.items_center]}>
+          <DmView style={[a.flex_1, a.mr_8, styles.buttonShadow]}>
+            <Button
               title={t("select_me").toUpperCase()}
               onPress={onSelect}
+              size={px(38)}
+              shape="r10"
               variant="bordered"
-              className="h-[38] rounded-10"
-              textClassName="text-12 font-custom600 text-black"
+              label={12}
+              labelWeight="semibold"
+              labelLeading="legacy"
+              labelColor="primary"
             />
           </DmView>
-          <DmView className="flex-1" style={styles.buttonShadow}>
-            <ActionBtn
+          <DmView style={[a.flex_1, styles.buttonShadow]}>
+            <Button
               title={t("pass").toUpperCase()}
               onPress={onPass}
+              size={px(38)}
+              shape="r10"
               variant="bordered"
-              className="h-[38] rounded-10"
-              textClassName="text-12 font-custom600"
+              label={12}
+              labelWeight="semibold"
+              labelLeading="legacy"
             />
           </DmView>
         </DmView>
@@ -246,10 +252,10 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
       {/* Rejected label */}
       {isRejected && (
-        <DmView className="mt-[10]">
-          <DmText className="text-11 font-custom500 text-grey3" style={styles.italic}>
+        <DmView style={a.mt_10}>
+          <Text size={11} weight="medium" leading="legacy" color="tertiary" style={styles.italic}>
             {t("passed")}
-          </DmText>
+          </Text>
         </DmView>
       )}
 
@@ -258,13 +264,12 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           to the edges, and the bottom corners pick up the card's rounded-20. */}
       {subscriptions.some((s: any) => s.product?.subType === "motivational") && (
         <DmView
-          className="mt-[14] overflow-hidden"
-          style={{
+          style={[a.mt_14, a.overflow_hidden, {
             marginHorizontal: -15,
             marginBottom: -12,
             borderBottomLeftRadius: 20,
             borderBottomRightRadius: 20,
-          }}
+          }]}
         >
           <OffersSection subscriptions={subscriptions} variant="strip" />
         </DmView>

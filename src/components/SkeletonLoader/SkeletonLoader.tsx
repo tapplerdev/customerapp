@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { View } from "react-native"
+import { View, type StyleProp, type ViewStyle } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,20 +9,25 @@ import Animated, {
   Easing,
 } from "react-native-reanimated"
 import { DmView } from "@tappler/shared/src/components/UI"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import styles from "./styles"
 
 interface Props {
   width?: number | string
   height?: number | string
   borderRadius?: number
-  className?: string
+  /**
+   * The wrapper around the block, as a style (margins, flex). Like every twin
+   * it takes one key per side or corner (see NoShorthands).
+   */
+  style?: StyleProp<ViewStyle & NoShorthands>
 }
 
 const SkeletonLoader: React.FC<Props> = ({
   width = "100%",
   height = 20,
   borderRadius = 4,
-  className = ""
+  style,
 }) => {
   const shimmerTranslate = useSharedValue(-200)
 
@@ -68,7 +73,7 @@ const SkeletonLoader: React.FC<Props> = ({
   const shimmerColor = "rgba(255, 255, 255, 0.6)"
 
   return (
-    <DmView className={className}>
+    <DmView style={style}>
       <View
         style={[
           styles.container,

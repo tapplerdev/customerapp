@@ -1,0 +1,163 @@
+{
+ "component": "BannerContainer",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "cc6800f4e3": {
+   "sites": [
+    "components/OffersSection/OffersSection.tsx:106"
+   ],
+   "props": {
+    "bannerText": "t:offers",
+    "borderRadius": 10,
+    "containerClassName": "py-[2] flex-row flex-wrap items-center justify-around",
+    "children": [
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     },
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport BannerContainer from \"components/BannerContainer/BannerContainer\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <BannerContainer bannerText={\"t:offers\"} borderRadius={10} containerStyle={[a.py_2, a.flex_row, a.flex_wrap, a.items_center, styles.bannerContainerContainer]}>{__twin.values[0]}</BannerContainer>\n",
+   "styles": "import { StyleSheet } from \"react-native\"\n\nexport default StyleSheet.create({\n  bannerContainerContainer: {\n    justifyContent: \"space-around\",\n  },\n})\n",
+   "values": [
+    [
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     },
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     }
+    ]
+   ],
+   "left": []
+  },
+  "ee93576892": {
+   "sites": [
+    "components/OffersSection/OffersSection.tsx:106"
+   ],
+   "props": {
+    "bannerText": "t:offers",
+    "borderRadius": 6,
+    "containerClassName": "px-[8] py-[0] flex-row items-center justify-around",
+    "children": [
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     },
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport BannerContainer from \"components/BannerContainer/BannerContainer\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <BannerContainer bannerText={\"t:offers\"} borderRadius={6} containerStyle={[a.px_8, a.py_0, a.flex_row, a.items_center, styles.bannerContainerContainer]}>{__twin.values[0]}</BannerContainer>\n",
+   "styles": "import { StyleSheet } from \"react-native\"\n\nexport default StyleSheet.create({\n  bannerContainerContainer: {\n    justifyContent: \"space-around\",\n  },\n})\n",
+   "values": [
+    [
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     },
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     }
+    ]
+   ],
+   "left": []
+  },
+  "hand an empty box class": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "bannerText": "Offers",
+    "containerClassName": "",
+    "children": {
+     "$el": "DmText",
+     "children": "x"
+    }
+   },
+   "code": "import React from \"react\"\nimport BannerContainer from \"components/BannerContainer/BannerContainer\"\nimport __twin from \"__twin_site__\"\nimport { Text } from \"@tappler/shared/src/ds\"\n\nexport default <BannerContainer bannerText={\"Offers\"}><Text size={14} leading=\"legacy\">{\"x\"}</Text></BannerContainer>\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "hand block and box classes": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "bannerText": "Offers",
+    "className": "mx-[12] mt-[4]",
+    "containerClassName": "px-[3] py-[5] flex-row",
+    "borderRadius": 4,
+    "children": {
+     "$el": "DmText",
+     "children": "x"
+    }
+   },
+   "code": "import React from \"react\"\nimport BannerContainer from \"components/BannerContainer/BannerContainer\"\nimport __twin from \"__twin_site__\"\nimport { Text, a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <BannerContainer bannerText={\"Offers\"} style={[a.mx_12, a.mt_4]} containerStyle={[styles.bannerContainerContainer, a.flex_row]} borderRadius={4}><Text size={14} leading=\"legacy\">{\"x\"}</Text></BannerContainer>\n",
+   "styles": "import { StyleSheet } from \"react-native\"\n\nexport default StyleSheet.create({\n  bannerContainerContainer: {\n    paddingLeft: 3,\n    paddingRight: 3,\n    paddingTop: 5,\n    paddingBottom: 5,\n  },\n})\n",
+   "values": [],
+   "left": []
+  },
+  "hand no box class (the padded box)": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "bannerText": "Offers",
+    "children": {
+     "$el": "DmText",
+     "children": "x"
+    }
+   },
+   "code": "import React from \"react\"\nimport BannerContainer from \"components/BannerContainer/BannerContainer\"\nimport __twin from \"__twin_site__\"\nimport { Text } from \"@tappler/shared/src/ds\"\n\nexport default <BannerContainer bannerText={\"Offers\"}><Text size={14} leading=\"legacy\">{\"x\"}</Text></BannerContainer>\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "hand padded box, a block class, radius 6": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "bannerText": "Offers",
+    "className": "mt-[16]",
+    "borderRadius": 6,
+    "children": {
+     "$el": "DmText",
+     "children": "x"
+    }
+   },
+   "code": "import React from \"react\"\nimport BannerContainer from \"components/BannerContainer/BannerContainer\"\nimport __twin from \"__twin_site__\"\nimport { Text, a } from \"@tappler/shared/src/ds\"\n\nexport default <BannerContainer bannerText={\"Offers\"} style={a.mt_16} borderRadius={6}><Text size={14} leading=\"legacy\">{\"x\"}</Text></BannerContainer>\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  }
+ },
+ "drops": {}
+}

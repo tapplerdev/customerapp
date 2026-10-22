@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   screenBg: { backgroundColor: "#FFFFFF" },
@@ -25,5 +26,30 @@ export default StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
+  },
+  row: {
+    backgroundColor: colors.white,
+  },
+  iconWrap: {
+    width: 32,
+    height: 32,
+  },
+  row2: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    height: 38,
+  },
+  box: {
+    height: 0.7,
+    backgroundColor: colors.grey19,
+  },
+  shortlistUpdatedNoticeWrap: {
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
   },
 })

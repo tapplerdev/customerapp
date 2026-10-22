@@ -1,0 +1,54 @@
+{
+ "component": "SearchLocationModal",
+ "capturedAt": "d3630fc",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "b5221855d3": {
+   "props": {
+    "isVisible": false,
+    "currentCategoryName": {
+     "$opaque": "categoryName"
+    },
+    "currentAddress": {
+     "$opaque": "address"
+    },
+    "onSelectService": {
+     "$fn": true
+    },
+    "onChangeLocation": {
+     "$fn": true
+    },
+    "onClose": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1005"
+   ]
+  },
+  "0c4a4bffe5": {
+   "props": {
+    "isVisible": true,
+    "currentCategoryName": {
+     "$opaque": "categoryName"
+    },
+    "currentAddress": {
+     "$opaque": "address"
+    },
+    "onSelectService": {
+     "$fn": true
+    },
+    "onChangeLocation": {
+     "$fn": true
+    },
+    "onClose": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1005"
+   ]
+  }
+ }
+}

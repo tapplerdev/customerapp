@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
 import { format } from "date-fns"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import {
   useGetCustomerJobDetailsQuery,
@@ -18,6 +18,8 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"RequestDetailsScreen">
 
@@ -103,30 +105,35 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const orderTotal = subtotal + deliveryFee - orderDiscount
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
-    <DmView className="flex-row items-center justify-between mb-[6]">
-      <DmText
-        className={`text-13 leading-[17px] ${bold ? "font-custom700" : "font-custom400 text-grey2"}`}
+    <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mb_6]}>
+      <Text
+        size={13}
+        weight={bold ? "bold" : "regular"}
+        leading={px(17)}
+        color={bold ? "primary" : "secondary"}
       >
         {label}
-      </DmText>
-      <DmText
-        className={`text-13 leading-[17px] ${bold ? "font-custom700" : "font-custom500"}`}
+      </Text>
+      <Text
+        size={13}
+        weight={bold ? "bold" : "medium"}
+        leading={px(17)}
       >
         {value}
-      </DmText>
+      </Text>
     </DmView>
   )
 
   const renderTextItem = (title: string, descr: string) => {
     return (
-      <DmView className="mb-[16]">
-        <DmText className="text-13 leading-[16px] font-custom600">
+      <DmView style={a.mb_16}>
+        <Text size={13} weight="semibold" leading="tight">
           {title}
-        </DmText>
-        <DmView className="pt-[6]">
-          <DmText className="text-13 leading-[18px] font-custom400">
+        </Text>
+        <DmView style={a.pt_6}>
+          <Text size={13}>
             {descr}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
     )
@@ -137,25 +144,25 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
           <CloseIcon width={14} height={14} fill={colors.red} />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {categoryName}
-          </DmText>
-          <DmText className="text-11 font-custom400 text-grey3">
+          </Text>
+          <Text size={11} leading="legacy" color="tertiary">
             {t("request_id")}: {jobId}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
 
       <AppScrollView
@@ -167,7 +174,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         <OrderLocationMap coords={mapCoords} isPickup={isPickup} />
 
         {/* Details */}
-        <DmView className="mt-[20] px-[16]">
+        <DmView style={[a.mt_20, a.px_16]}>
           {renderTextItem(t("posted"), postedDate)}
           {!!fullAddress &&
             renderTextItem(
@@ -203,9 +210,9 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
               record shows where and when but not what. */}
           {isFoodOrder && (
             <>
-              <DmText className="mb-[10] text-13 leading-[16px] font-custom600">
+              <Text size={13} weight="semibold" leading="tight" style={a.mb_10}>
                 {t("order_details")}
-              </DmText>
+              </Text>
               {items.map((line) => {
                 const choices = (line.selectedOptions ?? []).flatMap((option) =>
                   option.choices.map((choice) => choice.name)
@@ -219,29 +226,34 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 return (
                   <DmView
                     key={line.id}
-                    className="flex-row items-start justify-between mb-[8]"
+                    style={[
+                      a.flex_row,
+                      a.items_start,
+                      a.justify_between,
+                      a.mb_8,
+                    ]}
                   >
-                    <DmView className="flex-1 mr-[10]">
-                      <DmText className="text-13 leading-[17px] font-custom500">
+                    <DmView style={[a.flex_1, a.mr_10]}>
+                      <Text size={13} weight="medium" leading={px(17)}>
                         {line.quantity}× {line.name}
-                      </DmText>
+                      </Text>
                       {!!choices.length && (
-                        <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2">
+                        <Text size={11} color="secondary" style={a.mt_2}>
                           {choices.join(", ")}
-                        </DmText>
+                        </Text>
                       )}
                     </DmView>
-                    <DmText className="text-13 leading-[17px] font-custom500">
+                    <Text size={13} weight="medium" leading={px(17)}>
                       {formatMoney(
                         (Number(line.price) + choicesTotal) * line.quantity
                       )}{" "}
                       {t("EGP")}
-                    </DmText>
+                    </Text>
                   </DmView>
                 )
               })}
 
-              <DmView className="h-[0.7] bg-grey14 mt-[6] mb-[8]" />
+              <DmView style={[styles.box2, a.mt_6, a.mb_8]} />
               {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
               {!isPickup &&
                 totalsRow(

@@ -1,0 +1,44 @@
+{
+ "component": "CancelJobFeedbackModal",
+ "capturedAt": "unknown",
+ "elements": 2,
+ "files": 2,
+ "cases": {
+  "34d61c2b13": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onModalHide": {
+     "$fn": true
+    },
+    "cancel": {
+     "$opaque": "cancel"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:961",
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1335"
+   ]
+  },
+  "07cbe8dd61": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onModalHide": {
+     "$fn": true
+    },
+    "cancel": {
+     "$opaque": "cancel"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:961",
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1335"
+   ]
+  }
+ }
+}

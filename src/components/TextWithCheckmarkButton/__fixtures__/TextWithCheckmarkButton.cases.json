@@ -1,0 +1,38 @@
+{
+ "component": "TextWithCheckmarkButton",
+ "capturedAt": "f335935",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "b3a1a34188": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:350"
+   ]
+  },
+  "115da10bdc": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:350"
+   ]
+  }
+ }
+}

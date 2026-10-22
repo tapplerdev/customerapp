@@ -1,9 +1,11 @@
 import React from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
 import colors from "@tappler/shared/src/styles/colors"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 /**
  * Parses the structured system-message text the backend writes when a pro
@@ -30,17 +32,6 @@ interface Props {
 
 const RADIUS = 12
 const TAIL = 2
-
-const struck = {
-  fontSize: 13,
-  lineHeight: 17,
-  color: "rgba(255,255,255,0.65)",
-  textDecorationLine: "line-through",
-  textDecorationColor: "rgba(255,255,255,0.65)",
-} as const
-
-const emphasis = { fontSize: 15, lineHeight: 19, color: "#FFFFFF" } as const
-const connector = { fontSize: 13, lineHeight: 17, color: "rgba(255,255,255,0.9)" } as const
 
 /**
  * A price revision is an event the other side must NOT miss, so it renders as a
@@ -71,44 +62,46 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
 
   return (
     <DmView
-      className="overflow-hidden py-[8] px-[14]"
-      style={{
+      style={[a.overflow_hidden, a.py_8, a.px_14, {
         backgroundColor: colors.red,
         borderTopLeftRadius: RADIUS,
         borderTopRightRadius: RADIUS,
         borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
         borderBottomRightRadius: tailLeft ? RADIUS : TAIL,
-      }}
+      }]}
     >
-      <DmText
-        className="text-12 leading-[15px] font-custom600 text-white"
+      <Text
+        size={12}
+        weight="semibold"
+        leading="tight"
+        color="inverse"
         style={{ textAlign: "left" }}
       >
         {t("offer_updated")}
-      </DmText>
+      </Text>
 
-      <DmView className="flex-row items-baseline mt-[3]">
-        <DmText className="font-custom400" style={struck}>
+      <DmView style={[a.flex_row, styles.row]}>
+        <Text size={13} leading={{ fixed: px(17) }} style={styles.text}>
           {`${previous}`}
-        </DmText>
-        <DmText className="font-custom400" style={connector}>
+        </Text>
+        <Text size={13} leading={{ fixed: px(17) }} style={styles.text2}>
           {isAr ? "  ←  " : "  →  "}
-        </DmText>
-        <DmText className="font-custom600" style={emphasis}>
+        </Text>
+        <Text size={15} weight="semibold" leading={{ fixed: px(19) }} style={styles.text3}>
           {`${next}`}
-        </DmText>
-        <DmText className="ml-[4] font-custom400" style={connector}>
+        </Text>
+        <Text size={13} leading={{ fixed: px(17) }} style={[a.ml_4, styles.text2]}>
           {t("EGP")}
-        </DmText>
+        </Text>
       </DmView>
 
       {time ? (
-        <DmText
-          className="mt-[3] text-10 leading-[13px] font-custom400"
-          style={{ color: "rgba(255,255,255,0.75)", textAlign: "left" }}
+        <Text
+          size={10}
+          style={[styles.text4, { color: "rgba(255,255,255,0.75)", textAlign: "left" }]}
         >
           {time}
-        </DmText>
+        </Text>
       ) : null}
     </DmView>
   )

@@ -1,0 +1,60 @@
+{
+ "component": "CalendarTimePicker",
+ "capturedAt": "unknown",
+ "elements": 2,
+ "files": 2,
+ "cases": {
+  "5f60eae1e4": {
+   "props": {
+    "key": {
+     "$opaque": "openCount"
+    },
+    "showAnyTime": false,
+    "earliestAt": {
+     "$opaque": "earliestAt"
+    },
+    "onSelectionChange": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/CalendarTimeSheet/CalendarTimeSheet.tsx:99"
+   ]
+  },
+  "b7232cce9f": {
+   "props": {
+    "key": {
+     "$opaque": "openCount"
+    },
+    "showAnyTime": true,
+    "earliestAt": {
+     "$opaque": "earliestAt"
+    },
+    "onSelectionChange": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/CalendarTimeSheet/CalendarTimeSheet.tsx:99"
+   ]
+  },
+  "0c753dcf47": {
+   "props": {
+    "initialDate": {
+     "$opaque": "answeredDay"
+    },
+    "initialTimeSlot": {
+     "$opaque": "answeredSlot"
+    },
+    "showAnyTime": true,
+    "inset": 0,
+    "onSelectionChange": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:515"
+   ]
+  }
+ }
+}
