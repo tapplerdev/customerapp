@@ -44,8 +44,10 @@ const NAME = "ReviewFormScreen"
 const PHOTOS = ["file:///parity/a.jpg", "file:///parity/b.jpg"]
 const FOUR = [...PHOTOS, "file:///parity/c.jpg", "file:///parity/d.jpg"]
 
-// Submit is an ActionBtn before the conversion and a ds Button after it.
-const BUTTON: ParityAllowance[] = []
+// Submit is an ActionBtn before the conversion and a ds Button after it, drawn in
+// every row (its loading row too): emptied, all 72 rows fail, and each
+// allowance alone still fails them all, so each row needs both.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 /** The screen, with the gallery answering `paths` the first time it is opened. */
 const loader =
