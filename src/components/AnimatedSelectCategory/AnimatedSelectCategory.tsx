@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import {
-  ClassNameText,
+  withType,
   type SizeBringsLeading,
 } from "@tappler/shared/src/components/classNameSlots"
 import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
@@ -16,12 +16,16 @@ import colors from "@tappler/shared/src/styles/colors"
 import { LayoutChangeEvent } from "react-native"
 import type { ScrollView, StyleProp } from "react-native"
 import { AppScrollView } from "components/scroll"
-import { a, px, type DsTextStyle, type TextType } from "@tappler/shared/src/ds"
+import {
+  Text,
+  a,
+  px,
+  type DsTextProps,
+  type DsTextStyle,
+  type TextSizeOrPx,
+  type TextType,
+} from "@tappler/shared/src/ds"
 import styles from "./styles"
-
-// A tab's title as a slot: a caller's textClassName lands after its own type
-// (see classNameSlots).
-const CategoryText = ClassNameText
 
 /** A tab's title unless the caller says otherwise: 11, semibold, centred, leading 14. */
 const CATEGORY_TEXT = {
@@ -46,13 +50,7 @@ const CATEGORY_TEXT = {
 interface Props {
   categories: string[]
   setSelectedCategory: (item: number) => void
-  /**
-   * Each tab's title, as classes. They used to replace the title's own
-   * classes and now land over its own type; the one caller (FoodMenuScreen)
-   * sets every key that type sets, so it draws the same.
-   */
-  textClassName?: string
-  /** The titles' spacing and colour, after `textClassName`. */
+  /** The titles' spacing and colour, after their own. */
   textStyle?: StyleProp<DsTextStyle & NoShorthands>
   /** The titles' typography, over their own (default 11, semibold, centred, leading 14). */
   textType?: Partial<TextType> & SizeBringsLeading
@@ -64,11 +62,15 @@ type TabLayout = { x: number; width: number }
 const AnimatedSelectCategory: React.FC<Props> = ({
   categories,
   setSelectedCategory,
-  textClassName,
   textStyle,
   textType,
   showLines = true,
 }) => {
+  // The caller's textType over the titles' own, key by key.
+  const categoryText = withType<TextType>(
+    CATEGORY_TEXT,
+    textType
+  ) as DsTextProps<TextSizeOrPx>
   const scrollRef = useRef<ScrollView>(null)
   const layouts = useRef<TabLayout[]>([])
   const [activeIdx, setActiveIdx] = useState(0)
@@ -134,15 +136,9 @@ const AnimatedSelectCategory: React.FC<Props> = ({
               >
                 {/* No numberOfLines — the tab is sized to the label now, so
                     there is nothing to truncate. */}
-                <CategoryText
-                  {...CATEGORY_TEXT}
-                  twinType={textType}
-                  className={textClassName}
-                  fontClassName={textClassName}
-                  twinStyle={textStyle}
-                >
+                <Text {...categoryText} style={textStyle}>
                   {item}
-                </CategoryText>
+                </Text>
               </DmView>
             ))}
           </DmView>
