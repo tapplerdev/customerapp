@@ -40,22 +40,15 @@ import {
 
 const rel = (file: string) => path.relative(ROOT, file)
 
-// The freeze, loaded only when the run freezes (W3.4 deletes it), once: the
-// kit's twin tests reset the module registry between rows, and a freeze
-// loaded again would have lost the cases it holds.
-let freezeModule: typeof import("./freezeTwins") | null = null
-const freeze = () => {
-  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-  freezeModule ??= require("./freezeTwins") as typeof import("./freezeTwins")
-  return freezeModule
-}
+// The freeze (freezeTwins, which ran the codemod) was deleted with the
+// codemod in W3.4; both live on at the archive tag.
+const AT_THE_TAG =
+  "the freeze (DS_FREEZE_TWINS=1) ran the codemod, which lives on at the archive tag archive/ca-pass1-tools only: refreeze there, from the code the twins pin, or not at all"
 
 /** A frozen file (a missing one says how it is made). */
 export const readTwins = (file: string): TwinsFile => {
   if (!fs.existsSync(file)) {
-    throw new Error(
-      `${rel(file)} is missing: it is written by the freeze (DS_FREEZE_TWINS=1, W3.1 only)`
-    )
+    throw new Error(`${rel(file)} is missing: ${AT_THE_TAG}`)
   }
   return JSON.parse(fs.readFileSync(file, "utf8")) as TwinsFile
 }
@@ -90,14 +83,14 @@ const fedTo = new Map<string, { fed: Set<string>; declared: Set<string> }>()
  * values built now from `spec.build`. A dropped case is left out. A case the
  * file doesn't hold, or one that changed since the freeze, fails.
  *
- * With DS_FREEZE_TWINS=1 the run is the freeze instead (freezeTwins).
+ * DS_FREEZE_TWINS=1 refuses: the freeze lives on at the archive tag.
  */
 export const frozenTwinCases = (
   file: string,
   cases: Pick<CasesFile, "cases"> & Partial<CasesFile>,
   spec: TwinSpec
 ): TwinCase[] => {
-  if (freezing()) return freeze().freezeTwins(file, cases, spec)
+  if (freezing()) throw new Error(`twins: ${rel(file)}: ${AT_THE_TAG}`)
   const seen = fedTo.get(file) ?? { fed: new Set(), declared: new Set() }
   fedTo.set(file, seen)
   Object.keys(cases.cases).forEach((id) => seen.fed.add(id))
@@ -113,9 +106,7 @@ export const frozenTwinCases = (
     if (dropped) return []
     const twin = frozen.cases[id]
     if (!twin) {
-      throw new Error(
-        `twins: ${id} isn't in ${rel(file)}: refreeze (DS_FREEZE_TWINS=1, W3.1 only)`
-      )
+      throw new Error(`twins: ${id} isn't in ${rel(file)}: ${AT_THE_TAG}`)
     }
     const props = asFrozen(id, entry.props, twin.edits ?? [], spec)
     if (canonical(props) !== canonical(twin.props)) {
@@ -149,9 +140,7 @@ export const frozenTwinCases = (
  * kit's twin tests (OrderBill, the scroll wrappers) draw each row in a
  * registry of its own, so the loader asks for its element here: the case's
  * frozen site, with `props` (the case as the test builds it) held to the
- * ones the freeze wrote. In the freeze the case is converted by the codemod
- * instead, in this registry (`props` is then the case as it is, and the
- * test's top-level frozenTwinCases call is what writes the file).
+ * ones the freeze wrote.
  */
 export const frozenTwinElement = (
   file: string,
@@ -159,22 +148,10 @@ export const frozenTwinElement = (
   props: PropSet,
   spec: TwinSpec
 ) => {
-  if (freezing()) {
-    const converted = freeze().convertCase(spec, props)
-    return renderSite(
-      {
-        code: converted.code,
-        styles: converted.styles,
-        values: converted.values,
-      },
-      `${id} (${rel(file)})`
-    )
-  }
+  if (freezing()) throw new Error(`twins: ${rel(file)}: ${AT_THE_TAG}`)
   const twin = readTwins(file).cases[id]
   if (!twin) {
-    throw new Error(
-      `twins: ${id} isn't in ${rel(file)}: refreeze (DS_FREEZE_TWINS=1, W3.1 only)`
-    )
+    throw new Error(`twins: ${id} isn't in ${rel(file)}: ${AT_THE_TAG}`)
   }
   if (canonical(props) !== canonical(twin.props)) {
     throw new Error(
@@ -193,24 +170,16 @@ export const frozenTwinElement = (
 
 /**
  * expectParity for one row of a twin: the tree it draws against the class
- * test's (options.file). In the freeze the row also counts toward writing
- * its case, which is written only if every row of it passes.
+ * test's (options.file). (`file` and `id` were the freeze's, which counted
+ * each row toward its case; the twin tests still pass them.)
  */
 export const expectTwin = (
-  file: string,
-  id: string,
+  _file: string,
+  _id: string,
   name: string,
   tree: HostNode | null,
   options: ParityOptions
-) => {
-  let result: ReturnType<typeof expectParity> = { accepted: [] }
-  const compare = () => {
-    result = expectParity(name, tree, options)
-  }
-  if (freezing()) freeze().countRow(file, id, compare)
-  else compare()
-  return result
-}
+) => expectParity(name, tree, options)
 
 /**
  * A twin row as the cover check reads it: its case, its tree's name in the
@@ -233,18 +202,12 @@ export const expectFrozenCover = (
   fixture: string,
   rows: readonly TwinRow[]
 ) => {
-  const { ids, drops, fed, declared } = freezing()
-    ? freeze().frozenSoFar(file)
-    : (() => {
-        const frozen = readTwins(file)
-        const seen = fedTo.get(file)
-        return {
-          ids: Object.keys(frozen.cases),
-          drops: frozen.drops,
-          fed: [...(seen?.fed ?? [])],
-          declared: [...(seen?.declared ?? [])],
-        }
-      })()
+  const frozen = readTwins(file)
+  const seen = fedTo.get(file)
+  const ids = Object.keys(frozen.cases)
+  const { drops } = frozen
+  const fed = [...(seen?.fed ?? [])]
+  const declared = [...(seen?.declared ?? [])]
   const captured = Object.keys(
     (JSON.parse(fs.readFileSync(fixture, "utf8")) as { cases: object }).cases
   )

@@ -20,7 +20,6 @@ const ROOT = path.resolve(__dirname, "../../..")
 const CONFIGS = [
   "jest.config.js",
   "jest.parity.config.js",
-  "jest.pass1.config.js",
   "jest.parity.reverse.config.js",
 ]
 

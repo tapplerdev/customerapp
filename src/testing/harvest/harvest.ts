@@ -2,7 +2,7 @@
  * Jest only. Every prop set a component's real call sites can hand it, read
  * from the source: each JSX element of the component under src, its
  * attributes evaluated for every combination of the conditions they depend
- * on. The generic form of testing/buttonLooks/harvest (ActionBtn's), for any
+ * on. The generic form of buttonLooks/harvest (ActionBtn's, at the archive tag), for any
  * component a wave 2 conversion changes.
  *
  * The conditions are shared across one element's attributes, which is what

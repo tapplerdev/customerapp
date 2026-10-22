@@ -70,14 +70,15 @@ module.exports = {
   globals: { __PARITY_ENV_STUB__: ENV_STUB },
   // `*.parity.tsx` run under jest.parity.config.js only (the screen kit's
   // mocks and setup, src/testing/screenKit): `yarn test:parity`.
-  // `*.pass1.test.*` need NativeWind's internals and the class-era tools
-  // (jest.pass1.config.js, `yarn test:pass1-tools`), as in proapp. Since W3.2
-  // they fail here by design and run at archive/ca-pass1-tools; the
-  // no-plugin control that `yarn test` carries instead is
-  // src/testing/__tests__/noPluginControl.test.tsx.
+  // babel.config.js has had no NativeWind since W3.2, and nothing in `yarn
+  // test` needs it: the no-plugin control
+  // (src/testing/__tests__/noPluginControl.test.tsx) fails if it comes back
+  // into jest's transform. The class-era tools and the live halves of the
+  // frozen pins (`*.pass1.test.*`, which needed the plugin) were deleted in
+  // W3.4; they live on at the archive tag `archive/ca-pass1-tools`
+  // (src/testing/README.md says how to run them).
   testPathIgnorePatterns: [
     '/node_modules/',
     '\\.parity\\.tsx?$',
-    '\\.pass1\\.test\\.[jt]sx?$',
   ],
 };

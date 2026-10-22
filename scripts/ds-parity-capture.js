@@ -5,9 +5,10 @@
  *   yarn ds:parity:capture <test file> [more jest args] [--force]
  *
  * A screen kit test (`*.parity.tsx`, src/testing/screenKit) is run with
- * jest.parity.config.js, and the live half of a frozen pin (`*.pass1.test.*`,
- * src/testing/frozen.ts) with jest.pass1.config.js, unless a config is given:
- * the default config runs neither.
+ * jest.parity.config.js unless a config is given: the default config doesn't
+ * run them. (The live halves of the frozen pins, `*.pass1.test.*`, ran under
+ * jest.pass1.config.js; both live on at the archive tag
+ * archive/ca-pass1-tools, where this script still knows them.)
  *
  * Runs jest on the given test(s) in capture mode: every `expectParity` call
  * writes its case to `__parity__/<test file>.json` beside the test instead of
@@ -89,14 +90,9 @@ const main = () => {
   const args = process.argv.slice(2)
   const force = args.includes("--force")
   const given = args.filter((arg) => arg !== "--force")
-  // A screen kit test (`*.parity.tsx`) and a pin's live half
-  // (`*.pass1.test.*`) run under their own configs.
+  // A screen kit test (`*.parity.tsx`) runs under its own config.
   const configOf = (arg) =>
-    /\.parity\.tsx?$/.test(arg)
-      ? "jest.parity.config.js"
-      : /\.pass1\.test\.[jt]sx?$/.test(arg)
-        ? "jest.pass1.config.js"
-        : null
+    /\.parity\.tsx?$/.test(arg) ? "jest.parity.config.js" : null
   const configs = [...new Set(given.map(configOf).filter(Boolean))]
   const configGiven = given.some(
     (arg) => arg === "-c" || arg.startsWith("--config")

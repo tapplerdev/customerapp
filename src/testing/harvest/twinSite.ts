@@ -3,10 +3,11 @@
  *
  * A twin case is one prop set a component's harvest froze, written as a call
  * site of its own (`export default <Tag ... />`) and converted by the codemod
- * the way `yarn ds:codemod` converts a real site. The converted site is
- * frozen in `__fixtures__/<Name>.twins.json` (freezeTwins, W3.1 only), and
- * from then on a twin test draws the frozen code (frozenTwinCases): no
- * codemod, no class strings, no NativeWind.
+ * the way `yarn ds:codemod` converted a real site (W3.1; the codemod and
+ * freezeTwins live on at the archive tag archive/ca-pass1-tools). The
+ * converted site is frozen in `__fixtures__/<Name>.twins.json`, and from then
+ * on a twin test draws the frozen code (frozenTwinCases): no codemod, no
+ * class strings, no NativeWind.
  *
  * A site imports the component, React, the design system and its own styles
  * file (when the codemod wrote one) as the app's babel resolves them, and
@@ -130,9 +131,10 @@ export const twinsFileFor = (testsDir: string, name: string) =>
   path.join(path.dirname(testsDir), "__fixtures__", `${name}.twins.json`)
 
 /**
- * Whether this run freezes the twins (writes the `.twins.json` files)
- * instead of comparing them: DS_FREEZE_TWINS, read through a variable key so
- * react-native-dotenv can't inline it at transform time.
+ * Whether this run asks to freeze the twins (write the `.twins.json` files)
+ * instead of comparing them, which frozenTwinCases refuses since W3.4 (the
+ * freeze is at the archive tag): DS_FREEZE_TWINS, read through a variable key
+ * so react-native-dotenv can't inline it at transform time.
  */
 export const freezing = () => {
   const key = "DS_FREEZE_TWINS"

@@ -6,11 +6,11 @@
  * (what ds Button was written with for each set, the translator's output as B
  * drew it beside a live ActionBtn) are the proof the converted screens' Buttons
  * stand on. Both are JSON: nothing here needs NativeWind, the translator
- * (../__fixtures__/translate.ts, which reads nw-resolve and tailwind.config.js)
- * or ActionBtn. table.pass1.test.ts runs the translator against them live
- * (`yarn test:pass1-tools`, and at archive/ca-pass1-tools after the flip);
- * this file keeps them from changing in `yarn test`: byte for byte, and one
- * row in the table for every set in the cases.
+ * (which read nw-resolve and tailwind.config.js) or ActionBtn. The
+ * translator, the harvest and the live comparison (table.pass1.test.ts) were
+ * deleted in W3.4 and live on at the archive tag archive/ca-pass1-tools; this
+ * file keeps the two files from changing in `yarn test`: byte for byte, and
+ * one row in the table for every set in the cases.
  */
 import { describe, expect, it } from "@jest/globals"
 import crypto from "crypto"

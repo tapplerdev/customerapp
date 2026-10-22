@@ -15,8 +15,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
  *
  * The fixture beside this file was captured from a class-name row and a real
  * ActionBtn, with NativeWind on; this file compares the token row and ds
- * Button with it, and needs no NativeWind. hostTreeParity.pass1.test.tsx
- * draws the class-name and ActionBtn sides live (`yarn test:pass1-tools`).
+ * Button with it, and needs no NativeWind. The live half that drew the
+ * class-name and ActionBtn sides (hostTreeParity.pass1.test.tsx) went in W3.4
+ * and lives on at the archive tag archive/ca-pass1-tools.
  */
 
 jest.mock("react-native-localize", () =>
@@ -70,7 +71,7 @@ const stored = (name: string) => {
 
 // The fixture's "row" cases were captured from a class-name row (DmView
 // flex-row px-[16] pt-[20] around a DmText text-15 leading-[19px]
-// font-custom600, hostTreeParity.pass1.test.tsx), and its "actionBtn" ones
+// font-custom600, as hostTreeParity.pass1.test.tsx drew it), and its "actionBtn" ones
 // from a real ActionBtn with and without onPress, disabled and loading. The
 // same row on tokens: no class name anywhere.
 const converted = (padding = 16, leading = px(19)) => (
