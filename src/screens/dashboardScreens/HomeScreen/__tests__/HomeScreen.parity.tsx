@@ -329,6 +329,37 @@ describe.each(PARITY_MATRIX)("HomeScreen presses [$language $platform]", (env: P
     }
   })
 
+  it("a card of every shape opens its own service, the stacked ones too", async () => {
+    const session = await open({
+      api: { ...DATA, ...preset(RICH) },
+    })
+    try {
+      const pressed = [
+        ["Home repairs", "إصلاحات المنزل", SERVICE.id], // squareWithOverlay
+        ["Electrical", "الكهرباء", SERVICE.id], // rectangleWithOverlay
+        ["Cleaning", "التنظيف", SERVICE.id], // doubleRectangles, first of a column
+        ["Painting and decoration", "الدهان والديكور", SERVICE_FOOD.id], // doubleRectangles, stacked under it
+        ["Moving", "النقل", SERVICE.id], // doubleRectangles, the second column
+        ["Appliances", "الأجهزة", SERVICE.id], // rectangleWithText
+      ] as const
+      for (const [en, ar, serviceId] of pressed) {
+        // eslint-disable-next-line no-await-in-loop
+        await session.act(() => {
+          pressContaining(session.root, env.language === "ar" ? ar : en)
+        })
+        expect(navigated(session)[navigated(session).length - 1]).toEqual(
+          expect.objectContaining({
+            name: "SubCategoriesScreen",
+            params: { service: expect.objectContaining({ id: serviceId }) },
+          })
+        )
+      }
+      expect(navigated(session)).toHaveLength(pressed.length)
+    } finally {
+      session.unmount()
+    }
+  })
+
   it("a card opens its service's categories, from /services or from its own category", async () => {
     const session = await open({
       api: { ...DATA, ...preset(RICH) },

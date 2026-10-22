@@ -139,6 +139,22 @@ describe.each(PARITY_MATRIX)("RegisterScreen presses [$language $platform]", (en
     }
   })
 
+  it("Male picked again after Female is what it signs up with", async () => {
+    const session = await open()
+    try {
+      await run(session, [
+        ...FILLED,
+        (root) => pressText(root, copy(env, "female")),
+        (root) => pressText(root, copy(env, "male")),
+        register,
+      ])
+      await session.settle(1000)
+      expect(JSON.stringify(sent(session, "customerSignUp")[0].args)).toContain('"gender":"male"')
+    } finally {
+      session.unmount()
+    }
+  })
+
   it("Female is what it signs up with; coming from the gate it goes back instead", async () => {
     const session = await open({ route: { name: "RegisterScreen", params: { returnTo: true } } })
     try {

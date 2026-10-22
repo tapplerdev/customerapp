@@ -5,6 +5,7 @@ import { describe, expect, it, jest } from "@jest/globals"
 
 import {
   copy,
+  fireHost,
   openScreen,
   pressIcon,
   pressText,
@@ -196,6 +197,49 @@ describe.each(PARITY_MATRIX)("FiltersSheet presses [$language $platform]", (env:
       await act(session, () => pressText(session.root, ideal))
       await act(session, () => pressTitled(session.root, copy(env, "show_results")))
       expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ refinementFilterOptionIds: [9022] }))
+    } finally {
+      session.unmount()
+    }
+  })
+
+  it("the distance slider, its typed box and the range slider hand over their values", async () => {
+    const onApply = jest.fn()
+    const session = await open({ ...PHYSICAL, ...REFINEMENTS, onApply })
+    const apply = async () => {
+      await act(session, () => pressTitled(session.root, copy(env, "show_results")))
+      return onApply.mock.calls[onApply.mock.calls.length - 1][0]
+    }
+    try {
+      // The slider rounds what it reports.
+      await act(session, () => fireHost(session.root, "Slider", "onValueChange", [12.4]))
+      expect(await apply()).toEqual(expect.objectContaining({ distanceKm: 12 }))
+      // A typed distance is clamped to 1-50 when editing ends or is submitted; 50 means no limit.
+      const typeDistance = (text: string, event: "onEndEditing" | "onSubmitEditing") => {
+        const box = session.root.findAll(
+          (node) => (node.type as unknown) === "TextInput" && node.props.maxLength === 2
+        )[0]
+        return act(session, () => {
+          box.props.onChangeText(text)
+        }).then(() =>
+          act(session, () => {
+            session.root
+              .findAll((node) => (node.type as unknown) === "TextInput" && node.props.maxLength === 2)[0]
+              .props[event]()
+          })
+        )
+      }
+      await typeDistance("30", "onEndEditing")
+      expect(await apply()).toEqual(expect.objectContaining({ distanceKm: 30 }))
+      await typeDistance("99", "onSubmitEditing")
+      expect(await apply()).toEqual(expect.objectContaining({ distanceKm: undefined }))
+      await typeDistance("0", "onEndEditing")
+      expect(await apply()).toEqual(expect.objectContaining({ distanceKm: 1 }))
+      // The range slider moves both boxes' values.
+      const slider = session.root.findAll(
+        (node) => typeof node.props.onChange === "function" && node.props.min === 100 && node.props.max === 900
+      )[0]
+      await act(session, () => slider.props.onChange(250, 700))
+      expect(await apply()).toEqual(expect.objectContaining({ ranges: [{ filterId: 91, min: 250, max: 700 }] }))
     } finally {
       session.unmount()
     }
