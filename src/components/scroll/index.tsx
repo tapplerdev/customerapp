@@ -128,8 +128,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
  * that reason — do not remove it there.
  */
 export type AppScrollViewProps = ScrollViewProps & {
-  /** The scroll view, as classes. */
-  className?: string
   /**
    * The scroll view, as a style, after `className`: React Native's own
    * `style`, declared here as the class's twin. It keeps React Native's type
@@ -181,8 +179,6 @@ function asGeneric<C>(component: React.ForwardRefExoticComponent<never>): C {
 }
 
 export type AppFlatListProps<ItemT> = FlatListProps<ItemT> & {
-  /** The list, as classes. */
-  className?: string
   /**
    * The list, as a style, after `className`: React Native's own `style`,
    * declared here as the class's twin, where FlatList lands the class too.
@@ -252,8 +248,6 @@ export const AppFlatList = asGeneric<
 export type AppKeyboardAwareScrollViewProps = React.ComponentProps<
   typeof KeyboardAwareScrollView
 > & {
-  /** The scroll view, as classes (no caller passes one). */
-  className?: string
   /**
    * The scroll view, as a style, after `className`: React Native's own
    * `style`, as AppScrollView's.
