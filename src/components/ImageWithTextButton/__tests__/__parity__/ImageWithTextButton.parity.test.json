@@ -1,0 +1,26 @@
+{
+ "cases": {
+  "a9e124d537 no art [ar android]": {"capturedAt":"bab125c","tree":"683226df67f3","a11y":true},
+  "a9e124d537 no art [ar ios]": {"capturedAt":"bab125c","tree":"683226df67f3","a11y":true},
+  "a9e124d537 no art [en android]": {"capturedAt":"bab125c","tree":"683226df67f3","a11y":true},
+  "a9e124d537 no art [en ios]": {"capturedAt":"bab125c","tree":"683226df67f3","a11y":true},
+  "a9e124d537 with art [ar android]": {"capturedAt":"bab125c","tree":"672a6b14e38f","a11y":true},
+  "a9e124d537 with art [ar ios]": {"capturedAt":"bab125c","tree":"672a6b14e38f","a11y":true},
+  "a9e124d537 with art [en android]": {"capturedAt":"bab125c","tree":"672a6b14e38f","a11y":true},
+  "a9e124d537 with art [en ios]": {"capturedAt":"bab125c","tree":"672a6b14e38f","a11y":true},
+  "cf5d65aa21 no art [ar android]": {"capturedAt":"bab125c","tree":"48d3d520bf99","a11y":true},
+  "cf5d65aa21 no art [ar ios]": {"capturedAt":"bab125c","tree":"48d3d520bf99","a11y":true},
+  "cf5d65aa21 no art [en android]": {"capturedAt":"bab125c","tree":"48d3d520bf99","a11y":true},
+  "cf5d65aa21 no art [en ios]": {"capturedAt":"bab125c","tree":"48d3d520bf99","a11y":true},
+  "cf5d65aa21 with art [ar android]": {"capturedAt":"bab125c","tree":"2c079312745d","a11y":true},
+  "cf5d65aa21 with art [ar ios]": {"capturedAt":"bab125c","tree":"2c079312745d","a11y":true},
+  "cf5d65aa21 with art [en android]": {"capturedAt":"bab125c","tree":"2c079312745d","a11y":true},
+  "cf5d65aa21 with art [en ios]": {"capturedAt":"bab125c","tree":"2c079312745d","a11y":true}
+ },
+ "trees": {
+  "2c079312745d": {"type":"View","props":{"accessibilityState":{},"accessibilityValue":{},"accessible":true,"collapsable":false,"focusable":true,"style":{"opacity":1}},"children":[{"type":"View","props":{"style":{"backgroundColor":"#FFE6E6","borderColor":"#CC0000","borderRadius":10,"borderWidth":0.75,"overflow":"hidden"}},"children":[{"type":"View","props":{"style":{"transform":[{"scale":0.7}]}},"children":[]}]}]},
+  "48d3d520bf99": {"type":"View","props":{"accessibilityState":{},"accessibilityValue":{},"accessible":true,"collapsable":false,"focusable":true,"style":{"opacity":1}},"children":[{"type":"View","props":{"style":{"backgroundColor":"#FFE6E6","borderColor":"#CC0000","borderRadius":10,"borderWidth":0.75,"overflow":"hidden"}},"children":[{"type":"View","props":{"style":{"backgroundColor":"#ECECEC","height":60,"width":60}},"children":[]}]}]},
+  "672a6b14e38f": {"type":"View","props":{"accessibilityState":{},"accessibilityValue":{},"accessible":true,"collapsable":false,"focusable":true,"style":{"opacity":1}},"children":[{"type":"View","props":{"style":{"backgroundColor":"#FFFFFF","borderColor":"#D9D9D9","borderRadius":10,"borderWidth":0.75,"overflow":"hidden"}},"children":[{"type":"View","props":{"style":{"transform":[{"scale":0.7}]}},"children":[]}]}]},
+  "683226df67f3": {"type":"View","props":{"accessibilityState":{},"accessibilityValue":{},"accessible":true,"collapsable":false,"focusable":true,"style":{"opacity":1}},"children":[{"type":"View","props":{"style":{"backgroundColor":"#FFFFFF","borderColor":"#D9D9D9","borderRadius":10,"borderWidth":0.75,"overflow":"hidden"}},"children":[{"type":"View","props":{"style":{"backgroundColor":"#ECECEC","height":60,"width":60}},"children":[]}]}]}
+ }
+}
