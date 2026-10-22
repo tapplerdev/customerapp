@@ -1,0 +1,160 @@
+{
+ "component": "MessageComponent",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "f2a067fa56": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": false,
+    "isLastInGroup": false,
+    "showReadReceipt": false,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "dd039d6591": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": false,
+    "isLastInGroup": false,
+    "showReadReceipt": true,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "ad3b1b2363": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": false,
+    "isLastInGroup": true,
+    "showReadReceipt": false,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "978e136a83": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": false,
+    "isLastInGroup": true,
+    "showReadReceipt": true,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "a73c9fca94": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": true,
+    "isLastInGroup": false,
+    "showReadReceipt": false,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "7fe9930494": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": true,
+    "isLastInGroup": false,
+    "showReadReceipt": true,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "138b58fcfb": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": true,
+    "isLastInGroup": true,
+    "showReadReceipt": false,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  },
+  "6d9bf575bb": {
+   "props": {
+    "item": {
+     "$opaque": "item.message"
+    },
+    "isFirstInGroup": true,
+    "isLastInGroup": true,
+    "showReadReceipt": true,
+    "readByName": {
+     "$opaque": "context.proName"
+    },
+    "isUploading": {
+     "$opaque": "attachments.isMessageUploading(item.message.id)"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:602"
+   ]
+  }
+ }
+}
