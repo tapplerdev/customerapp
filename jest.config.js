@@ -23,8 +23,10 @@ Object.assign(process.env, ENV_STUB)
  * (they all start from this one). With a symlink there, jest drew shared's
  * components WITHOUT their NativeWind styles: `yarn test` failed 17 tests,
  * and a capture would bake in uncompiled classes, so parity passed for the
- * wrong reason (a trap proapp hit: STATE "Traps", W2-CARD).
- * tailwind.config.js's `content` reads ../tappler-shared/src too. A test
+ * wrong reason (a trap proapp hit: STATE "Traps", W2-CARD). NativeWind's
+ * plugin left the build in W3.2, but the sibling is still where every shared
+ * import resolves from (module-resolver, tsconfig paths) and where the
+ * class-era tools (archive/ca-pass1-tools) read tailwind's `content`. A test
  * pins it (src/testing/__tests__/jestConfigs.test.ts).
  */
 const fs = require("fs")
@@ -69,7 +71,10 @@ module.exports = {
   // `*.parity.tsx` run under jest.parity.config.js only (the screen kit's
   // mocks and setup, src/testing/screenKit): `yarn test:parity`.
   // `*.pass1.test.*` need NativeWind's internals and the class-era tools
-  // (jest.pass1.config.js, `yarn test:pass1-tools`), as in proapp.
+  // (jest.pass1.config.js, `yarn test:pass1-tools`), as in proapp. Since W3.2
+  // they fail here by design and run at archive/ca-pass1-tools; the
+  // no-plugin control that `yarn test` carries instead is
+  // src/testing/__tests__/noPluginControl.test.tsx.
   testPathIgnorePatterns: [
     '/node_modules/',
     '\\.parity\\.tsx?$',

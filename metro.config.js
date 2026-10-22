@@ -18,7 +18,12 @@ const config = {
   // bundle built against the other API URL. Folding APP_ENV into the cache
   // version makes each environment its own cache instead, which is what
   // removes the --reset-cache dance the dotenv docs tell you to do.
-  cacheVersion: `app-env-${process.env.APP_ENV || 'default'}`,
+  // The key knows nothing about babel.config.js either. `ds-w3-` came with
+  // the commit that took NativeWind's plugin out of it, so no Metro serves a
+  // file it transformed with the plugin, and none needs --reset-cache (which
+  // empties the cache all the Metros on a machine share). Bump it again after
+  // any change to babel.config.js.
+  cacheVersion: `ds-w3-app-env-${process.env.APP_ENV || 'default'}`,
   watchFolders: [sharedPath],
   transformer: {
     babelTransformerPath: require.resolve("react-native-svg-transformer"),

@@ -111,5 +111,19 @@
         "src/*"
       ]
     }
-  }
+  },
+  // The pass-1 tools' fixtures: class-era inputs typed against
+  // nativewind/types, which customerapp has had none of since W3.2. Their
+  // tools run only at the archive tag archive/ca-pass1-tools (yarn
+  // test:pass1-tools), whose tsconfig still checks them, and W3.4 deletes
+  // them here. "**/Pods/**" is @react-native/typescript-config's exclude,
+  // which this list replaces. (`yarn ds:paths --write` keeps this key but not
+  // this comment; src/testing/README.md, "tsc", says the same.)
+  "exclude": [
+    "**/Pods/**",
+    "scripts/__fixtures__/ds-codemod",
+    "scripts/__fixtures__/nw-resolve",
+    "scripts/__fixtures__/nw-runtime-oracle.js",
+    "scripts/__fixtures__/nw-wrap-probe"
+  ]
 }

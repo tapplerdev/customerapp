@@ -18,10 +18,11 @@ rule); what differs from proapp is called out where it matters.
 | `trueSheet.tsx` | The stand-in for `@lodev09/react-native-true-sheet` in both jest configs (see "What the kit mocks"). |
 | `nativewind.ts`, `svgStub.ts` | NativeWind's output for a class string with customerapp's tailwind.config.js (class-era: only the `*.pass1.test.*` suites use it); an SVG icon as a host element named after it. |
 
-## After W3.1: the proofs need no NativeWind
+## After W3.1 and W3.2: the proofs need no NativeWind
 
-W3.2 takes NativeWind's Babel plugin and types out of the build, and from then
-on a class string draws nothing. W3.1 made every proof independent of it:
+W3.2 took NativeWind's Babel plugin (babel.config.js) and types
+(`src/types/declarations.d.ts`) out of the build, so a class string draws
+nothing. W3.1 had made every proof independent of it:
 
 - **Fixtures are JSON captured with NativeWind on**: every `__parity__/*.json`
   tree, `*.cases.json` harvest, `ButtonLooks.cases.json` / `ButtonLooks.table.json`
@@ -54,6 +55,39 @@ on a class string draws nothing. W3.1 made every proof independent of it:
   until W3.4): `DS_FREEZE_TWINS=1 jest <twin test>` (kit twins: `-c
   jest.parity.config.js`). Re-running it over the 9 files rewrites them
   byte-identically.
+
+What W3.2 flipped, in one commit:
+
+- **The build**: `'nativewind/babel'` out of babel.config.js, the nativewind
+  types reference out of declarations.d.ts, and metro.config.js's cacheVersion
+  prefixed `ds-w3-`. Metro's transform key never sees babel.config.js, so the
+  prefix (not `--reset-cache`, which empties the cache every Metro on the
+  machine shares) is what stops a transform made with the plugin being served.
+  Bump it again after any change to babel.config.js. `nativewind` and
+  `tailwindcss` stay installed (and `tailwind.config.js` stays) until W3.4.
+- **The control**: `__tests__/noPluginControl.test.tsx` in `yarn test` draws a
+  className on a View (`__fixtures__/ClassNameOnView.tsx`) and expects it on
+  the host as a plain prop, then resolves babel.config.js's plugins for an app
+  file and a shared one, and compiles the canary as Metro does, under Babel's
+  `test`, `development` and `production` envs: no NativeWind plugin, wrap or
+  require. A plugin put back anywhere fails it (jest alone runs in `test`, so
+  the other two envs are what the Metro bundles use).
+- **After the flip** `yarn test:pass1-tools` fails by design (its suites need
+  the plugin, the nativewind types or tailwind.config.js, and `*.pass1` halves
+  draw class names); run it at `archive/ca-pass1-tools`. `yarn ds:probe` exits 1
+  (its own positive control wants the plugin in babel.config.js) and has
+  nothing to wrap. The other gates run as before.
+
+### tsc
+
+W3.2's set is d35860c's 32 errors plus the six className errors in
+`src/components/scroll/index.tsx` (:144 :211 :263 TS2339 and :150 :220 :269
+TS2769: React Native's ScrollView, FlatList and KeyboardAwareScrollView take no
+className without the types), which W3.3 strips with the threadings. The
+codemod's class-era fixtures (`scripts/__fixtures__/ds-codemod`, `nw-resolve`,
+`nw-runtime-oracle.js`, `nw-wrap-probe`) are excluded in tsconfig.json: they are
+typed against nativewind/types and their tools run only at the archive tag
+(`yarn ds:paths --write` keeps the `exclude` key but not its comment).
 
 ## The jest configs
 
