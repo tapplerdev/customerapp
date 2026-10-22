@@ -1,10 +1,11 @@
 import React from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 
 import { PresetSectionType, PresetSectionItemType } from "types/cms"
 import PresetCard from "./PresetCard"
 import { AppScrollView } from "components/scroll"
+import { Text, a as atoms } from "@tappler/shared/src/ds"
 
 interface Props {
   section: PresetSectionType
@@ -25,23 +26,23 @@ const PresetSection: React.FC<Props> = ({ section, isAr, onItemPress }) => {
   const isDoubleStacked = section.shapeType === "doubleRectangles"
 
   return (
-    <DmView className="mt-[24]">
-      <DmView className="px-[16]">
+    <DmView style={atoms.mt_24}>
+      <DmView style={atoms.px_16}>
         {!!title && (
-          <DmText className="text-20 font-custom600 text-black leading-[24px]">
+          <Text size={20} weight="semibold" leading="tight">
             {title}
-          </DmText>
+          </Text>
         )}
         {!!description && (
-          <DmText className="mt-[2] text-13 font-custom400 text-black">
+          <Text size={13} leading="legacy" style={atoms.mt_2}>
             {description}
-          </DmText>
+          </Text>
         )}
       </DmView>
       <AppScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="mt-[12]"
+        style={atoms.mt_12}
         contentContainerStyle={{ paddingHorizontal: 16 }}
       >
         {isDoubleStacked
@@ -49,12 +50,12 @@ const PresetSection: React.FC<Props> = ({ section, isAr, onItemPress }) => {
             sortedGroups.map((group) => (
               <DmView
                 key={`${section.id}-g-${group.id}`}
-                className="flex-col mr-[10]"
+                style={[atoms.flex_col, atoms.mr_10]}
               >
                 {group.items.map((item, idx) => (
                   <DmView
                     key={`${section.id}-${group.id}-${item.id}`}
-                    className={idx > 0 ? "mt-[12]" : ""}
+                    style={idx > 0 && atoms.mt_12}
                   >
                     <PresetCard
                       item={item}

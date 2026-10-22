@@ -7,12 +7,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 
 import {
   PresetSectionItemType,
   PresetSectionShapeType,
 } from "types/cms"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import { presetCardStyles } from "./styles"
 
 interface Props {
   item: PresetSectionItemType
@@ -60,17 +62,15 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
   const title = getTitle(item, isAr)
   const picture = isAr ? item.pictureAr : item.pictureEn
   const imgUrl = picture?.url720 || picture?.url
-  const endMargin = noEndMargin ? "" : "mr-[10]"
 
   switch (shapeType) {
     case "squareWithOverlay":
       return (
         <DmView
-          className={`${endMargin} w-[100] h-[110] rounded-10`}
-          style={cardShadow}
+          style={[!noEndMargin && a.mr_10, presetCardStyles.container, cardShadow]}
           onPress={onPress}
         >
-          <DmView className="flex-1 rounded-10 overflow-hidden">
+          <DmView style={[a.flex_1, presetCardStyles.box, a.overflow_hidden]}>
             {!!imgUrl && (
               <FadeInImage
                 source={{ uri: imgUrl }}
@@ -78,10 +78,10 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
                 resizeMode={FastImage.resizeMode.cover}
               />
             )}
-            <DmView className="absolute bottom-[8] left-[8] right-[8]">
-              <DmText className="text-white font-custom700 text-12 leading-[14px]">
+            <DmView style={[a.absolute, presetCardStyles.textWrap]}>
+              <Text size={12} weight="bold" leading={px(14)} color="inverse">
                 {title}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </DmView>
@@ -90,11 +90,10 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
     case "rectangleWithOverlay":
       return (
         <DmView
-          className={`${endMargin} w-[210] h-[120] rounded-10`}
-          style={cardShadow}
+          style={[!noEndMargin && a.mr_10, presetCardStyles.container2, cardShadow]}
           onPress={onPress}
         >
-          <DmView className="flex-1 rounded-10 overflow-hidden">
+          <DmView style={[a.flex_1, presetCardStyles.box, a.overflow_hidden]}>
             {!!imgUrl && (
               <FadeInImage
                 source={{ uri: imgUrl }}
@@ -102,10 +101,10 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
                 resizeMode={FastImage.resizeMode.cover}
               />
             )}
-            <DmView className="absolute bottom-[10] left-[10] right-[10]">
-              <DmText className="text-white font-custom700 text-15 leading-[18px]">
+            <DmView style={[a.absolute, presetCardStyles.textWrap2]}>
+              <Text size={15} weight="bold" leading={px(18)} color="inverse">
                 {title}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </DmView>
@@ -113,12 +112,11 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
 
     case "doubleRectangles":
       return (
-        <DmView className={`${endMargin} w-[168]`} onPress={onPress}>
+        <DmView style={[!noEndMargin && a.mr_10, presetCardStyles.container3]} onPress={onPress}>
           <DmView
-            className="w-full h-[63] rounded-6"
-            style={cardShadow}
+            style={[a.w_full, presetCardStyles.boxWrap, cardShadow]}
           >
-            <DmView className="flex-1 rounded-6 overflow-hidden">
+            <DmView style={[a.flex_1, presetCardStyles.box2, a.overflow_hidden]}>
               {!!imgUrl && (
                 <FadeInImage
                   source={{ uri: imgUrl }}
@@ -128,20 +126,19 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
               )}
             </DmView>
           </DmView>
-          <DmText className="mt-[6] text-black font-custom600 text-13">
+          <Text size={13} weight="semibold" leading="legacy" style={a.mt_6}>
             {title}
-          </DmText>
+          </Text>
         </DmView>
       )
 
     case "rectangleWithText":
       return (
-        <DmView className={`${endMargin} w-[150]`} onPress={onPress}>
+        <DmView style={[!noEndMargin && a.mr_10, presetCardStyles.container4]} onPress={onPress}>
           <DmView
-            className="w-full h-[90] rounded-10"
-            style={cardShadow}
+            style={[a.w_full, presetCardStyles.boxWrap2, cardShadow]}
           >
-            <DmView className="flex-1 rounded-10 overflow-hidden">
+            <DmView style={[a.flex_1, presetCardStyles.box, a.overflow_hidden]}>
               {!!imgUrl && (
                 <FadeInImage
                   source={{ uri: imgUrl }}
@@ -151,9 +148,9 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
               )}
             </DmView>
           </DmView>
-          <DmText className="mt-[6] text-black font-custom600 text-13">
+          <Text size={13} weight="semibold" leading="legacy" style={a.mt_6}>
             {title}
-          </DmText>
+          </Text>
         </DmView>
       )
 
