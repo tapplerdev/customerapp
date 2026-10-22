@@ -1,12 +1,12 @@
 import React from "react"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
-import clsx from "clsx"
+import { DmView } from "@tappler/shared/src/components/UI"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface ChipButtonProps {
   label: string
   isSelected: boolean
   onPress: () => void
-  className?: string
   /** Tighter padding + smaller label, to match the compact question list. */
   compact?: boolean
 }
@@ -15,36 +15,34 @@ const ChipButton: React.FC<ChipButtonProps> = ({
   label,
   isSelected,
   onPress,
-  className,
   compact,
 }) => {
   return (
     <DmView
       onPress={onPress}
-      className={clsx(
-        compact ? "px-[14] py-[8] self-start" : "px-[20] py-[12] self-start",
-        isSelected
-          ? "bg-pink"
-          : "bg-white",
-        className
-      )}
-      style={{
-        borderColor: isSelected ? "#CC0000" : "#000000",
-        borderWidth: 0.75,
-        borderRadius: 10,
-        overflow: 'hidden',
-      }}
+      style={[
+        compact ? [a.px_14, a.py_8, a.self_start] : [a.px_20, a.py_12, a.self_start],
+        isSelected ? styles.selected : styles.notSelected,
+        {
+          borderColor: isSelected ? "#CC0000" : "#000000",
+          borderWidth: 0.75,
+          borderRadius: 10,
+          overflow: "hidden",
+        },
+      ]}
     >
-      <DmText
-        className={clsx(
-          "text-15 font-custom500 text-center",
-          isSelected ? "text-black" : "text-grey2"
-        )}
-        style={compact ? { fontSize: 13 } : undefined}
+      {/* The label's size is 15, or 13 compact, over the line height 15 drew
+          (24, in both languages): a style's fontSize over `text-15`. */}
+      <Text
+        size={compact ? 13 : 15}
+        leading={{ fixed: px(24) }}
+        weight="medium"
+        align="center"
+        color={isSelected ? "primary" : "secondary"}
         numberOfLines={1}
       >
         {label}
-      </DmText>
+      </Text>
     </DmView>
   )
 }
