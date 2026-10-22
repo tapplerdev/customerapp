@@ -24,6 +24,7 @@ import {
   captureCommit,
   expectParity,
   parityName,
+  type ParityAllowance,
 } from "testing/hostTreeParity"
 import {
   componentImport,
@@ -39,6 +40,9 @@ import {
 /** The moderation reason the chat screen shows (the text the customer typed was blocked). */
 const BLOCKED =
   "This message can't be sent because it contains contact details."
+
+/** What Button draws differently from the ActionBtn it replaced (listed deltas only, on its root): the sheet's button */
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const FILES = harvestFilesFor(__dirname, "MessageBlockedModal")
 
@@ -97,7 +101,9 @@ if (harvesting()) {
         platform: env.platform,
         navigation: "none",
       })
-      expectParity(parityName(id, env), tree)
+      expectParity(parityName(id, env), tree, {
+        allow: entry.props.isVisible === true ? BUTTON : undefined,
+      })
     })
   })
 }
