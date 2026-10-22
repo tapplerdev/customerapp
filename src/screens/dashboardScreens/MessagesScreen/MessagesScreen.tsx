@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import Animated, { FadeIn } from "react-native-reanimated"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
@@ -19,6 +19,8 @@ import ArchivedIcon from "assets/icons/archived.svg"
 import NoMessagesIcon from "assets/icons/no-messages.svg"
 import MessagesSkeleton from "./MessagesSkeleton"
 import { AppFlatList } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -96,42 +98,47 @@ const MessagesScreen: React.FC = () => {
 
   const renderEmpty = useCallback(
     () => (
-      <DmView className="flex-1 items-center justify-center pt-[80]">
+      <DmView style={[a.flex_1, a.items_center, a.justify_center, styles.container]}>
         <NoMessagesIcon width={120} height={120} />
-        <DmText
-          className="text-14 font-custom500 text-grey3 mt-[16]"
-          style={{ textAlign: "center", lineHeight: 18 }}
+        <Text
+          size={14}
+          weight="medium"
+          leading={{ fixed: px(18) }}
+          color="tertiary"
+          style={[a.mt_16, { textAlign: "center" }]}
         >
           {t("you_do_not_have_any_messages")}
-        </DmText>
+        </Text>
       </DmView>
     ),
     [t],
   )
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="items-center py-[12]">
-        <DmText className="text-18 font-custom600 text-black">
+      <DmView style={[a.items_center, a.py_12]}>
+        <Text size={18} weight="semibold" leading="legacy">
           {t("messages")}
-        </DmText>
+        </Text>
       </DmView>
       {!isAuth ? (
         <>
-        <DmView className="h-[0.7] bg-grey19" />
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={styles.box} />
+        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("login_to_view_messages")}
-          </DmText>
-          <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+          </Text>
+          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
             {t("login_to_view_messages_descr")}
-          </DmText>
-          <DmView className="mt-[20] px-[20] w-full">
-            <ActionBtn
+          </Text>
+          <DmView style={[a.mt_20, a.px_20, a.w_full]}>
+            <Button
               title={t("log_In")}
               onPress={() => navigation.navigate("SignInEmailScreen")}
-              textClassName="text-14 font-custom600"
+              label={14}
+              labelWeight="semibold"
+              labelLeading="legacy"
             />
           </DmView>
         </DmView>
@@ -147,24 +154,31 @@ const MessagesScreen: React.FC = () => {
       {/* Archived row */}
       <DmView
         onPress={() => navigation.navigate("ArchivedMessagesScreen")}
-        className="pt-[30] pb-[14] px-[15] flex-row justify-between border-b-1 border-grey4"
+        style={[
+          a.pt_30,
+          a.pb_14,
+          styles.row,
+          a.flex_row,
+          a.justify_between,
+          a.border_b_1,
+        ]}
       >
-        <DmView className="pl-[10] flex-row items-center">
+        <DmView style={[a.pl_10, a.flex_row, a.items_center]}>
           <ArchivedIcon />
-          <DmText className="mx-[10] text-13 leading-[16px] font-custom600 text-grey30">
+          <Text size={13} weight="semibold" leading="tight" style={[a.mx_10, styles.archived]}>
             {t("archived")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmText className="text-13 leading-[16px] font-custom600 text-grey30">
+        <Text size={13} weight="semibold" leading="tight" style={styles.archived}>
           {archivedCount}
-        </DmText>
+        </Text>
       </DmView>
 
       {/* Chat list */}
       {isLoading ? (
         <MessagesSkeleton />
       ) : (
-        <Animated.View entering={FadeIn.duration(400)} className="flex-1">
+        <Animated.View entering={FadeIn.duration(400)} style={a.flex_1}>
         <AppFlatList
           data={filteredChats}
           keyExtractor={(item) => String(item.chat.id)}

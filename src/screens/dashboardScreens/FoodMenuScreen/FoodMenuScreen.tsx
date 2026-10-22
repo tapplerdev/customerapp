@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 // Components
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import type { FlatList } from "react-native"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
@@ -38,6 +38,7 @@ import styles from "./styles"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppFlatList } from "components/scroll"
+import { Text, a as atoms } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodMenuScreen">
 
@@ -179,10 +180,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const renderSection = ({ item }: { item: FoodMenuSectionType }) => {
     return (
-      <DmView className="mb-[36.5]">
-        <DmText className="mb-[20] px-[14] text-20 leading-[24px] font-custom600">
+      <DmView style={styles.container}>
+        <Text size={20} weight="semibold" leading="tight" style={[atoms.mb_20, atoms.px_14]}>
           {item.title}
-        </DmText>
+        </Text>
         <DmView>
           {item.menuItems.map((menuItem) => (
             <FoodMenuItemRow
@@ -200,11 +201,11 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView style={[atoms.flex_1, styles.safeArea]} edges={["top"]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[12] py-[10] bg-white border-b-0.2 border-b-grey19">
+      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_12, atoms.py_10, styles.row]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
@@ -213,34 +214,34 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 leading-[20px] font-custom700">
+        <DmView style={[atoms.flex_1, atoms.items_center]}>
+          <Text size={16} weight="bold">
             {t("food_menu")}
-          </DmText>
+          </Text>
           {!!proName && (
-            <DmText className="mt-[2] text-12 leading-[15px] font-custom400 text-grey2">
+            <Text size={12} leading="tight" color="secondary" style={atoms.mt_2}>
               {proName}
-            </DmText>
+            </Text>
           )}
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
 
       {isLoading ? (
         <LoadingOverlay />
       ) : isError || !sections.length ? (
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={[atoms.flex_1, atoms.items_center, atoms.justify_center, atoms.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("menu_unavailable")}
-          </DmText>
+          </Text>
         </DmView>
       ) : (
-        <DmView className="flex-1">
+        <DmView style={atoms.flex_1}>
           <DmView style={styles.tabsWrapper}>
             <AnimatedSelectCategory
               categories={sectionTitles}
               setSelectedCategory={handlePressTab}
-              textClassName="text-13 leading-[16px] font-custom500 text-center"
+              textType={{ size: 13, leading: "tight", weight: "medium" }}
             />
           </DmView>
           <AppFlatList
@@ -264,33 +265,35 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
           consistently. The red bar is the button inside it. */}
       {basketVisible && (
         <DmView
-          className="absolute left-0 right-0 bottom-0 px-[16] pt-[14] bg-white"
-          style={[styles.basketShadow, { paddingBottom: insets.bottom + 12 }]}
+          style={[atoms.absolute, styles.boxWrap, atoms.px_16, atoms.pt_14, styles.basketShadow, { paddingBottom: insets.bottom + 12 }]}
         >
           <DmView
-            className="h-[50] rounded-8 bg-red justify-center px-[12]"
+            style={[styles.box2, atoms.justify_center, atoms.px_12]}
             onPress={() => navigation.navigate("FoodCartScreen", { proId })}
           >
             {/* Centred across the WHOLE bar, not the gap between the badge and
                 the total — those two differ in width, so centring in the
                 leftover space put the label visibly off-centre. */}
-            <DmText
+            <Text
               style={styles.basketLabel}
-              className="text-center text-14 leading-[18px] font-custom600 text-white"
+              size={14}
+              weight="semibold"
+              color="inverse"
+              align="center"
             >
               {t("view_basket")}
-            </DmText>
+            </Text>
 
-            <DmView className="flex-row items-center justify-between">
-              <DmView className="w-[30] h-[30] rounded-5 bg-white items-center justify-center">
-                <DmText className="text-14 leading-[18px] font-custom600 text-black">
+            <DmView style={[atoms.flex_row, atoms.items_center, atoms.justify_between]}>
+              <DmView style={[styles.textWrap, atoms.items_center, atoms.justify_center]}>
+                <Text size={14} weight="semibold">
                   {basketCount}
-                </DmText>
+                </Text>
               </DmView>
 
-              <DmText className="text-14 leading-[18px] font-custom600 text-white">
+              <Text size={14} weight="semibold" color="inverse">
                 {formatMoney(basketTotal)} {t("EGP")}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </DmView>

@@ -2,6 +2,8 @@ import React from "react"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
+import { a } from "@tappler/shared/src/ds"
+import { notificationsSkeletonStyles } from "./styles"
 
 // 1:1 with proapp's NotificationsSkeletonScreen: five static rows with varied
 // title/body widths (some notifications wrap to more lines), bar heights
@@ -15,21 +17,21 @@ const ROWS: { title: string; bodyLines: string[] }[] = [
 ]
 
 const NotificationsSkeleton: React.FC = () => (
-  <DmView className="flex-1">
+  <DmView style={a.flex_1}>
     {ROWS.map((row, i) => (
       <DmView key={i}>
-        <DmView className="px-[16] py-[18]">
+        <DmView style={[a.px_16, a.py_18]}>
           <SkeletonLoader width={100} height={15} borderRadius={4} />
-          <DmView className="mt-[5]">
+          <DmView style={notificationsSkeletonStyles.skeletonLoaderWrap}>
             <SkeletonLoader width={row.title} height={16} borderRadius={4} />
           </DmView>
           {row.bodyLines.map((width, j) => (
-            <DmView key={j} className={j === 0 ? "mt-[5]" : "mt-[2]"}>
+            <DmView key={j} style={j === 0 ? notificationsSkeletonStyles.skeletonLoaderWrap : a.mt_2}>
               <SkeletonLoader width={width} height={15} borderRadius={4} />
             </DmView>
           ))}
         </DmView>
-        <DmView className="h-[0.5] bg-grey19" />
+        <DmView style={notificationsSkeletonStyles.box} />
       </DmView>
     ))}
   </DmView>
