@@ -18,7 +18,7 @@
     "primitiveImport"
   ],
   "totals": {
-    "className": 13,
+    "className": 0,
     "px": 111,
     "legacy": 270,
     "familySystem": 15,
@@ -26,41 +26,33 @@
     "primitives": 0,
     "bridge": 5,
     "classKey": 0,
-    "classProp": 9,
+    "classProp": 0,
     "classImport": 0,
     "primitiveImport": 0
   },
   "directories": {
     "src": {
-      "className": 13,
       "px": 111,
       "legacy": 270,
       "familySystem": 15,
       "colorLiteral": 157,
-      "bridge": 5,
-      "classProp": 9
+      "bridge": 5
     },
     "src/components": {
-      "className": 13,
       "px": 30,
       "legacy": 50,
       "familySystem": 1,
       "colorLiteral": 65,
-      "bridge": 4,
-      "classProp": 9
+      "bridge": 4
     },
     "src/components/AddressSelectionModal": {
       "px": 3
     },
     "src/components/AnimatedSelectCategory": {
-      "className": 2,
-      "px": 1,
-      "classProp": 1
+      "px": 1
     },
     "src/components/BannerContainer": {
-      "className": 2,
-      "legacy": 1,
-      "classProp": 2
+      "legacy": 1
     },
     "src/components/CalendarTimePicker": {
       "legacy": 3
@@ -87,15 +79,11 @@
       "colorLiteral": 3
     },
     "src/components/ImageWithCheckmarkButton": {
-      "className": 1,
       "colorLiteral": 3,
-      "bridge": 1,
-      "classProp": 1
+      "bridge": 1
     },
     "src/components/ImageWithTextButton": {
-      "className": 1,
-      "colorLiteral": 2,
-      "classProp": 1
+      "colorLiteral": 2
     },
     "src/components/InAppMessageBanner": {
       "legacy": 4,
@@ -133,18 +121,12 @@
       "colorLiteral": 1
     },
     "src/components/OrderBill": {
-      "className": 1,
-      "px": 4,
-      "classProp": 1
+      "px": 4
     },
     "src/components/ProCardBase": {
       "px": 3,
       "legacy": 7,
       "colorLiteral": 8
-    },
-    "src/components/PromoLine": {
-      "className": 1,
-      "classProp": 1
     },
     "src/components/QuestionComponent": {
       "legacy": 1,
@@ -165,9 +147,7 @@
       "colorLiteral": 1
     },
     "src/components/SkeletonLoader": {
-      "className": 1,
-      "colorLiteral": 1,
-      "classProp": 1
+      "colorLiteral": 1
     },
     "src/components/SplashOverlay": {
       "colorLiteral": 1
@@ -185,13 +165,8 @@
       "colorLiteral": 1
     },
     "src/components/TextWithCheckmarkButton": {
-      "className": 1,
       "legacy": 1,
-      "colorLiteral": 2,
-      "classProp": 1
-    },
-    "src/components/scroll": {
-      "className": 3
+      "colorLiteral": 2
     },
     "src/screens": {
       "px": 81,
@@ -428,14 +403,10 @@
       "px": 3
     },
     "src/components/AnimatedSelectCategory/AnimatedSelectCategory.tsx": {
-      "className": 2,
-      "px": 1,
-      "classProp": 1
+      "px": 1
     },
     "src/components/BannerContainer/BannerContainer.tsx": {
-      "className": 2,
-      "legacy": 1,
-      "classProp": 2
+      "legacy": 1
     },
     "src/components/CalendarTimePicker/CalendarTimePicker.tsx": {
       "legacy": 3
@@ -464,18 +435,14 @@
       "colorLiteral": 3
     },
     "src/components/ImageWithCheckmarkButton/ImageWithCheckmarkButton.tsx": {
-      "className": 1,
       "colorLiteral": 2,
-      "bridge": 1,
-      "classProp": 1
+      "bridge": 1
     },
     "src/components/ImageWithCheckmarkButton/styles.ts": {
       "colorLiteral": 1
     },
     "src/components/ImageWithTextButton/ImageWithTextButton.tsx": {
-      "className": 1,
-      "colorLiteral": 2,
-      "classProp": 1
+      "colorLiteral": 2
     },
     "src/components/InAppMessageBanner/InAppMessageBanner.tsx": {
       "legacy": 4,
@@ -513,9 +480,7 @@
       "colorLiteral": 1
     },
     "src/components/OrderBill/OrderBill.tsx": {
-      "className": 1,
-      "px": 4,
-      "classProp": 1
+      "px": 4
     },
     "src/components/ProCardBase/ProCardBase.tsx": {
       "px": 3,
@@ -523,10 +488,6 @@
     },
     "src/components/ProCardBase/styles.ts": {
       "colorLiteral": 8
-    },
-    "src/components/PromoLine/PromoLine.tsx": {
-      "className": 1,
-      "classProp": 1
     },
     "src/components/QuestionComponent/QuestionComponent.tsx": {
       "legacy": 1
@@ -547,10 +508,6 @@
     "src/components/SearchMessagesComponent/SearchMessagesComponent.tsx": {
       "px": 1,
       "colorLiteral": 1
-    },
-    "src/components/SkeletonLoader/SkeletonLoader.tsx": {
-      "className": 1,
-      "classProp": 1
     },
     "src/components/SkeletonLoader/styles.ts": {
       "colorLiteral": 1
@@ -573,13 +530,8 @@
       "colorLiteral": 1
     },
     "src/components/TextWithCheckmarkButton/TextWithCheckmarkButton.tsx": {
-      "className": 1,
       "legacy": 1,
-      "colorLiteral": 2,
-      "classProp": 1
-    },
-    "src/components/scroll/index.tsx": {
-      "className": 3
+      "colorLiteral": 2
     },
     "src/screens/PickAddressScreen/components/MapPickerView.tsx": {
       "px": 1
