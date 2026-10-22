@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next"
 import Animated, { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated"
 import { parse, format } from "date-fns"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { ProWorkPhotoType } from "types/pro"
 import { useGetProProfileQuery, useLazyOpenChatQuery } from "services/api"
@@ -53,6 +53,7 @@ import MessagesWhiteIcon from "assets/icons/messages-white.svg"
 import CashIcon from "assets/icons/cash-icon.svg"
 import CreditCardIcon from "assets/icons/credit-card-icon.svg"
 import { AppFlatList, AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, a } from "@tappler/shared/src/ds"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -166,7 +167,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["bottom"]}>
+    <SafeAreaView style={[a.flex_1, styles.safeArea]} edges={["bottom"]}>
       <StatusBar
         backgroundColor="transparent"
         translucent={true}
@@ -175,34 +176,37 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Animated header — fades in when scrolled past photo */}
       <Animated.View
-        style={[styles.headerZIndex, animatedStyle]}
-        className="absolute w-full bg-white border-b-0.3 border-grey2 overflow-hidden"
+        style={[a.absolute, a.w_full, styles.animated, a.overflow_hidden, styles.headerZIndex, animatedStyle]}
       >
         <Animated.View
-          style={[{ paddingTop: (insets.top || 35) + 4 }]}
-          className="pb-[12] px-[16]"
+          style={[a.pb_12, a.px_16, { paddingTop: (insets.top || 35) + 4 }]}
         >
-          <DmView className="flex-row items-center">
+          <DmView style={[a.flex_row, a.items_center]}>
             <DmView
-              className="w-[28] h-[28] rounded-full bg-white items-center justify-center mr-[12]"
+              style={[
+                styles.iconWrap,
+                a.items_center,
+                a.justify_center,
+                a.mr_12,
+              ]}
               onPress={handleGoBack}
             >
               <CloseIcon fill={colors.red} />
             </DmView>
-            <DmView className="flex-1">
+            <DmView style={a.flex_1}>
               {/* One line here: the name gives way ("...") before the
                   sticker does. */}
-              <DmView className="flex-row items-center">
-                <DmText className="flex-shrink text-16 font-custom700" numberOfLines={1}>
+              <DmView style={[a.flex_row, a.items_center]}>
+                <Text size={16} weight="bold" leading="legacy" style={styles.text} numberOfLines={1}>
                   {displayName}
-                </DmText>
+                </Text>
                 {featuredUri && (
-                  <DmView className="ml-[6]">
+                  <DmView style={a.ml_6}>
                     <FeaturedSticker uri={featuredUri} height={14} />
                   </DmView>
                 )}
               </DmView>
-              <DmView className="flex-row items-center">
+              <DmView style={[a.flex_row, a.items_center]}>
                 <RateComponent
                   rate={overallScore}
                   reviewsCount={reviewsCount}
@@ -217,8 +221,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Close button — overlays photo */}
       <DmView
-        className="absolute mt-[10] left-[18] w-[28] h-[28] rounded-full bg-white items-center justify-center"
-        style={closeViewStyle}
+        style={[a.absolute, a.mt_10, styles.iconWrap2, a.items_center, a.justify_center, closeViewStyle]}
         onPress={handleGoBack}
         hitSlop={HIT_SLOP_DEFAULT}
       >
@@ -234,7 +237,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         bounces={false}
       >
         {/* Hero photo — absolutely positioned */}
-        <DmView style={[styles.heroZIndex, { height: 275 + (insets.top || 0) }]} className="absolute w-full">
+        <DmView style={[a.absolute, a.w_full, styles.heroZIndex, { height: 275 + (insets.top || 0) }]}>
           {pro.profilePhoto ? (
             <CachedImage
               uri={pro.profilePhoto}
@@ -243,20 +246,20 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               withSkeleton
             />
           ) : (
-            <DmView className="flex-1 bg-grey8 items-center justify-center">
-              <DmText className="text-40 font-custom700 text-grey3">
+            <DmView style={[a.flex_1, styles.textWrap, a.items_center, a.justify_center]}>
+              <Text size={14} weight="bold" leading="legacy" color="tertiary">
                 {displayName?.charAt(0)}
-              </DmText>
+              </Text>
             </DmView>
           )}
         </DmView>
 
         {/* Name + Type + Rating + Featured */}
-        <DmView style={{ marginTop: 275 + (insets.top || 0), gap: 10 }} className="px-[12] py-[16]">
+        <DmView style={[a.px_12, a.py_16, { marginTop: 275 + (insets.top || 0), gap: 10 }]}>
           {/* The sticker rides at the end of the name as part of its text,
               so a name that wraps carries it onto its last line. The
               no-break space keeps it with the last word. */}
-          <DmText className="text-22 leading-[29px] font-custom700">
+          <Text size={22} weight="bold">
             {/* Trimmed: a trailing space would open a line break before the
                 no-break space that keeps the sticker with the last word. */}
             {displayName?.trim()}
@@ -268,21 +271,21 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 </DmView>
               </>
             )}
-          </DmText>
+          </Text>
 
           {/* Type badge */}
-          <DmView className="flex-row items-end">
+          <DmView style={[a.flex_row, a.items_end]}>
             {isCompany ? (
               <BusinessIcon width={16} height={16} />
             ) : (
               <IndividualIcon width={16} height={16} />
             )}
-            <DmText className="ml-[4] text-14 leading-[18px] font-custom400">
+            <Text size={14} style={a.ml_4}>
               {t(isCompany ? "business" : "individual")}
-            </DmText>
+            </Text>
           </DmView>
 
-          <DmView className="flex-row items-center">
+          <DmView style={[a.flex_row, a.items_center]}>
             <RateComponent
               rate={overallScore}
               reviewsCount={reviewsCount}
@@ -293,7 +296,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Trust badges */}
           {trustDocs.length > 0 && (
-            <DmView className="flex-row items-center">
+            <DmView style={[a.flex_row, a.items_center]}>
               {trustDocs.map((doc) => {
                 const imageUrl = isAr
                   ? doc.trustDocumentData?.trustProduct?.pictureAr
@@ -318,25 +321,25 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* About Me */}
         {!!pro.informationAbout && (
-          <DmView className="pt-[11] pb-[8] border-t-1 border-grey53 mr-[16]">
-            <DmView className="pl-[15] pr-[19]">
-              <DmText className="text-14 leading-[18px] font-custom600">
+          <DmView style={[styles.boxWrap, a.pb_8, a.border_t_1, a.mr_16]}>
+            <DmView style={styles.box}>
+              <Text size={14} weight="semibold">
                 {t("about_me")}
-              </DmText>
-              <DmText className="mt-[11] text-13 leading-[16px] font-custom400">
+              </Text>
+              <Text size={13} leading="tight" style={styles.text2}>
                 {pro.informationAbout}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         )}
 
         {/* Photos & videos of work — per service, approved only */}
         {workPhotos.length > 0 && (
-          <DmView className="pt-[15] pb-[20] border-t-1 border-grey53 mr-[16]">
-            <DmView className="pl-[15] pr-[19]">
-              <DmText className="text-14 leading-[18px] font-custom600">
+          <DmView style={[styles.box2, a.pb_20, a.border_t_1, a.mr_16]}>
+            <DmView style={styles.box}>
+              <Text size={14} weight="semibold">
                 {t("photos_of_work")}
-              </DmText>
+              </Text>
             </DmView>
             <AppFlatList
               horizontal
@@ -354,7 +357,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 const isVideo = isVideoMedia(item)
                 return (
                   <DmView
-                    className={`pt-[10] mr-[10] ${index === 0 ? "ml-[15]" : ""}`}
+                    style={[
+                      a.pt_10,
+                      a.mr_10,
+                      index === 0 && styles.containerIndex,
+                    ]}
                     onPress={() => {
                       setViewerIndex(index)
                       setViewerVisible(true)
@@ -385,8 +392,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     )}
                     {isVideo && (
                       <DmView
-                        className="absolute items-center justify-center"
-                        style={{ width: tileWidth, height: tileHeight, top: 10 }}
+                        style={[a.absolute, a.items_center, a.justify_center, { width: tileWidth, height: tileHeight, top: 10 }]}
                         pointerEvents="none"
                       >
                         <PlayIcon width={28} height={28} />
@@ -401,11 +407,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Working Hours */}
         {pro.hours && pro.hours.length > 0 && (
-          <DmView className="py-[17] border-t-1 border-grey53 mr-[16]">
-            <DmView className="pl-[15] pr-[19]">
-              <DmText className="text-14 leading-[18px] font-custom600">
+          <DmView style={[styles.boxWrap2, a.border_t_1, a.mr_16]}>
+            <DmView style={styles.box}>
+              <Text size={14} weight="semibold">
                 {t("working_hours")}
-              </DmText>
+              </Text>
               {["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((day) => {
                 const hour = pro.hours.find((h) => h.dayOfWeek?.toLowerCase() === day)
                 const dayAbbr = day.substring(0, 3)
@@ -416,20 +422,20 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                   ? format(parse(hour.closingTime, "HH:mm", new Date()), "h:mm a")
                   : undefined
                 return (
-                  <DmView key={day} className="flex-row items-center pt-[10]">
-                    <DmView className="mr-[8] w-[8] h-[8] rounded-full bg-red" />
-                    <DmView className="flex-row">
-                      <DmView className={isAr ? "w-[60]" : "w-[45]"}>
-                        <DmText className="text-13 leading-[16px] font-custom400" numberOfLines={1}>
+                  <DmView key={day} style={[a.flex_row, a.items_center, a.pt_10]}>
+                    <DmView style={[a.mr_8, styles.box3]} />
+                    <DmView style={a.flex_row}>
+                      <DmView style={isAr ? styles.textWrapAr : styles.textWrapNotAr}>
+                        <Text size={13} leading="tight" numberOfLines={1}>
                           {t(dayAbbr).toUpperCase()}
-                        </DmText>
+                        </Text>
                       </DmView>
-                      <DmView className="pr-[10]">
-                        <DmText className="text-13 leading-[16px] font-custom400">
+                      <DmView style={a.pr_10}>
+                        <Text size={13} leading="tight">
                           {openingTime && closingTime
                             ? `${openingTime} - ${closingTime}`
                             : t("closed").toUpperCase()}
-                        </DmText>
+                        </Text>
                       </DmView>
                     </DmView>
                   </DmView>
@@ -441,17 +447,17 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Payment Methods */}
         {pro.paymentMethods && pro.paymentMethods.length > 0 && (
-          <DmView className="pt-[15] pb-[13] border-t-1 border-grey53 mr-[16]">
-            <DmView className="pl-[15] pr-[19]">
-              <DmText className="text-14 leading-[18px] font-custom600">
+          <DmView style={[styles.boxWrap3, a.border_t_1, a.mr_16]}>
+            <DmView style={styles.box}>
+              <Text size={14} weight="semibold">
                 {t("accepted_payments")}
-              </DmText>
+              </Text>
               {pro.paymentMethods.map((method, idx) => (
-                <DmView key={idx} className="flex-row items-center pt-[10]">
-                  <DmView className="mr-[8] w-[8] h-[8] rounded-full bg-red" />
-                  <DmText className="text-13 leading-[16px] font-custom400 capitalize">
+                <DmView key={idx} style={[a.flex_row, a.items_center, a.pt_10]}>
+                  <DmView style={[a.mr_8, styles.box3]} />
+                  <Text size={13} leading="tight" style={styles.text3}>
                     {t(method, { defaultValue: method })}
-                  </DmText>
+                  </Text>
                 </DmView>
               ))}
             </DmView>
@@ -460,17 +466,17 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Social Media */}
         {pro.socials && pro.socials.length > 0 && (
-          <DmView className="pt-[15] pb-[13] border-t-1 border-grey53 mr-[16]">
-            <DmView className="pl-[15] pr-[19]">
-              <DmText className="text-14 leading-[18px] font-custom600">
+          <DmView style={[styles.boxWrap3, a.border_t_1, a.mr_16]}>
+            <DmView style={styles.box}>
+              <Text size={14} weight="semibold">
                 {t("social_media")}
-              </DmText>
+              </Text>
               {pro.socials.map((social) => (
-                <DmView key={social.id} className="flex-row items-center pt-[10]">
+                <DmView key={social.id} style={[a.flex_row, a.items_center, a.pt_10]}>
                   {renderSocialIcon(social.socialMedia)}
-                  <DmText className="ml-[10] text-12 leading-[20px] font-plain" numberOfLines={1}>
+                  <Text size={12} leading="loose" family="system" style={a.ml_10} numberOfLines={1}>
                     {social.socialLink}
-                  </DmText>
+                  </Text>
                 </DmView>
               ))}
             </DmView>

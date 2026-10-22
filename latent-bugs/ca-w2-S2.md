@@ -16,5 +16,7 @@ repeat.
 | src/screens/dashboardScreens/HomeScreen/components/HomeHeader.tsx:57 | DmView | `order-1` | Tailwind generates "order: 1", which NativeWind 2.0.11 has no React Native style for |
 | src/screens/dashboardScreens/HomeScreen/components/HomeHeader.tsx:57 | DmView | `order-2` | Tailwind generates "order: 2", which NativeWind 2.0.11 has no React Native style for |
 | src/screens/dashboardScreens/HomeScreen/components/HomeHeader.tsx:66 | DmView | `order-1` | Tailwind generates "order: 1", which NativeWind 2.0.11 has no React Native style for |
+| src/screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:247 | DmText | `text-40` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
+| src/screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:471 | DmText | `font-plain` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx:35 | DmText | `leading-[15]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
 | src/screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx:67 | DmText | `leading-[19]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
