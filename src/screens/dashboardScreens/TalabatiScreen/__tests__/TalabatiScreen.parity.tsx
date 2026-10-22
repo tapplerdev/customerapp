@@ -50,8 +50,10 @@ const load = () => require("../TalabatiScreen")
 const NAME = "TalabatiScreen"
 
 // Log in (the guest's) and Try again (a failed load) are ActionBtns before the
-// conversion and ds Buttons after it.
-const BUTTON: ParityAllowance[] = []
+// conversion and ds Buttons after it. Emptied, exactly those two states fail
+// (8 rows), on the button's height and its accessibility props. The retry
+// while it loads draws the same spinner tree either way: no allowance there.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 type Case = {
   state: string
@@ -106,9 +108,9 @@ const pull: Step = (root) => {
 }
 
 const CASES: Case[] = [
-  { state: "a guest", guest: true },
+  { state: "a guest", guest: true, allow: BUTTON },
   { state: "loading" },
-  { state: "the load failed", jobs: "error" },
+  { state: "the load failed", jobs: "error", allow: BUTTON },
   {
     state: "the retry loading",
     jobs: "error",
@@ -157,7 +159,7 @@ describe("TalabatiScreen, captured from the unconverted code", () => {
       entry.steps?.(entry.env)
     )
     expectParity(parityName(entry.state, entry.env), tree, {
-      allow: entry.allow ?? BUTTON,
+      allow: entry.allow ?? [],
     })
   })
 })

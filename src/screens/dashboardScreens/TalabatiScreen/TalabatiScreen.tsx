@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { format } from "date-fns"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { api, useGetCustomerJobsQuery } from "services/api"
 import { useTypedSelector } from "store"
 import { JobType } from "types/job"
@@ -33,6 +33,7 @@ import LeaveReviewModal from "components/LeaveReviewModal/LeaveReviewModal"
 import TalabatiSkeleton from "./TalabatiSkeleton"
 import styles from "./styles"
 import { AppFlatList } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
 
 const TalabatiScreen: React.FC = () => {
   const { t, i18n } = useTranslation()
@@ -251,50 +252,49 @@ const TalabatiScreen: React.FC = () => {
 
       return (
         <DmView
-          className="px-[16] py-[14]"
+          style={[a.px_16, a.py_14]}
           onPress={() => handleJobPress(item)}
         >
           {/* Service name */}
-          <DmText className="text-15 font-custom700 text-black">
+          <Text size={15} weight="bold" leading="legacy">
             {getCategoryName(item)}
-          </DmText>
+          </Text>
 
           {/* Status */}
           <DmView style={styles.rowContainer}>
-            <DmText className="text-12 font-custom400 text-black">
+            <Text size={12} leading="legacy">
               {t("status")}:{" "}
-              <DmText className="text-12 font-custom500" style={{ color: getStatusColor(item) }}>
+              <Text size={12} weight="medium" leading="legacy" style={{ color: getStatusColor(item) }}>
                 {getStatusLabel(item)}
-              </DmText>
-            </DmText>
+              </Text>
+            </Text>
           </DmView>
 
           {/* Area */}
           {!!area && (
             <DmView style={styles.rowContainer}>
-              <DmText className="text-12 font-custom400 text-black">
+              <Text size={12} leading="legacy">
                 {t("area")}: {area}
-              </DmText>
+              </Text>
             </DmView>
           )}
 
           {/* Posted date + Offers badge */}
           <DmView style={styles.postedRow}>
-            <DmText className="text-12 font-custom400 text-black">
+            <Text size={12} leading="legacy">
               {t("posted")}: {format(new Date(item.requestedOn), "dd MMMM yyyy h:mma")}
-            </DmText>
+            </Text>
             {offersCount > 0 && (
               <DmView
-                className="flex-row items-center rounded-full"
-                style={styles.offersBadge}
+                style={[a.flex_row, a.items_center, styles.row, styles.offersBadge]}
               >
-                <DmText className="text-11 font-custom600 text-black mr-[5]">
+                <Text size={11} weight="semibold" leading="legacy" style={styles.offers}>
                   {t("offers")}
-                </DmText>
-                <DmView className="w-[20] h-[20] rounded-full bg-red items-center justify-center">
-                  <DmText className="text-10 font-custom700 text-white">
+                </Text>
+                <DmView style={[styles.textWrap, a.items_center, a.justify_center]}>
+                  <Text size={10} weight="bold" leading="legacy" color="inverse">
                     {offersCount}
-                  </DmText>
+                  </Text>
                 </DmView>
               </DmView>
             )}
@@ -302,18 +302,17 @@ const TalabatiScreen: React.FC = () => {
 
           {/* Leave Review button */}
           {pendingReview && (
-            <DmView className="mt-[10] flex-row items-center">
+            <DmView style={[a.mt_10, a.flex_row, a.items_center]}>
               <DmView
-                className="flex-row items-center rounded-4 overflow-hidden"
-                style={{ borderWidth: 0.75, borderColor: "#000" }}
+                style={[a.flex_row, a.items_center, styles.row2, a.overflow_hidden, { borderWidth: 0.75, borderColor: "#000" }]}
                 onPress={() => handleLeaveReview(item)}
               >
-                <DmView className="px-[10] py-[5]" style={{ backgroundColor: "#FFEBEBB2" }}>
-                  <DmText className="text-11 font-custom600 text-black">
+                <DmView style={[a.px_10, styles.leaveReviewWrap, { backgroundColor: "#FFEBEBB2" }]}>
+                  <Text size={11} weight="semibold" leading="legacy">
                     {t("leave_review")}
-                  </DmText>
+                  </Text>
                 </DmView>
-                <DmView className="px-[8] py-[5] overflow-hidden items-center justify-center" style={{ width: 32, height: 26 }}>
+                <DmView style={[a.px_8, styles.leaveReviewWrap, a.overflow_hidden, a.items_center, a.justify_center, { width: 32, height: 26 }]}>
                   <AnimatedLottieView
                     source={leaveReviewAnimation}
                     progress={starProgress}
@@ -325,7 +324,7 @@ const TalabatiScreen: React.FC = () => {
           )}
 
           {/* Inset separator */}
-          <DmView className="mt-[14] h-[0.5] bg-grey19" />
+          <DmView style={[a.mt_14, styles.box]} />
         </DmView>
       )
     },
@@ -333,28 +332,30 @@ const TalabatiScreen: React.FC = () => {
   )
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="px-[16] py-[14]">
-        <DmText className="text-18 font-custom600 text-black text-center">
+      <DmView style={[a.px_16, a.py_14]}>
+        <Text size={18} weight="semibold" leading="legacy" align="center">
           {t("talabati")}
-        </DmText>
+        </Text>
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       {!isAuth ? (
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("login_to_view_requests")}
-          </DmText>
-          <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+          </Text>
+          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
             {t("login_to_view_requests_descr")}
-          </DmText>
-          <DmView className="mt-[20] px-[20] w-full">
-            <ActionBtn
+          </Text>
+          <DmView style={[a.mt_20, a.px_20, a.w_full]}>
+            <Button
               title={t("log_In")}
               onPress={() => navigation.navigate("SignInEmailScreen")}
-              textClassName="text-14 font-custom600"
+              label={14}
+              labelWeight="semibold"
+              labelLeading="legacy"
             />
           </DmView>
         </DmView>
@@ -362,33 +363,35 @@ const TalabatiScreen: React.FC = () => {
         <TalabatiSkeleton />
       ) : isError && !data ? (
         // Fetch failed with nothing cached — a timeout is not "no requests"
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("requests_load_error")}
-          </DmText>
-          <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+          </Text>
+          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
             {t("requests_load_error_descr")}
-          </DmText>
-          <DmView className="mt-[20] px-[20] w-full">
-            <ActionBtn
+          </Text>
+          <DmView style={[a.mt_20, a.px_20, a.w_full]}>
+            <Button
               title={t("try_again")}
               onPress={refetch}
               isLoading={isFetching}
-              textClassName="text-14 font-custom600"
+              label={14}
+              labelWeight="semibold"
+              labelLeading="legacy"
             />
           </DmView>
         </DmView>
       ) : jobs.length === 0 ? (
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("no_requests_yet")}
-          </DmText>
-          <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+          </Text>
+          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
             {t("no_requests_yet_descr")}
-          </DmText>
+          </Text>
         </DmView>
       ) : (
-        <Animated.View entering={FadeIn.duration(400)} className="flex-1">
+        <Animated.View entering={FadeIn.duration(400)} style={a.flex_1}>
         <AppFlatList
           data={jobs}
           renderItem={renderItem}
