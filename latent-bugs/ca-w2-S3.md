@@ -17,3 +17,6 @@ repeat.
 | src/screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:580 | DmView | `border-b-0.2` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen.tsx:205 | DmView | `border-b-0.2` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:121 | DmView | `border-b-0.2` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
+| src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1032 | DmText | `leading-[16]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
+| src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1038 | DmText | `leading-[16]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
+| src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1047 | DmText | `leading-[16]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
