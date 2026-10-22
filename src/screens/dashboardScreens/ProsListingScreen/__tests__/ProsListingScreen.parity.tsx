@@ -190,7 +190,7 @@ type Case = {
 // Button's two listed deltas, on the states whose tree holds a Button a conversion made: Continue
 // (a pro selected; and the shortlist-notice row, which selects one), the gate's Try again (the
 // listing's conversion), Show results on every row with the filters sheet open and See matches on every row with the
-// job-details editor open (their own).
+// job-details editor open, and Next / Done on every row with the question flow open (their own).
 // Emptied or cut to one, each of those rows fails; no other row needs them.
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
@@ -212,13 +212,13 @@ const CASES: Case[] = [
   { state: "one pro selected, the Continue button", options: withApi(DATA), steps: [selectMe(0), wait(1000)], allow: BUTTON },
   { state: "both selected", options: withApi(DATA), steps: [selectMe(0), selectMe(0), wait(1000)], allow: BUTTON },
   // The question flow
-  { state: "the flow opens by itself: the place step", options: withApi(RICH, NO_PLACE) },
-  { state: "the flow, a place chosen", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location")] },
-  { state: "the flow's second card", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600)] },
-  { state: "the flow's answer picked", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600), option("Repair")] },
-  { state: "the flow's last card, Done", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600)] },
+  { state: "the flow opens by itself: the place step", options: withApi(RICH, NO_PLACE) , allow: BUTTON },
+  { state: "the flow, a place chosen", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location")] , allow: BUTTON },
+  { state: "the flow's second card", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600)] , allow: BUTTON },
+  { state: "the flow's answer picked", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600), option("Repair")] , allow: BUTTON },
+  { state: "the flow's last card, Done", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600)] , allow: BUTTON },
   { state: "the flow done, the list narrowed", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000)] },
-  { state: "the flow with one plain question (no place step)", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }, NO_PLACE) },
+  { state: "the flow with one plain question (no place step)", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }, NO_PLACE) , allow: BUTTON },
   // The job-details editor
   { state: "the job-details editor", options: withApi(RICH), steps: [jobBanner(1, 4)] , allow: BUTTON },
   { state: "the editor, answers picked", options: withApi(RICH), steps: [jobBanner(1, 4), place("at_pro_location"), option("Repair"), option("The tap"), (root) => typeInto(root, 0, "Hello")] , allow: BUTTON },
