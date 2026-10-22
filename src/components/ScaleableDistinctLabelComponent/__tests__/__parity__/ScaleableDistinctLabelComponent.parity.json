@@ -1,0 +1,40 @@
+{
+ "cases": {
+  "60 wide [ar android]": {"capturedAt":"0d507e9","tree":"69979e126a2b","a11y":true},
+  "60 wide [ar ios]": {"capturedAt":"0d507e9","tree":"69979e126a2b","a11y":true},
+  "60 wide [en android]": {"capturedAt":"0d507e9","tree":"3a67ba8de38f","a11y":true},
+  "60 wide [en ios]": {"capturedAt":"0d507e9","tree":"3a67ba8de38f","a11y":true},
+  "60 wide with a title [ar android]": {"capturedAt":"0d507e9","tree":"2e771c7a7d06","a11y":true},
+  "60 wide with a title [ar ios]": {"capturedAt":"0d507e9","tree":"2e771c7a7d06","a11y":true},
+  "60 wide with a title [en android]": {"capturedAt":"0d507e9","tree":"c6ffb1acf89c","a11y":true},
+  "60 wide with a title [en ios]": {"capturedAt":"0d507e9","tree":"c6ffb1acf89c","a11y":true},
+  "91 wide [ar android]": {"capturedAt":"0d507e9","tree":"6ccfbab3dc5f","a11y":true},
+  "91 wide [ar ios]": {"capturedAt":"0d507e9","tree":"6ccfbab3dc5f","a11y":true},
+  "91 wide [en android]": {"capturedAt":"0d507e9","tree":"be6c647578b8","a11y":true},
+  "91 wide [en ios]": {"capturedAt":"0d507e9","tree":"be6c647578b8","a11y":true},
+  "91 wide with a title [ar android]": {"capturedAt":"0d507e9","tree":"96663b1537c0","a11y":true},
+  "91 wide with a title [ar ios]": {"capturedAt":"0d507e9","tree":"96663b1537c0","a11y":true},
+  "91 wide with a title [en android]": {"capturedAt":"0d507e9","tree":"1865fcce904e","a11y":true},
+  "91 wide with a title [en ios]": {"capturedAt":"0d507e9","tree":"1865fcce904e","a11y":true},
+  "before layout [ar android]": {"capturedAt":"0d507e9","tree":"33885a12903d","a11y":true},
+  "before layout [ar ios]": {"capturedAt":"0d507e9","tree":"33885a12903d","a11y":true},
+  "before layout [en android]": {"capturedAt":"0d507e9","tree":"0a45c1e7a738","a11y":true},
+  "before layout [en ios]": {"capturedAt":"0d507e9","tree":"0a45c1e7a738","a11y":true},
+  "wider than the box [ar android]": {"capturedAt":"0d507e9","tree":"6ccfbab3dc5f","a11y":true},
+  "wider than the box [ar ios]": {"capturedAt":"0d507e9","tree":"6ccfbab3dc5f","a11y":true},
+  "wider than the box [en android]": {"capturedAt":"0d507e9","tree":"be6c647578b8","a11y":true},
+  "wider than the box [en ios]": {"capturedAt":"0d507e9","tree":"be6c647578b8","a11y":true}
+ },
+ "trees": {
+  "0a45c1e7a738": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":0,"justifyContent":"center","width":0}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"Montserrat-SemiBold","fontSize":0,"lineHeight":2,"textAlign":"left"}},"children":["distinct"]}]}]},
+  "1865fcce904e": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":21,"justifyContent":"center","width":91}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"Montserrat-SemiBold","fontSize":12,"lineHeight":14,"textAlign":"left"}},"children":["Sponsored"]}]}]},
+  "2e771c7a7d06": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":13.846153846153847,"justifyContent":"center","width":60}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"TheSans-Bold","fontSize":7.912087912087912,"lineHeight":9.912087912087912,"textAlign":"left"}},"children":["Sponsored"]}]}]},
+  "33885a12903d": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":0,"justifyContent":"center","width":0}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"TheSans-Bold","fontSize":0,"lineHeight":2,"textAlign":"left"}},"children":["distinct"]}]}]},
+  "3a67ba8de38f": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":13.846153846153847,"justifyContent":"center","width":60}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"Montserrat-SemiBold","fontSize":5.934065934065934,"lineHeight":7.934065934065934,"textAlign":"left"}},"children":["distinct"]}]}]},
+  "69979e126a2b": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":13.846153846153847,"justifyContent":"center","width":60}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"TheSans-Bold","fontSize":5.934065934065934,"lineHeight":7.934065934065934,"textAlign":"left"}},"children":["distinct"]}]}]},
+  "6ccfbab3dc5f": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":21,"justifyContent":"center","width":91}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"TheSans-Bold","fontSize":9,"lineHeight":11,"textAlign":"left"}},"children":["distinct"]}]}]},
+  "96663b1537c0": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":21,"justifyContent":"center","width":91}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"TheSans-Bold","fontSize":12,"lineHeight":14,"textAlign":"left"}},"children":["Sponsored"]}]}]},
+  "be6c647578b8": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":21,"justifyContent":"center","width":91}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"Montserrat-SemiBold","fontSize":9,"lineHeight":11,"textAlign":"left"}},"children":["distinct"]}]}]},
+  "c6ffb1acf89c": {"type":"View","props":{"style":{"height":20,"justifyContent":"flex-end","width":"100%"}},"children":[{"type":"View","props":{"style":{"alignItems":"center","backgroundColor":"#FFF500","borderBottomLeftRadius":2,"borderBottomRightRadius":2,"borderTopLeftRadius":2,"borderTopRightRadius":2,"height":13.846153846153847,"justifyContent":"center","width":60}},"children":[{"type":"Text","props":{"maxFontSizeMultiplier":2,"style":{"color":"#000000","fontFamily":"Montserrat-SemiBold","fontSize":7.912087912087912,"lineHeight":9.912087912087912,"textAlign":"left"}},"children":["Sponsored"]}]}]}
+ }
+}
