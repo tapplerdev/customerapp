@@ -8,15 +8,38 @@
  * distinct set; `sites` names the call sites behind it (file:line, at 7fa5fc6).
  * A value a site computes is a stand-in with the site's own shape (a number
  * for `insets.bottom + 32`, a colour for `BG2`). A handler is `{ $fn: true }`,
- * a list `{ $opaque: "data" }` (the test gives it), an element a spec.
+ * a list, and a list's `renderItem`, `keyExtractor` and `getItemLayout`, `{ $opaque: "<name>" }` (OPAQUE below), an element a spec.
  *
  * The data is in a .tsx file so NativeWind compiles the class strings in it:
  * the tests load this file in every row's registry (loaders below).
  */
+import React from "react"
+
 import type { CasesFile } from "testing/harvest"
 
 type PropSet = Record<string, unknown>
 type Set = { id: string; sites: string[]; props: PropSet }
+
+/** What the `$opaque` markers stand for. A host element named `Row` draws a list item. */
+export const OPAQUE = (key: string): unknown => {
+  switch (key) {
+    case "data":
+      return [{ id: 1 }, { id: 2 }]
+    case "keyExtractor":
+      return (item: { id: number }) => String(item.id)
+    case "renderItem":
+      return ({ item }: { item: { id: number } }) =>
+        React.createElement("Row", {}, `item ${item.id}`)
+    case "getItemLayout":
+      return (_: unknown, index: number) => ({
+        length: 50,
+        offset: 50 * index,
+        index,
+      })
+    default:
+      throw new Error(`scrollSets: no stand-in for ${key}`)
+  }
+}
 
 const ROW = (text: string) => ({ $el: "Row", children: text })
 const ROWS = [ROW("first row"), ROW("second row")]
@@ -246,8 +269,8 @@ export const FLAT_LIST: Set[] = [
     ],
     props: {
       data: { $opaque: "data" },
-      keyExtractor: { $fn: true },
-      renderItem: { $fn: true },
+      keyExtractor: { $opaque: "keyExtractor" },
+      renderItem: { $opaque: "renderItem" },
       inverted: true,
       className: "flex-1 bg-white",
       contentContainerStyle: { paddingBottom: 10 },
@@ -269,8 +292,8 @@ export const FLAT_LIST: Set[] = [
     ],
     props: {
       data: [],
-      keyExtractor: { $fn: true },
-      renderItem: { $fn: true },
+      keyExtractor: { $opaque: "keyExtractor" },
+      renderItem: { $opaque: "renderItem" },
       inverted: true,
       className: "flex-1 bg-white",
       contentContainerStyle: { flex: 1, justifyContent: "center" },
@@ -284,8 +307,8 @@ export const FLAT_LIST: Set[] = [
     ],
     props: {
       data: { $opaque: "data" },
-      renderItem: { $fn: true },
-      keyExtractor: { $fn: true },
+      renderItem: { $opaque: "renderItem" },
+      keyExtractor: { $opaque: "keyExtractor" },
       showsVerticalScrollIndicator: false,
     },
   },
@@ -297,8 +320,8 @@ export const FLAT_LIST: Set[] = [
     ],
     props: {
       data: { $opaque: "data" },
-      renderItem: { $fn: true },
-      keyExtractor: { $fn: true },
+      renderItem: { $opaque: "renderItem" },
+      keyExtractor: { $opaque: "keyExtractor" },
       contentContainerStyle: { paddingBottom: 20 },
       showsVerticalScrollIndicator: false,
       alwaysBounceVertical: true,
@@ -314,8 +337,8 @@ export const FLAT_LIST: Set[] = [
       showsHorizontalScrollIndicator: false,
       contentContainerStyle: { flexGrow: 1, paddingRight: 15 },
       data: { $opaque: "data" },
-      keyExtractor: { $fn: true },
-      renderItem: { $fn: true },
+      keyExtractor: { $opaque: "keyExtractor" },
+      renderItem: { $opaque: "renderItem" },
     },
   },
   {
@@ -323,15 +346,15 @@ export const FLAT_LIST: Set[] = [
     sites: ["components/ImageViewerModal/ImageViewerModal.tsx:62"],
     props: {
       data: { $opaque: "data" },
-      renderItem: { $fn: true },
+      renderItem: { $opaque: "renderItem" },
       horizontal: true,
       pagingEnabled: true,
       showsHorizontalScrollIndicator: false,
       onScroll: { $fn: true },
       scrollEventThrottle: 16,
       initialScrollIndex: 0,
-      getItemLayout: { $fn: true },
-      keyExtractor: { $fn: true },
+      getItemLayout: { $opaque: "getItemLayout" },
+      keyExtractor: { $opaque: "keyExtractor" },
     },
   },
   {
@@ -339,8 +362,8 @@ export const FLAT_LIST: Set[] = [
     sites: ["components/SearchLocationModal/SearchLocationModal.tsx:286"],
     props: {
       data: { $opaque: "data" },
-      renderItem: { $fn: true },
-      keyExtractor: { $fn: true },
+      renderItem: { $opaque: "renderItem" },
+      keyExtractor: { $opaque: "keyExtractor" },
       keyboardShouldPersistTaps: "handled",
       showsVerticalScrollIndicator: false,
       contentContainerStyle: { paddingBottom: 0 },
@@ -354,8 +377,8 @@ export const FLAT_LIST: Set[] = [
     ],
     props: {
       data: [],
-      renderItem: { $fn: true },
-      keyExtractor: { $fn: true },
+      renderItem: { $opaque: "renderItem" },
+      keyExtractor: { $opaque: "keyExtractor" },
       keyboardShouldPersistTaps: "handled",
       showsVerticalScrollIndicator: false,
       contentContainerStyle: { paddingBottom: 20 },

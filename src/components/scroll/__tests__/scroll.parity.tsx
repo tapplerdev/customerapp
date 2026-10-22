@@ -6,7 +6,7 @@ import { renderScreen, rowsByPlatform } from "testing/screenKit"
 import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
 import { buildProps } from "testing/harvest"
 
-import { WRAPPERS, type WrapperName } from "../__fixtures__/scrollSets"
+import { OPAQUE, WRAPPERS, type WrapperName } from "../__fixtures__/scrollSets"
 
 /*
  * The three scroll wrappers' class-name path, pinned to what they drew before
@@ -21,8 +21,6 @@ import { WRAPPERS, type WrapperName } from "../__fixtures__/scrollSets"
  *
  *   yarn ds:parity:capture <this file> --force   recapture, on the old code only
  */
-
-const DATA = [{ id: 1 }, { id: 2 }]
 
 /**
  * The wrapper, in the registry the row loads. The sets file is required here
@@ -51,7 +49,7 @@ describe.each(NAMES)("%s, the class-name path draws as before", (name) => {
       lang: row.env.language,
       platform: row.env.platform,
       navigation: "none",
-      props: buildProps(row.set.props as never, { opaque: () => DATA }),
+      props: buildProps(row.set.props as never, { opaque: OPAQUE }),
     })
     expectParity(parityName(`${name}: ${row.set.id}`, row.env), tree)
   })
