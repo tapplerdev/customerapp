@@ -8,36 +8,26 @@ import { Text } from "react-native"
 import {
   buildProps,
   classStringsOf,
+  classesIn,
   componentImport,
+  expectFrozenCover,
+  frozenTwinCases,
   harvestCallSites,
   harvestFilesFor,
   readHarvest,
-  unlistedClasses,
   writeHarvest,
-  type CasesFile,
+  type FrozenCase,
   type HarvestOptions,
+  type HarvestedCase,
   type PropSet,
+  type TwinSpec,
+  type TwinsFile,
 } from "testing/harvest"
-import { describeCompiledClasses } from "testing/harvest/compiledClasses"
+import { hostTree, PARITY_MATRIX } from "testing/hostTreeParity"
 
 jest.mock("react-native-localize", () =>
   jest.requireActual("react-native-localize/mock")
 )
-
-// The compiled-class check's reference is scripts/nw-resolve (reference.ts),
-// the class-era tools' port, with tests of its own. This file tests the
-// check's bookkeeping (the control, the list, which token didn't compile),
-// so its reference is testing/nativewind: NativeWind's own tailwind plugin
-// and extractStyles over customerapp's config, which agree with nw-resolve on
-// every token here.
-jest.mock("testing/harvest/reference", () => ({
-  resolveClass: (token: string) =>
-    (
-      jest.requireActual("testing/nativewind") as {
-        nativewindStyle: (className: string) => { style: object }
-      }
-    ).nativewindStyle(token).style,
-}))
 
 /*
  * The component harvest harness, on call sites written for it
@@ -301,25 +291,24 @@ describe("the class strings and the frozen files", () => {
     ])
   })
 
-  it("writes the cases and a .tsx listing their classes, and reads them back", () => {
+  it("writes the cases (and no classes file), and reads them back", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "harvest-"))
     const files = harvestFilesFor(path.join(dir, "__tests__"), "Widget")
     expect(files.cases).toBe(
       path.join(dir, "__fixtures__", "Widget.cases.json")
     )
-    const { file, classes } = writeHarvest(files, "Widget", OPTIONS, "abc1234")
+    const { file } = writeHarvest(files, "Widget", OPTIONS, "abc1234")
     expect(readHarvest(files)).toEqual(file)
     expect(file.capturedAt).toBe("abc1234")
-    expect(classes).toHaveLength(3)
-    expect(unlistedClasses(files, file)).toEqual([])
-    fs.writeFileSync(files.classes, "export const HARVESTED_CLASSES = []\n")
-    expect(unlistedClasses(files, file)).toEqual(classes)
+    expect(fs.readdirSync(path.join(dir, "__fixtures__"))).toEqual([
+      "Widget.cases.json",
+    ])
   })
 
   it("says how to make a missing cases file", () => {
-    expect(() =>
-      readHarvest({ cases: "/nowhere/X.cases.json", classes: "" })
-    ).toThrow(/harvest the call sites first \(DS_HARVEST=1/)
+    expect(() => readHarvest({ cases: "/nowhere/X.cases.json" })).toThrow(
+      /harvest the call sites first \(DS_HARVEST=1/
+    )
   })
 })
 
@@ -357,52 +346,221 @@ describe("building props from a set", () => {
   })
 })
 
-describe("the compiled-class check", () => {
-  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-  const { uncompiledTokens, classTokens } = require("../compiledClasses") as {
-    uncompiledTokens: (classStrings: readonly string[]) => string[]
-    classTokens: (classStrings: readonly string[]) => string[]
-  }
-
-  it("passes a class some .tsx in this run spells out (this file: mt-[4] px-[16])", () => {
-    expect(uncompiledTokens(["mt-[4]", "px-[16]"])).toEqual([])
+describe("the class-free check (expectClassFree)", () => {
+  const one = (props: PropSet): Record<string, HarvestedCase> => ({
+    a: { props, sites: ["Site.tsx:1"] },
   })
 
-  it("mutant: catches a class no .tsx spells out, which NativeWind never compiled", () => {
-    // Built at run time, so no file's text holds the whole class.
-    const uncompiled = `mt-[${[7, 7, 7].join("")}]`
-    expect(uncompiledTokens(["mt-[4]", uncompiled])).toEqual([uncompiled])
+  it("passes cases with no class string, and an empty one", () => {
+    expect(
+      classesIn({
+        ...one({ title: "Hello", className: "" }),
+        b: { props: { icon: { $el: "CloseIcon" } }, sites: ["Site.tsx:2"] },
+      })
+    ).toEqual([])
   })
 
-  it("splits class strings into their tokens, once each", () => {
-    expect(classTokens(["px-[16] opacity-50", "px-[16]", " mt-[4] "])).toEqual([
-      "mt-[4]",
-      "opacity-50",
-      "px-[16]",
+  it("finds a class on the component, a *ClassName twin and NativeWind's tw", () => {
+    expect(
+      classesIn(
+        one({ className: "mt-[4]", titleClassName: "text-16", tw: "px-[2]" })
+      )
+    ).toEqual([
+      'a className: "mt-[4]"',
+      'a titleClassName: "text-16"',
+      'a tw: "px-[2]"',
     ])
+  })
+
+  it("finds one on an element, in its children too (where classStringsOf never looked)", () => {
+    const nested = one({
+      leading: {
+        $el: "DmView",
+        props: { className: "flex-row" },
+        children: [{ $el: "SomeIcon", props: { className: "w-[18]" } }],
+      },
+    })
+    expect(classesIn(nested)).toEqual([
+      'a leading.className: "flex-row"',
+      'a leading.children[0].className: "w-[18]"',
+    ])
+    expect(classStringsOf(nested)).toEqual(["flex-row"])
+  })
+
+  it("finds a DmText or an ActionBtn, with no class at all", () => {
+    expect(
+      classesIn(
+        one({
+          children: [{ $el: "DmText", children: "x" }, { $el: "ActionBtn" }],
+        })
+      )
+    ).toEqual(["a children[0]: a <DmText>", "a children[1]: a <ActionBtn>"])
   })
 })
 
-describe("a harvest whose cases pass no class string", () => {
-  // A component no call site hands a class. describeCompiledClasses still
-  // declares the control and the list, and no token table: jest throws on an
-  // empty `it.each` while it collects the file, which would fail it whole.
-  const cases: CasesFile = {
-    component: "Plain",
-    capturedAt: "test",
-    elements: 1,
-    files: 1,
-    cases: { "0123456789": { props: { title: "Hello" }, sites: ["Site.tsx:1"] } },
+/*
+ * The frozen twins, on frozen files written here by hand: a site that draws
+ * React Native's View with a literal and a value from `__twin_site__`. Each
+ * test has a file of its own (the cover check reads what the test's case
+ * sets fed, by file).
+ */
+describe("the frozen twins (frozenTwinCases, expectFrozenCover)", () => {
+  const SPEC: TwinSpec = {
+    source: "react-native",
+    tag: "V",
+    exportName: "View",
+    build: { opaque: () => 42 },
   }
-  const classes = classStringsOf(cases.cases)
+  const props: PropSet = { testID: "plain", hitSlop: { $opaque: "slop" } }
+  const frozenCase: FrozenCase = {
+    sites: ["Site.tsx:1"],
+    props,
+    code: [
+      'import React from "react"',
+      'import { View as V } from "react-native"',
+      'import __twin from "__twin_site__"',
+      "",
+      'export default <V testID={"plain"} hitSlop={__twin.values[0]} />',
+      "",
+    ].join("\n"),
+    styles: null,
+    values: [{ $opaque: "slop" }],
+    left: [],
+  }
+  const cases = { a: { props, sites: ["Site.tsx:1"] } }
+  /** A fresh frozen file and a class fixture that captured case `a`. */
+  const twin = () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "twins-"))
+    const file = path.join(dir, "Plain.twins.json")
+    const fixture = path.join(dir, "Plain.parity.test.json")
+    fs.writeFileSync(
+      fixture,
+      JSON.stringify({
+        cases: Object.fromEntries(
+          PARITY_MATRIX.map((env) => [
+            `a [${env.language} ${env.platform}]`,
+            {},
+          ])
+        ),
+        trees: {},
+      })
+    )
+    const write = (frozen: Partial<TwinsFile>) =>
+      fs.writeFileSync(
+        file,
+        JSON.stringify({
+          component: "Plain",
+          codemod: "test",
+          cases: { a: frozenCase },
+          drops: {},
+          ...frozen,
+        })
+      )
+    return { file, fixture, write }
+  }
+  const rowsOf = (ids: string[]) =>
+    ids.flatMap((id) => PARITY_MATRIX.map((env) => ({ id, env })))
+  const DROP = {
+    reason: "r",
+    coveredBy: "src/testing/harvest/__tests__/harvest.test.tsx",
+  }
 
-  it("has no class string to check", () => {
-    expect(classes).toEqual([])
+  it("draws the frozen code, with its values built now", () => {
+    const { file, write } = twin()
+    write({})
+    const [drawn] = frozenTwinCases(file, { cases }, SPEC)
+    expect(drawn.code).toBe(frozenCase.code)
+    expect(hostTree(drawn.element, PARITY_MATRIX[0])).toEqual({
+      type: "View",
+      props: { hitSlop: 42, testID: "plain" },
+      children: [],
+    })
   })
 
-  describeCompiledClasses(
-    cases,
-    harvestFilesFor(path.join(os.tmpdir(), "no-classes", "__tests__"), "Plain"),
-    classes
-  )
+  it("refuses a case the file doesn't hold, or one that changed since the freeze", () => {
+    const { file, write } = twin()
+    write({ cases: {} })
+    expect(() => frozenTwinCases(file, { cases }, SPEC)).toThrow(
+      /a isn't in .*: refreeze/
+    )
+    write({})
+    expect(() =>
+      frozenTwinCases(
+        file,
+        { cases: { a: { props: { ...props, testID: "moved" }, sites: [] } } },
+        SPEC
+      )
+    ).toThrow(/a isn't the case .* froze \(its props changed\)/)
+  })
+
+  it("refuses a drop the test and the file disagree on", () => {
+    const { file, write } = twin()
+    write({ cases: {}, drops: { a: { reason: "r", sites: ["(hand)"] } } })
+    expect(() => frozenTwinCases(file, { cases }, SPEC)).toThrow(
+      /a is dropped in .*, but the test says otherwise/
+    )
+    expect(
+      frozenTwinCases(file, { cases }, { ...SPEC, drops: { a: DROP } })
+    ).toEqual([])
+  })
+
+  it("cover: passes the rows that draw every captured case", () => {
+    const { file, fixture, write } = twin()
+    write({})
+    frozenTwinCases(file, { cases }, SPEC)
+    expectFrozenCover(file, fixture, rowsOf(["a"]))
+  })
+
+  it("cover, mutant: fails a frozen file that lost its cases, or rows that skip some", () => {
+    const { file, fixture, write } = twin()
+    write({})
+    frozenTwinCases(file, { cases }, SPEC)
+    expect(() =>
+      expectFrozenCover(file, fixture, rowsOf(["a"]).slice(1))
+    ).toThrow()
+    write({ cases: {} })
+    expect(() => expectFrozenCover(file, fixture, [])).toThrow()
+  })
+
+  it("cover: a drop takes its cases out, and needs a parity file for a real site", () => {
+    const { file, fixture, write } = twin()
+    write({ cases: {}, drops: { a: { ...DROP, sites: ["Site.tsx:1"] } } })
+    frozenTwinCases(file, { cases }, { ...SPEC, drops: { a: DROP } })
+    expectFrozenCover(file, fixture, [])
+    write({
+      cases: {},
+      drops: {
+        a: { reason: "r", sites: ["Site.tsx:1"], coveredBy: "nowhere.tsx" },
+      },
+    })
+    expect(() => expectFrozenCover(file, fixture, [])).toThrow()
+  })
+
+  // F4 (review-w3-1.md): a stray drop record used to pass unnoticed.
+  it("cover, mutant: fails a stray drop for a case the class test never captured", () => {
+    const { file, fixture, write } = twin()
+    write({ drops: { "0000000000": { ...DROP, sites: ["(by hand)"] } } })
+    frozenTwinCases(file, { cases }, SPEC)
+    expect(() => expectFrozenCover(file, fixture, rowsOf(["a"]))).toThrow(
+      /0000000000: a drop the test doesn't declare[\s\S]*0000000000: drops 0000000000, which the class test never captured/
+    )
+  })
+
+  it("cover, mutant: fails a drop that is also a kept case", () => {
+    const { file, fixture, write } = twin()
+    write({ drops: { a: { ...DROP, sites: ["Site.tsx:1"] } } })
+    frozenTwinCases(file, { cases }, { ...SPEC, drops: { a: DROP } })
+    expect(() => expectFrozenCover(file, fixture, [])).toThrow(
+      /a: a drop that is also a kept case/
+    )
+  })
+
+  it("cover, mutant: fails a drop the test declares for a case no set feeds", () => {
+    const { file, fixture, write } = twin()
+    write({ drops: { b: { ...DROP, sites: ["(by hand)"] } } })
+    frozenTwinCases(file, { cases }, { ...SPEC, drops: { b: DROP } })
+    expect(() => expectFrozenCover(file, fixture, rowsOf(["a"]))).toThrow(
+      /b: a drop for a case no set feeds/
+    )
+  })
 })

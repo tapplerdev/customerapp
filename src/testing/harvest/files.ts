@@ -5,20 +5,17 @@
  * them):
  *
  *   <Name>.cases.json     the prop sets and the sites that pass each one
- *   <Name>.classes.tsx    every class string in them, written out in a
- *                         .tsx so NativeWind compiles them as the sites' own
- *                         files compile them in the app (classes in JSON
- *                         never compile). The test imports it for that.
  *
- * Both live in a `__fixtures__` directory beside the component's tests (not
- * under `__tests__`, where jest would take the .tsx for a test; the style
- * ratchet and the codemod skip `__fixtures__`).
+ * It lives in a `__fixtures__` directory beside the component's tests, with
+ * the component's frozen twins (`<Name>.twins.json`, frozenTwins) if it has
+ * any. Until W3.1 a `<Name>.classes.tsx` beside it listed the cases' class
+ * strings so NativeWind compiled them; nothing draws a harvested class now
+ * (archive/ca-pass1-tools holds that path).
  */
 import fs from "fs"
 import path from "path"
 
 import {
-  classStringsOf,
   harvestCallSites,
   type Harvest,
   type HarvestOptions,
@@ -35,8 +32,6 @@ export type CasesFile = Harvest & {
 export type HarvestFiles = {
   /** `<dir>/__fixtures__/<Name>.cases.json` */
   cases: string
-  /** `<dir>/__fixtures__/<Name>.classes.tsx` */
-  classes: string
 }
 
 /**
@@ -52,42 +47,26 @@ export const componentImport = (name: string) =>
 export const harvestFilesFor = (
   testsDir: string,
   name: string
-): HarvestFiles => {
-  const dir = path.join(path.dirname(testsDir), "__fixtures__")
-  return {
-    cases: path.join(dir, `${name}.cases.json`),
-    classes: path.join(dir, `${name}.classes.tsx`),
-  }
-}
+): HarvestFiles => ({
+  cases: path.join(
+    path.dirname(testsDir),
+    "__fixtures__",
+    `${name}.cases.json`
+  ),
+})
 
-const classesSource = (name: string, classes: string[]) =>
-  [
-    "/*",
-    ` * Generated with ${name}.cases.json (testing/harvest). Every class string`,
-    " * the harvested call sites pass, so that NativeWind compiles them here as",
-    " * it compiles them in the sites' own files in the app. Imported by the",
-    " * parity test for that effect only; regenerate with the harvest.",
-    " */",
-    "export const HARVESTED_CLASSES = [",
-    ...classes.map((value) => `  ${JSON.stringify(value)},`),
-    "]",
-    "",
-  ].join("\n")
-
-/** Harvest the call sites and write both files (the test's harvest mode). */
+/** Harvest the call sites and write the cases (the test's harvest mode). */
 export const writeHarvest = (
   files: HarvestFiles,
   name: string,
   options: HarvestOptions,
   capturedAt: string
-): { file: CasesFile; sites: HarvestedSite[]; classes: string[] } => {
+): { file: CasesFile; sites: HarvestedSite[] } => {
   const { harvest, sites } = harvestCallSites(options)
   const file: CasesFile = { component: name, capturedAt, ...harvest }
-  const classes = classStringsOf(harvest.cases)
   fs.mkdirSync(path.dirname(files.cases), { recursive: true })
   fs.writeFileSync(files.cases, `${JSON.stringify(file, null, 1)}\n`)
-  fs.writeFileSync(files.classes, classesSource(name, classes))
-  return { file, sites, classes }
+  return { file, sites }
 }
 
 /** The frozen cases (a missing file says how to make it). */
@@ -98,19 +77,6 @@ export const readHarvest = (files: HarvestFiles): CasesFile => {
     )
   }
   return JSON.parse(fs.readFileSync(files.cases, "utf8")) as CasesFile
-}
-
-/**
- * The class strings the cases pass that the classes file doesn't list
- * (empty when the file is in step with the cases).
- */
-export const unlistedClasses = (files: HarvestFiles, cases: CasesFile) => {
-  const source = fs.existsSync(files.classes)
-    ? fs.readFileSync(files.classes, "utf8")
-    : ""
-  return classStringsOf(cases.cases).filter(
-    (value) => !source.includes(JSON.stringify(value))
-  )
 }
 
 /**

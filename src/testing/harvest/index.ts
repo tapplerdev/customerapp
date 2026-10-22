@@ -1,7 +1,8 @@
 /**
  * Jest only. The component harvest harness (README in src/testing): harvest
- * a component's call sites into prop sets, freeze them with their class
- * strings compiled, build props from them, and check the classes compiled.
+ * a component's call sites into prop sets, freeze them, build props from
+ * them, check a class-free component's cases hand it no class, and draw a
+ * component's frozen twins.
  */
 export {
   classStringsOf,
@@ -22,7 +23,6 @@ export {
   harvestFilesFor,
   harvesting,
   readHarvest,
-  unlistedClasses,
   writeHarvest,
   type CasesFile,
   type HarvestFiles,

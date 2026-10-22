@@ -13,10 +13,47 @@ rule); what differs from proapp is called out where it matters.
 |---|---|
 | `hostTreeParity.ts` | Renders in an environment (language, RTL, platform, fonts, insets), normalizes the host tree, captures and compares fixtures. The gate. |
 | `screenKit/` | Renders a whole screen the way the app does, with mocked data and native modules, under `jest.parity.config.js`. |
-| `harvest/` | Reads a component's real call sites into prop sets, freezes them with their class strings compiled, and checks those classes compiled. `twinCases` hands each set to the codemod as a call site of its own, for a component's twin test. |
+| `harvest/` | Reads a component's real call sites into prop sets and freezes them (`<Name>.cases.json`). A component's twin test draws its frozen call sites (`<Name>.twins.json`: each set as the codemod converted it at the W3.1 freeze, `frozenTwinCases`); every other harvest test checks its cases hand the component no class (`expectClassFree`). |
 | `buttonLooks/` | ActionBtn's own harvest and translator (the tools' side, CA-W0-T; the codemod loads `translate.ts`). `legacyPrimitives.ts` is the scan that fails on ActionBtn or DmText back in app code, in any spelling (`harvest.pass1.test.ts`). |
 | `trueSheet.tsx` | The stand-in for `@lodev09/react-native-true-sheet` in both jest configs (see "What the kit mocks"). |
-| `nativewind.ts`, `svgStub.ts` | NativeWind's output for a class string with customerapp's tailwind.config.js; an SVG icon as a host element named after it. |
+| `nativewind.ts`, `svgStub.ts` | NativeWind's output for a class string with customerapp's tailwind.config.js (class-era: only the `*.pass1.test.*` suites use it); an SVG icon as a host element named after it. |
+
+## After W3.1: the proofs need no NativeWind
+
+W3.2 takes NativeWind's Babel plugin and types out of the build, and from then
+on a class string draws nothing. W3.1 made every proof independent of it:
+
+- **Fixtures are JSON captured with NativeWind on**: every `__parity__/*.json`
+  tree, `*.cases.json` harvest, `ButtonLooks.cases.json` / `ButtonLooks.table.json`
+  (B's looks, hash-pinned in `buttonLooks/__tests__/frozenLooks.test.ts`) and
+  `__tests__/__parity__/hostTreeParity.test.json` (which also holds four real
+  ActionBtn trees). Never recapture one from converted code.
+- **A component that took a class** proves its twins from the frozen call
+  sites: `__fixtures__/<Name>.twins.json` (9 files, 141 cases: the 7
+  `*.twins.test.tsx` and the kit's `OrderBill` and `scroll` twins). A twin test
+  draws each frozen site and compares it with the trees its class-name test
+  captured (`file:` the `__parity__` JSON, which stays); `expectFrozenCover`
+  fails when the file loses a case or holds a stray drop. A failing frozen twin
+  means the component changed what it draws, never that the frozen file is
+  wrong. No codemod runs and no class compiles.
+- **A component that takes none** hands its harvested cases to
+  `expectClassFree`, which fails on a non-empty className-family value or a
+  DmText/ActionBtn spec in them.
+- **The class-name path is gone**: the class-name parity tests of the 9
+  class-taking components, every `*.classes.tsx`, `describeCompiledClasses`,
+  `twinCases` and the compiled-class reference were deleted in W3.1, and a
+  harvest writes only its cases. They live at the local tag
+  `archive/ca-pass1-tools` (the last commit with the plugin on and every
+  gate green), with the live halves under `yarn test:pass1-tools`
+  (`*.pass1.test.*`: the class-era tools, `hostTreeParity.pass1.test.tsx`).
+- **The frozen set** that must stay byte-identical until the pass-1 proof is
+  done: `**/__parity__/**`, `*.twins.json`, `*.cases.json`, `*.hand.tsx`,
+  `*.handCases.tsx`, `buttonLooks/__fixtures__/ButtonLooks.*.json`.
+  `git diff --stat <W3.2> -- <those>` is empty at every later gate.
+- **Refreezing a twin file** (W3.1 only: it runs the codemod, and freezeTwins.ts and the codemod stay
+  until W3.4): `DS_FREEZE_TWINS=1 jest <twin test>` (kit twins: `-c
+  jest.parity.config.js`). Re-running it over the 9 files rewrites them
+  byte-identically.
 
 ## The jest configs
 
@@ -69,6 +106,11 @@ stub before babel runs, and puts the stub in the cache key; `__tests__/env.test.
 read a real key or URL in a test.
 
 ## The workflow, for every file you convert
+
+This is pass 1's W1/W2 workflow, as it was run (the class-name path it
+captured from, its codemod, `describeCompiledClasses`, `twinCases` and the
+`*.classes.tsx` are gone since W3.1: see above, and `archive/ca-pass1-tools`).
+Pass 2 captures from the code as it is, with steps 1 and 3 and the gates in 6.
 
 The order matters. The fixture has to come from the code before your change, or it proves nothing.
 
@@ -462,9 +504,10 @@ proxy answers it 503) and Home still draws.
   trimmed them by hand), and would number react-native-shadow-2's gradient ids, which customerapp
   doesn't install. A fixture captured with raw ids needs no recapture; a reference to another
   handler or screen still fails.
-- **Before W3**: the self-tests that draw class names (ExampleScreen, the five WelcomeScreen
-  mutants, the compiled-class control) are class-era; customerapp's W3.1 freezes or rewrites them,
-  as proapp's did, before the plugin goes.
+- **Before W3** (done in W3.1): the self-tests that drew class names were
+  rewritten: KitProbe's face is ds Text, workflow.parity compares the converted and
+  mutant ExampleScreens only (the class-name one stays as the fixture's record, rendered by
+  nothing), and the five WelcomeScreen mutants are copies of the converted screen.
 
 ## Coverage: `yarn ds:parity:screens`
 
