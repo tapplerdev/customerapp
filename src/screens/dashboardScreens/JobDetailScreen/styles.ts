@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   profilePhoto: { width: 85, height: 85 },
@@ -47,5 +48,104 @@ export default StyleSheet.create({
   },
   rescuePill: {
     backgroundColor: "#CC0000",
+  },
+  box: {
+    width: 85,
+    height: 85,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.grey8,
+  },
+  boxWrap: {
+    top: -8,
+  },
+  featuredWrap: {
+    height: 18,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    backgroundColor: colors.yellow,
+  },
+  featured: {
+    textTransform: "uppercase",
+  },
+  offerAmountWrap: {
+    paddingTop: 3,
+    paddingBottom: 3,
+  },
+  textWrap: {
+    top: -8,
+    right: -8,
+    width: 18,
+    height: 18,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.red,
+  },
+  box2: {
+    height: 0.5,
+    backgroundColor: colors.grey19,
+  },
+  safeArea: {
+    backgroundColor: colors.white,
+  },
+  iconWrap: {
+    width: 32,
+    height: 32,
+  },
+  box3: {
+    backgroundColor: colors.black,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    width: 5,
+    height: 5,
+    marginLeft: 1,
+    marginRight: 1,
+  },
+  mainModalTitle: {
+    marginTop: 17,
+  },
+  mainModalBtns: {
+    height: 40,
+  },
+  mainModalBtnsWrapper: {
+    marginLeft: 15,
+    marginRight: 15,
+  },
+  mainModalModal: {
+    paddingLeft: 17,
+    paddingRight: 17,
+  },
+  textWrap2: {
+    top: -12,
+    backgroundColor: colors.red,
+    paddingTop: 3,
+    paddingBottom: 3,
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+    borderBottomRightRadius: 3,
+    borderBottomLeftRadius: 3,
+    zIndex: 10,
+  },
+  textWrap3: {
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    paddingTop: 9,
+    paddingBottom: 9,
+  },
+  textWrap4: {
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
   },
 })

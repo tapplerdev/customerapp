@@ -2,7 +2,7 @@ import React from "react"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 
@@ -10,6 +10,8 @@ import DetailsIcon from "assets/icons/details-icon.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
 import BlockIcon from "assets/icons/block.svg"
 import ComplaintIcon from "assets/icons/complaint.svg"
+import { Text, a } from "@tappler/shared/src/ds"
+import { jobMenuSheetStyles } from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -66,71 +68,70 @@ const JobMenuSheet: React.FC<Props> = ({
           sheet), no divider between rows, and each icon in a fixed 24pt column
           so the labels line up whatever the glyph's intrinsic width. */}
       <DmView
-        className="bg-white rounded-t-12 px-[24] pt-[20]"
-        style={{ paddingBottom: insets.bottom + 12 }}
+        style={[jobMenuSheetStyles.box, a.px_24, a.pt_20, { paddingBottom: insets.bottom + 12 }]}
       >
         {!!onShowDetails && (
           <DmView
-            className="flex-row items-center py-[14]"
+            style={[a.flex_row, a.items_center, a.py_14]}
             onPress={onShowDetails}
           >
-            <DmView className="w-[24] items-center">
+            <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <DetailsIcon width={20} height={24} />
             </DmView>
             {/* marginStart, not ml-: logical, so it becomes a right-hand gap
                 under force-RTL without pre-flipping. textAlign left for the
                 same reason — RN swaps it in Arabic. */}
-            <DmText
-              className="text-14 leading-[18px] font-custom400 text-black"
+            <Text
+              size={14}
               style={rtlRow}
             >
               {t("my_request_details")}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {!!onCancel && (
           <DmView
-            className="flex-row items-center py-[14]"
+            style={[a.flex_row, a.items_center, a.py_14]}
             onPress={onCancel}
           >
-            <DmView className="w-[24] items-center">
+            <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <TrashRedIcon width={20} height={24} />
             </DmView>
-            <DmText
-              className="text-14 leading-[18px] font-custom400 text-black"
+            <Text
+              size={14}
               style={rtlRow}
             >
               {cancelLabel}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {!!onBlock && (
-          <DmView className="flex-row items-center py-[14]" onPress={onBlock}>
-            <DmView className="w-[24] items-center">
+          <DmView style={[a.flex_row, a.items_center, a.py_14]} onPress={onBlock}>
+            <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <BlockIcon width={20} height={20} />
             </DmView>
-            <DmText
-              className="text-14 leading-[18px] font-custom400 text-black"
+            <Text
+              size={14}
               style={rtlRow}
             >
               {t("block_pro")}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {!!onReport && (
-          <DmView className="flex-row items-center py-[14]" onPress={onReport}>
-            <DmView className="w-[24] items-center">
+          <DmView style={[a.flex_row, a.items_center, a.py_14]} onPress={onReport}>
+            <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <ComplaintIcon width={18} height={20} />
             </DmView>
-            <DmText
-              className="text-14 leading-[18px] font-custom400 text-black"
+            <Text
+              size={14}
               style={rtlRow}
             >
               {t("file_a_complain_against_pro")}
-            </DmText>
+            </Text>
           </DmView>
         )}
       </DmView>

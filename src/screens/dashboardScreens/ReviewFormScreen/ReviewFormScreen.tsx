@@ -7,7 +7,7 @@ import ImageCropPicker, { ImageOrVideo } from "react-native-image-crop-picker"
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel"
 import { requestGalleryPermission } from "@tappler/shared/src/hooks/permissionHooks"
 
-import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { openPermissionAlert } from "utils/openPermissionAlert"
 import { RootStackScreenProps } from "navigation/types"
 import { useCreateReviewMutation, useGetCustomerJobByIdQuery } from "services/api"
@@ -20,6 +20,7 @@ import CameraPlusIcon from "assets/icons/camera-plus.svg"
 import CloseIcon from "assets/icons/close.svg"
 import styles from "./styles"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 
@@ -122,13 +123,13 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
   const renderStarRating = (key: string) => {
     const currentScore = scores[key] || 0
     return (
-      <DmView className="flex-row items-center mt-[8]">
+      <DmView style={[a.flex_row, a.items_center, a.mt_8]}>
         {[1, 2, 3, 4, 5].map((star) => (
           <DmView
             key={star}
             onPress={() => setScore(key, star)}
             hitSlop={HIT_SLOP_DEFAULT}
-            className="mr-[8]"
+            style={a.mr_8}
           >
             <StarIcon
               width={28}
@@ -144,11 +145,11 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
@@ -157,8 +158,8 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1" />
-        <DmView className="w-[32]" />
+        <DmView style={a.flex_1} />
+        <DmView style={styles.box} />
       </DmView>
 
       {/*
@@ -177,9 +178,9 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
         keyboardShouldPersistTaps="handled"
       >
         {/* Pro photo + name */}
-        <DmView className="items-center mt-[10]">
+        <DmView style={[a.items_center, a.mt_10]}>
           {photoUrl ? (
-            <DmView className="w-[100] h-[100] rounded-full overflow-hidden">
+            <DmView style={[styles.imageWrap, a.overflow_hidden]}>
               <FastImage
                 source={{ uri: photoUrl }}
                 style={styles.profilePhoto}
@@ -187,38 +188,38 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
               />
             </DmView>
           ) : (
-            <DmView className="w-[100] h-[100] rounded-full bg-grey8 items-center justify-center">
-              <DmText className="text-36 font-custom700 text-grey3">
+            <DmView style={[styles.textWrap, a.items_center, a.justify_center]}>
+              <Text size={px(36)} weight="bold" color="tertiary">
                 {displayName?.charAt(0)}
-              </DmText>
+              </Text>
             </DmView>
           )}
-          <DmText className="mt-[12] text-16 font-custom600 text-black">
+          <Text size={16} weight="semibold" leading="legacy" style={a.mt_12}>
             {displayName}
-          </DmText>
+          </Text>
         </DmView>
 
         {/* Your Review label between separators */}
-        <DmView className="mt-[20] mb-[16] flex-row items-center px-[16]">
-          <DmView className="flex-1 h-[0.5] bg-grey19" />
-          <DmText className="mx-[12] text-14 font-custom600 text-red">
+        <DmView style={[a.mt_20, a.mb_16, a.flex_row, a.items_center, a.px_16]}>
+          <DmView style={[a.flex_1, styles.box2]} />
+          <Text size={14} weight="semibold" leading="legacy" color="brand" style={a.mx_12}>
             {t("your_review")}
-          </DmText>
-          <DmView className="flex-1 h-[0.5] bg-grey19" />
+          </Text>
+          <DmView style={[a.flex_1, styles.box2]} />
         </DmView>
 
-        <DmView className="px-[20]">
+        <DmView style={a.px_20}>
           {/* Did pro complete the job? */}
-          <DmText className="text-14 font-custom600 text-black">
+          <Text size={14} weight="semibold" leading="legacy">
             {t("did_pro_complete_job")}
-          </DmText>
-          <DmView className="mt-[10]">
+          </Text>
+          <DmView style={a.mt_10}>
             <DmChecbox
               variant="circle"
               title={t("yes")}
               isChecked={proCompletedJob === true}
               onPress={() => setProCompletedJob(true)}
-              className="mb-[10]"
+              style={a.mb_10}
             />
             <DmChecbox
               variant="circle"
@@ -230,26 +231,25 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* 5 Rating categories */}
           {RATING_CATEGORIES.map((cat) => (
-            <DmView key={cat.key} className="mt-[20]">
-              <DmText className="text-14 font-custom600 text-black">
+            <DmView key={cat.key} style={a.mt_20}>
+              <Text size={14} weight="semibold" leading="legacy">
                 {t(cat.label)}
-              </DmText>
+              </Text>
               {renderStarRating(cat.key)}
-              <DmView className="mt-[12] h-[0.5] bg-grey19" />
+              <DmView style={[a.mt_12, styles.box2]} />
             </DmView>
           ))}
 
           {/* Written review */}
-          <DmView className="mt-[20]">
-            <DmText className="text-14 font-custom600 text-black">
+          <DmView style={a.mt_20}>
+            <Text size={14} weight="semibold" leading="legacy">
               {t("write_your_review")}{" "}
-              <DmText className="text-12 font-custom400 text-grey3">
+              <Text size={12} leading="legacy" color="tertiary">
                 ({t("optional")})
-              </DmText>
-            </DmText>
+              </Text>
+            </Text>
             <DmView
-              className="mt-[10] rounded-4"
-              style={[styles.reviewInputBorder, { borderColor: colors.grey5 }]}
+              style={[a.mt_10, styles.inputWrap, styles.reviewInputBorder, { borderColor: colors.grey5 }]}
             >
               <TextInput
                 value={comment}
@@ -265,24 +265,24 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Submit photos */}
-          <DmView className="mt-[20]">
-            <DmText className="text-14 font-custom600 text-black">
+          <DmView style={a.mt_20}>
+            <Text size={14} weight="semibold" leading="legacy">
               {t("submit_photos_of_work")}
-            </DmText>
-            <DmText className="text-12 font-custom400 text-grey3">
+            </Text>
+            <Text size={12} leading="legacy" color="tertiary">
               {t("max_4_photos")}{" "}
-              <DmText className="text-12 font-custom400 text-grey3">
+              <Text size={12} leading="legacy" color="tertiary">
                 ({t("optional")})
-              </DmText>
-            </DmText>
+              </Text>
+            </Text>
 
             {/* Photo previews */}
             {photos.length > 0 && (
-              <DmView className="mt-[10] flex-row flex-wrap">
+              <DmView style={[a.mt_10, a.flex_row, a.flex_wrap]}>
                 {photos.map((photo, idx) => (
-                  <DmView key={idx} className="mr-[10] mb-[10]">
+                  <DmView key={idx} style={[a.mr_10, a.mb_10]}>
                     <DmView
-                      className="w-[80] h-[80] rounded-10 overflow-hidden"
+                      style={[styles.imageWrap2, a.overflow_hidden]}
                       onPress={() => handleViewPhoto(idx)}
                     >
                       <Image
@@ -292,10 +292,10 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
                       />
                     </DmView>
                     <DmView
-                      className="absolute top-[-8] right-[-8]"
+                      style={[a.absolute, styles.boxWrap]}
                       onPress={() => handleDeletePhoto(idx)}
                     >
-                      <DmView className="w-[20] h-[20] rounded-full border-1 border-grey2 bg-white items-center justify-center">
+                      <DmView style={[styles.iconWrap2, a.border_1, a.items_center, a.justify_center]}>
                         <CloseIcon width={8} height={8} />
                       </DmView>
                     </DmView>
@@ -307,26 +307,27 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
             {/* Upload button */}
             {photos.length < 4 && (
               <DmView
-                className="mt-[10] flex-row items-center justify-center py-[10] rounded-4"
-                style={styles.uploadBorder}
+                style={[a.mt_10, a.flex_row, a.items_center, a.justify_center, a.py_10, styles.inputWrap, styles.uploadBorder]}
                 onPress={handlePickPhotos}
               >
                 <CameraPlusIcon width={40} height={26} />
-                <DmText className="text-13 font-custom600 text-red ml-[4]">
+                <Text size={13} weight="semibold" leading="legacy" color="brand" style={a.ml_4}>
                   {t("upload_photos_videos")}
-                </DmText>
+                </Text>
               </DmView>
             )}
           </DmView>
 
           {/* Submit button */}
-          <DmView className="mt-[30] px-[20]">
-            <ActionBtn
+          <DmView style={[a.mt_30, a.px_20]}>
+            <Button
               title={t("submit_review")}
               onPress={handleSubmit}
-              disable={!isFormReady}
+              disabled={!isFormReady}
               isLoading={isLoading}
-              textClassName="text-14 font-custom600"
+              label={14}
+              labelWeight="semibold"
+              labelLeading="legacy"
             />
           </DmView>
         </DmView>
@@ -339,23 +340,21 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
         animationType="fade"
         onRequestClose={() => setViewerVisible(false)}
       >
-        <DmView className="flex-1" style={styles.modalOverlay}>
+        <DmView style={[a.flex_1, styles.modalOverlay]}>
           {/* Close button — white circle, top left */}
           <DmView
-            className="absolute z-10"
-            style={styles.closePosition}
+            style={[a.absolute, styles.boxWrap2, styles.closePosition]}
             onPress={() => setViewerVisible(false)}
           >
             <DmView
-              className="w-[32] h-[32] rounded-full bg-white items-center justify-center"
-              style={styles.closeShadow}
+              style={[styles.iconWrap3, a.items_center, a.justify_center, styles.closeShadow]}
             >
               <CloseIcon width={12} height={12} fill={colors.red} />
             </DmView>
           </DmView>
 
           {/* Main image — swipeable carousel */}
-          <DmView className="flex-1 items-center justify-center">
+          <DmView style={[a.flex_1, a.items_center, a.justify_center]}>
             <Carousel
               ref={carouselRef}
               width={SCREEN_WIDTH}
@@ -376,10 +375,9 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Thumbnails — centered at bottom */}
           <DmView
-            className="absolute left-0 right-0 items-center justify-center"
-            style={styles.thumbnailsBottom}
+            style={[a.absolute, styles.boxWrap3, a.items_center, a.justify_center, styles.thumbnailsBottom]}
           >
-            <DmView className="flex-row">
+            <DmView style={a.flex_row}>
               {photos.map((photo, idx) => (
                 <TouchableOpacity
                   key={idx}
