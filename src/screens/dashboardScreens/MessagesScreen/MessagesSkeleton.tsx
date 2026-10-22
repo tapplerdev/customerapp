@@ -2,39 +2,41 @@ import React from "react"
 import { DmView } from "@tappler/shared/src/components/UI"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 import Animated, { FadeIn } from "react-native-reanimated"
+import { a } from "@tappler/shared/src/ds"
+import { messagesSkeletonStyles } from "./styles"
 
 const MessagesSkeletonCard: React.FC<{ delay: number }> = ({ delay }) => (
   <Animated.View entering={FadeIn.duration(400).delay(delay)}>
-    <DmView className="px-[15] pt-[10] pb-[13]">
-      <DmView className="flex-row items-start">
+    <DmView style={[messagesSkeletonStyles.boxWrap, a.pt_10]}>
+      <DmView style={[a.flex_row, a.items_start]}>
         {/* Avatar */}
-        <DmView className="mr-[10]">
+        <DmView style={a.mr_10}>
           <SkeletonLoader width={40} height={40} borderRadius={20} />
         </DmView>
-        <DmView className="flex-1">
+        <DmView style={a.flex_1}>
           {/* Name + timestamp row */}
-          <DmView className="flex-row items-center justify-between">
+          <DmView style={[a.flex_row, a.items_center, a.justify_between]}>
             <SkeletonLoader width="50%" height={15} borderRadius={6} />
             <SkeletonLoader width={55} height={11} borderRadius={6} />
           </DmView>
           {/* Service name */}
-          <DmView className="mt-[6]">
+          <DmView style={a.mt_6}>
             <SkeletonLoader width="35%" height={13} borderRadius={6} />
           </DmView>
           {/* Last message */}
-          <DmView className="mt-[6]">
+          <DmView style={a.mt_6}>
             <SkeletonLoader width="65%" height={11} borderRadius={6} />
           </DmView>
         </DmView>
       </DmView>
     </DmView>
-    <DmView className="mr-[15] border-b-1 border-grey4" />
+    <DmView style={[messagesSkeletonStyles.box, a.border_b_1]} />
   </Animated.View>
 )
 
 const MessagesSkeleton: React.FC = () => {
   return (
-    <DmView className="flex-1">
+    <DmView style={a.flex_1}>
       <MessagesSkeletonCard delay={0} />
       <MessagesSkeletonCard delay={80} />
       <MessagesSkeletonCard delay={160} />

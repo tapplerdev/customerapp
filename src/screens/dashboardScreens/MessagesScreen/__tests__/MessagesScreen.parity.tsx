@@ -4,6 +4,7 @@ import { describe, expect, it } from "@jest/globals"
 
 import {
   copy,
+  type BackendFixtures,
   openScreen,
   pressTitled,
   renderScreen,
@@ -20,7 +21,12 @@ import {
   PRO_COMPANY,
   some,
 } from "testing/screenKit/fixtures/entities"
-import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
+import {
+  PARITY_MATRIX,
+  expectParity,
+  parityName,
+  type ParityAllowance,
+} from "testing/hostTreeParity"
 import { pressContaining } from "testing/pressContaining"
 import type { ChatPreviewType } from "types/chat"
 
@@ -144,14 +150,21 @@ const chats = (data: ChatPreviewType[]) => ({
 type Case = {
   name: string
   state: ReturnType<typeof screenState>
-  api: object
+  api: BackendFixtures
+  allow?: ParityAllowance[]
 }
 const signedIn = screenState("data")
 const CASES: Case[] = [
   { name: "chats", state: signedIn, api: chats(AT_LEAST_ONE_OF_EACH) },
   { name: "empty", state: signedIn, api: chats([]) },
   { name: "loading", state: signedIn, api: {} },
-  { name: "signed out", state: guestState("data"), api: DATA },
+  {
+    name: "signed out",
+    state: guestState("data"),
+    api: DATA,
+    // The Log in button became a Button: its listed deltas, on this state only.
+    allow: ["buttonHeight", "buttonAccessibility"],
+  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
@@ -164,7 +177,7 @@ describe("MessagesScreen, captured from the unconverted code", () => {
       lang: env.language,
       platform: env.platform,
     })
-    expectParity(parityName(c.name, env), tree)
+    expectParity(parityName(c.name, env), tree, { allow: c.allow })
   })
 })
 
