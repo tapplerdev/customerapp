@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useRef } from "react"
 
 // Components
-import {
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView } from "react-native-safe-area-context"
 import {
   ActivityIndicator,
@@ -31,6 +28,8 @@ import { setGuestLocation } from "store/auth/slice"
 import LocationIcon from "assets/icons/precision-location.svg"
 import SearchIcon from "assets/icons/search-red.svg"
 import HiThereIcon from "assets/icons/hi-there.svg"
+import { Text, a } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 type Props = RootStackScreenProps<"GuestLocationScreen">
 
@@ -108,19 +107,19 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
   }, [navigation, goToHome])
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <DmView className="flex-1 px-[24] items-center justify-center">
+    <SafeAreaView style={[a.flex_1, dsStyles.safeArea]}>
+      <DmView style={[a.flex_1, a.px_24, a.items_center, a.justify_center]}>
         <HiThereIcon width={303} height={202} />
 
-        <DmText className="mt-[24] text-24 font-custom600 text-black1 text-center">
+        <Text size={24} weight="semibold" leading="legacy" align="center" style={[a.mt_24, dsStyles.hiThere]}>
           {t("hi_there")}
-        </DmText>
+        </Text>
 
-        <DmText className="mt-[12] text-14 font-custom400 text-grey3 text-center px-[8]">
+        <Text size={14} leading="legacy" color="tertiary" align="center" style={[a.mt_12, a.px_8]}>
           {t("before_using_app_location")}
-        </DmText>
+        </Text>
 
-        <DmView className="w-full mt-[40]">
+        <DmView style={[a.w_full, a.mt_40]}>
           <DropShadow
             style={[
               styles.btnShadow,
@@ -130,16 +129,21 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={loading ? undefined : handleEnable}
-              className="h-[51] bg-red rounded-28 flex-row items-center justify-center"
+              style={[
+                dsStyles.row,
+                a.flex_row,
+                a.items_center,
+                a.justify_center,
+              ]}
             >
               {loading ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
                 <>
                   <LocationIcon width={20} height={20} />
-                  <DmText className="ml-[8] text-13 font-custom500 text-white">
+                  <Text size={13} weight="medium" leading="legacy" color="inverse" style={a.ml_8}>
                     {t("enable_your_location")}
-                  </DmText>
+                  </Text>
                 </>
               )}
             </TouchableOpacity>
@@ -154,12 +158,17 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={handleChoose}
-              className="h-[51] bg-white rounded-28 flex-row items-center justify-center border-0.5 border-red"
+              style={[
+                dsStyles.row2,
+                a.flex_row,
+                a.items_center,
+                a.justify_center,
+              ]}
             >
               <SearchIcon width={20} height={20} />
-              <DmText className="ml-[8] text-13 font-custom400 text-red">
+              <Text size={13} leading="legacy" color="brand" style={a.ml_8}>
                 {t("choose_your_location")}
-              </DmText>
+              </Text>
             </TouchableOpacity>
           </DropShadow>
         </DmView>
