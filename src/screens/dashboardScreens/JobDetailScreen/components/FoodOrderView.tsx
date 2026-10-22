@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 import {
   Animated,
@@ -24,6 +24,7 @@ import ChevronDownSolidIcon from "assets/icons/chevron-down-solid.svg"
 
 import styles from "./styles"
 import { AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
 
 interface Props {
   job: JobType
@@ -270,25 +271,27 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     return (
       <DmView
         key={line.id}
-        className="flex-row items-start justify-between mt-[10]"
+        style={[a.flex_row, a.items_start, a.justify_between, a.mt_10]}
       >
-        <DmView className="flex-1 mr-[10]">
-          <DmText className="text-13 leading-[17px] font-custom500">
+        <DmView style={[a.flex_1, a.mr_10]}>
+          <Text size={13} weight="medium" leading={px(17)}>
             {line.quantity}× {line.name}
-          </DmText>
+          </Text>
           {!!optionsSummary && (
-            <DmText
-              className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2"
+            <Text
+              size={11}
+              color="secondary"
+              style={a.mt_2}
               numberOfLines={2}
             >
               {optionsSummary}
-            </DmText>
+            </Text>
           )}
         </DmView>
-        <DmText className="text-13 leading-[17px] font-custom500">
+        <Text size={13} weight="medium" leading={px(17)}>
           {formatMoney((Number(line.price) + choicesTotal) * line.quantity)}{" "}
           {t("EGP")}
-        </DmText>
+        </Text>
       </DmView>
     )
   }
@@ -297,11 +300,11 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   // empty "Order Notes" heading is worse than no heading.
   const detailRow = (label: string, value?: string | null) =>
     !!value && (
-      <DmView className="mt-[14]">
-        <DmText className="text-13 leading-[17px] font-custom700">{label}</DmText>
-        <DmText className="mt-[3] text-13 leading-[18px] font-custom400">
+      <DmView style={a.mt_14}>
+        <Text size={13} weight="bold" leading={px(17)}>{label}</Text>
+        <Text size={13} style={styles.text}>
           {value}
-        </DmText>
+        </Text>
       </DmView>
     )
 
@@ -359,26 +362,23 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     bold?: boolean,
     negative?: boolean
   ) => (
-    <DmView className="flex-row items-center justify-between mt-[8]">
-      <DmText
-        className={
-          bold
-            ? "text-13 leading-[17px] font-custom700"
-            : "text-13 leading-[17px] font-custom400 text-grey2"
-        }
+    <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_8]}>
+      <Text
+        size={13}
+        weight={bold ? "bold" : "regular"}
+        leading={px(17)}
+        color={bold ? "primary" : "secondary"}
       >
         {label}
-      </DmText>
-      <DmText
-        className={
-          bold
-            ? "text-13 leading-[17px] font-custom700"
-            : "text-13 leading-[17px] font-custom500"
-        }
+      </Text>
+      <Text
+        size={13}
+        weight={bold ? "bold" : "medium"}
+        leading={px(17)}
         style={negative ? { color: colors.red } : undefined}
       >
         {value}
-      </DmText>
+      </Text>
     </DmView>
   )
 
@@ -389,53 +389,53 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     >
       {/* Who the order is with — photo, name, headline status and the running
           total, matching the design's header card. */}
-      <DmView className="flex-row">
+      <DmView style={a.flex_row}>
         <CachedImage
           uri={pro?.profilePhoto150 || pro?.profilePhoto || undefined}
           style={styles.proPhoto}
           resizeMode="cover"
           withSkeleton
         />
-        <DmView className="flex-1 ml-[12] justify-center">
-          <DmText className="text-14 leading-[18px] font-custom700" numberOfLines={1}>
+        <DmView style={[a.flex_1, a.ml_12, a.justify_center]}>
+          <Text size={14} weight="bold" numberOfLines={1}>
             {proName}
-          </DmText>
-          <DmView className="mt-[4] flex-row items-center">
+          </Text>
+          <DmView style={[a.mt_4, a.flex_row, a.items_center]}>
             {/* Label bold and black, value regular and coloured — the design
                 weights the two differently on purpose. */}
-            <DmText className="text-14 leading-[18px] font-custom700">
+            <Text size={14} weight="bold">
               {t("status")}:{" "}
-            </DmText>
-            <DmText
-              className="flex-1 text-14 leading-[18px] font-custom400"
+            </Text>
+            <Text
+              size={14}
               // Green is for an order that is alive and moving. Declined is
               // neither, so it reads red like cancelled — the two are the same
               // news to the customer: this order is not happening.
-              style={{
+              style={[a.flex_1, {
                 color: isCancelled || isDeclined ? colors.red : colors.green,
-              }}
+              }]}
               numberOfLines={1}
             >
               {headlineStatus}
-            </DmText>
+            </Text>
           </DmView>
-          <DmView className="mt-[8] flex-row items-center">
-            <DmView className="px-[14] py-[5] rounded-20 border-1 border-red">
-              <DmText className="text-14 leading-[18px] font-custom700">
+          <DmView style={[a.mt_8, a.flex_row, a.items_center]}>
+            <DmView style={[a.px_14, styles.totalWrap, a.border_1]}>
+              <Text size={14} weight="bold">
                 {t("total")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmText className="ml-[10] flex-1 text-14 leading-[18px] font-custom700">
+            <Text size={14} weight="bold" style={[a.ml_10, a.flex_1]}>
               {formatMoney(total)} {t("EGP")}
-            </DmText>
+            </Text>
             {!!onOpenChat && (
-              <DmView className="pl-[8]" onPress={onOpenChat}>
+              <DmView style={a.pl_8} onPress={onOpenChat}>
                 <MailIcon width={24} height={24} />
                 {unreadCount > 0 && (
-                  <DmView className="absolute -top-[6] -right-[6] min-w-[16] h-[16] px-[4] rounded-full bg-red items-center justify-center">
-                    <DmText className="text-9 font-custom700 text-white">
+                  <DmView style={[a.absolute, styles.textWrap, a.px_4, a.items_center, a.justify_center]}>
+                    <Text size={9} weight="bold" leading="legacy" color="inverse">
                       {unreadCount}
-                    </DmText>
+                    </Text>
                   </DmView>
                 )}
               </DmView>
@@ -446,19 +446,19 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
 
       {/* Individual · trust stickers · Offers — the same trio the pro card and
           profile show, so the customer sees consistent credentials. */}
-      <DmView className="mt-[14] flex-row items-center flex-wrap">
-        <DmView className="flex-row items-center mr-[14]">
+      <DmView style={[a.mt_14, a.flex_row, a.items_center, a.flex_wrap]}>
+        <DmView style={[a.flex_row, a.items_center, a.mr_14]}>
           {isCompany ? (
             <BusinessIcon width={16} height={16} />
           ) : (
             <IndividualIcon width={16} height={16} />
           )}
-          <DmText className="ml-[4] text-12 leading-[16px] font-custom700">
+          <Text size={12} weight="bold" style={a.ml_4}>
             {t(isCompany ? "business" : "individual")}
-          </DmText>
+          </Text>
         </DmView>
         {trustDocs.map((doc: any) => (
-          <DmView key={doc.id} className="mr-[14]">
+          <DmView key={doc.id} style={a.mr_14}>
             <SvgUriContainer
               width={140}
               height={30}
@@ -473,26 +473,26 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       </DmView>
 
       {!!subscriptions.length && (
-        <DmView className="mt-[12]">
+        <DmView style={a.mt_12}>
           <OffersSection subscriptions={subscriptions} compact />
         </DmView>
       )}
 
-      <DmView className="h-[0.5] bg-grey19 mt-[16]" />
+      <DmView style={[styles.box, a.mt_16]} />
 
       {/* Status */}
-      <DmView className="mt-[16]" />
+      <DmView style={a.mt_16} />
       {isCancelled ? (
         // foodOrderCancelReason is only ever written by the RESTAURANT's
         // cancel. When the CUSTOMER cancels there is no reason, and this
         // rendered `false` — so the whole status block collapsed and the
         // screen went blank below the header. Say who cancelled instead.
-        <DmView className="p-[14] rounded-12 bg-pink1">
-          <DmText className="text-12 leading-[16px] font-custom400 text-red">
+        <DmView style={[a.p_14, styles.textWrap2]}>
+          <Text size={12} color="brand">
             {jobPro?.foodOrderCancelReason
               ? t(`food_cancel_${jobPro.foodOrderCancelReason}`)
               : t("order_cancelled_descr")}
-          </DmText>
+          </Text>
         </DmView>
       ) : isDeclined ? (
         // Deliberately NOT jobPro.rejectReason. Those options are written for
@@ -500,53 +500,51 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
         // "customer has history of non-payment or abuse" — not something to
         // show the customer about themselves. They get the fact and a way
         // forward; the reason stays between the restaurant and the dashboard.
-        <DmView className="p-[14] rounded-12 bg-pink1">
-          <DmText className="text-12 leading-[16px] font-custom400 text-red">
+        <DmView style={[a.p_14, styles.textWrap2]}>
+          <Text size={12} color="brand">
             {t("order_declined_descr")}
-          </DmText>
+          </Text>
         </DmView>
       ) : (
-        <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
+        <DmView style={[a.p_14, styles.box2]}>
           {/* No headline here — the pro card above already states the status,
               and printing it twice on one screen reads as a bug. This keeps
               only what the card cannot say: what happens next. */}
           {currentStep < 0 && (
-            <DmText className="text-12 leading-[16px] font-custom400 text-grey2">
+            <Text size={12} color="secondary">
               {t("order_placed_descr")}
-            </DmText>
+            </Text>
           )}
           {/* Timeline */}
           <DmView
-            className={`flex-row items-center ${currentStep < 0 ? "mt-[14]" : ""}`}
+            style={[a.flex_row, a.items_center, currentStep < 0 && a.mt_14]}
           >
             {STEPS.map((step, idx) => (
               <React.Fragment key={step}>
                 {idx > 0 && (
                   <DmView
-                    className="flex-1 h-[2] mx-[4]"
-                    style={{
+                    style={[a.flex_1, styles.box3, a.mx_4, {
                       backgroundColor:
                         idx <= currentStep ? colors.red : colors.grey14,
-                    }}
+                    }]}
                   />
                 )}
                 <DmView
-                  className="w-[14] h-[14] rounded-full"
-                  style={{
+                  style={[styles.box4, {
                     backgroundColor:
                       idx <= currentStep ? colors.red : colors.grey14,
-                  }}
+                  }]}
                 />
               </React.Fragment>
             ))}
           </DmView>
-          <DmView className="mt-[6] flex-row justify-between">
-            <DmText className="text-10 leading-[13px] font-custom400 text-grey2">
+          <DmView style={[a.mt_6, a.flex_row, a.justify_between]}>
+            <Text size={10} color="secondary">
               {stepLabels.accepted}
-            </DmText>
-            <DmText className="text-10 leading-[13px] font-custom400 text-grey2">
+            </Text>
+            <Text size={10} color="secondary">
               {stepLabels.delivered}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
       )}
@@ -555,12 +553,12 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           paid, notes, then the itemised bill. Collapsible because the status
           is the answer on a repeat visit and the bill is the answer once. */}
       <DmView
-        className="mt-[18] flex-row items-center justify-center"
+        style={[a.mt_18, a.flex_row, a.items_center, a.justify_center]}
         onPress={toggleDetails}
       >
-        <DmText className="text-13 leading-[17px] font-custom600 text-red">
+        <Text size={13} weight="semibold" leading={px(17)} color="brand">
           {t(isDetailsOpen ? "hide_order_details" : "show_order_details")}
-        </DmText>
+        </Text>
         <Animated.View
           style={[
             styles.detailsChevron,
@@ -572,7 +570,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       </DmView>
 
       {isDetailsOpen && (
-        <DmView className="mt-[14]">
+        <DmView style={a.mt_14}>
           {detailRow(
             t(isPickup ? "pickup_from" : "delivery_address"),
             addressLabel
@@ -586,12 +584,12 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           )}
           {detailRow(t("order_notes"), job.orderNotes)}
 
-          <DmText className="mt-[18] text-14 leading-[18px] font-custom700">
+          <Text size={14} weight="bold" style={a.mt_18}>
             {t("order_details")}
-          </DmText>
+          </Text>
           {items.map(renderLine)}
 
-          <DmView className="h-[0.7] bg-grey14 mt-[14]" />
+          <DmView style={[styles.box5, a.mt_14]} />
           {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
           {/* A pickup order carries no fee, and 0 renders as "Free". */}
           {!isPickup &&
