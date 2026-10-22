@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import React, { act } from "react"
+import { StyleSheet } from "react-native"
 import TestRenderer from "react-test-renderer"
 
 /*
@@ -86,25 +87,27 @@ describe("OffersSection's strip: the OFFERS tab", () => {
     const [inset, band] = kids(strip)
     // From the start edge, inset 10pt over the first sticker.
     expect(inset.type).toBe("DmView")
-    expect(inset.props.className).toBe("px-[10]")
+    expect(StyleSheet.flatten(inset.props.style)).toEqual({
+      paddingLeft: 10,
+      paddingRight: 10,
+    })
+    // BannerContainer's tab and the profile's copy: the tab itself is
+    // BannerContainer's (its own parity rows pin what it draws), so it is
+    // found by its words here, and the next test pins it against the banner's.
     const tabRow = kids(inset)[0]
-    expect(tabRow.props.className).toBe("flex-row justify-start")
-    // BannerContainer's tab, class for class, and the profile's copy.
-    const tab = tabIn(tabRow)
-    expect(tab.type).toBe("DmView")
-    expect(tab.props.className).toBe("bg-red px-[4] py-[2]")
-    expect(tab.props.style).toEqual(
-      expect.objectContaining({ borderTopLeftRadius: 6, borderTopRightRadius: 6 })
-    )
-    expect(labelOf(tab).props.className).toBe(
-      "text-white text-10 font-custom700"
-    )
-    expect(labelOf(tab).children).toEqual(["OFFERS"])
+    expect(labelOf(tabIn(tabRow)).children).toEqual(["OFFERS"])
     // The band itself is unchanged: its tint, and only the stickers in it.
-    expect(band.props.className).toBe(
-      "flex-row flex-wrap items-center py-[8] px-[10]"
-    )
-    expect(band.props.style).toEqual({ backgroundColor: "#FFF8F8", rowGap: 6 })
+    expect(StyleSheet.flatten(band.props.style)).toEqual({
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      paddingTop: 8,
+      paddingBottom: 8,
+      paddingLeft: 10,
+      paddingRight: 10,
+      backgroundColor: "#FFF8F8",
+      rowGap: 6,
+    })
     expect(kids(band).map((art) => art.props.uri)).toEqual([
       "en-1.svg",
       "en-2.svg",
