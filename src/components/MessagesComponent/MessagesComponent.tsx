@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef } from "react"
 import { Animated, Dimensions, I18nManager } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { Swipeable } from "react-native-gesture-handler"
 import FastImage from "react-native-fast-image"
@@ -14,6 +14,7 @@ import { parseOfferUpdate } from "components/OfferUpdateCard/OfferUpdateCard"
 import { localizeDateString } from "helpers/digits"
 
 import styles from "./styles"
+import { Text, a } from "@tappler/shared/src/ds"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 
@@ -90,22 +91,21 @@ const MessagesComponent: React.FC<Props> = React.memo(
     const renderArchiveAction = () => (
       <DmView
         onPress={handleArchive}
-        className="bg-red justify-center items-center"
-        style={styles.archiveAction}
+        style={[styles.container, a.justify_center, a.items_center, styles.archiveAction]}
       >
-        <DmText className="text-white text-13 font-custom600">
+        <Text size={13} weight="semibold" leading="legacy" color="inverse">
           {t("archive")}
-        </DmText>
+        </Text>
       </DmView>
     )
 
     const content = (
-      <DmView onPress={onPress} className="bg-white">
-        <DmView className="px-[15] pt-[10] pb-[13]">
-          <DmView className="flex-row items-start">
+      <DmView onPress={onPress} style={styles.box}>
+        <DmView style={[styles.boxWrap, a.pt_10]}>
+          <DmView style={[a.flex_row, a.items_start]}>
             {/* Avatar */}
             {proPhoto ? (
-              <DmView className="w-[40] h-[40] rounded-full overflow-hidden mr-[10]">
+              <DmView style={[styles.imageWrap, a.overflow_hidden, a.mr_10]}>
                 <FastImage
                   source={{ uri: proPhoto }}
                   style={styles.avatar}
@@ -113,49 +113,55 @@ const MessagesComponent: React.FC<Props> = React.memo(
                 />
               </DmView>
             ) : (
-              <DmView className="w-[40] h-[40] rounded-full bg-red items-center justify-center mr-[10]">
-                <DmText className="text-white text-16 font-custom600">
+              <DmView style={[styles.textWrap, a.items_center, a.justify_center, a.mr_10]}>
+                <Text size={16} weight="semibold" leading="legacy" color="inverse">
                   {proName.charAt(0)}
-                </DmText>
+                </Text>
               </DmView>
             )}
-            <DmView className="flex-1">
+            <DmView style={a.flex_1}>
               {/* Name + time */}
-              <DmView className="flex-row items-center justify-between">
-                <DmText
-                  className="text-15 font-custom600 text-black flex-1"
+              <DmView style={[a.flex_row, a.items_center, a.justify_between]}>
+                <Text
+                  size={15}
+                  weight="semibold"
+                  leading="legacy"
+                  style={a.flex_1}
                   numberOfLines={1}
                 >
                   {proName}
-                </DmText>
-                <DmText className="text-11 font-custom400 text-grey3 mr-[5]">
+                </Text>
+                <Text size={11} leading="legacy" color="tertiary" style={styles.text}>
                   {formatTime(lastMessage?.createdAt || chat.createdAt)}
-                </DmText>
+                </Text>
               </DmView>
               {/* Service name + unread badge */}
-              <DmView className="flex-row items-center justify-between mt-[2]">
-                <DmText
-                  className="text-13 font-custom500 text-black flex-1"
+              <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_2]}>
+                <Text
+                  size={13}
+                  weight="medium"
+                  leading="legacy"
+                  style={a.flex_1}
                   numberOfLines={1}
                 >
                   {serviceName}
-                </DmText>
+                </Text>
                 {notReadMessages > 0 && (
-                  <DmView className="bg-red rounded-full w-[24] h-[24] items-center justify-center">
-                    <DmText className="text-white text-13 font-custom700">
+                  <DmView style={[styles.textWrap2, a.items_center, a.justify_center]}>
+                    <Text size={13} weight="bold" leading="legacy" color="inverse">
                       {notReadMessages > 99 ? "99+" : notReadMessages}
-                    </DmText>
+                    </Text>
                   </DmView>
                 )}
               </DmView>
               {/* Last message preview with media indicators */}
-              <DmView className="mt-[4] flex-row items-center">
+              <DmView style={[a.mt_4, a.flex_row, a.items_center]}>
                 {hasImages && (
-                  <DmView className="flex-row items-center mr-[4]">
+                  <DmView style={[a.flex_row, a.items_center, a.mr_4]}>
                     {imageFiles.slice(0, 4).map((f) => (
                       <DmView
                         key={f.id}
-                        className="w-[20] h-[20] rounded-[3] overflow-hidden mr-[2]"
+                        style={[styles.container2, a.overflow_hidden, a.mr_2]}
                       >
                         <FastImage
                           source={{ uri: f.url150 || f.url720 || f.url }}
@@ -167,17 +173,20 @@ const MessagesComponent: React.FC<Props> = React.memo(
                   </DmView>
                 )}
                 {!lastMsg?.text && hasLocation && (
-                  <DmView className="mr-[3]">
+                  <DmView style={styles.iconWrap}>
                     <LocationIcon width={10} height={13} fill="#000" />
                   </DmView>
                 )}
                 {!lastMsg?.text && hasDocs && !hasImages && (
-                  <DmView className="mr-[3]">
+                  <DmView style={styles.iconWrap}>
                     <DocumentIcon width={10} height={13} fill="#000" />
                   </DmView>
                 )}
-                <DmText
-                  className="text-11 font-custom400 text-grey3 flex-1"
+                <Text
+                  size={11}
+                  leading="legacy"
+                  color="tertiary"
+                  style={a.flex_1}
                   numberOfLines={1}
                 >
                   {lastMsg?.text
@@ -203,19 +212,21 @@ const MessagesComponent: React.FC<Props> = React.memo(
                       ? t("photo")
                       : `${imageFiles.length} ${t("photos")}`
                     : ""}{!lastMsg && (
-                    <DmText
-                      className="text-11 font-custom400 text-grey3"
+                    <Text
+                      size={11}
+                      leading="legacy"
+                      color="tertiary"
                       style={styles.italic}
                     >
                       {t("waiting_for_pro_response")}
-                    </DmText>
+                    </Text>
                   )}
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
           </DmView>
         </DmView>
-        <DmView className="mr-[15] border-b-1 border-grey4" />
+        <DmView style={[styles.box2, a.border_b_1]} />
       </DmView>
     )
 

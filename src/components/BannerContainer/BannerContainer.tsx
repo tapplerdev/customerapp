@@ -1,8 +1,11 @@
 import React from "react"
-import { ViewStyle } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import type { StyleProp, ViewStyle } from "react-native"
+import { DmView } from "@tappler/shared/src/components/UI"
+import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
+import { Text, a } from "@tappler/shared/src/ds"
 
 // The banner's red tab: the text in white capitals, rounded on top, from the
 // start edge (left in English, right in Arabic). BannerContainer draws it over
@@ -14,53 +17,81 @@ import styles from "./styles"
 // style prop in place of the className. So a caller that needs to move the
 // tab wraps it in a DmView.
 export const BannerTab: React.FC<{ text: string }> = ({ text }) => (
-  <DmView className="flex-row justify-start">
+  <DmView style={[a.flex_row, a.justify_start]}>
     <DmView
-      className="bg-red px-[4] py-[2]"
-      style={styles.tabRadius}
+      style={[styles.textWrap, a.px_4, a.py_2, styles.tabRadius]}
     >
-      <DmText className="text-white text-10 font-custom700">
+      <Text size={10} weight="bold" leading="legacy" color="inverse">
         {text.toUpperCase()}
-      </DmText>
+      </Text>
     </DmView>
   </DmView>
 )
 
+// The block and its bordered box as slots: a caller's className lands after
+// each one's own styles (see classNameSlots).
+const Root = classNameSlot(DmView)
+const Box = classNameSlot(DmView)
+
 interface BannerContainerProps {
   bannerText: string
   children: React.ReactNode
+  /** The block (the tab and its box), as classes. */
   className?: string
+  /**
+   * The block, as a style, after `className`. Like every twin it takes one
+   * key per side or corner (see NoShorthands).
+   */
+  style?: StyleProp<ViewStyle & NoShorthands>
+  /** The bordered box, as classes, in place of its own padding (8 all round). */
   containerClassName?: string
-  containerStyle?: ViewStyle
+  /**
+   * The bordered box, as a style, after `containerClassName` and in place of
+   * its own padding too; under its own border and corners, as the classes
+   * were. One key per side or corner (see NoShorthands). The box reads
+   * whether either is there, which the codemod's structural check can't
+   * follow:
+   * @dsSlot containerClassName
+   */
+  containerStyle?: StyleProp<ViewStyle & NoShorthands>
   borderRadius?: number
 }
 
 const BannerContainer: React.FC<BannerContainerProps> = ({
   bannerText,
   children,
-  className = "",
-  containerClassName = "",
+  className,
+  style,
+  containerClassName,
   containerStyle,
   borderRadius = 10,
 }) => {
   return (
-    <DmView className={className}>
+    <Root className={className} style={style}>
       <BannerTab text={bannerText} />
 
-      <DmView
-        className={`bg-white ${containerClassName || "px-[8] py-[8]"}`}
-        style={{
-          borderWidth: 0.5,
-          borderColor: colors.grey6,
-          borderBottomRightRadius: borderRadius,
-          borderBottomLeftRadius: borderRadius,
-          borderTopRightRadius: borderRadius,
-          ...containerStyle,
-        }}
+      {/* A caller's box classes or style replace its own padding, as
+          `containerClassName || "px-[8] py-[8]"` did; its border and corners
+          stay on top of either. */}
+      <Box
+        className={containerClassName}
+        base={
+          containerClassName || containerStyle ? styles.box : styles.boxPadded
+        }
+        style={[
+          containerStyle,
+          {
+            borderWidth: 0.5,
+            borderColor: colors.grey6,
+            borderBottomRightRadius: borderRadius,
+            borderBottomLeftRadius: borderRadius,
+            borderTopRightRadius: borderRadius,
+          },
+        ]}
       >
         {children}
-      </DmView>
-    </DmView>
+      </Box>
+    </Root>
   )
 }
 

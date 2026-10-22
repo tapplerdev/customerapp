@@ -1,0 +1,106 @@
+{
+ "component": "LeaveReviewModal",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "cc19511b79": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onLeaveReview": {
+     "$fn": true
+    },
+    "categoryName": ""
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:418"
+   ]
+  },
+  "dfe6bb503c": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onLeaveReview": {
+     "$fn": true
+    },
+    "categoryName": ""
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:418"
+   ]
+  },
+  "8e8c6df30b": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onLeaveReview": {
+     "$fn": true
+    },
+    "categoryName": {
+     "$opaque": "reviewModalJob.serviceCategory.nameAr"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:418"
+   ]
+  },
+  "5535b55773": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onLeaveReview": {
+     "$fn": true
+    },
+    "categoryName": {
+     "$opaque": "reviewModalJob.serviceCategory.nameAr"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:418"
+   ]
+  },
+  "4469c7a712": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onLeaveReview": {
+     "$fn": true
+    },
+    "categoryName": {
+     "$opaque": "reviewModalJob.serviceCategory.nameEn"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:418"
+   ]
+  },
+  "ff4f008e63": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onLeaveReview": {
+     "$fn": true
+    },
+    "categoryName": {
+     "$opaque": "reviewModalJob.serviceCategory.nameEn"
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:418"
+   ]
+  }
+ }
+}

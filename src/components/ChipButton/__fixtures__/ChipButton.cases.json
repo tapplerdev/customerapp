@@ -1,0 +1,72 @@
+{
+ "component": "ChipButton",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "80b95f4fcd": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    },
+    "compact": false
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:275"
+   ]
+  },
+  "008947a2dd": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    },
+    "compact": false
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:275"
+   ]
+  },
+  "5aec5be205": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    },
+    "compact": true
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:275"
+   ]
+  },
+  "5f56f979f4": {
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    },
+    "compact": true
+   },
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:275"
+   ]
+  }
+ }
+}

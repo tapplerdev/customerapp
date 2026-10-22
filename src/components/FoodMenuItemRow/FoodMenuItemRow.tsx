@@ -1,6 +1,6 @@
 import React from "react"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 
 import styles from "./styles"
@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import colors from "@tappler/shared/src/styles/colors"
 import PlusIcon from "assets/icons/plus.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 interface Props {
   item: FoodMenuItemType
@@ -41,55 +42,61 @@ const FoodMenuItemRow: React.FC<Props> = ({
 
   return (
     <DmView
-      className="px-[16] pt-[20] pb-[23] border-b-0.5 border-b-grey14"
+      style={[a.px_16, a.pt_20, styles.container]}
       onPress={onPress && !outOfStock ? () => onPress(item) : undefined}
     >
       <DmView
-        className="flex-row justify-between"
-        style={outOfStock ? styles.outOfStock : undefined}
+        style={[a.flex_row, a.justify_between, outOfStock ? styles.outOfStock : undefined]}
       >
-        <DmView className="flex-1 justify-between">
+        <DmView style={[a.flex_1, a.justify_between]}>
           <DmView>
-            <DmText className="text-14 leading-[18px] font-custom600">
+            <Text size={14} weight="semibold">
               {item.name}
-            </DmText>
-            <DmText
-              className="mt-[5] text-13 leading-[15px] font-custom400"
+            </Text>
+            <Text
+              size={13}
+              leading={px(15)}
+              style={styles.text}
               numberOfLines={4}
             >
               {item.description}
-            </DmText>
+            </Text>
           </DmView>
-          <DmView className="mt-[13] flex-row items-center">
+          <DmView style={[styles.row, a.flex_row, a.items_center]}>
             {hasPrice ? (
               <>
-                <DmText className="text-13 leading-[16px] font-custom600">
+                <Text size={13} weight="semibold" leading="tight">
                   {formatMoney(effectiveUnitPrice(item))} {t("EGP")}
-                </DmText>
+                </Text>
                 {hasDiscount(item) && (
-                  <DmText className="ml-[10] text-13 leading-[16px] text-grey2 font-custom400 line-through">
+                  <Text size={13} leading="tight" color="secondary" style={[a.ml_10, styles.eGP]}>
                     {formatMoney(Number(item.price))} {t("EGP")}
-                  </DmText>
+                  </Text>
                 )}
               </>
             ) : (
-              <DmText className="text-14 leading-[18px] font-custom600 text-grey2">
+              <Text size={14} weight="semibold" color="secondary">
                 {t("price_on_selection")}
-              </DmText>
+              </Text>
             )}
-            <DmView className="flex-1 items-end">
+            <DmView style={[a.flex_1, a.items_end]}>
               {item.isPreOrderOnly && (
-                <ActionBtn
+                <Button
                   title={t("pre_order")}
-                  className="h-[20] self-auto bg-red2 rounded-4 px-[8]"
-                  classNameTextWrapper="mx-[0]"
-                  textClassName="text-11 leading-[14px] font-custom700 text-white"
+                  size={px(20)}
+                  shape="r4"
+                  paddingX={8}
+                  variant="rose"
+                  label={11}
+                  labelWeight="bold"
+                  labelInset={0}
+                  style={styles.button}
                 />
               )}
             </DmView>
           </DmView>
         </DmView>
-        <DmView className="ml-[21] items-center justify-end" style={styles.img}>
+        <DmView style={[styles.box, a.items_center, a.justify_end, styles.img]}>
           <CachedImage
             uri={item.photo || undefined}
             style={styles.img}
@@ -97,23 +104,22 @@ const FoodMenuItemRow: React.FC<Props> = ({
             withSkeleton
           />
           {!outOfStock && (
-            <DmView className="absolute bottom-[8] left-0 right-0 items-center">
+            <DmView style={[a.absolute, styles.box2, a.items_center]}>
               {cartQty > 0 ? (
                 <DmView
-                  className="flex-row items-center bg-white rounded-4 h-[30] px-[8]"
-                  style={styles.badgeShadow}
+                  style={[a.flex_row, a.items_center, styles.row2, a.px_8, styles.badgeShadow]}
                 >
                   <DmView
-                    className="w-[26] h-[30] items-center justify-center"
+                    style={[styles.iconWrap, a.items_center, a.justify_center]}
                     onPress={() => onQuickRemove?.(item)}
                   >
                     <TrashRedIcon width={15} height={15} />
                   </DmView>
-                  <DmText className="mx-[12] text-14 leading-[17px] font-custom700">
+                  <Text size={14} weight="bold" leading="tight" style={a.mx_12}>
                     {cartQty}
-                  </DmText>
+                  </Text>
                   <DmView
-                    className="w-[26] h-[30] items-center justify-center"
+                    style={[styles.iconWrap, a.items_center, a.justify_center]}
                     onPress={() => onQuickAdd?.(item)}
                   >
                     <PlusIcon
@@ -126,8 +132,7 @@ const FoodMenuItemRow: React.FC<Props> = ({
                 </DmView>
               ) : (
                 <DmView
-                  className="items-center justify-center w-[34] h-[26] bg-white rounded-4"
-                  style={styles.badgeShadow}
+                  style={[a.items_center, a.justify_center, styles.iconWrap2, styles.badgeShadow]}
                   onPress={() => onQuickAdd?.(item)}
                 >
                   <PlusIcon
@@ -143,9 +148,9 @@ const FoodMenuItemRow: React.FC<Props> = ({
         </DmView>
       </DmView>
       {outOfStock && (
-        <DmText className="mt-[12] text-14 leading-[18px] font-custom600 text-red">
+        <Text size={14} weight="semibold" color="brand" style={a.mt_12}>
           {t("out_of_stock")}
-        </DmText>
+        </Text>
       )}
     </DmView>
   )

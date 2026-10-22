@@ -1,0 +1,33 @@
+{
+ "component": "FoodMenuItemRow",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "f239375e02": {
+   "props": {
+    "key": {
+     "$opaque": "menuItem.id"
+    },
+    "item": {
+     "$opaque": "menuItem"
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "cartQty": {
+     "$opaque": "qtyByItemId[menuItem.id]"
+    },
+    "onQuickAdd": {
+     "$fn": true
+    },
+    "onQuickRemove": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodMenuScreen/FoodMenuScreen.tsx:188"
+   ]
+  }
+ }
+}

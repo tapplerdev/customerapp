@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next"
 import { I18nManager } from "react-native"
 
 import LogoutDoorIcon from "assets/icons/logout-door.svg"
+import { a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -29,12 +31,13 @@ const LogoutModal: React.FC<Props> = ({
   return (
     <MainModal
       isVisible={isVisible}
-      classNameModal="px-[38]"
+      modalStyle={styles.containerModal}
       onClose={onClose}
       onModalHide={onModalHide}
       onPressSecond={onClose}
       title={t("are_you_sure_logout")}
-      classNameTitle="mt-[19] text-center text-13 leading-[25px] font-custom500"
+      titleType={{ size: 13, leading: px(25), weight: "medium" }}
+      titleStyle={styles.containerTitle}
       isBtnsTwo
       titleBtn={t("yes")}
       titleBtnSecond={t("no")}
@@ -43,11 +46,12 @@ const LogoutModal: React.FC<Props> = ({
           <LogoutDoorIcon width={36} height={42} />
         </DmView>
       }
-      classNameBtnsWrapper="mt-[22] px-[4]"
-      classNameBtns="h-[34] font-custom700"
-      className="m-0 px-[40] pt-[19] rounded-10"
-      classNameSecondBtn="border-black"
-      classNameSecondBtnText="text-red"
+      btnsWrapperStyle={[a.mt_22, a.px_4]}
+      btnsStyle={styles.containerBtns}
+      radius={10}
+      cardStyle={[a.m_0, a.px_40, styles.containerCard]}
+      secondBtnStyle={styles.containerSecondBtn}
+      secondBtnTextStyle={styles.containerSecondBtnText}
       onPress={onPress}
       isLoading={isLoading}
     />

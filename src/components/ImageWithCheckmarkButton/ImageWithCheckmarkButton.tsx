@@ -1,15 +1,29 @@
 import React from "react"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
-import clsx from "clsx"
+import type { StyleProp, ViewStyle } from "react-native"
+import { DmView } from "@tappler/shared/src/components/UI"
+import LegacyText from "@tappler/shared/src/components/LegacyText"
+import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import styles from "./styles"
+import { a } from "@tappler/shared/src/ds"
+
+// The answer as a slot: a caller's className lands where its classes did
+// (see classNameSlots); it has no styles of its own.
+const Answer = classNameSlot(DmView)
 
 interface ImageWithCheckmarkButtonProps {
   label: string
   imageUrl: string
   isSelected: boolean
   onPress: () => void
+  /** The answer, as classes. */
   className?: string
+  /**
+   * The answer, as a style, after `className`. Like every twin it takes one
+   * key per side or corner (see NoShorthands).
+   */
+  style?: StyleProp<ViewStyle & NoShorthands>
 }
 
 const ImageWithCheckmarkButton: React.FC<ImageWithCheckmarkButtonProps> = ({
@@ -17,34 +31,40 @@ const ImageWithCheckmarkButton: React.FC<ImageWithCheckmarkButtonProps> = ({
   isSelected,
   onPress,
   className,
+  style,
 }) => {
   return (
-    <DmView onPress={onPress} className={clsx(className)}>
+    <Answer onPress={onPress} className={className} style={style}>
       <DmView
-        className={clsx(
-          "px-[12] py-[8]",
-          isSelected ? "bg-pink" : "bg-white"
-        )}
-        style={[styles.borderBase, { borderColor: isSelected ? "#CC0000" : "#D9D9D9" }]}
+        style={[
+          a.px_12,
+          a.py_8,
+          isSelected ? styles.boxWrapSelected : styles.boxWrapNotSelected,
+          styles.borderBase,
+          { borderColor: isSelected ? "#CC0000" : "#D9D9D9" },
+        ]}
       >
-        <DmView className="flex-row items-center gap-[8]">
+        {/* NativeWind's gap-[8] drew -8 left and top on the row and 8 left
+            and top on each child; styles.gapRow / gapChild draw the same. */}
+        <DmView style={[a.flex_row, a.items_center, styles.gapRow]}>
+          {/* The checkmark: LegacyText draws what the DmText here drew; ds
+              Text takes no fontWeight in its style (pass 2, latent-bugs). */}
           {isSelected && (
-            <DmText style={styles.checkmarkText}>✓</DmText>
+            <LegacyText style={[styles.checkmarkText, styles.gapChild]}>
+              ✓
+            </LegacyText>
           )}
 
           {imageUrl ? (
-            <DmView style={styles.imageContainer}>
-              <SvgUriContainer
-                uri={imageUrl}
-                width={100}
-              />
+            <DmView style={[styles.imageContainer, styles.gapChild]}>
+              <SvgUriContainer uri={imageUrl} width={100} />
             </DmView>
           ) : (
-            <DmView className="w-[60] h-[60] bg-grey29 rounded-[8]" />
+            <DmView style={[styles.box, styles.gapChild]} />
           )}
         </DmView>
       </DmView>
-    </DmView>
+    </Answer>
   )
 }
 

@@ -1,0 +1,52 @@
+{
+ "component": "AddressSelectionModal",
+ "capturedAt": "unknown",
+ "elements": 3,
+ "files": 3,
+ "cases": {
+  "34dc24a147": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onSelectAddress": {
+     "$fn": true
+    },
+    "onSelectNewLocation": {
+     "$fn": true
+    },
+    "onViewAllAddresses": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "hooks/useServiceAddressFlow.tsx:132",
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:852",
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1014"
+   ]
+  },
+  "03e3f31fb8": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onSelectAddress": {
+     "$fn": true
+    },
+    "onSelectNewLocation": {
+     "$fn": true
+    },
+    "onViewAllAddresses": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "hooks/useServiceAddressFlow.tsx:132",
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:852",
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1014"
+   ]
+  }
+ }
+}

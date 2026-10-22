@@ -1,11 +1,13 @@
 import React from "react"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import NativeActionSheet from "components/NativeActionSheet/NativeActionSheet"
 
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   isVisible: boolean
@@ -37,18 +39,20 @@ const MessageBlockedModal: React.FC<Props> = ({
 
   const content = (
     <DmView
-      className="bg-white rounded-t-12 items-center px-[24] pt-[28]"
-      style={{ paddingBottom: insets.bottom + 16 }}
+      style={[styles.box, a.items_center, a.px_24, a.pt_28, { paddingBottom: insets.bottom + 16 }]}
     >
       <WarningTriangleIcon width={48} height={43} />
-      <DmText className="mt-[16] text-13 leading-[20px] font-custom400 text-center">
+      <Text size={13} leading="loose" align="center" style={a.mt_16}>
         {description}
-      </DmText>
-      <ActionBtn
+      </Text>
+      <Button
         title={t("edit_message")}
         onPress={onEdit ?? onClose}
-        className="w-full mt-[20] bg-black rounded-5 h-[47]"
-        textClassName="font-custom600"
+        size="lg"
+        shape="r5"
+        variant="dark"
+        labelWeight="semibold"
+        style={[a.w_full, a.mt_20]}
       />
     </DmView>
   )
