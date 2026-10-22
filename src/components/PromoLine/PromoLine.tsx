@@ -6,12 +6,9 @@ import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 
 interface PromoLineProps {
   promoMessage: string
-  /** Where the banner sits, as classes. */
-  className?: string
   /**
-   * The same as a style, after `className`. Like every twin it takes one key
-   * per side or corner (see NoShorthands).
-   * @dsSlot className
+   * Where the banner sits, as a style. Like every twin it takes one key per
+   * side or corner (see NoShorthands).
    */
   style?: StyleProp<ViewStyle & NoShorthands>
 }
@@ -20,16 +17,8 @@ interface PromoLineProps {
 // too, so the pro's previews of their card match what customers see here. It
 // has no margins of its own, as this one didn't: callers place it. The props
 // are typed here because this app's tsc can't see the shared file's types.
-const PromoLine: React.FC<PromoLineProps> = ({
-  promoMessage,
-  className,
-  style,
-}) => (
-  <SharedPromoLine
-    promoMessage={promoMessage}
-    className={className}
-    style={style}
-  />
+const PromoLine: React.FC<PromoLineProps> = ({ promoMessage, style }) => (
+  <SharedPromoLine promoMessage={promoMessage} style={style} />
 )
 
 export default PromoLine
