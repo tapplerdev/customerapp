@@ -24,6 +24,7 @@ import {
   captureCommit,
   expectParity,
   parityName,
+  type ParityAllowance,
 } from "testing/hostTreeParity"
 import {
   componentImport,
@@ -35,6 +36,9 @@ import {
   type HarvestOptions,
 } from "testing/harvest"
 /* eslint-enable import/first */
+
+/** What Button draws differently from the ActionBtn it replaced (listed deltas only, on its root): the sheet's button */
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const FILES = harvestFilesFor(__dirname, "LeaveReviewModal")
 
@@ -95,7 +99,9 @@ if (harvesting()) {
         platform: env.platform,
         navigation: "none",
       })
-      expectParity(parityName(id, env), tree)
+      expectParity(parityName(id, env), tree, {
+        allow: entry.props.isVisible === true ? BUTTON : undefined,
+      })
     })
   })
 }
