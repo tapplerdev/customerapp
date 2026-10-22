@@ -159,7 +159,7 @@ describe("what a render sets up", () => {
     expect(text(tree, "moment")).toBe("en Tuesday")
   })
 
-  it("the Latin faces customerapp draws (Montserrat), and NativeWind compiling", async () => {
+  it("the Latin faces customerapp draws (Montserrat), as ds Text draws them", async () => {
     const tree = await renderScreen(probe, screenState("data"))
     const face = tree?.children.find(
       (child) => typeof child !== "string" && child.children[0] === "face"

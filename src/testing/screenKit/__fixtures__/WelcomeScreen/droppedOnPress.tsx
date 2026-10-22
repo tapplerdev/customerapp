@@ -1,12 +1,13 @@
 /*
- * Jest only, for example.parity.tsx: WelcomeScreen.tsx as it is at e30b19a,
- * with one change: the English button's onPress dropped. Every comparison it
- * changes must fail.
+ * Jest only, for example.parity.tsx: WelcomeScreen.tsx as it is after W2
+ * (off NativeWind, on ds Text and Button), with one change: the English button's onPress dropped.
+ * Every comparison it changes must fail.
  */
 import React, { useEffect, useState } from "react"
 
 // Components
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
+import LegacyText from "@tappler/shared/src/components/LegacyText"
 import { SafeAreaView } from "react-native-safe-area-context"
 import RNRestart from "react-native-restart"
 
@@ -19,10 +20,11 @@ import { useTypedSelector } from "store"
 import { RootStackScreenProps } from "navigation/types"
 
 // Styles & Assets
-import clsx from "clsx"
 import { I18nManager } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import styles from "screens/onboardingScreens/WelcomeScreen/styles"
 
 type Props = RootStackScreenProps<"WelcomeScreen">
 
@@ -47,49 +49,54 @@ const WelcomeScreen: React.FC<Props> = () => {
   }, [])
 
   return (
-    <SafeAreaView className="flex-1 justify-center items-center px-[33] bg-white">
+    <SafeAreaView style={[a.flex_1, a.justify_center, a.items_center, styles.safeArea]}>
       {isLoading && <LoadingOverlay />}
       {!isLoading && (
         <>
-          <DmText className="font-sans700 text-18 leading-[31px] text-center">
+          <Text size={18} weight="bold" leading={px(31)} align="center" family="arabic">
             الرجاء اختيار اللغة
-          </DmText>
-          <DmText className="mt-[11] font-montserrat600 text-18 leading-[22px] text-center">
+          </Text>
+          <Text size={18} weight="semibold" leading="tight" align="center" family="latin" style={styles.text}>
             Please Select Your Language
-          </DmText>
+          </Text>
           <DmView
-            className={clsx(
-              "mt-[21] w-full flex-row items-center justify-between",
-              I18nManager.isRTL && "flex-row-reverse"
-            )}
+            style={[
+              styles.row,
+              a.w_full,
+              a.flex_row,
+              a.items_center,
+              a.justify_between,
+              I18nManager.isRTL && styles.rowRtl,
+            ]}
           >
-            <ActionBtn
-              className={clsx(
-                "mr-[10] flex-1",
-                I18nManager.isRTL && "ml-[10] mr-[0]"
-              )}
-              textClassName="font-montserrat500"
+            <Button
+              labelFamily="latin"
+              style={[a.mr_10, a.flex_1, I18nManager.isRTL && styles.buttonRtl]}
               title="English"
             />
-            <ActionBtn
-              className={clsx(
-                "ml-[10] flex-1",
-                I18nManager.isRTL && "mr-[10] ml-[0]"
-              )}
-              textClassName={clsx(
-                "font-sans700",
-                !I18nManager.isRTL && "leading-[25px]"
-              )}
+            <Button
+              labelWeight="bold"
+              labelFamily="arabic"
+              labelLeading={I18nManager.isRTL ? undefined : "loose"}
+              style={[
+                a.ml_10,
+                a.flex_1,
+                I18nManager.isRTL && styles.buttonRtl2,
+              ]}
               onPress={() => handleSubmit("ar")}
               title="عربي"
             />
           </DmView>
-          <DmText className="mt-[32] text-13 text-grey font-sans400 leading-[22px] text-center">
+          <LegacyText
+            family="system"
+            arabicLeading={px(22)}
+            style={styles.arabicNote}
+          >
             يمكنك تغيير اللغة في أي وقت بالذهاب الى "الإعدادات"
-          </DmText>
-          <DmText className="mt-[10] text-grey text-12 font-montserrat400 text-center">
+          </LegacyText>
+          <Text size={12} leading="legacy" align="center" family="latin" style={[a.mt_10, styles.text2]}>
             You can change the language later from "Settings"
-          </DmText>
+          </Text>
         </>
       )}
     </SafeAreaView>

@@ -17,9 +17,13 @@ import {
  * (__fixtures__/ExampleScreen: class names, DmText, ActionBtn, the store and
  * an endpoint), as README.md in src/testing writes it out:
  *
- * 1. Before the conversion: this block renders the screen in each state
- *    (data, empty, loading) for every row of PARITY_MATRIX, and
- *    `yarn ds:parity:capture <this file>` writes __parity__/workflow.parity.json.
+ * 1. Before the conversion: the screen was rendered in each state (data,
+ *    empty, loading) for every row of PARITY_MATRIX, and
+ *    `yarn ds:parity:capture` wrote __parity__/workflow.parity.json, with
+ *    NativeWind in the build. Since W3.1 nothing renders the class-name
+ *    screen: its classes draw only through NativeWind's plugin, which W3.2
+ *    takes out, and the fixture is the record of what it drew
+ *    (archive/ca-pass1-tools renders it).
  * 2. The conversion (__fixtures__/ExampleScreen.converted) draws the same
  *    trees, with Button's listed deltas allowed on its root only.
  * 3. A conversion one point off (__fixtures__/ExampleScreen.mutant) fails.
@@ -31,7 +35,6 @@ const rows = rowsByPlatform(
   PARITY_MATRIX
 )
 
-const BEFORE = () => require("../__fixtures__/ExampleScreen")
 const CONVERTED = () => require("../__fixtures__/ExampleScreen.converted")
 const MUTANT = () => require("../__fixtures__/ExampleScreen.mutant")
 
@@ -45,15 +48,6 @@ const render = (
     lang: env.language,
     platform: env.platform,
   })
-
-describe("the screen before its conversion (the captured fixture)", () => {
-  it.each(rows)(
-    "$state [$env.language $env.platform]",
-    async ({ state, env }) => {
-      expectParity(parityName(state, env), await render(BEFORE, state, env))
-    }
-  )
-})
 
 const compareOnly = captureMode() === "compare" ? describe : describe.skip
 
@@ -86,10 +80,10 @@ compareOnly("the converted screen", () => {
   )
 })
 
-describe("what the states drew", () => {
+describe("what the states draw", () => {
   it("data shows the backend's count, empty a zero, loading the placeholder", async () => {
     const text = async (state: ScreenStateName) => {
-      const session = await openScreen(BEFORE, screenState(state))
+      const session = await openScreen(CONVERTED, screenState(state))
       try {
         return JSON.stringify(session.tree())
       } finally {

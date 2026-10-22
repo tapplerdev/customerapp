@@ -24,18 +24,20 @@ import {
  * picker a fresh install opens on), captured from the unconverted code in
  * every row of PARITY_MATRIX, as it opens and after each language button is
  * pressed. Its source was e30b19a's when the fixture was captured, and so
- * was everything it draws.
+ * was everything it draws; the screen drawn here is the converted one
+ * (ds Text and Button), which draws the same rows.
  *
- * Then five copies of the same file, each with one change, compared with
- * that fixture (__fixtures__/WelcomeScreen/): a margin, a colour, a value
- * only Arabic draws (an RTL branch), a dropped onPress, and an onPress that
- * does nothing. Each must fail where its change draws, and only there: the
- * Arabic-only change passes the English rows, the do-nothing handler passes
- * every row until the button is pressed.
+ * Then five copies of the converted file, each with one change, compared
+ * with that fixture (__fixtures__/WelcomeScreen/): a margin, a colour, a
+ * value only Arabic draws (an RTL branch), a dropped onPress, and an onPress
+ * that does nothing. Each must fail where its change draws, and only there:
+ * the Arabic-only change passes the English rows, the do-nothing handler
+ * passes every row until the button is pressed. (They were copies of the
+ * unconverted file until W3.1; they drew through NativeWind then, and
+ * archive/ca-pass1-tools still has them.)
  *
  * The real screen's rows allow Button's two listed deltas (on a Button's
- * root only), so they keep proving the screen after W2 converts its
- * ActionBtns; on the unconverted code they accept nothing.
+ * root only), which the converted screen's Buttons need.
  */
 
 const WELCOME = () =>

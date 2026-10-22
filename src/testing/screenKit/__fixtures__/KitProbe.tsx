@@ -17,7 +17,7 @@ import { LinearGradient } from "react-native-linear-gradient"
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { FlashList } from "@shopify/flash-list"
 
-import { DmText } from "@tappler/shared/src/components/UI"
+import { Text as DsText } from "@tappler/shared/src/ds"
 import { useTypedSelector, store } from "store"
 import { useGetChatsQuery, useGetNotificationsQuery } from "services/api"
 
@@ -69,7 +69,10 @@ const KitProbe = () => {
       >
         go
       </Text>
-      <DmText className="text-20 font-custom600">face</DmText>
+      {/* The faces the kit registers, as the design system draws them. */}
+      <DsText size={20} weight="semibold">
+        face
+      </DsText>
       <LinearGradient colors={["#000000", "#FFFFFF"]} style={{ height: 4 }} />
       <FlashList
         data={["a", "b"]}
