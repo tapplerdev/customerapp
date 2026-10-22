@@ -51,8 +51,10 @@ import type { ServiceQuestionType, ServiceType } from "types/cms"
 const NAME = "ServiceRequestDetailsScreen"
 const load = () => require("../ServiceRequestDetailsScreen")
 
-// Next / Continue is an ActionBtn before the conversion and a ds Button after.
-const BUTTON: ParityAllowance[] = []
+// Next / Continue is an ActionBtn before the conversion and a ds Button after,
+// drawn in every state but the loading overlay: emptied, those 64 rows fail, and
+// each of the two allowances alone fails them all, so each needs both.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const FILTER_QUESTION: ServiceQuestionType = {
   ...QUESTION_PLACE,
@@ -150,7 +152,7 @@ type Case = {
 }
 
 const CASES: Case[] = [
-  { state: "loading", service: "loading" },
+  { state: "loading", service: "loading", allow: [] },
   { state: "the first question", params: params(FRESH) },
   {
     state: "the first question answered",
