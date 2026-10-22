@@ -4,6 +4,8 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import SearchIcon from "assets/icons/search-red.svg"
+import { px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 interface Props {
   searchText: string
@@ -22,7 +24,7 @@ const SearchMessagesComponent: React.FC<Props> = ({
   })
 
   return (
-    <DmView className="px-[15]" style={{ shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 }}>
+    <DmView style={[styles.container, { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 }]}>
       <Controller
         control={control}
         rules={{ required: true }}
@@ -30,8 +32,9 @@ const SearchMessagesComponent: React.FC<Props> = ({
           <DmInput
             isAnimText={false}
             Icon={<SearchIcon />}
-            className="h-[39] bg-grey52 border-0.2"
-            inputClassName="text-15 leading-[19px]"
+            height={39}
+            containerStyle={styles.containerContainer}
+            inputType={{ size: 15, arabicLeading: px(19) }}
             value={searchText}
             placeholder={t("search_messages")}
             onChangeText={(text) => {

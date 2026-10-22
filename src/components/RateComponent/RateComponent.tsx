@@ -2,18 +2,18 @@ import React from "react"
 import { DimensionValue } from "react-native"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 
 import StarIcon from "assets/icons/star.svg"
 
 import styles from "./styles"
+import { Text, a } from "@tappler/shared/src/ds"
 
 interface Props {
   rate: number
   reviewsCount?: number
   itemSize?: number
-  className?: string
   showFullReviewText?: boolean
 }
 
@@ -21,7 +21,6 @@ const RateComponent: React.FC<Props> = ({
   rate,
   reviewsCount,
   itemSize = 12,
-  className,
   showFullReviewText = false,
 }) => {
   const { t } = useTranslation()
@@ -44,12 +43,10 @@ const RateComponent: React.FC<Props> = ({
 
     return (
       <DmView
-        className="bg-grey14 mr-[5]"
-        style={{ width: itemSize, height: itemSize }}
+        style={[styles.container, { width: itemSize, height: itemSize }]}
       >
         <DmView
-          className="bg-red6 h-full"
-          style={{ width: itemWidth as DimensionValue }}
+          style={[styles.iconWrap, a.h_full, { width: itemWidth as DimensionValue }]}
         >
           <StarIcon
             width={itemSize}
@@ -64,17 +61,17 @@ const RateComponent: React.FC<Props> = ({
 
   if (!rate && reviewsCount !== undefined && reviewsCount === 0 && !showFullReviewText) {
     return (
-      <DmView className={`flex-row items-center ${className || ""}`}>
-        <DmText className="text-11 leading-[14px] font-custom500 text-grey" style={styles.italic}>
+      <DmView style={[a.flex_row, a.items_center]}>
+        <Text size={11} weight="medium" leading="tight" style={[styles.newOnTappler, styles.italic]}>
           {t("new_on_tappler")}
-        </DmText>
+        </Text>
       </DmView>
     )
   }
 
   return (
-    <DmView className={`flex-row items-center ${className || ""}`}>
-      <DmView className="flex-row items-center">
+    <DmView style={[a.flex_row, a.items_center]}>
+      <DmView style={[a.flex_row, a.items_center]}>
         {[1, 2, 3, 4, 5].map((item) => (
           <DmView key={item}>{renderStar(item)}</DmView>
         ))}
@@ -82,27 +79,27 @@ const RateComponent: React.FC<Props> = ({
       {reviewsCount !== undefined ? (
         showFullReviewText ? (
           <>
-            <DmText className="ml-[5] text-13 leading-[16px] font-custom600">
+            <Text size={13} weight="semibold" leading="tight" style={styles.text}>
               {`${rate % 1 === 0 ? rate : rate.toFixed(1)} ${t("of")} 5`}
-            </DmText>
-            <DmText className="ml-[5] text-13 leading-[16px] font-custom500">
+            </Text>
+            <Text size={13} weight="medium" leading="tight" style={styles.text}>
               {`(${reviewsCount} ${reviewsCount === 1 ? t("review_singular") : t("reviews")})`}
-            </DmText>
+            </Text>
           </>
         ) : (
           <>
-            <DmText className="ml-[3] text-11 leading-[14px] font-custom500">
+            <Text size={11} weight="medium" leading="tight" style={styles.text2}>
               {`${rate % 1 === 0 ? rate : rate.toFixed(1)} ${t("of")} 5`}
-            </DmText>
-            <DmText className="ml-[3] text-11 leading-[14px] font-custom500 text-grey">
+            </Text>
+            <Text size={11} weight="medium" leading="tight" style={styles.text3}>
               ({reviewsCount})
-            </DmText>
+            </Text>
           </>
         )
       ) : (
-        <DmText className={`ml-[5] ${showFullReviewText ? "text-13 leading-[16px]" : "text-11 leading-[14px]"} font-custom500`}>
+        <Text size={showFullReviewText ? 13 : 11} weight="medium" leading="tight" style={styles.text}>
           {rate % 1 === 0 ? rate : rate.toFixed(1)} {t("of")} 5
-        </DmText>
+        </Text>
       )}
     </DmView>
   )

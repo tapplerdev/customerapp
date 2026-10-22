@@ -1,9 +1,11 @@
 import React from "react"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
 import colors from "@tappler/shared/src/styles/colors"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const RADIUS = 12
 const TAIL = 2
@@ -43,31 +45,32 @@ const SystemEventBubble: React.FC<{
 
   return (
     <DmView
-      className="overflow-hidden py-[8] px-[14]"
-      style={{
+      style={[a.overflow_hidden, a.py_8, a.px_14, {
         backgroundColor: isAlert ? colors.red : colors.pink5,
         borderTopLeftRadius: RADIUS,
         borderTopRightRadius: RADIUS,
         borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
         borderBottomRightRadius: tailLeft ? RADIUS : TAIL,
-      }}
+      }]}
     >
-      <DmText
-        className="text-13 leading-[17px] font-custom600"
+      <Text
+        size={13}
+        weight="semibold"
+        leading={px(17)}
         style={{ textAlign: "left", color: isAlert ? "#FFFFFF" : colors.red }}
       >
         {t(textKey)}
-      </DmText>
+      </Text>
       {time ? (
-        <DmText
-          className="mt-[3] text-10 leading-[13px] font-custom400"
-          style={{
+        <Text
+          size={10}
+          style={[styles.text, {
             color: isAlert ? "rgba(255,255,255,0.75)" : colors.grey3,
             textAlign: "left",
-          }}
+          }]}
         >
           {time}
-        </DmText>
+        </Text>
       ) : null}
     </DmView>
   )

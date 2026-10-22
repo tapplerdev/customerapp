@@ -6,10 +6,10 @@ import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import BannerContainer, {
   BannerTab,
 } from "components/BannerContainer/BannerContainer"
+import { a } from "@tappler/shared/src/ds"
 
 interface OffersSectionProps {
   subscriptions: any[]
-  className?: string
   compact?: boolean
   /**
    * "banner" (default) — the red OFFERS tab treatment (BannerContainer).
@@ -37,7 +37,6 @@ const STRIP_STYLE = { backgroundColor: "#FFF8F8", rowGap: 6 }
 
 const OffersSection: React.FC<OffersSectionProps> = ({
   subscriptions,
-  className = "",
   compact = false,
   variant = "banner",
 }) => {
@@ -57,18 +56,17 @@ const OffersSection: React.FC<OffersSectionProps> = ({
 
   if (variant === "strip") {
     return (
-      <DmView className={className}>
+      <DmView>
         {/* The profile page's OFFERS tab (BannerContainer's, same copy), on
             the band's top edge and inset 10pt over its first sticker (#503).
             The card lost it on 2026-07-26 (11ea1f8), when its stickers left
             the banner for this band. The pro app's preview of this card
             (ProfileCardPreview) draws the same tab and band: keep in sync. */}
-        <DmView className="px-[10]">
+        <DmView style={a.px_10}>
           <BannerTab text={t("offers")} />
         </DmView>
         <DmView
-          className="flex-row flex-wrap items-center py-[8] px-[10]"
-          style={STRIP_STYLE}
+          style={[a.flex_row, a.flex_wrap, a.items_center, a.py_8, a.px_10, STRIP_STYLE]}
         >
           {stickerProducts.map((sub: any, idx: number) => {
             const uri = stickerUri(sub)

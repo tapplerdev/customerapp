@@ -1,0 +1,220 @@
+{
+ "component": "ProCardBase",
+ "capturedAt": "4a30826",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "349a8e4482": {
+   "props": {
+    "displayName": {
+     "$opaque": "displayName"
+    },
+    "photoUrl": {
+     "$opaque": "photoUrl"
+    },
+    "isCompany": {
+     "$opaque": "isCompany"
+    },
+    "overallScore": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "isFeatured": {
+     "$opaque": "isFeatured"
+    },
+    "trustDocs": {
+     "$opaque": "trustDocs"
+    },
+    "subscriptions": {
+     "$opaque": "subscriptions"
+    },
+    "offerAmount": {
+     "$opaque": "item.ratePerHour"
+    },
+    "opportunityNotes": {
+     "$opaque": "item.opportunityNotes"
+    },
+    "showOfferBadge": true,
+    "showOpportunityNotes": true,
+    "showSelectPassButtons": false,
+    "isRejected": false,
+    "isAr": {
+     "$opaque": "isAr"
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "onSelect": {
+     "$fn": true
+    },
+    "onPass": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:499"
+   ]
+  },
+  "e2764c8823": {
+   "props": {
+    "displayName": {
+     "$opaque": "displayName"
+    },
+    "photoUrl": {
+     "$opaque": "photoUrl"
+    },
+    "isCompany": {
+     "$opaque": "isCompany"
+    },
+    "overallScore": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "isFeatured": {
+     "$opaque": "isFeatured"
+    },
+    "trustDocs": {
+     "$opaque": "trustDocs"
+    },
+    "subscriptions": {
+     "$opaque": "subscriptions"
+    },
+    "offerAmount": {
+     "$opaque": "item.ratePerHour"
+    },
+    "opportunityNotes": {
+     "$opaque": "item.opportunityNotes"
+    },
+    "showOfferBadge": true,
+    "showOpportunityNotes": true,
+    "showSelectPassButtons": true,
+    "isRejected": false,
+    "isAr": {
+     "$opaque": "isAr"
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "onSelect": {
+     "$fn": true
+    },
+    "onPass": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:499"
+   ]
+  },
+  "d284d64acd": {
+   "props": {
+    "displayName": {
+     "$opaque": "displayName"
+    },
+    "photoUrl": {
+     "$opaque": "photoUrl"
+    },
+    "isCompany": {
+     "$opaque": "isCompany"
+    },
+    "overallScore": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "isFeatured": {
+     "$opaque": "isFeatured"
+    },
+    "trustDocs": {
+     "$opaque": "trustDocs"
+    },
+    "subscriptions": {
+     "$opaque": "subscriptions"
+    },
+    "offerAmount": {
+     "$opaque": "item.ratePerHour"
+    },
+    "opportunityNotes": {
+     "$opaque": "item.opportunityNotes"
+    },
+    "showOfferBadge": true,
+    "showOpportunityNotes": true,
+    "showSelectPassButtons": false,
+    "isRejected": true,
+    "isAr": {
+     "$opaque": "isAr"
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "onSelect": {
+     "$fn": true
+    },
+    "onPass": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:499"
+   ]
+  },
+  "c12542e566": {
+   "props": {
+    "displayName": {
+     "$opaque": "displayName"
+    },
+    "photoUrl": {
+     "$opaque": "photoUrl"
+    },
+    "isCompany": {
+     "$opaque": "isCompany"
+    },
+    "overallScore": {
+     "$opaque": "overallScore"
+    },
+    "reviewsCount": {
+     "$opaque": "reviewsCount"
+    },
+    "isFeatured": {
+     "$opaque": "isFeatured"
+    },
+    "trustDocs": {
+     "$opaque": "trustDocs"
+    },
+    "subscriptions": {
+     "$opaque": "subscriptions"
+    },
+    "offerAmount": {
+     "$opaque": "item.ratePerHour"
+    },
+    "opportunityNotes": {
+     "$opaque": "item.opportunityNotes"
+    },
+    "showOfferBadge": true,
+    "showOpportunityNotes": true,
+    "showSelectPassButtons": true,
+    "isRejected": true,
+    "isAr": {
+     "$opaque": "isAr"
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "onSelect": {
+     "$fn": true
+    },
+    "onPass": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:499"
+   ]
+  }
+ }
+}

@@ -6,6 +6,7 @@ import JobLocationMap, {
   isAreaWorthDrawing,
 } from "@tappler/shared/src/components/JobLocationMap"
 import { useGetAreaGeometryQuery, useGetPointAreasQuery } from "services/api"
+import styles from "./styles"
 
 type Props = {
   // Delivery pins this exact point; pickup only uses it to look up the area.
@@ -46,7 +47,7 @@ const OrderLocationMap: React.FC<Props> = ({ coords, isPickup }) => {
   // height while they run so the page doesn't shove itself down mid-read; the
   // rare pro outside a curated area collapses it once, on resolution.
   if (isPickup && hasPoint && (isResolvingArea || isLoadingOutline)) {
-    return <DmView className="h-[180] bg-grey58" />
+    return <DmView style={styles.container} />
   }
 
   return (

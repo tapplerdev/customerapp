@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals"
 import React, { act } from "react"
+import { StyleSheet } from "react-native"
 import TestRenderer from "react-test-renderer"
 
 import type { ProType } from "types/pro"
@@ -100,7 +101,8 @@ const tabLabels = (card: Node) =>
   findAll(card, (n) =>
     (n.children ?? []).some((c) => typeof c === "string" && /^OFFERS?$/.test(c))
   ).map((n) => (n.children ?? []).filter((c) => typeof c === "string").join(""))
-const isBand = (n: Node) => n.props.style?.backgroundColor === "#FFF8F8"
+const isBand = (n: Node) =>
+  StyleSheet.flatten(n.props.style)?.backgroundColor === "#FFF8F8"
 
 describe("ProCard: the OFFERS tab", () => {
   beforeAll(async () => {

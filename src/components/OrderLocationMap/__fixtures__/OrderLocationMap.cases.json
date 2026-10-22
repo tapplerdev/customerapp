@@ -1,0 +1,32 @@
+{
+ "component": "OrderLocationMap",
+ "capturedAt": "2a07944",
+ "elements": 2,
+ "files": 2,
+ "cases": {
+  "11edc30ecf": {
+   "props": {
+    "coords": {
+     "$opaque": "mapCoords"
+    },
+    "isPickup": false
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:155",
+    "screens/dashboardScreens/RequestDetailsScreen/RequestDetailsScreen.tsx:167"
+   ]
+  },
+  "27c5a31acd": {
+   "props": {
+    "coords": {
+     "$opaque": "mapCoords"
+    },
+    "isPickup": true
+   },
+   "sites": [
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:155",
+    "screens/dashboardScreens/RequestDetailsScreen/RequestDetailsScreen.tsx:167"
+   ]
+  }
+ }
+}

@@ -3,7 +3,12 @@
 import { describe, it } from "@jest/globals"
 
 import { renderScreen, rowsByPlatform } from "testing/screenKit"
-import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
+import {
+  PARITY_MATRIX,
+  expectParity,
+  parityName,
+  type ParityAllowance,
+} from "testing/hostTreeParity"
 
 /*
  * ProCardBase's promo line (the Other Pros card and the offers list's), with
@@ -13,6 +18,9 @@ import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
  */
 
 const load = () => require("../ProCardBase")
+
+/** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const promoLine = {
   id: 7,
@@ -68,6 +76,13 @@ describe("ProCardBase promo line, captured before the dead className went", () =
       navigation: "none",
       props: { ...row.props, isAr: row.env.language === "ar" },
     })
-    expectParity(parityName(row.name, row.env), tree)
+    // Select me and Pass are ActionBtns the conversion turned into Buttons:
+    // their listed deltas, on the row that draws them.
+    const buttons = "showSelectPassButtons" in row.props
+    expectParity(
+      parityName(row.name, row.env),
+      tree,
+      buttons ? { allow: BUTTON } : undefined
+    )
   })
 })
