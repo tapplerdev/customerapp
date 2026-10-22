@@ -11,6 +11,7 @@ import {
   rowsByPlatform,
   treeAfter,
   wait,
+  type BackendFixtures,
   type Step,
 } from "testing/screenKit"
 import { pressContaining } from "testing/pressContaining"
@@ -144,7 +145,7 @@ type Case = {
   state: string
   guest?: boolean
   params?: object
-  api?: Record<string, unknown>
+  api?: BackendFixtures
   insets?: { bottom: number }
   steps?: (env: ParityEnv) => Step[]
   allow?: ParityAllowance[]

@@ -9,15 +9,12 @@ import {
   pressTitled,
   rowsByPlatform,
   treeAfter,
+  type BackendFixtures,
   type Step,
 } from "testing/screenKit"
 import { pressContaining } from "testing/pressContaining"
 import { guestState, screenState } from "testing/screenKit/states"
-import {
-  DATA,
-  SERVER_ERROR,
-  type BackendFixtures,
-} from "testing/screenKit/fixtures/api"
+import { DATA, SERVER_ERROR } from "testing/screenKit/fixtures/api"
 import { JOB } from "testing/screenKit/fixtures/entities"
 import {
   PARITY_MATRIX,
