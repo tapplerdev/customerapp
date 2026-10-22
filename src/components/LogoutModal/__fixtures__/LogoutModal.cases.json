@@ -1,0 +1,80 @@
+{
+ "component": "LogoutModal",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "9761b41d1b": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onModalHide": {
+     "$fn": true
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": false
+   },
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:315"
+   ]
+  },
+  "7cc02dd462": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onModalHide": {
+     "$fn": true
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": false
+   },
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:315"
+   ]
+  },
+  "ffb620dcc8": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "onModalHide": {
+     "$fn": true
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": true
+   },
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:315"
+   ]
+  },
+  "c9c55003bd": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "onModalHide": {
+     "$fn": true
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "isLoading": true
+   },
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:315"
+   ]
+  }
+ }
+}
