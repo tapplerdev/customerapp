@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react"
 import { Image } from "react-native"
-import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -28,6 +28,8 @@ import TapplerLogoIcon from "assets/icons/tappler-logo-red.svg"
 import authImg from "assets/images/auth.png"
 import AccountMenuItem from "./components/AccountMenuItem"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const APP_VERSION = "1"
 const APP_BUILD = "25"
@@ -79,34 +81,35 @@ const AccountScreen: React.FC = () => {
 
   if (!isAuth) {
     return (
-      <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+      <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
         <AppScrollView
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Guest CTA */}
-          <DmView className="items-center mt-[40] px-[30]">
+          <DmView style={[a.items_center, a.mt_40, a.px_30]}>
             <Image
               source={authImg}
               style={{ width: 220, height: 146 }}
               resizeMode="contain"
             />
-            <DmText className="mt-[24] text-20 font-custom600 text-black text-center">
+            <Text size={20} weight="semibold" leading="legacy" align="center" style={a.mt_24}>
               {t("sign_in_for_full_experience")}
-            </DmText>
-            <DmText className="mt-[8] text-13 font-custom400 text-grey3 text-center">
+            </Text>
+            <Text size={13} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
               {t("guest_account_benefits")}
-            </DmText>
+            </Text>
 
-            <DmView className="w-full mt-[28] px-[16]">
-              <ActionBtn
-                className="h-[44]"
+            <DmView style={[a.w_full, a.mt_28, a.px_16]}>
+              <Button
+                size="md"
                 title={t("create_account")}
                 onPress={() => navigation.navigate("RegisterScreen")}
               />
-              <ActionBtn
-                className="mt-[12] h-[44]"
+              <Button
+                size="md"
                 variant="white"
+                style={a.mt_12}
                 title={t("log_In")}
                 onPress={() => navigation.navigate("AuthWelcomeScreen")}
               />
@@ -114,7 +117,7 @@ const AccountScreen: React.FC = () => {
           </DmView>
 
           {/* Divider */}
-          <DmView className="h-[0.7] bg-grey19 mt-[32]" />
+          <DmView style={[styles.box, a.mt_32]} />
 
           {/* Guest-accessible menu items */}
           <DmView>
@@ -143,20 +146,20 @@ const AccountScreen: React.FC = () => {
           </DmView>
 
           {/* Spacer */}
-          <DmView className="flex-1" />
+          <DmView style={a.flex_1} />
 
           {/* Footer */}
-          <DmView className="items-center mt-[32] mb-[16]">
+          <DmView style={[a.items_center, a.mt_32, a.mb_16]}>
             <DmView onPress={() => {}}>
-              <DmText className="text-12 font-custom400 text-grey15 text-center">
+              <Text size={12} leading="legacy" align="center" style={styles.offeringServices}>
                 {t("offering_services")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmView className="mt-[24] items-center">
+            <DmView style={[a.mt_24, a.items_center]}>
               <TapplerLogoIcon width={100} height={24} />
-              <DmText className="mt-[4] text-10 font-custom400 text-grey15 text-center">
+              <Text size={10} leading="legacy" align="center" style={[a.mt_4, styles.offeringServices]}>
                 {t("version")}: {APP_VERSION} {t("build")}: {APP_BUILD}
-              </DmText>
+              </Text>
             </DmView>
           </DmView>
         </AppScrollView>
@@ -166,10 +169,10 @@ const AccountScreen: React.FC = () => {
           isVisible={isLangModalVisible}
           onClose={() => setLangModalVisible(false)}
           title={t("choose_your_language")}
-          classNameTitle="text-left mt-[0] w-full"
-          className="pt-[16] pb-[33] px-[32]"
+          titleStyle={[styles.mainModalTitle, a.mt_0, a.w_full]}
+          cardStyle={[a.pt_16, styles.mainModalCard, a.px_32]}
         >
-          <DmView className="mt-[23] items-left w-full">
+          <DmView style={[styles.box2, a.w_full]}>
             <DmChecbox
               title={t("arabic")}
               isChecked={i18n.language === "ar"}
@@ -179,8 +182,8 @@ const AccountScreen: React.FC = () => {
             <DmChecbox
               title={t("english")}
               onPress={() => handleChangeLanguage("en")}
-              className="mt-[23]"
-              textClassName="font-custom400"
+              style={styles.box2}
+              textType={{ weight: "regular" }}
               isChecked={i18n.language === "en"}
             />
           </DmView>
@@ -190,20 +193,20 @@ const AccountScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <DmView className="px-[16] pt-[24] pb-[16]">
-          <DmView className="flex-row">
-            <DmText className="text-22 leading-[29px] font-custom700 text-black">
+        <DmView style={[a.px_16, a.pt_24, a.pb_16]}>
+          <DmView style={a.flex_row}>
+            <Text size={22} weight="bold">
               {t("hi_name", { name: userName })}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
-        <DmView className="h-[0.7] bg-grey19" />
+        <DmView style={styles.box} />
 
         {/* Menu Items */}
         <DmView>
@@ -268,20 +271,20 @@ const AccountScreen: React.FC = () => {
         </DmView>
 
         {/* Spacer */}
-        <DmView className="flex-1" />
+        <DmView style={a.flex_1} />
 
         {/* Footer */}
-        <DmView className="items-center mt-[32] mb-[16]">
+        <DmView style={[a.items_center, a.mt_32, a.mb_16]}>
           <DmView onPress={() => {}}>
-            <DmText className="text-12 font-custom400 text-grey15 text-center">
+            <Text size={12} leading="legacy" align="center" style={styles.offeringServices}>
               {t("offering_services")}
-            </DmText>
+            </Text>
           </DmView>
-          <DmView className="mt-[24] items-center">
+          <DmView style={[a.mt_24, a.items_center]}>
             <TapplerLogoIcon width={100} height={24} />
-            <DmText className="mt-[4] text-10 font-custom400 text-grey15 text-center">
+            <Text size={10} leading="legacy" align="center" style={[a.mt_4, styles.offeringServices]}>
               {t("version")}: {APP_VERSION} {t("build")}: {APP_BUILD}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
       </AppScrollView>
@@ -291,10 +294,10 @@ const AccountScreen: React.FC = () => {
         isVisible={isLangModalVisible}
         onClose={() => setLangModalVisible(false)}
         title={t("choose_your_language")}
-        classNameTitle="text-left mt-[0] w-full"
-        className="pt-[16] pb-[33] px-[32]"
+        titleStyle={[styles.mainModalTitle, a.mt_0, a.w_full]}
+        cardStyle={[a.pt_16, styles.mainModalCard, a.px_32]}
       >
-        <DmView className="mt-[23] items-left w-full">
+        <DmView style={[styles.box2, a.w_full]}>
           <DmChecbox
             title={t("arabic")}
             isChecked={i18n.language === "ar"}
@@ -304,8 +307,8 @@ const AccountScreen: React.FC = () => {
           <DmChecbox
             title={t("english")}
             onPress={() => handleChangeLanguage("en")}
-            className="mt-[23]"
-            textClassName="font-custom400"
+            style={styles.box2}
+            textType={{ weight: "regular" }}
             isChecked={i18n.language === "en"}
           />
         </DmView>

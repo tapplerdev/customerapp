@@ -17,6 +17,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -58,10 +59,20 @@ const pressYes: Step = Object.assign(
   { settleMs: 50 }
 )
 
-const CASES: { state: StateName; label: string; steps?: Step[] }[] = [
+// The guest card's Create account and Log in buttons are ActionBtns turned
+// into ds Buttons by the conversion: Button's own height and accessibility
+// props, on the rows that draw them (the guest's).
+const BUTTONS: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
+const CASES: {
+  state: StateName
+  label: string
+  steps?: Step[]
+  allow?: ParityAllowance[]
+}[] = [
   { state: "signed in", label: "signed in" },
   { state: "signed in, no first name", label: "signed in, no first name" },
-  { state: "guest", label: "guest" },
+  { state: "guest", label: "guest", allow: BUTTONS },
   { state: "signed in", label: "logout asked", steps: [openLogout] },
   {
     state: "signed in",
@@ -73,10 +84,11 @@ const CASES: { state: StateName; label: string; steps?: Step[] }[] = [
 describe("AccountScreen", () => {
   it.each(rowsByPlatform(CASES, PARITY_MATRIX))(
     "$label [$env.language $env.platform]",
-    async ({ state, label, steps, env }) => {
+    async ({ state, label, steps, allow, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, options(state, env), env, steps)
+        await treeAfter(load, options(state, env), env, steps),
+        { allow }
       )
     }
   )

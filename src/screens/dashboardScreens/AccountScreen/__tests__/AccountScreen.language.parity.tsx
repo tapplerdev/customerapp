@@ -16,6 +16,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -49,15 +50,22 @@ describe("AccountScreen language picker", () => {
   it.each(
     rowsByPlatform(
       [
-        { state: "signed in" as const, label: "language picker open, signed in" },
-        { state: "guest" as const, label: "language picker open, guest" },
+        { state: "signed in" as const, label: "language picker open, signed in", allow: [] as ParityAllowance[] },
+        // The guest card behind the picker draws Create account and Log in,
+        // ActionBtns turned into ds Buttons.
+        {
+          state: "guest" as const,
+          label: "language picker open, guest",
+          allow: ["buttonHeight", "buttonAccessibility"] as ParityAllowance[],
+        },
       ],
       PARITY_MATRIX
     )
-  )("$label [$env.language $env.platform]", async ({ state, label, env }) => {
+  )("$label [$env.language $env.platform]", async ({ state, label, allow, env }) => {
     expectParity(
       parityName(label, env),
-      await treeAfter(load, options(state, env), env, [openLanguage])
+      await treeAfter(load, options(state, env), env, [openLanguage]),
+      { allow }
     )
   })
 })
