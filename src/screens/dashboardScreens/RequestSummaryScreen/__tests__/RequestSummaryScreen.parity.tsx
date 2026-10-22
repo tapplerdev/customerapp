@@ -55,8 +55,11 @@ import type { QuestionAnswerType } from "types/job"
 const NAME = "RequestSummaryScreen"
 const load = () => require("../RequestSummaryScreen")
 
-// Send is an ActionBtn before the conversion and a ds Button after it.
-const BUTTON: ParityAllowance[] = []
+// Send is an ActionBtn before the conversion and a ds Button after it, in every
+// row (its loading and disabled rows too): emptied, all 76 rows fail, and each
+// allowance alone fails them all, so each row needs both. Its `rounded-[12]`
+// drew nothing (a latent row), so the Button has no shape prop.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const MULTI: ServiceQuestionType = {
   id: 703,
