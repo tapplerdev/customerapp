@@ -93,13 +93,13 @@ const findAll = (node: Node, match: (n: Node) => boolean): Node[] => [
   ...(match(node) ? [node] : []),
   ...kids(node).flatMap((child) => findAll(child, match)),
 ]
-// Every red banner tab on the card (BannerContainer's and the promo line's
-// share these classes), by its label.
+// Every red banner tab on the card (BannerContainer's and the promo line's),
+// by its label, in tree order: found by the words they draw, not by a class
+// string, since shared's PromoLine draws through the design system now.
 const tabLabels = (card: Node) =>
-  findAll(
-    card,
-    (n) => n.type === "DmView" && n.props.className === "bg-red px-[4] py-[2]"
-  ).map((tab) => kids(tab)[0].children?.join(""))
+  findAll(card, (n) =>
+    (n.children ?? []).some((c) => typeof c === "string" && /^OFFERS?$/.test(c))
+  ).map((n) => (n.children ?? []).filter((c) => typeof c === "string").join(""))
 const isBand = (n: Node) => n.props.style?.backgroundColor === "#FFF8F8"
 
 describe("ProCard: the OFFERS tab", () => {
