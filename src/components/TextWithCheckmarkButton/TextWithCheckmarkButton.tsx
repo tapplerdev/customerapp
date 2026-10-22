@@ -2,8 +2,7 @@ import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Text, a, type NoShorthands } from "@tappler/shared/src/ds"
 
 import styles from "./styles"
 import CheckmarkIcon from "assets/icons/check-mark.svg"

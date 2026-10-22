@@ -1,11 +1,6 @@
 import React, { useCallback, useRef, useState } from "react"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import {
-  withType,
-  type SizeBringsLeading,
-} from "@tappler/shared/src/components/classNameSlots"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 
 import Animated, {
   useAnimatedStyle,
@@ -24,6 +19,9 @@ import {
   type DsTextStyle,
   type TextSizeOrPx,
   type TextType,
+  withType,
+  type SizeBringsLeading,
+  type NoShorthands,
 } from "@tappler/shared/src/ds"
 import styles from "./styles"
 

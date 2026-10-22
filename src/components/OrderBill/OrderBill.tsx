@@ -3,8 +3,13 @@ import { useTranslation } from "react-i18next"
 import type { StyleProp, ViewStyle } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
-import { Text, a, px, type DsTextStyle } from "@tappler/shared/src/ds"
+import {
+  Text,
+  a,
+  px,
+  type DsTextStyle,
+  type NoShorthands,
+} from "@tappler/shared/src/ds"
 import { formatMoney } from "store/cart/slice"
 import { JobType } from "types/job"
 import styles from "./styles"

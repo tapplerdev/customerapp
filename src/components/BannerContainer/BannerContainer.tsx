@@ -1,10 +1,9 @@
 import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Text, a, type NoShorthands } from "@tappler/shared/src/ds"
 
 // The banner's red tab: the text in white capitals, rounded on top, from the
 // start edge (left in English, right in Arabic). BannerContainer draws it over
