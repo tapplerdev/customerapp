@@ -94,7 +94,7 @@ const CalendarTimeSheet: React.FC<Props> = ({
         </DmView>
 
         <AppScrollView
-          className="flex-1"
+          style={a.flex_1}
           bounces={false}
           showsVerticalScrollIndicator={false}
         >
