@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import clsx from "clsx"
-import { Animated, View, ViewToken } from "react-native"
+import { Animated, View, ViewToken, StyleSheet } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
@@ -12,7 +12,7 @@ import {
 
 import FastImage from "react-native-fast-image"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyOpenChatQuery, useLazyGetChatMessagesQuery } from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
@@ -43,6 +43,7 @@ import JobDetailsIcon from "assets/icons/job-details.svg"
 import FilterSlidersIcon from "assets/icons/filter-sliders.svg"
 import ErrorModal from "components/ErrorModal"
 import styles from "./styles"
+import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"ProsListingScreen">
 
@@ -823,14 +824,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   )
 
   return (
-    <View className="flex-1" style={styles.screenBg}>
+    <View style={[atoms.flex_1, styles.screenBg]}>
       {/* White status bar area */}
       <View style={{ backgroundColor: "#FFFFFF", paddingTop: insets.top }} />
-      <DmView className="flex-1">
+      <DmView style={atoms.flex_1}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[12] py-[10] bg-white">
+      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_12, atoms.py_10, styles.row]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleGoBack}
         >
@@ -841,51 +842,50 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
         {/* Search pill */}
         <DmView
-          className="flex-1 flex-row items-center bg-white rounded-full mx-[8] px-[12] h-[38]"
-          style={styles.searchPill}
+          style={[atoms.flex_1, atoms.flex_row, atoms.items_center, styles.row2, atoms.mx_8, atoms.px_12, styles.searchPill]}
           onPress={() => setSearchModalVisible(true)}
         >
           <SearchIcon width={14} height={14} />
-          <DmText className="ml-[6] text-13 leading-[16px] font-custom500 text-black" numberOfLines={1} style={{ flexShrink: 1 }}>
+          <Text size={13} weight="medium" leading="tight" numberOfLines={1} style={[atoms.ml_6, { flexShrink: 1 }]}>
             {categoryName}
-          </DmText>
-          <DmText className="text-13 leading-[16px] font-custom400 text-black" numberOfLines={1}>
+          </Text>
+          <Text size={13} leading="tight" numberOfLines={1}>
             {" • "}{address?.city || address?.governorate || ""}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="flex-row items-center">
+        <DmView style={[atoms.flex_row, atoms.items_center]}>
           <DmView
             onPress={() => {
               setFiltersOpenCount((c) => c + 1)
               setFiltersVisible(true)
             }}
-            className="w-[32] h-[32] items-center justify-center"
+            style={[styles.iconWrap, atoms.items_center, atoms.justify_center]}
             hitSlop={HIT_SLOP_DEFAULT}
           >
             <FilterSlidersIcon width={22} height={22} color={colors.black} />
           </DmView>
         </DmView>
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box} />
 
       {/* Job details banner + matches heading */}
-      <DmView className="px-[16] pt-[14] pb-[8] bg-white">
+      <DmView style={[atoms.px_16, atoms.pt_14, atoms.pb_8, styles.row]}>
         {totalQuestions > 0 && !isFoodCategory && (
           <DmView
             onPress={() => {
               setAllQuestionsOpenCount((c) => c + 1)
               setAllQuestionsVisible(true)
             }}
-            className="flex-row items-center mb-[12]"
+            style={[atoms.flex_row, atoms.items_center, atoms.mb_12]}
           >
             <JobDetailsIcon width={18} height={18} color={colors.red} />
-            <DmText className="text-13 leading-[16px] font-custom600 text-red ml-[6]">
+            <Text size={13} weight="semibold" leading="tight" color="brand" style={atoms.ml_6}>
               {t("job_details_added", { answered: answeredCount, total: totalQuestions })}
-            </DmText>
+            </Text>
           </DmView>
         )}
         {pros.length > 0 && (
-          <DmText className="text-19 leading-[24px] font-custom700 text-black">
+          <Text size={px(19)} weight="bold" leading={px(24)}>
             {pros.length}{" "}
             {isFoodCategory
               ? foodFulfillment === "pickup"
@@ -894,23 +894,23 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
                   ? t("available_for_delivery")
                   : t("available_pros")
               : t("matches_based_on_answers")}
-          </DmText>
+          </Text>
         )}
       </DmView>
 
       {/* Content */}
       {isLoading && !pros.length ? (
-        <DmView className="flex-1">
+        <DmView style={atoms.flex_1}>
           <LoadingOverlay />
         </DmView>
       ) : !isRefetching && (isError || pros.length === 0) ? (
-        <DmView className="flex-1 items-center justify-center px-[40]">
-          <DmText className="text-16 font-custom600 text-grey3 text-center">
+        <DmView style={[atoms.flex_1, atoms.items_center, atoms.justify_center, atoms.px_40]}>
+          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
             {t("no_pros_found")}
-          </DmText>
-          <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+          </Text>
+          <Text size={12} leading="legacy" color="tertiary" align="center" style={atoms.mt_8}>
             {t("no_pros_found_descr")}
-          </DmText>
+          </Text>
         </DmView>
       ) : (
         <FlashList
@@ -970,12 +970,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           pointerEvents="none"
         >
           <DmView
-            className="rounded-10 px-[14] py-[10]"
-            style={{ backgroundColor: "rgba(28,25,23,0.92)" }}
+            style={[styles.shortlistUpdatedNoticeWrap, atoms.px_14, atoms.py_10, { backgroundColor: "rgba(28,25,23,0.92)" }]}
           >
-            <DmText className="text-12 leading-[16px] font-custom600 text-white text-center">
+            <Text size={12} weight="semibold" color="inverse" align="center">
               {t("shortlist_updated_notice")}
-            </DmText>
+            </Text>
           </DmView>
         </Animated.View>
       )}
@@ -993,10 +992,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             },
           ]}
         >
-          <ActionBtn
+          <Button
             title={t("continue")}
             onPress={handleContinue}
-            textClassName="text-14 font-custom600"
+            label={14}
+            labelWeight="semibold"
+            labelLeading="legacy"
           />
         </Animated.View>
       )}
@@ -1028,14 +1029,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Refetching overlay — over existing results */}
       {isRefetching && (
-        <DmView className="absolute top-0 left-0 right-0 bottom-0">
+        <DmView style={StyleSheet.absoluteFill}>
           <LoadingOverlay />
         </DmView>
       )}
 
       {/* Loading overlay when navigating to profile */}
       {isProfileLoading && (
-        <DmView className="absolute top-0 left-0 right-0 bottom-0">
+        <DmView style={StyleSheet.absoluteFill}>
           <LoadingOverlay />
         </DmView>
       )}
@@ -1049,19 +1050,24 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           works — the gate only blocks in-screen touches. */}
       {!questionsSettled && (
         <DmView
-          className="absolute top-0 left-0 right-0 bottom-0"
+          style={StyleSheet.absoluteFill}
           onStartShouldSetResponder={() => true}
         >
           {isServiceError ? (
-            <DmView className="flex-1 bg-white items-center justify-center px-[40]">
-              <DmText className="text-16 font-custom600 text-grey3 text-center">
+            <DmView style={[atoms.flex_1, styles.row, atoms.items_center, atoms.justify_center, atoms.px_40]}>
+              <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
                 {t("an_error_occurred")}
-              </DmText>
-              <ActionBtn
+              </Text>
+              <Button
                 title={t("try_again")}
                 onPress={() => refetchService()}
-                className="mt-[20] rounded-5 h-[41] px-[40]"
-                textClassName="text-13 font-custom600"
+                size={px(41)}
+                shape="r5"
+                paddingX={40}
+                label="sm"
+                labelWeight="semibold"
+                labelLeading="legacy"
+                style={atoms.mt_20}
               />
             </DmView>
           ) : !serviceData ? (
