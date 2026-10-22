@@ -1,0 +1,635 @@
+{
+ "component": "SkeletonLoader",
+ "capturedAt": "7fa5fc6",
+ "elements": 36,
+ "files": 7,
+ "cases": {
+  "53e6323908": {
+   "props": {
+    "width": 100,
+    "height": 110,
+    "borderRadius": 10
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:45"
+   ]
+  },
+  "e4d27c9426": {
+   "props": {
+    "width": 210,
+    "height": 120,
+    "borderRadius": 10
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:54"
+   ]
+  },
+  "e2bed1b2d1": {
+   "props": {
+    "width": 168,
+    "height": 63,
+    "borderRadius": 10
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:63",
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:68"
+   ]
+  },
+  "f5d8a5e89e": {
+   "props": {
+    "width": 150,
+    "height": 90,
+    "borderRadius": 10
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:81"
+   ]
+  },
+  "03b4db5834": {
+   "props": {
+    "width": 40,
+    "height": 40,
+    "borderRadius": 20
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:12"
+   ]
+  },
+  "29f2998e37": {
+   "props": {
+    "width": "24%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ]
+  },
+  "150458c29b": {
+   "props": {
+    "width": "30%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ]
+  },
+  "be20f2221e": {
+   "props": {
+    "width": "35%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ]
+  },
+  "02f7effebb": {
+   "props": {
+    "width": "39%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ]
+  },
+  "ff773e64ae": {
+   "props": {
+    "width": "47%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ]
+  },
+  "bfaad3cb6b": {
+   "props": {
+    "width": 90,
+    "height": 11,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:547"
+   ]
+  },
+  "9024ab1384": {
+   "props": {
+    "width": "35%",
+    "height": 12,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:563"
+   ]
+  },
+  "0c26af8f81": {
+   "props": {
+    "width": "45%",
+    "height": 12,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:564"
+   ]
+  },
+  "040b1469d1": {
+   "props": {
+    "width": 230,
+    "height": 13,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:557"
+   ]
+  },
+  "fa3f5f79ef": {
+   "props": {
+    "width": "38%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277"
+   ]
+  },
+  "4d943fa50b": {
+   "props": {
+    "width": "45%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "026c581559": {
+   "props": {
+    "width": "46%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277"
+   ]
+  },
+  "3399cdcc29": {
+   "props": {
+    "width": "48%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "efb2a2510a": {
+   "props": {
+    "width": "50%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "83ecc5b926": {
+   "props": {
+    "width": "55%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277",
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129",
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:562"
+   ]
+  },
+  "11a05ec310": {
+   "props": {
+    "width": "60%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277",
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "0741ced0c0": {
+   "props": {
+    "width": "64%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277"
+   ]
+  },
+  "c48a008f98": {
+   "props": {
+    "width": "65%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "7a20a96b5d": {
+   "props": {
+    "width": "70%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "7b69e3a87d": {
+   "props": {
+    "width": "72%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277",
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ]
+  },
+  "af673b0e57": {
+   "props": {
+    "width": "75%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "d200903f23": {
+   "props": {
+    "width": "80%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "1303e06b82": {
+   "props": {
+    "width": "85%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "b9875bda0f": {
+   "props": {
+    "width": "88%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "6ab1c6c2b1": {
+   "props": {
+    "width": "90%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "ffa7f3f63e": {
+   "props": {
+    "width": "92%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "7a4ca8fa03": {
+   "props": {
+    "width": "94%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "67f915da64": {
+   "props": {
+    "width": "95%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ]
+  },
+  "d5d96613de": {
+   "props": {
+    "width": 100,
+    "height": 15,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:22"
+   ]
+  },
+  "2a550c2f63": {
+   "props": {
+    "width": "60%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ]
+  },
+  "b5f2bc0503": {
+   "props": {
+    "width": "65%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ]
+  },
+  "af759ab53e": {
+   "props": {
+    "width": "70%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ]
+  },
+  "61fa6bc91c": {
+   "props": {
+    "width": "75%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ]
+  },
+  "fe7f9c4c76": {
+   "props": {
+    "width": "80%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ]
+  },
+  "a02394f6ca": {
+   "props": {
+    "width": 130,
+    "height": 16,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:546"
+   ]
+  },
+  "d23ccce9bd": {
+   "props": {
+    "width": 140,
+    "height": 18,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:556"
+   ]
+  },
+  "fd77203efb": {
+   "props": {
+    "width": 110,
+    "height": 28,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:25"
+   ]
+  },
+  "bffe9bb4e3": {
+   "props": {
+    "width": 85,
+    "height": 85,
+    "borderRadius": 4
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:560"
+   ]
+  },
+  "5cfc7b0cb0": {
+   "props": {
+    "width": "65%",
+    "height": 11,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:26"
+   ]
+  },
+  "d4df2f719c": {
+   "props": {
+    "width": 55,
+    "height": 11,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:18"
+   ]
+  },
+  "2c00f686fd": {
+   "props": {
+    "width": "25%",
+    "height": 12,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:17"
+   ]
+  },
+  "d79d03e651": {
+   "props": {
+    "width": "40%",
+    "height": 12,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:13"
+   ]
+  },
+  "0602780c4d": {
+   "props": {
+    "width": "50%",
+    "height": 12,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:21"
+   ]
+  },
+  "247401c2e7": {
+   "props": {
+    "width": "35%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:22"
+   ]
+  },
+  "0b153e9cec": {
+   "props": {
+    "width": "50%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:71"
+   ]
+  },
+  "365b8e6353": {
+   "props": {
+    "width": "55%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19",
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:83"
+   ]
+  },
+  "3a70e8b947": {
+   "props": {
+    "width": "60%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19",
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:65"
+   ]
+  },
+  "601af86539": {
+   "props": {
+    "width": "65%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19"
+   ]
+  },
+  "cea0c4cb32": {
+   "props": {
+    "width": "70%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19"
+   ]
+  },
+  "fc042432be": {
+   "props": {
+    "width": "50%",
+    "height": 15,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:17"
+   ]
+  },
+  "2120dcf78e": {
+   "props": {
+    "width": "55%",
+    "height": 16,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:10"
+   ]
+  },
+  "6e12238619": {
+   "props": {
+    "width": "40%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ]
+  },
+  "306bdc84a3": {
+   "props": {
+    "width": "45%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ]
+  },
+  "55164eb6c9": {
+   "props": {
+    "width": "50%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ]
+  },
+  "254d685da1": {
+   "props": {
+    "width": "55%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ]
+  },
+  "78c9b0291f": {
+   "props": {
+    "width": "30%",
+    "height": 16,
+    "borderRadius": 8
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:565"
+   ]
+  },
+  "43bc090691": {
+   "props": {
+    "width": "85%",
+    "height": 42,
+    "borderRadius": 8
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:552"
+   ]
+  }
+ }
+}
