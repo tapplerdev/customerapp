@@ -12,14 +12,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
  * Arabic, an Android render reads Android), a conversion that keeps the
  * pixels passes, a 1pt change fails, and a case that was never captured
  * fails instead of capturing itself.
+ *
+ * The fixture beside this file was captured from a class-name row and a real
+ * ActionBtn, with NativeWind on; this file compares the token row and ds
+ * Button with it, and needs no NativeWind. hostTreeParity.pass1.test.tsx
+ * draws the class-name and ActionBtn sides live (`yarn test:pass1-tools`).
  */
 
 jest.mock("react-native-localize", () =>
   jest.requireActual("react-native-localize/mock")
 )
 
-// eslint-disable-next-line import/first
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 // eslint-disable-next-line import/first
 import {
   Button as DsButton,
@@ -54,18 +57,22 @@ import {
 } from "../hostTreeParity"
 
 const ROOT = path.resolve(__dirname, "../../..")
+const FIXTURE = path.join(__dirname, "__parity__", "hostTreeParity.test.json")
 
-// The fixture beside this file holds these four cases, captured from the
-// "before" render below with `yarn ds:parity:capture <this file> -t before`.
-const before = () => (
-  <DmView className="flex-row px-[16] pt-[20]">
-    <DmText className="text-15 leading-[19px] font-custom600">
-      Account details
-    </DmText>
-  </DmView>
-)
+/** A case's stored tree, as the fixture holds it. */
+const stored = (name: string) => {
+  const fixture = JSON.parse(fs.readFileSync(FIXTURE, "utf8")) as {
+    cases: Record<string, { tree: string }>
+    trees: Record<string, HostNode>
+  }
+  return fixture.trees[fixture.cases[name].tree]
+}
 
-// The same row on tokens: no class name anywhere.
+// The fixture's "row" cases were captured from a class-name row (DmView
+// flex-row px-[16] pt-[20] around a DmText text-15 leading-[19px]
+// font-custom600, hostTreeParity.pass1.test.tsx), and its "actionBtn" ones
+// from a real ActionBtn with and without onPress, disabled and loading. The
+// same row on tokens: no class name anywhere.
 const converted = (padding = 16, leading = px(19)) => (
   <View
     style={[
@@ -83,8 +90,21 @@ const converted = (padding = 16, leading = px(19)) => (
 const compareOnly = captureMode() === "compare" ? it : it.skip
 
 describe("the captured fixture", () => {
-  it.each(PARITY_MATRIX)("the before tree [$language $platform]", (env) => {
-    expectParity(parityName("row", env), hostTree(before(), env))
+  it("holds the class-name row and the four ActionBtns, in every row", () => {
+    const fixture = JSON.parse(fs.readFileSync(FIXTURE, "utf8")) as {
+      cases: Record<string, unknown>
+    }
+    expect(Object.keys(fixture.cases).sort()).toEqual(
+      [
+        "row",
+        "actionBtn",
+        "actionBtn without onPress",
+        "actionBtn disabled",
+        "actionBtn loading",
+      ]
+        .flatMap((base) => PARITY_MATRIX.map((env) => parityName(base, env)))
+        .sort()
+    )
   })
 
   compareOnly.each(PARITY_MATRIX)(
@@ -120,9 +140,9 @@ describe("the environment is the one asked for", () => {
   const text = (tree: HostNode | null) =>
     (tree?.children[0] as HostNode).props.style
 
-  it("English and Arabic resolve DmText's own faces and line heights", () => {
-    const en = hostTree(before(), { language: "en" })
-    const ar = hostTree(before(), { language: "ar" })
+  it("English and Arabic resolve ds Text's faces and line heights", () => {
+    const en = hostTree(converted(), { language: "en" })
+    const ar = hostTree(converted(), { language: "ar" })
     expect(text(en)).toMatchObject({
       fontFamily: "Montserrat-SemiBold",
       lineHeight: 19,
@@ -155,7 +175,7 @@ describe("the environment is the one asked for", () => {
 
   it("puts the language back after the render", () => {
     i18n.changeLanguage("en")
-    hostTree(before(), { language: "ar" })
+    hostTree(converted(), { language: "ar" })
     expect(i18n.language).toBe("en")
   })
 
@@ -705,8 +725,8 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
     expect(isButtonRoot(button())).toBe(true)
     expect(isButtonRoot(button({ isLoading: true }))).toBe(true)
     expect(isButtonRoot(button({ onPress: undefined }))).toBe(true)
-    const actionBtn = hostTree(<ActionBtn title="Save" onPress={noop} />, env)!
-    expect(isButtonRoot(actionBtn)).toBe(true)
+    // a real ActionBtn's, as the fixture holds it
+    expect(isButtonRoot(stored(parityName("actionBtn", env)))).toBe(true)
     expect(
       isButtonRoot(
         hostTree(
@@ -751,15 +771,14 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
   it.each(PARITY_MATRIX)(
     "a real ActionBtn -> Button conversion passes with the height and accessibility allowances [$language $platform]",
     (matrixEnv) => {
-      const file = captured(
-        hostTree(<ActionBtn title="Save" onPress={noop} />, matrixEnv)
-      )
+      const name = parityName("actionBtn", matrixEnv)
+      const file = FIXTURE
       const tree = hostTree(<DsButton title="Save" onPress={noop} />, matrixEnv)
-      expect(() => expectParity("it", tree, { file })).toThrow(/minHeight/)
+      expect(() => expectParity(name, tree, { file })).toThrow(/minHeight/)
       expect(() =>
-        expectParity("it", tree, { file, allow: ["buttonHeight"] })
+        expectParity(name, tree, { file, allow: ["buttonHeight"] })
       ).toThrow(/accessibilityRole/)
-      const { accepted } = expectParity("it", tree, {
+      const { accepted } = expectParity(name, tree, {
         file,
         allow: ["buttonHeight", "buttonAccessibility"],
       })
@@ -773,18 +792,17 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
   it.each(PARITY_MATRIX)(
     "a real ActionBtn without onPress -> Button needs both allowances [$language $platform]",
     (matrixEnv) => {
-      // `disable || isLoading` is false here, and ActionBtn hands it on.
-      const file = captured(
-        hostTree(<ActionBtn title="Save" isLoading={false} />, matrixEnv)
-      )
+      // `disable || isLoading` is false there, and ActionBtn hands it on.
+      const name = parityName("actionBtn without onPress", matrixEnv)
+      const file = FIXTURE
       const tree = hostTree(
         <DsButton title="Save" isLoading={false} />,
         matrixEnv
       )
       expect(() =>
-        expectParity("it", tree, { file, allow: ["buttonHeight"] })
+        expectParity(name, tree, { file, allow: ["buttonHeight"] })
       ).toThrow(/disabled/)
-      const { accepted } = expectParity("it", tree, {
+      const { accepted } = expectParity(name, tree, {
         file,
         allow: ["buttonHeight", "buttonDisabledView"],
       })
@@ -983,13 +1001,12 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
   it.each(PARITY_MATRIX)(
     "a real disabled, and a real loading, ActionBtn -> Button pass with Button's own state [$language $platform]",
     (matrixEnv) => {
+      // a real ActionBtn's, as the fixture holds them
       const disabled = expectParity(
         "it",
         hostTree(<DsButton title="Save" onPress={noop} disabled />, matrixEnv),
         {
-          file: captured(
-            hostTree(<ActionBtn title="Save" onPress={noop} disable />, matrixEnv)
-          ),
+          file: captured(stored(parityName("actionBtn disabled", matrixEnv))),
           allow: ALLOW_BUTTON,
         }
       )
@@ -997,9 +1014,7 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
         "it",
         hostTree(<DsButton title="Save" onPress={noop} isLoading />, matrixEnv),
         {
-          file: captured(
-            hostTree(<ActionBtn title="Save" onPress={noop} isLoading />, matrixEnv)
-          ),
+          file: captured(stored(parityName("actionBtn loading", matrixEnv))),
           allow: ALLOW_BUTTON,
         }
       )
@@ -1014,42 +1029,42 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
     [
       "A1 busy while disabled",
       <DsButton title="Save" onPress={noop} disabled />,
-      <ActionBtn title="Save" onPress={noop} disable />,
+      "actionBtn disabled",
       { accessibilityState: { busy: true, disabled: true } },
       /accessibilityState \{"busy":true,"disabled":true\}, not \{"disabled":true\}/,
     ],
     [
       "A2 says disabled when enabled",
       <DsButton title="Save" onPress={noop} />,
-      <ActionBtn title="Save" onPress={noop} />,
+      "actionBtn",
       { accessibilityState: { disabled: true } },
       /accessibilityState \{"disabled":true\}, not \{\}/,
     ],
     [
       "A3 a wrong label",
       <DsButton title="Save" onPress={noop} />,
-      <ActionBtn title="Save" onPress={noop} />,
+      "actionBtn",
       { accessibilityLabel: "Save button" },
       /accessibilityLabel "Save button", not "Save"/,
     ],
     [
       "R3 loading without busy",
       <DsButton title="Save" onPress={noop} isLoading />,
-      <ActionBtn title="Save" onPress={noop} isLoading />,
+      "actionBtn loading",
       { accessibilityState: { disabled: true } },
       /accessibilityState \{"disabled":true\}, not \{"busy":true,"disabled":true\}/,
     ],
     [
       "another role",
       <DsButton title="Save" onPress={noop} />,
-      <ActionBtn title="Save" onPress={noop} />,
+      "actionBtn",
       { accessibilityRole: "link" },
       /accessibilityRole "link", not "button"/,
     ],
     [
       "no name while loading",
       <DsButton title="Save" onPress={noop} isLoading />,
-      <ActionBtn title="Save" onPress={noop} isLoading />,
+      "actionBtn loading",
       { accessibilityLabel: "" },
       /accessibilityLabel "", not a name/,
     ],
@@ -1057,7 +1072,8 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
     "mutant: Button's root saying something Button doesn't fails with the allowance: %s",
     (_label, after, before, says, message) => {
       const tree = saying(hostTree(after, env)!, says)
-      const file = captured(hostTree(before, env))
+      // `before` names the ActionBtn tree the fixture holds
+      const file = captured(stored(parityName(before as string, env)))
       expect(() => expectParity("it", tree, { file, allow: ALLOW_BUTTON })).toThrow(
         message
       )
