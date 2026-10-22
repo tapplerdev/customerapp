@@ -18,7 +18,7 @@
     "primitiveImport"
   ],
   "totals": {
-    "className": 1872,
+    "className": 1862,
     "px": 0,
     "legacy": 0,
     "familySystem": 0,
@@ -32,7 +32,7 @@
   },
   "directories": {
     "src": {
-      "className": 1872,
+      "className": 1862,
       "colorLiteral": 161,
       "primitives": 591,
       "classProp": 16,
@@ -40,7 +40,7 @@
       "primitiveImport": 129
     },
     "src/components": {
-      "className": 356,
+      "className": 353,
       "colorLiteral": 69,
       "primitives": 115,
       "classProp": 16,
@@ -170,7 +170,7 @@
       "primitiveImport": 1
     },
     "src/components/OffersSection": {
-      "className": 3,
+      "className": 4,
       "colorLiteral": 1,
       "classProp": 1
     },
@@ -184,7 +184,7 @@
       "className": 1
     },
     "src/components/ProCardBase": {
-      "className": 36,
+      "className": 35,
       "colorLiteral": 8,
       "primitives": 12,
       "primitiveImport": 2
@@ -194,7 +194,7 @@
       "classProp": 1
     },
     "src/components/QuestionComponent": {
-      "className": 37,
+      "className": 34,
       "colorLiteral": 1,
       "primitives": 4,
       "primitiveImport": 1
@@ -273,7 +273,7 @@
       "className": 3
     },
     "src/screens": {
-      "className": 1516,
+      "className": 1509,
       "colorLiteral": 92,
       "primitives": 476,
       "classImport": 7,
@@ -295,7 +295,7 @@
       "primitiveImport": 4
     },
     "src/screens/dashboardScreens": {
-      "className": 1355,
+      "className": 1348,
       "colorLiteral": 88,
       "primitives": 434,
       "classImport": 6,
@@ -411,7 +411,7 @@
       "primitiveImport": 3
     },
     "src/screens/dashboardScreens/JobDetailScreen": {
-      "className": 162,
+      "className": 157,
       "colorLiteral": 9,
       "primitives": 46,
       "primitiveImport": 4
@@ -422,7 +422,7 @@
       "primitiveImport": 2
     },
     "src/screens/dashboardScreens/MessagesDetailsScreen": {
-      "className": 105,
+      "className": 104,
       "colorLiteral": 16,
       "primitives": 34,
       "primitiveImport": 1
@@ -466,14 +466,14 @@
       "primitiveImport": 1
     },
     "src/screens/dashboardScreens/ProsListingScreen": {
-      "className": 70,
+      "className": 69,
       "colorLiteral": 15,
       "primitives": 26,
       "classImport": 2,
       "primitiveImport": 5
     },
     "src/screens/dashboardScreens/ProsListingScreen/components": {
-      "className": 42,
+      "className": 41,
       "colorLiteral": 7,
       "primitives": 16,
       "classImport": 1,
@@ -724,7 +724,7 @@
       "primitiveImport": 1
     },
     "src/components/OffersSection/OffersSection.tsx": {
-      "className": 3,
+      "className": 4,
       "colorLiteral": 1,
       "classProp": 1
     },
@@ -738,7 +738,7 @@
       "className": 1
     },
     "src/components/ProCardBase/ProCardBase.tsx": {
-      "className": 36,
+      "className": 35,
       "primitives": 12,
       "primitiveImport": 2
     },
@@ -750,7 +750,7 @@
       "classProp": 1
     },
     "src/components/QuestionComponent/QuestionComponent.tsx": {
-      "className": 37,
+      "className": 34,
       "primitives": 4,
       "primitiveImport": 1
     },
@@ -997,7 +997,7 @@
       "primitiveImport": 1
     },
     "src/screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx": {
-      "className": 101,
+      "className": 96,
       "colorLiteral": 3,
       "primitives": 21,
       "primitiveImport": 2
@@ -1016,7 +1016,7 @@
       "colorLiteral": 6
     },
     "src/screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx": {
-      "className": 105,
+      "className": 104,
       "primitives": 34,
       "primitiveImport": 1
     },
@@ -1076,7 +1076,7 @@
       "primitiveImport": 2
     },
     "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx": {
-      "className": 33,
+      "className": 32,
       "colorLiteral": 2,
       "primitives": 11,
       "classImport": 1,
