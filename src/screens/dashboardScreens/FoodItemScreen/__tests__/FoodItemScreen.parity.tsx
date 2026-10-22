@@ -15,7 +15,12 @@ import { screenState } from "testing/screenKit/states"
 import { DATA } from "testing/screenKit/fixtures/api"
 import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import { PRO_FOOD } from "testing/screenKit/fixtures/entities"
-import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
+import {
+  PARITY_MATRIX,
+  expectParity,
+  parityName,
+  type ParityAllowance,
+} from "testing/hostTreeParity"
 
 import {
   RICH_MENU,
@@ -35,6 +40,13 @@ import {
  * required choice is made; it adds the line and goes back) and Back.
  */
 
+// The Add to cart, pre-order badge and Back buttons were ActionBtns: Button's
+// listed deltas, per state. A disabled Add to cart (the required choice is
+// not made yet) shows the disabled view flag instead of the accessibility
+// props; the loading row draws none.
+const ENABLED: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+const DISABLED: ParityAllowance[] = ["buttonHeight", "buttonDisabledView"]
+
 const load = () => require("../FoodItemScreen")
 const BASE = ROUTE_PARAMS.FoodItemScreen!
 const api = { ...DATA, getProMenu: { data: RICH_MENU } }
@@ -44,16 +56,27 @@ type Case = {
   menuItemId: number
   api?: typeof api | Record<string, never>
   insets?: { top?: number; bottom?: number }
+  allow?: ParityAllowance[]
 }
 const CASES: Case[] = [
-  { name: "options", menuItemId: 411 },
-  { name: "discount, no options", menuItemId: 412 },
-  { name: "pre-order", menuItemId: 431 },
-  { name: "no price, photo or description", menuItemId: 421 },
+  { name: "options", menuItemId: 411, allow: DISABLED },
+  { name: "discount, no options", menuItemId: 412, allow: ENABLED },
+  { name: "pre-order", menuItemId: 431, allow: ENABLED },
+  { name: "no price, photo or description", menuItemId: 421, allow: ENABLED },
   { name: "loading", menuItemId: 411, api: {} },
-  { name: "unavailable", menuItemId: 999 },
-  { name: "options, bottom inset 48", menuItemId: 411, insets: { bottom: 48 } },
-  { name: "options, no top inset", menuItemId: 411, insets: { top: 0 } },
+  { name: "unavailable", menuItemId: 999, allow: ENABLED },
+  {
+    name: "options, bottom inset 48",
+    menuItemId: 411,
+    insets: { bottom: 48 },
+    allow: DISABLED,
+  },
+  {
+    name: "options, no top inset",
+    menuItemId: 411,
+    insets: { top: 0 },
+    allow: DISABLED,
+  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
@@ -76,7 +99,8 @@ describe("FoodItemScreen, captured from the unconverted code", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
     expectParity(
       parityName(c.name, c.env),
-      await renderScreen(load, options(c, c.env))
+      await renderScreen(load, options(c, c.env)),
+      { allow: c.allow }
     )
   })
 })
@@ -116,7 +140,9 @@ describe("FoodItemScreen, choosing and adding", () => {
           false,
           false,
         ])
-        expectParity(parityName("Large chosen", env), session.tree())
+        expectParity(parityName("Large chosen", env), session.tree(), {
+          allow: ENABLED,
+        })
 
         // A single-choice group swaps its pick.
         await session.act(() => {
@@ -154,7 +180,8 @@ describe("FoodItemScreen, choosing and adding", () => {
         ])
         expectParity(
           parityName("Regular and garlic sauce", env),
-          session.tree()
+          session.tree(),
+          { allow: ENABLED }
         )
 
         // Minus does nothing at one; plus counts up, minus counts down.
@@ -165,11 +192,15 @@ describe("FoodItemScreen, choosing and adding", () => {
         await session.act(() => {
           pressIcon(session.root, { icon: "svg:plus" })
         })
-        expectParity(parityName("count three", env), session.tree())
+        expectParity(parityName("count three", env), session.tree(), {
+          allow: ENABLED,
+        })
         await session.act(() => {
           pressIcon(session.root, { icon: "svg:minus" })
         })
-        expectParity(parityName("count two", env), session.tree())
+        expectParity(parityName("count two", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }
