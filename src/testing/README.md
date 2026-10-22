@@ -14,7 +14,7 @@ rule); what differs from proapp is called out where it matters.
 | `hostTreeParity.ts` | Renders in an environment (language, RTL, platform, fonts, insets), normalizes the host tree, captures and compares fixtures. The gate. |
 | `screenKit/` | Renders a whole screen the way the app does, with mocked data and native modules, under `jest.parity.config.js`. |
 | `harvest/` | Reads a component's real call sites into prop sets, freezes them with their class strings compiled, and checks those classes compiled. `twinCases` hands each set to the codemod as a call site of its own, for a component's twin test. |
-| `buttonLooks/` | ActionBtn's own harvest and translator (the tools' side, CA-W0-T; the codemod loads `translate.ts`). |
+| `buttonLooks/` | ActionBtn's own harvest and translator (the tools' side, CA-W0-T; the codemod loads `translate.ts`). `legacyPrimitives.ts` is the scan that fails on ActionBtn or DmText back in app code, in any spelling (`harvest.pass1.test.ts`). |
 | `trueSheet.tsx` | The stand-in for `@lodev09/react-native-true-sheet` in both jest configs (see "What the kit mocks"). |
 | `nativewind.ts`, `svgStub.ts` | NativeWind's output for a class string with customerapp's tailwind.config.js; an SVG icon as a host element named after it. |
 
