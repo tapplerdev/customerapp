@@ -4,6 +4,7 @@ import { describe, expect, it } from "@jest/globals"
 
 import {
   copy,
+  type BackendFixtures,
   openScreen,
   pressIcon,
   pressText,
@@ -66,7 +67,7 @@ const answer = (rows: object[], total?: number) => ({
   getNotifications: { data: pageOf(rows, total) },
 })
 
-type Case = { name: string; api: ReturnType<typeof answer> | object }
+type Case = { name: string; api: BackendFixtures }
 const CASES: Case[] = [
   { name: "unread and read rows", api: answer(MIXED) },
   { name: "all read", api: answer(ALL_READ) },
@@ -91,7 +92,7 @@ describe("NotificationsScreen, captured from the unconverted code", () => {
 
 const envs = rowsByPlatform([{}], PARITY_MATRIX)
 
-const open = (env: (typeof PARITY_MATRIX)[number], api: object) =>
+const open = (env: (typeof PARITY_MATRIX)[number], api: BackendFixtures) =>
   openScreen(load, {
     ...screenState("data"),
     api,

@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useIsFocused } from "@react-navigation/native"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 
 import {
@@ -21,6 +21,8 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import NotificationItem from "./components/NotificationItem"
 import NotificationsSkeleton from "./NotificationsSkeleton"
 import { AppFlatList } from "components/scroll"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const PER_PAGE = 20
 // Chat unread belongs to the Messages tab badge — keep system.messages rows
@@ -141,7 +143,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   const renderFooter = useCallback(() => {
     if (!isLoadingMore) return null
     return (
-      <DmView className="py-[20]">
+      <DmView style={a.py_20}>
         <ActivityIndicator size="small" color={colors.red} />
       </DmView>
     )
@@ -149,26 +151,26 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmpty = useCallback(
     () => (
-      <DmView className="flex-1 items-center justify-center px-[40]">
-        <DmText className="text-16 font-custom600 text-grey3 text-center">
+      <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+        <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
           {t("no_notifications_yet")}
-        </DmText>
-        <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+        </Text>
+        <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
           {t("no_notifications_yet_descr")}
-        </DmText>
+        </Text>
       </DmView>
     ),
     [t]
   )
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header — title absolutely centered so the uneven side slots
           (chevron vs "mark all read") can't shift it */}
-      <DmView className="flex-row items-center justify-between px-[16] py-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_16, a.py_12]}>
         <DmView
           onPress={() => navigation.goBack()}
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
         >
           <ChevronLeftIcon
             color={colors.red}
@@ -176,34 +178,37 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
           />
         </DmView>
         <DmView
-          className="absolute left-0 right-0 items-center"
+          style={[a.absolute, styles.notificationsWrap, a.items_center]}
           pointerEvents="none"
         >
-          <DmText className="text-16 font-custom600 text-black">
+          <Text size={16} weight="semibold" leading="legacy">
             {t("notifications")}
-          </DmText>
+          </Text>
         </DmView>
         {unreadCount > 0 ? (
-          <DmView onPress={handleMarkAll} className="py-[4] z-10">
-            <DmText
-              className="text-11 font-custom600 text-red"
+          <DmView onPress={handleMarkAll} style={[a.py_4, styles.markAllReadWrap]}>
+            <Text
+              size={11}
+              weight="semibold"
+              leading="legacy"
+              color="brand"
               style={{ opacity: isMarkingAll ? 0.4 : 1 }}
             >
               {t("mark_all_read")}
-            </DmText>
+            </Text>
           </DmView>
         ) : (
-          <DmView className="w-[32]" />
+          <DmView style={styles.box} />
         )}
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       {isLoading ? (
         <NotificationsSkeleton />
       ) : (
         // Same smooth reveal as proapp: content fades in over 300ms once
         // the skeleton is replaced (proapp animates fadeAnim 0→1).
-        <Animated.View entering={FadeIn.duration(300)} className="flex-1">
+        <Animated.View entering={FadeIn.duration(300)} style={a.flex_1}>
         <AppFlatList
           data={allNotifications}
           renderItem={renderItem}
