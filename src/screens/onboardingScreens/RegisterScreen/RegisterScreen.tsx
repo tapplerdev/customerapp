@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 
-import { ActionBtn, DmAuthInput, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmAuthInput, DmView } from "@tappler/shared/src/components/UI"
 import ErrorModal from "components/ErrorModal"
 import { RootStackScreenProps } from "navigation/types"
 import { useCustomerSignUpMutation, useAuthMutation, useLazyGetCustomerMeQuery } from "services/api"
@@ -17,6 +17,7 @@ import styles from "./styles"
 import HideIcon from "assets/icons/hide-password.svg"
 import FlagEgyptIcon from "assets/icons/flag-egypt.svg"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"RegisterScreen">
 
@@ -131,7 +132,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       <AppKeyboardAwareScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -142,9 +143,9 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         <DmView>
           {/* Header */}
-          <DmView className="flex-row items-center px-[16] py-[12]">
+          <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
             <DmView
-              className="w-[32] h-[32] items-center justify-center"
+              style={[styles.iconWrap, a.items_center, a.justify_center]}
               hitSlop={HIT_SLOP_DEFAULT}
               onPress={handleGoBack}
             >
@@ -153,17 +154,17 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                 style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
               />
             </DmView>
-            <DmView className="flex-1 items-center">
-              <DmText className="text-16 font-custom600 text-black">
+            <DmView style={[a.flex_1, a.items_center]}>
+              <Text size={16} weight="semibold" leading="legacy">
                 {t("register_a_new_account")}
-              </DmText>
+              </Text>
             </DmView>
-            <DmView className="w-[32]" />
+            <DmView style={styles.box} />
           </DmView>
-          <DmView className="h-[0.7] bg-grey19" />
+          <DmView style={styles.box2} />
 
           {/* Form */}
-          <DmView className="mt-[24] px-[19]">
+          <DmView style={[a.mt_24, styles.box3]}>
             <Controller
               control={control}
               rules={{ required: true }}
@@ -180,7 +181,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               name="firstName"
             />
-            <DmView className="h-[0.7] bg-grey1" />
+            <DmView style={styles.box4} />
             <Controller
               control={control}
               rules={{ required: true }}
@@ -192,13 +193,13 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                   textContentType="familyName"
                   autoComplete="family-name"
                   isBorderVisible={false}
-                  wrapperClassName="mt-[14]"
+                  wrapperStyle={a.mt_14}
                   style={styles.inputHeight}
                 />
               )}
               name="lastName"
             />
-            <DmView className="h-[0.7] bg-grey1" />
+            <DmView style={styles.box4} />
             <Controller
               control={control}
               rules={{ required: true }}
@@ -211,13 +212,13 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                   keyboardType="email-address"
                   autoComplete="email"
                   isBorderVisible={false}
-                  wrapperClassName="mt-[14]"
+                  wrapperStyle={a.mt_14}
                   style={styles.inputHeight}
                 />
               )}
               name="email"
             />
-            <DmView className="h-[0.7] bg-grey1" />
+            <DmView style={styles.box4} />
             <Controller
               control={control}
               rules={{ required: true, minLength: 6 }}
@@ -232,7 +233,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                   textContentType="newPassword"
                   autoComplete="password-new"
                   isBorderVisible={false}
-                  wrapperClassName="mt-[14]"
+                  wrapperStyle={a.mt_14}
                   style={styles.inputHeight}
                   Icon={
                     <HideIcon
@@ -247,7 +248,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               name="password"
             />
-            <DmView className="h-[0.7] bg-grey1" />
+            <DmView style={styles.box4} />
             <Controller
               control={control}
               rules={{
@@ -255,15 +256,15 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                 validate: (val) => val.startsWith("01") && val.length === 11,
               }}
               render={({ field: { value, onChange } }) => (
-                <DmView className="mt-[8]">
-                  <DmView className="flex-row items-center">
-                    <DmView className="flex-row items-center mr-[10]">
+                <DmView style={a.mt_8}>
+                  <DmView style={[a.flex_row, a.items_center]}>
+                    <DmView style={[a.flex_row, a.items_center, a.mr_10]}>
                       <FlagEgyptIcon width={24} height={16} />
-                      <DmText className="ml-[6] text-13 font-custom400 text-black">
+                      <Text size={13} leading="legacy" style={a.ml_6}>
                         +20
-                      </DmText>
+                      </Text>
                     </DmView>
-                    <DmView className="flex-1">
+                    <DmView style={a.flex_1}>
                       <DmAuthInput
                         value={value}
                         placeholder={t("mobile_number")}
@@ -275,7 +276,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                       />
                     </DmView>
                   </DmView>
-                  <DmView className="border-b-0.5 border-grey1" />
+                  <DmView style={styles.box5} />
                 </DmView>
               )}
               name="mobileNumber"
@@ -283,60 +284,72 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Gender */}
-          <DmView className="mt-[16] px-[19]">
-            <DmText className="text-13 font-custom400 text-greyPlaceholder">
+          <DmView style={[a.mt_16, styles.box3]}>
+            <Text size={13} leading="legacy" color="placeholder">
               {t("gender")}
-            </DmText>
-            <DmView className="flex-row mt-[10]">
+            </Text>
+            <DmView style={[a.flex_row, a.mt_10]}>
               <DmView
-                className="flex-row items-center mr-[30]"
+                style={[a.flex_row, a.items_center, a.mr_30]}
                 onPress={() => setValue("gender", "female")}
               >
                 <DmView
-                  className="w-[22] h-[22] rounded-full border-1 border-grey1 items-center justify-center"
+                  style={[
+                    styles.box6,
+                    a.border_1,
+                    a.items_center,
+                    a.justify_center,
+                  ]}
                 >
                   {selectedGender === "female" && (
-                    <DmView className="w-[12] h-[12] rounded-full bg-red" />
+                    <DmView style={styles.box7} />
                   )}
                 </DmView>
-                <DmText className="ml-[8] text-14 font-custom400">
+                <Text size={14} leading="legacy" style={a.ml_8}>
                   {t("female")}
-                </DmText>
+                </Text>
               </DmView>
               <DmView
-                className="flex-row items-center"
+                style={[a.flex_row, a.items_center]}
                 onPress={() => setValue("gender", "male")}
               >
                 <DmView
-                  className="w-[22] h-[22] rounded-full border-1 border-grey1 items-center justify-center"
+                  style={[
+                    styles.box6,
+                    a.border_1,
+                    a.items_center,
+                    a.justify_center,
+                  ]}
                 >
                   {selectedGender === "male" && (
-                    <DmView className="w-[12] h-[12] rounded-full bg-red" />
+                    <DmView style={styles.box7} />
                   )}
                 </DmView>
-                <DmText className="ml-[8] text-14 font-custom400">
+                <Text size={14} leading="legacy" style={a.ml_8}>
                   {t("male")}
-                </DmText>
+                </Text>
               </DmView>
             </DmView>
           </DmView>
 
           {/* Register button */}
-          <DmView className="px-[53]">
-            <ActionBtn
-              className={`mt-[40] h-[44] ${isFormReady ? "bg-red" : ""}`}
+          <DmView style={styles.buttonWrap}>
+            <Button
+              size="md"
+              loadingSurface={isFormReady ? "brand" : undefined}
+              style={a.mt_40}
               onPress={() => handleSubmit(() => onSubmit())()}
               title={t("register")}
               isLoading={isLoading}
-              disable={!isFormReady}
+              disabled={!isFormReady}
             />
           </DmView>
 
           {/* Login link */}
-          <DmView className="mt-[24] px-[19]" onPress={handleGoLogin}>
-            <DmText className="text-12 leading-[15px] font-custom400 text-center">
+          <DmView style={[a.mt_24, styles.box3]} onPress={handleGoLogin}>
+            <Text size={12} leading="tight" align="center">
               {t("have_account_login")}
-            </DmText>
+            </Text>
           </DmView>
         </DmView>
       </AppKeyboardAwareScrollView>
