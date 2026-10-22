@@ -25,6 +25,7 @@ import {
   captureCommit,
   expectParity,
   parityName,
+  type ParityAllowance,
 } from "testing/hostTreeParity"
 import {
   componentImport,
@@ -36,6 +37,9 @@ import {
   type HarvestOptions,
 } from "testing/harvest"
 /* eslint-enable import/first */
+
+/** What Button draws differently from the ActionBtn it replaced (listed deltas only, on its root). */
+const SUBMIT_BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const FILES = harvestFilesFor(__dirname, "CancelJobFeedbackModal")
 
@@ -167,7 +171,10 @@ if (harvesting()) {
         platform: env.platform,
         navigation: "none",
       })
-      expectParity(parityName(id, env), tree)
+      expectParity(parityName(id, env), tree, {
+        // Submit, once the card is open: the ActionBtn became a Button.
+        allow: entry.props.isVisible === true ? SUBMIT_BUTTON : undefined,
+      })
     })
   })
 }
