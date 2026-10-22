@@ -1,0 +1,21 @@
+{
+ "component": "SearchMessagesComponent",
+ "capturedAt": "036f126",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "f6720e4639": {
+   "props": {
+    "searchText": {
+     "$opaque": "searchText"
+    },
+    "onChangeText": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx:142"
+   ]
+  }
+ }
+}
