@@ -16,7 +16,12 @@ import { screenState } from "testing/screenKit/states"
 import { DATA } from "testing/screenKit/fixtures/api"
 import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import { PRO_FOOD } from "testing/screenKit/fixtures/entities"
-import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
+import {
+  PARITY_MATRIX,
+  expectParity,
+  parityName,
+  type ParityAllowance,
+} from "testing/hostTreeParity"
 
 import {
   DRAFT_ONE_LINE,
@@ -35,6 +40,11 @@ import {
  * trash and plus on a line (plus is dead at thirty), Continue (a Button)
  * and Back.
  */
+
+
+// The Continue and Back buttons were ActionBtns: Button's listed deltas on every
+// row that draws one.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const load = () => require("../FoodCartScreen")
 const route = { name: "FoodCartScreen", params: ROUTE_PARAMS.FoodCartScreen }
@@ -78,7 +88,8 @@ describe("FoodCartScreen, captured from the unconverted code", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
     expectParity(
       parityName(c.name, c.env),
-      await renderScreen(load, options(c, c.env))
+      await renderScreen(load, options(c, c.env)),
+      { allow: BUTTON }
     )
   })
 })
@@ -155,7 +166,9 @@ describe("FoodCartScreen, the controls", () => {
           [412, 1],
           [431, 30],
         ])
-        expectParity(parityName("molokhia down to one", env), session.tree())
+        expectParity(parityName("molokhia down to one", env), session.tree(), {
+          allow: BUTTON,
+        })
         // A last trash removes the line; at thirty the plus has no handler.
         await session.act(() => {
           pressIcon(session.root, { icon: "svg:trash-red", nth: 1 })
@@ -167,7 +180,9 @@ describe("FoodCartScreen, the controls", () => {
         expect(() =>
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         ).toThrow()
-        expectParity(parityName("chicken removed", env), session.tree())
+        expectParity(parityName("chicken removed", env), session.tree(), {
+          allow: BUTTON,
+        })
       } finally {
         session.unmount()
       }
