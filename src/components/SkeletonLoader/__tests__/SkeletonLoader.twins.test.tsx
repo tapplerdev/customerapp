@@ -2,15 +2,21 @@ import { describe, expect, it, jest } from "@jest/globals"
 import path from "path"
 
 /*
- * SkeletonLoader's twin path: every case its class-name test pins
- * (SkeletonLoader.parity.test.tsx), converted by the codemod as a call site
- * of its own (testing/harvest's twinCases), drawn against that test's own
+ * SkeletonLoader's twin path: every case its class-name test pinned
+ * (__parity__/SkeletonLoader.parity.test.json), as the codemod converted it
+ * at the freeze into a call site of its own
+ * (__fixtures__/SkeletonLoader.twins.json), drawn against that test's own
  * trees. A site that moves to `style` draws what its className drew.
  *
  * No call site passes a class any more (the five at JobDetail drew nothing
  * and went in W1's prep), so the harvested cases hand the codemod nothing to
- * convert. The second block is the twin's proof where a class IS passed:
- * className and the style it stands for, drawn live against each other.
+ * convert. The hand cases are the twin's proof where a class IS passed: the
+ * style the codemod writes for it draws what the class drew.
+ *
+ * The twins are drawn from the frozen file: nothing here runs the codemod or
+ * needs NativeWind.
+ *
+ *   DS_FREEZE_TWINS=1 jest <this file>   refreeze (W3.1 only: it runs the codemod)
  */
 
 jest.mock("react-native-localize", () =>
@@ -18,18 +24,22 @@ jest.mock("react-native-localize", () =>
 )
 
 /* eslint-disable import/first */
-// The harvested class strings, compiled: a class the codemod leaves stays one.
-import "../__fixtures__/SkeletonLoader.classes"
 import { HAND_CASES } from "../__fixtures__/SkeletonLoader.handCases"
 import {
   PARITY_MATRIX,
   captureMode,
-  expectParity,
   fixtureFileFor,
   hostTree,
   parityName,
 } from "testing/hostTreeParity"
-import { harvestFilesFor, readHarvest, twinCases } from "testing/harvest"
+import {
+  expectFrozenCover,
+  expectTwin,
+  frozenTwinCases,
+  harvestFilesFor,
+  readHarvest,
+  twinsFileFor,
+} from "testing/harvest"
 /* eslint-enable import/first */
 
 if (captureMode() !== "compare") {
@@ -41,6 +51,7 @@ if (captureMode() !== "compare") {
 const FIXTURE = fixtureFileFor(
   path.join(__dirname, "SkeletonLoader.parity.test.tsx")
 )
+const TWINS = twinsFileFor(__dirname, "SkeletonLoader")
 const harvested = readHarvest(harvestFilesFor(__dirname, "SkeletonLoader"))
 const HAND = "hand"
 const cases = {
@@ -52,7 +63,7 @@ const cases = {
     ),
   },
 }
-const twins = twinCases(cases, {
+const twins = frozenTwinCases(TWINS, cases, {
   source: "components/SkeletonLoader/SkeletonLoader",
   tag: "SkeletonLoader",
 })
@@ -81,10 +92,13 @@ describe("SkeletonLoader's twins draw what its class names drew", () => {
   const table = twins.flatMap((twin) =>
     PARITY_MATRIX.map((env) => ({ ...twin, env }))
   )
+  it("the twins are every case the class-name test pinned, but the drops", () => {
+    expectFrozenCover(TWINS, FIXTURE, table)
+  })
   it.each(table)(
     "$id ($sites.0) [$env.language $env.platform]",
     ({ id, element, env }) => {
-      expectParity(parityName(id, env), hostTree(element, env), {
+      expectTwin(TWINS, id, parityName(id, env), hostTree(element, env), {
         file: FIXTURE,
       })
     }

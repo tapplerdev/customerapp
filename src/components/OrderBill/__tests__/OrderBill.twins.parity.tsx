@@ -7,30 +7,37 @@ import { renderScreen, rowsByPlatform } from "testing/screenKit"
 import {
   PARITY_MATRIX,
   captureMode,
-  expectParity,
   fixtureFileFor,
   parityName,
 } from "testing/hostTreeParity"
 import {
+  expectFrozenCover,
+  expectTwin,
+  frozenTwinCases,
   harvestFilesFor,
   readHarvest,
-  twinCases,
+  twinsFileFor,
   type CasesFile,
-  type TwinCase,
 } from "testing/harvest"
 
 import { HAND_CASES, JOBS } from "../__fixtures__/OrderBill.handCases"
 
 /*
- * OrderBill's twin path: every case its class-name test pins
- * (OrderBill.parity.tsx), converted by the codemod as a call site of its own
- * (testing/harvest's twinCases), drawn against that test's own trees. A site
- * that moves to the twins draws what its class names drew. The harvested site
- * passes no class, so the hand cases (the classes a caller could still pass)
- * go through the codemod beside it.
+ * OrderBill's twin path: every case its class-name test pinned
+ * (__parity__/OrderBill.parity.json), as the codemod converted it at the
+ * freeze into a call site of its own (__fixtures__/OrderBill.twins.json),
+ * drawn against that test's own trees. A site that moves to the twins draws
+ * what its class names drew. The harvested site passes no class, so the hand
+ * cases (the classes a caller could still pass) went through the codemod
+ * beside it.
  *
- * The codemod runs inside each row's registry (the elements it builds have to
- * come from the registry that draws them), once per registry.
+ * Each row builds its frozen site inside its own registry (the elements it
+ * builds have to come from the registry that draws them).
+ *
+ * The twins are drawn from the frozen file: nothing here runs the codemod or
+ * needs NativeWind.
+ *
+ *   DS_FREEZE_TWINS=1 jest -c jest.parity.config.js <this file>   refreeze (W3.1 only: it runs the codemod)
  */
 
 if (captureMode() !== "compare") {
@@ -40,6 +47,7 @@ if (captureMode() !== "compare") {
 }
 
 const FIXTURE = fixtureFileFor(path.join(__dirname, "OrderBill.parity.tsx"))
+const TWINS = twinsFileFor(__dirname, "OrderBill")
 const RTL_TEXT = { textAlign: "left" }
 
 /** The class-name test's cases: the harvested sets over each bill, and the hand cases. */
@@ -63,6 +71,8 @@ const casesOf = (): CasesFile => {
   return { ...harvested, cases }
 }
 
+const CASES = casesOf()
+
 const spec = {
   source: "components/OrderBill/OrderBill",
   tag: "OrderBill",
@@ -75,28 +85,20 @@ const spec = {
 const LEFT: { sites: string[]; left: { attr: string; reason: string }[] }[] = []
 
 const twinLoader = (id: string) => () => {
-  const React = require("react") as typeof import("react")
   const harvest = require("testing/harvest") as typeof import("testing/harvest")
   const hand = require("../__fixtures__/OrderBill.handCases")
-  const cache = ((globalThis as Record<string, unknown>).__orderBillTwins ??=
-    {}) as { react?: unknown; twins?: TwinCase[] }
-  if (cache.react !== React) {
-    cache.react = React
-    cache.twins = harvest.twinCases(casesOf(), {
-      ...spec,
-      build: {
-        opaque: (key: string): unknown =>
-          key in hand.JOBS ? hand.JOBS[key] : RTL_TEXT,
-      },
-    })
-  }
-  const twin = cache.twins?.find((candidate) => candidate.id === id)
-  if (!twin) throw new Error(`no twin case ${id}`)
-  return { default: () => twin.element }
+  const element = harvest.frozenTwinElement(TWINS, id, CASES.cases[id].props, {
+    ...spec,
+    build: {
+      opaque: (key: string): unknown =>
+        key in hand.JOBS ? hand.JOBS[key] : RTL_TEXT,
+    },
+  })
+  return { default: () => element }
 }
 
 describe("OrderBill's twins draw what its class names drew", () => {
-  const twins = twinCases(casesOf(), spec)
+  const twins = frozenTwinCases(TWINS, CASES, spec)
 
   it("the codemod converts every class the cases pass, but those listed", () => {
     expect(
@@ -119,12 +121,17 @@ describe("OrderBill's twins draw what its class names drew", () => {
     twins.map((twin) => ({ id: twin.id })),
     PARITY_MATRIX
   )
+  it("the twins are every case the class-name test pinned, but the drops", () => {
+    expectFrozenCover(TWINS, FIXTURE, rows)
+  })
   it.each(rows)("$id [$env.language $env.platform]", async (row) => {
     const tree = await renderScreen(twinLoader(row.id), {
       lang: row.env.language,
       platform: row.env.platform,
       navigation: "none",
     })
-    expectParity(parityName(row.id, row.env), tree, { file: FIXTURE })
+    expectTwin(TWINS, row.id, parityName(row.id, row.env), tree, {
+      file: FIXTURE,
+    })
   })
 })

@@ -1,0 +1,58 @@
+{
+ "component": "PromoLine",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "ac3f251b0a": {
+   "sites": [
+    "components/ProCardBase/ProCardBase.tsx:217",
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:312"
+   ],
+   "props": {
+    "promoMessage": "{promoLine.promoStickerMessage}"
+   },
+   "code": "import React from \"react\"\nimport PromoLine from \"components/PromoLine/PromoLine\"\nimport __twin from \"__twin_site__\"\n\nexport default <PromoLine promoMessage={\"{promoLine.promoStickerMessage}\"} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "class mt-[6]": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "promoMessage": "{promo}",
+    "className": "mt-[6]"
+   },
+   "code": "import React from \"react\"\nimport PromoLine from \"components/PromoLine/PromoLine\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <PromoLine promoMessage={\"{promo}\"} style={a.mt_6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "class mx-[10] mb-[8]": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "promoMessage": "{promo}",
+    "className": "mx-[10] mb-[8]"
+   },
+   "code": "import React from \"react\"\nimport PromoLine from \"components/PromoLine/PromoLine\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <PromoLine promoMessage={\"{promo}\"} style={[a.mx_10, a.mb_8]} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "fdf058dc32": {
+   "sites": [
+    "screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx:272"
+   ],
+   "props": {
+    "promoMessage": "{subscriptions.find((s: any) => s.product?.subType === \"promoLine\").promoStickerMessage}"
+   },
+   "code": "import React from \"react\"\nimport PromoLine from \"components/PromoLine/PromoLine\"\nimport __twin from \"__twin_site__\"\n\nexport default <PromoLine promoMessage={\"{subscriptions.find((s: any) => s.product?.subType === \\\"promoLine\\\").promoStickerMessage}\"} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  }
+ },
+ "drops": {}
+}

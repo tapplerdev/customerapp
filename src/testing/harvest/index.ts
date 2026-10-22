@@ -28,4 +28,23 @@ export {
   type HarvestFiles,
 } from "./files"
 export { buildProps, buildValue, type BuildOptions } from "./props"
-export { twinCases, type TwinCase, type TwinSpec } from "./twinCases"
+export { classesIn, expectClassFree } from "./classFree"
+export {
+  expectFrozenCover,
+  expectTwin,
+  frozenTwinCases,
+  frozenTwinElement,
+  readTwins,
+  type TwinRow,
+} from "./frozenTwins"
+export {
+  freezing,
+  twinsFileFor,
+  type Drop,
+  type FrozenCase,
+  type HandEdit,
+  type Left,
+  type TwinCase,
+  type TwinSpec,
+  type TwinsFile,
+} from "./twinSite"

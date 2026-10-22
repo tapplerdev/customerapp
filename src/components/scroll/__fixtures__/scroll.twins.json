@@ -1,0 +1,1309 @@
+{
+ "component": "AppScrollView",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "AppFlatList: empty component, padded bottom": {
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:207"
+   ],
+   "props": {
+    "data": [],
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "keyboardShouldPersistTaps": "handled",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "ListEmptyComponent": {
+     "$el": "Row",
+     "children": "nothing here"
+    }
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppFlatList data={__twin.values[0]} renderItem={__twin.values[1]} keyExtractor={__twin.values[2]} keyboardShouldPersistTaps={\"handled\"} showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[3]} ListEmptyComponent={__twin.values[4]} />\n",
+   "styles": null,
+   "values": [
+    [],
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "$opaque": "keyExtractor"
+    },
+    {
+     "paddingBottom": 20
+    },
+    {
+     "$el": "Row",
+     "children": "nothing here"
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: handled taps, interactive dismissal": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:286"
+   ],
+   "props": {
+    "data": {
+     "$opaque": "data"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "keyboardShouldPersistTaps": "handled",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 0
+    },
+    "keyboardDismissMode": "interactive"
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppFlatList data={__twin.values[0]} renderItem={__twin.values[1]} keyExtractor={__twin.values[2]} keyboardShouldPersistTaps={\"handled\"} showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[3]} keyboardDismissMode={\"interactive\"} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "data"
+    },
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "$opaque": "keyExtractor"
+    },
+    {
+     "paddingBottom": 0
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: horizontal strip": {
+   "sites": [
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:341"
+   ],
+   "props": {
+    "horizontal": true,
+    "showsHorizontalScrollIndicator": false,
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingRight": 15
+    },
+    "data": {
+     "$opaque": "data"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    }
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppFlatList horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={__twin.values[0]} data={__twin.values[1]} keyExtractor={__twin.values[2]} renderItem={__twin.values[3]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingRight": 15
+    },
+    {
+     "$opaque": "data"
+    },
+    {
+     "$opaque": "keyExtractor"
+    },
+    {
+     "$opaque": "renderItem"
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: inverted chat list, class flex-1 bg-white": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1080"
+   ],
+   "props": {
+    "data": {
+     "$opaque": "data"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "inverted": true,
+    "className": "flex-1 bg-white",
+    "contentContainerStyle": {
+     "paddingBottom": 10
+    },
+    "onEndReached": {
+     "$fn": true
+    },
+    "onEndReachedThreshold": 0.3,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "keyboardDismissMode": "interactive",
+    "removeClippedSubviews": true,
+    "windowSize": 10,
+    "maxToRenderPerBatch": 10,
+    "ListEmptyComponent": {
+     "$el": "Row",
+     "children": "nothing here"
+    }
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <AppFlatList data={__twin.values[0]} keyExtractor={__twin.values[1]} renderItem={__twin.values[2]} inverted={true} style={[a.flex_1, styles.scroll]} contentContainerStyle={__twin.values[3]} onEndReached={__twin.values[4]} onEndReachedThreshold={0.3} onScroll={__twin.values[5]} scrollEventThrottle={16} keyboardDismissMode={\"interactive\"} removeClippedSubviews={true} windowSize={10} maxToRenderPerBatch={10} ListEmptyComponent={__twin.values[6]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\nimport colors from \"@tappler/shared/src/styles/colors\"\n\nexport default StyleSheet.create({\n  scroll: {\n    backgroundColor: colors.white,\n  },\n})\n",
+   "values": [
+    {
+     "$opaque": "data"
+    },
+    {
+     "$opaque": "keyExtractor"
+    },
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "paddingBottom": 10
+    },
+    {
+     "$fn": true
+    },
+    {
+     "$fn": true
+    },
+    {
+     "$el": "Row",
+     "children": "nothing here"
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: inverted chat list, empty": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1080"
+   ],
+   "props": {
+    "data": [],
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "inverted": true,
+    "className": "flex-1 bg-white",
+    "contentContainerStyle": {
+     "flex": 1,
+     "justifyContent": "center"
+    },
+    "ListEmptyComponent": {
+     "$el": "Row",
+     "children": "nothing here"
+    }
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <AppFlatList data={__twin.values[0]} keyExtractor={__twin.values[1]} renderItem={__twin.values[2]} inverted={true} style={[a.flex_1, styles.scroll]} contentContainerStyle={__twin.values[3]} ListEmptyComponent={__twin.values[4]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\nimport colors from \"@tappler/shared/src/styles/colors\"\n\nexport default StyleSheet.create({\n  scroll: {\n    backgroundColor: colors.white,\n  },\n})\n",
+   "values": [
+    [],
+    {
+     "$opaque": "keyExtractor"
+    },
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "flex": 1,
+     "justifyContent": "center"
+    },
+    {
+     "$el": "Row",
+     "children": "nothing here"
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: paging gallery": {
+   "sites": [
+    "components/ImageViewerModal/ImageViewerModal.tsx:62"
+   ],
+   "props": {
+    "data": {
+     "$opaque": "data"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "horizontal": true,
+    "pagingEnabled": true,
+    "showsHorizontalScrollIndicator": false,
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "initialScrollIndex": 0,
+    "getItemLayout": {
+     "$opaque": "getItemLayout"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    }
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppFlatList data={__twin.values[0]} renderItem={__twin.values[1]} horizontal={true} pagingEnabled={true} showsHorizontalScrollIndicator={false} onScroll={__twin.values[2]} scrollEventThrottle={16} initialScrollIndex={0} getItemLayout={__twin.values[3]} keyExtractor={__twin.values[4]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "data"
+    },
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "$fn": true
+    },
+    {
+     "$opaque": "getItemLayout"
+    },
+    {
+     "$opaque": "keyExtractor"
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: pull to refresh, bounce kept": {
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiScreen.tsx:392",
+    "screens/dashboardScreens/NotificationsScreen/NotificationsScreen.tsx:207"
+   ],
+   "props": {
+    "data": {
+     "$opaque": "data"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "showsVerticalScrollIndicator": false,
+    "alwaysBounceVertical": true
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppFlatList data={__twin.values[0]} renderItem={__twin.values[1]} keyExtractor={__twin.values[2]} contentContainerStyle={__twin.values[3]} showsVerticalScrollIndicator={false} alwaysBounceVertical={true} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "data"
+    },
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "$opaque": "keyExtractor"
+    },
+    {
+     "paddingBottom": 20
+    }
+   ],
+   "left": []
+  },
+  "AppFlatList: vertical, no indicator": {
+   "sites": [
+    "screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx:76"
+   ],
+   "props": {
+    "data": {
+     "$opaque": "data"
+    },
+    "renderItem": {
+     "$opaque": "renderItem"
+    },
+    "keyExtractor": {
+     "$opaque": "keyExtractor"
+    },
+    "showsVerticalScrollIndicator": false
+   },
+   "code": "import React from \"react\"\nimport { AppFlatList as AppFlatList } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppFlatList data={__twin.values[0]} renderItem={__twin.values[1]} keyExtractor={__twin.values[2]} showsVerticalScrollIndicator={false} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "data"
+    },
+    {
+     "$opaque": "renderItem"
+    },
+    {
+     "$opaque": "keyExtractor"
+    }
+   ],
+   "left": []
+  },
+  "AppKeyboardAwareScrollView: grow only": {
+   "sites": [
+    "screens/dashboardScreens/DeleteAccountScreen/DeleteAccountScreen.tsx:59"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1
+    },
+    "showsVerticalScrollIndicator": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppKeyboardAwareScrollView as AppKeyboardAwareScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppKeyboardAwareScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppKeyboardAwareScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppKeyboardAwareScrollView: grow, padded bottom": {
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:106",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:135"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingBottom": 27
+    },
+    "showsVerticalScrollIndicator": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppKeyboardAwareScrollView as AppKeyboardAwareScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppKeyboardAwareScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppKeyboardAwareScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingBottom": 27
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppKeyboardAwareScrollView: grow, padded bottom (review form)": {
+   "sites": [
+    "screens/dashboardScreens/ReviewFormScreen/ReviewFormScreen.tsx:174"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingBottom": 40
+    },
+    "showsVerticalScrollIndicator": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppKeyboardAwareScrollView as AppKeyboardAwareScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppKeyboardAwareScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppKeyboardAwareScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingBottom": 40
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppKeyboardAwareScrollView: grow, padded bottom and sides": {
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:77",
+    "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:110"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingBottom": 27,
+     "paddingHorizontal": 19
+    },
+    "showsVerticalScrollIndicator": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppKeyboardAwareScrollView as AppKeyboardAwareScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppKeyboardAwareScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppKeyboardAwareScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingBottom": 27,
+     "paddingHorizontal": 19
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppKeyboardAwareScrollView: grow, padded top and sides": {
+   "sites": [
+    "screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:115"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingHorizontal": 24,
+     "paddingTop": 24
+    },
+    "showsVerticalScrollIndicator": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppKeyboardAwareScrollView as AppKeyboardAwareScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppKeyboardAwareScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppKeyboardAwareScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingHorizontal": 24,
+     "paddingTop": 24
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppKeyboardAwareScrollView: scroll handler, no bounce": {
+   "sites": [
+    "screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:229"
+   ],
+   "props": {
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 100,
+     "backgroundColor": "#FFFFFF"
+    },
+    "onScroll": {
+     "$fn": true
+    },
+    "scrollEventThrottle": 16,
+    "bounces": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppKeyboardAwareScrollView as AppKeyboardAwareScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppKeyboardAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]} onScroll={__twin.values[1]} scrollEventThrottle={16} bounces={false}>{__twin.values[2]}</AppKeyboardAwareScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingBottom": 100,
+     "backgroundColor": "#FFFFFF"
+    },
+    {
+     "$fn": true
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: class flex-1, no bounce": {
+   "sites": [
+    "components/CalendarTimeSheet/CalendarTimeSheet.tsx:94"
+   ],
+   "props": {
+    "className": "flex-1",
+    "bounces": false,
+    "showsVerticalScrollIndicator": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <AppScrollView style={a.flex_1} bounces={false} showsVerticalScrollIndicator={false}>{__twin.values[0]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: class flex-1, padded bottom": {
+   "sites": [
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:145"
+   ],
+   "props": {
+    "className": "flex-1",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 24
+    },
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <AppScrollView style={a.flex_1} showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingBottom": 24
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: class flex-1, padded top and bottom, handled taps, no bounce": {
+   "sites": [
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:290"
+   ],
+   "props": {
+    "className": "flex-1",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingTop": 16,
+     "paddingBottom": 16
+    },
+    "keyboardShouldPersistTaps": "handled",
+    "bounces": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <AppScrollView style={a.flex_1} showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]} keyboardShouldPersistTaps={\"handled\"} bounces={false}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingTop": 16,
+     "paddingBottom": 16
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: class flex-1, padded, handled taps, no bounce": {
+   "sites": [
+    "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen.tsx:176"
+   ],
+   "props": {
+    "className": "flex-1",
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "bounces": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <AppScrollView style={a.flex_1} showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]} bounces={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingBottom": 20
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: class mt-[12], horizontal, padded content": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:22",
+    "screens/dashboardScreens/HomeScreen/components/PresetSection.tsx:41"
+   ],
+   "props": {
+    "horizontal": true,
+    "showsHorizontalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingHorizontal": 16
+    },
+    "className": "mt-[12]",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <AppScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={__twin.values[0]} style={a.mt_12}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingHorizontal": 16
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: class mt-[16], horizontal": {
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:286",
+    "components/QuestionComponent/QuestionComponent.tsx:311",
+    "components/QuestionComponent/QuestionComponent.tsx:336",
+    "components/QuestionComponent/QuestionComponent.tsx:360"
+   ],
+   "props": {
+    "horizontal": true,
+    "showsHorizontalScrollIndicator": false,
+    "className": "mt-[16]",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <AppScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={a.mt_16}>{__twin.values[0]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: grow and padded bottom": {
+   "sites": [
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:83",
+    "screens/dashboardScreens/AccountScreen/AccountScreen.tsx:194"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingBottom": 24
+    },
+    "showsVerticalScrollIndicator": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingBottom": 24
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: grow only": {
+   "sites": [
+    "screens/dashboardScreens/RequestDetailsScreen/RequestDetailsScreen.tsx:161"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1
+    },
+    "showsVerticalScrollIndicator": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: handled taps, no bounce, padded": {
+   "sites": [
+    "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen.tsx:283",
+    "screens/dashboardScreens/ServiceRequestDetailsScreen/ServiceRequestDetailsScreen.tsx:345"
+   ],
+   "props": {
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingTop": 28,
+     "paddingBottom": 20,
+     "flexGrow": 1
+    },
+    "bounces": false,
+    "keyboardShouldPersistTaps": "handled",
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]} bounces={false} keyboardShouldPersistTaps={\"handled\"}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingTop": 28,
+     "paddingBottom": 20,
+     "flexGrow": 1
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: horizontal": {
+   "sites": [
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:419",
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:440",
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:500",
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:521",
+    "screens/dashboardScreens/FiltersScreen/FiltersScreen.tsx:542"
+   ],
+   "props": {
+    "horizontal": true,
+    "showsHorizontalScrollIndicator": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView horizontal={true} showsHorizontalScrollIndicator={false}>{__twin.values[0]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: horizontal, padded content": {
+   "sites": [
+    "components/AnimatedSelectCategory/AnimatedSelectCategory.tsx:93"
+   ],
+   "props": {
+    "horizontal": true,
+    "showsHorizontalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingHorizontal": 14
+    },
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={__twin.values[0]}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingHorizontal": 14
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: no bounce, padded by the inset": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:736"
+   ],
+   "props": {
+    "showsVerticalScrollIndicator": false,
+    "bounces": false,
+    "contentContainerStyle": {
+     "paddingHorizontal": 24,
+     "paddingBottom": 66
+    },
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView showsVerticalScrollIndicator={false} bounces={false} contentContainerStyle={__twin.values[0]}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingHorizontal": 24,
+     "paddingBottom": 66
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: padded all round": {
+   "sites": [
+    "screens/dashboardScreens/FoodCheckoutScreen/FoodCheckoutScreen.tsx:604",
+    "screens/dashboardScreens/JobDetailScreen/components/FoodOrderView.tsx:386"
+   ],
+   "props": {
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "padding": 16,
+     "paddingBottom": 24
+    },
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "padding": 16,
+     "paddingBottom": 24
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: padded bottom": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:40",
+    "screens/dashboardScreens/FoodCartScreen/FoodCartScreen.tsx:243",
+    "screens/dashboardScreens/HomeScreen/HomeScreen.tsx:85"
+   ],
+   "props": {
+    "showsVerticalScrollIndicator": false,
+    "contentContainerStyle": {
+     "paddingBottom": 24
+    },
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView showsVerticalScrollIndicator={false} contentContainerStyle={__twin.values[0]}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingBottom": 24
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: padded top and sides, grow": {
+   "sites": [
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:88",
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:90"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "flexGrow": 1,
+     "paddingHorizontal": 24,
+     "paddingTop": 24
+    },
+    "showsVerticalScrollIndicator": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false}>{__twin.values[1]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "flexGrow": 1,
+     "paddingHorizontal": 24,
+     "paddingTop": 24
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: style as well as content style": {
+   "sites": [
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:322"
+   ],
+   "props": {
+    "contentContainerStyle": {
+     "paddingBottom": 20
+    },
+    "showsVerticalScrollIndicator": false,
+    "style": {
+     "backgroundColor": "#F7F7F7"
+    },
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView contentContainerStyle={__twin.values[0]} showsVerticalScrollIndicator={false} style={__twin.values[1]}>{__twin.values[2]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    {
+     "paddingBottom": 20
+    },
+    {
+     "backgroundColor": "#F7F7F7"
+    },
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  },
+  "AppScrollView: vertical, no indicator": {
+   "sites": [
+    "components/AddressSelectionModal/AddressSelectionModal.tsx:103"
+   ],
+   "props": {
+    "showsVerticalScrollIndicator": false,
+    "children": [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   },
+   "code": "import React from \"react\"\nimport { AppScrollView as AppScrollView } from \"components/scroll\"\nimport __twin from \"__twin_site__\"\n\nexport default <AppScrollView showsVerticalScrollIndicator={false}>{__twin.values[0]}</AppScrollView>\n",
+   "styles": null,
+   "values": [
+    [
+     {
+      "$el": "Row",
+      "children": "first row"
+     },
+     {
+      "$el": "Row",
+      "children": "second row"
+     }
+    ]
+   ],
+   "left": []
+  }
+ },
+ "drops": {}
+}

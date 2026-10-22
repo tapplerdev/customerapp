@@ -1,0 +1,227 @@
+{
+ "component": "ImageWithCheckmarkButton",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "a9e124d537": {
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:325"
+   ],
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\n\nexport default <ImageWithCheckmarkButton label={\"{getOptionLabel(opt)}\"} imageUrl={__twin.values[0]} isSelected={false} onPress={__twin.values[1]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "cf5d65aa21": {
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:325"
+   ],
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\n\nexport default <ImageWithCheckmarkButton label={\"{getOptionLabel(opt)}\"} imageUrl={__twin.values[0]} isSelected={true} onPress={__twin.values[1]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "hand class ml-[10] mr-[4], not selected": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "label": "t:answer",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    },
+    "className": "ml-[10] mr-[4]"
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <ImageWithCheckmarkButton label={\"t:answer\"} imageUrl={__twin.values[0]} isSelected={false} onPress={__twin.values[1]} style={[a.ml_10, a.mr_4]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "hand class ml-[10] mr-[4], selected": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "label": "t:answer",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    },
+    "className": "ml-[10] mr-[4]"
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <ImageWithCheckmarkButton label={\"t:answer\"} imageUrl={__twin.values[0]} isSelected={true} onPress={__twin.values[1]} style={[a.ml_10, a.mr_4]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "hand class mt-[8], not selected": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "label": "t:answer",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    },
+    "className": "mt-[8]"
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <ImageWithCheckmarkButton label={\"t:answer\"} imageUrl={__twin.values[0]} isSelected={false} onPress={__twin.values[1]} style={a.mt_8} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "hand class mt-[8], selected": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "label": "t:answer",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    },
+    "className": "mt-[8]"
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <ImageWithCheckmarkButton label={\"t:answer\"} imageUrl={__twin.values[0]} isSelected={true} onPress={__twin.values[1]} style={a.mt_8} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "hand class self-start w-[160] bg-grey5, not selected": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "label": "t:answer",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    },
+    "className": "self-start w-[160] bg-grey5"
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <ImageWithCheckmarkButton label={\"t:answer\"} imageUrl={__twin.values[0]} isSelected={false} onPress={__twin.values[1]} style={[a.self_start, styles.imageWithCheckmarkButton]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\nimport colors from \"@tappler/shared/src/styles/colors\"\n\nexport default StyleSheet.create({\n  imageWithCheckmarkButton: {\n    width: 160,\n    backgroundColor: colors.grey5,\n  },\n})\n",
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "hand class self-start w-[160] bg-grey5, selected": {
+   "sites": [
+    "by hand"
+   ],
+   "props": {
+    "label": "t:answer",
+    "imageUrl": {
+     "$opaque": "opt.icon"
+    },
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    },
+    "className": "self-start w-[160] bg-grey5"
+   },
+   "code": "import React from \"react\"\nimport ImageWithCheckmarkButton from \"components/ImageWithCheckmarkButton/ImageWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <ImageWithCheckmarkButton label={\"t:answer\"} imageUrl={__twin.values[0]} isSelected={true} onPress={__twin.values[1]} style={[a.self_start, styles.imageWithCheckmarkButton]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\nimport colors from \"@tappler/shared/src/styles/colors\"\n\nexport default StyleSheet.create({\n  imageWithCheckmarkButton: {\n    width: 160,\n    backgroundColor: colors.grey5,\n  },\n})\n",
+   "values": [
+    {
+     "$opaque": "opt.icon"
+    },
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  }
+ },
+ "drops": {}
+}

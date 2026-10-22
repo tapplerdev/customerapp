@@ -1,13 +1,17 @@
 import { describe, expect, it, jest } from "@jest/globals"
 import path from "path"
-import React from "react"
 
 /*
- * ImageWithTextButton's twin path: every case its class-name test pins
- * (ImageWithTextButton.parity.test.tsx), converted by the codemod as a call
- * site of its own (testing/harvest's twinCases), drawn against that
- * test's own trees, with and without art. A site that moves to `style`
- * draws what its className drew.
+ * ImageWithTextButton's twin path: every case its class-name test pinned
+ * (__parity__/ImageWithTextButton.parity.test.json), as the codemod converted it at the
+ * freeze into a call site of its own (__fixtures__/ImageWithTextButton.twins.json),
+ * drawn against that test's own trees, with and without art. A site that
+ * moves to `style` draws what its className drew.
+ *
+ * The twins are drawn from the frozen file: nothing here runs the codemod or
+ * needs NativeWind.
+ *
+ *   DS_FREEZE_TWINS=1 jest <this file>   refreeze (W3.1 only: it runs the codemod)
  */
 
 /* eslint-disable global-require, @typescript-eslint/no-var-requires -- a
@@ -24,18 +28,22 @@ global.fetch = jest.fn(() => new Promise<never>(() => undefined)) as never
 /* eslint-enable global-require, @typescript-eslint/no-var-requires */
 
 /* eslint-disable import/first */
-// The harvested class strings, compiled: a class the codemod leaves stays one.
-import "../__fixtures__/ImageWithTextButton.classes"
 import { HAND } from "../__fixtures__/ImageWithTextButton.hand"
 import {
   PARITY_MATRIX,
   captureMode,
-  expectParity,
   fixtureFileFor,
   hostTree,
   parityName,
 } from "testing/hostTreeParity"
-import { harvestFilesFor, readHarvest, twinCases } from "testing/harvest"
+import {
+  expectFrozenCover,
+  expectTwin,
+  frozenTwinCases,
+  harvestFilesFor,
+  readHarvest,
+  twinsFileFor,
+} from "testing/harvest"
 /* eslint-enable import/first */
 
 if (captureMode() !== "compare") {
@@ -59,11 +67,12 @@ const VARIANTS: Record<string, () => void> = {
 const FIXTURE = fixtureFileFor(
   path.join(__dirname, "ImageWithTextButton.parity.test.tsx")
 )
+const TWINS = twinsFileFor(__dirname, "ImageWithTextButton")
 const harvested = readHarvest(harvestFilesFor(__dirname, "ImageWithTextButton"))
 // The call sites' cases, and the hand cases that do pass the answer's class.
 const cases = { ...harvested, cases: { ...harvested.cases, ...HAND } }
 const build = () =>
-  twinCases(cases, {
+  frozenTwinCases(TWINS, cases, {
     source: "components/ImageWithTextButton/ImageWithTextButton",
     tag: "ImageWithTextButton",
     omit: ["key"],
@@ -96,11 +105,14 @@ describe("ImageWithTextButton's twins draw what its class names drew", () => {
         }))
       )
     })
+  it("the twins are every case the class-name test pinned, but the drops", () => {
+    expectFrozenCover(TWINS, FIXTURE, table)
+  })
   it.each(table)(
     "$name ($sites.0) [$env.language $env.platform]",
-    ({ name, element, env, variant }) => {
+    ({ id, name, element, env, variant }) => {
       VARIANTS[variant]()
-      expectParity(parityName(name, env), hostTree(element, env), {
+      expectTwin(TWINS, id, parityName(name, env), hostTree(element, env), {
         file: FIXTURE,
       })
     }

@@ -1,0 +1,927 @@
+{
+ "component": "SkeletonLoader",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "026c581559": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277"
+   ],
+   "props": {
+    "width": "46%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"46%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "02f7effebb": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ],
+   "props": {
+    "width": "39%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"39%\"} height={11} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "03b4db5834": {
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:12"
+   ],
+   "props": {
+    "width": 40,
+    "height": 40,
+    "borderRadius": 20
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={40} height={40} borderRadius={20} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "040b1469d1": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:557"
+   ],
+   "props": {
+    "width": 230,
+    "height": 13,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={230} height={13} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "0602780c4d": {
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:21"
+   ],
+   "props": {
+    "width": "50%",
+    "height": 12,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"50%\"} height={12} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "0741ced0c0": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277"
+   ],
+   "props": {
+    "width": "64%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"64%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "0b153e9cec": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:71"
+   ],
+   "props": {
+    "width": "50%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"50%\"} height={13} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "0c26af8f81": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:564"
+   ],
+   "props": {
+    "width": "45%",
+    "height": 12,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"45%\"} height={12} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "11a05ec310": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277",
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "60%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"60%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "1303e06b82": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "85%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"85%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "150458c29b": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ],
+   "props": {
+    "width": "30%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"30%\"} height={11} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "2120dcf78e": {
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:10"
+   ],
+   "props": {
+    "width": "55%",
+    "height": 16,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"55%\"} height={16} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "247401c2e7": {
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:22"
+   ],
+   "props": {
+    "width": "35%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"35%\"} height={13} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "254d685da1": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ],
+   "props": {
+    "width": "55%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"55%\"} height={20} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "29f2998e37": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ],
+   "props": {
+    "width": "24%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"24%\"} height={11} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "2a550c2f63": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ],
+   "props": {
+    "width": "60%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"60%\"} height={16} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "2c00f686fd": {
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:17"
+   ],
+   "props": {
+    "width": "25%",
+    "height": 12,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"25%\"} height={12} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "306bdc84a3": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ],
+   "props": {
+    "width": "45%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"45%\"} height={20} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "3399cdcc29": {
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "48%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"48%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "365b8e6353": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19",
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:83"
+   ],
+   "props": {
+    "width": "55%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"55%\"} height={13} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "3a70e8b947": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19",
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:65"
+   ],
+   "props": {
+    "width": "60%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"60%\"} height={13} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "43bc090691": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:552"
+   ],
+   "props": {
+    "width": "85%",
+    "height": 42,
+    "borderRadius": 8
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"85%\"} height={42} borderRadius={8} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "4d943fa50b": {
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "45%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"45%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "53e6323908": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:45"
+   ],
+   "props": {
+    "width": 100,
+    "height": 110,
+    "borderRadius": 10
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={100} height={110} borderRadius={10} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "55164eb6c9": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ],
+   "props": {
+    "width": "50%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"50%\"} height={20} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "5cfc7b0cb0": {
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:26"
+   ],
+   "props": {
+    "width": "65%",
+    "height": 11,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"65%\"} height={11} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "601af86539": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19"
+   ],
+   "props": {
+    "width": "65%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"65%\"} height={13} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "61fa6bc91c": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ],
+   "props": {
+    "width": "75%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"75%\"} height={16} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "67f915da64": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "95%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"95%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "6ab1c6c2b1": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "90%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"90%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "6e12238619": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:17"
+   ],
+   "props": {
+    "width": "40%",
+    "height": 20,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"40%\"} height={20} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "78c9b0291f": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:565"
+   ],
+   "props": {
+    "width": "30%",
+    "height": 16,
+    "borderRadius": 8
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"30%\"} height={16} borderRadius={8} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "7a20a96b5d": {
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "70%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"70%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "7a4ca8fa03": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "94%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"94%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "7b69e3a87d": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277",
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "72%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"72%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "83ecc5b926": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277",
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129",
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:562"
+   ],
+   "props": {
+    "width": "55%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"55%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "9024ab1384": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:563"
+   ],
+   "props": {
+    "width": "35%",
+    "height": 12,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"35%\"} height={12} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "a02394f6ca": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:546"
+   ],
+   "props": {
+    "width": 130,
+    "height": 16,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={130} height={16} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "af673b0e57": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "75%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"75%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "af759ab53e": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ],
+   "props": {
+    "width": "70%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"70%\"} height={16} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "b5f2bc0503": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ],
+   "props": {
+    "width": "65%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"65%\"} height={16} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "b9875bda0f": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "88%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"88%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "be20f2221e": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ],
+   "props": {
+    "width": "35%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"35%\"} height={11} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "bfaad3cb6b": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:547"
+   ],
+   "props": {
+    "width": 90,
+    "height": 11,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={90} height={11} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "bffe9bb4e3": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:560"
+   ],
+   "props": {
+    "width": 85,
+    "height": 85,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={85} height={85} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "c48a008f98": {
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "65%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"65%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "cea0c4cb32": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:19"
+   ],
+   "props": {
+    "width": "70%",
+    "height": 13,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"70%\"} height={13} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "class flex-1": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "width": 130,
+    "height": 16,
+    "borderRadius": 4,
+    "className": "flex-1"
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <SkeletonLoader width={130} height={16} borderRadius={4} style={a.flex_1} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "class mt-[6]": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "width": 130,
+    "height": 16,
+    "borderRadius": 4,
+    "className": "mt-[6]"
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <SkeletonLoader width={130} height={16} borderRadius={4} style={a.mt_6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "class mx-[10] mb-[8]": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "width": 130,
+    "height": 16,
+    "borderRadius": 4,
+    "className": "mx-[10] mb-[8]"
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <SkeletonLoader width={130} height={16} borderRadius={4} style={[a.mx_10, a.mb_8]} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "d200903f23": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "80%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"80%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "d23ccce9bd": {
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:556"
+   ],
+   "props": {
+    "width": 140,
+    "height": 18,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={140} height={18} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "d4df2f719c": {
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:18"
+   ],
+   "props": {
+    "width": 55,
+    "height": 11,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={55} height={11} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "d5d96613de": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:22"
+   ],
+   "props": {
+    "width": 100,
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={100} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "d79d03e651": {
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:13"
+   ],
+   "props": {
+    "width": "40%",
+    "height": 12,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"40%\"} height={12} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "e2bed1b2d1": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:63",
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:68"
+   ],
+   "props": {
+    "width": 168,
+    "height": 63,
+    "borderRadius": 10
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={168} height={63} borderRadius={10} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "e4d27c9426": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:54"
+   ],
+   "props": {
+    "width": 210,
+    "height": 120,
+    "borderRadius": 10
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={210} height={120} borderRadius={10} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "efb2a2510a": {
+   "sites": [
+    "screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx:129"
+   ],
+   "props": {
+    "width": "50%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"50%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "f5d8a5e89e": {
+   "sites": [
+    "screens/HomeSkeletonScreen/HomeSkeletonScreen.tsx:81"
+   ],
+   "props": {
+    "width": 150,
+    "height": 90,
+    "borderRadius": 10
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={150} height={90} borderRadius={10} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "fa3f5f79ef": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:277"
+   ],
+   "props": {
+    "width": "38%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"38%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "fc042432be": {
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesSkeleton.tsx:17"
+   ],
+   "props": {
+    "width": "50%",
+    "height": 15,
+    "borderRadius": 6
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"50%\"} height={15} borderRadius={6} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "fd77203efb": {
+   "sites": [
+    "screens/dashboardScreens/TalabatiScreen/TalabatiSkeleton.tsx:25"
+   ],
+   "props": {
+    "width": 110,
+    "height": 28,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={110} height={28} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "fe7f9c4c76": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:24"
+   ],
+   "props": {
+    "width": "80%",
+    "height": 16,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"80%\"} height={16} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "ff773e64ae": {
+   "sites": [
+    "components/SearchLocationModal/SearchLocationModal.tsx:279"
+   ],
+   "props": {
+    "width": "47%",
+    "height": 11,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"47%\"} height={11} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  },
+  "ffa7f3f63e": {
+   "sites": [
+    "screens/dashboardScreens/NotificationsScreen/NotificationsSkeleton.tsx:28"
+   ],
+   "props": {
+    "width": "92%",
+    "height": 15,
+    "borderRadius": 4
+   },
+   "code": "import React from \"react\"\nimport SkeletonLoader from \"components/SkeletonLoader/SkeletonLoader\"\nimport __twin from \"__twin_site__\"\n\nexport default <SkeletonLoader width={\"92%\"} height={15} borderRadius={4} />\n",
+   "styles": null,
+   "values": [],
+   "left": []
+  }
+ },
+ "drops": {}
+}

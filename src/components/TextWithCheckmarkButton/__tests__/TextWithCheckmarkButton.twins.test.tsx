@@ -3,14 +3,20 @@ import path from "path"
 import React from "react"
 
 /*
- * TextWithCheckmarkButton's twin path: every case its class-name test pins
- * (TextWithCheckmarkButton.parity.test.tsx), converted by the codemod as a
- * call site of its own (testing/harvest's twinCases), drawn against that
+ * TextWithCheckmarkButton's twin path: every case its class-name test pinned
+ * (__parity__/TextWithCheckmarkButton.parity.test.json), as the codemod
+ * converted it at the freeze into a call site of its own
+ * (__fixtures__/TextWithCheckmarkButton.twins.json), drawn against that
  * test's own trees. A site that moves to the twins draws what its class names
  * drew.
  *
  * The harvested site passes no class, so the hand cases (the classes a
- * caller could still pass) go through the codemod beside it.
+ * caller could still pass) went through the codemod beside it.
+ *
+ * The twins are drawn from the frozen file: nothing here runs the codemod or
+ * needs NativeWind.
+ *
+ *   DS_FREEZE_TWINS=1 jest <this file>   refreeze (W3.1 only: it runs the codemod)
  */
 
 jest.mock("react-native-localize", () =>
@@ -25,20 +31,22 @@ jest.mock("assets/icons/check-mark.svg", () => {
 })
 
 /* eslint-disable import/first */
-// The harvested class strings and the hand cases', compiled: a class the
-// codemod leaves stays one.
-import "../__fixtures__/TextWithCheckmarkButton.classes"
 import { HAND_CASES } from "../__fixtures__/TextWithCheckmarkButton.handCases"
 import {
   PARITY_MATRIX,
   captureMode,
-  expectParity,
   fixtureFileFor,
   hostTree,
   parityName,
 } from "testing/hostTreeParity"
-import { harvestFilesFor, readHarvest, twinCases } from "testing/harvest"
-import TextWithCheckmarkButton from "../TextWithCheckmarkButton"
+import {
+  expectFrozenCover,
+  expectTwin,
+  frozenTwinCases,
+  harvestFilesFor,
+  readHarvest,
+  twinsFileFor,
+} from "testing/harvest"
 /* eslint-enable import/first */
 
 if (captureMode() !== "compare") {
@@ -50,6 +58,7 @@ if (captureMode() !== "compare") {
 const FIXTURE = fixtureFileFor(
   path.join(__dirname, "TextWithCheckmarkButton.parity.test.tsx")
 )
+const TWINS = twinsFileFor(__dirname, "TextWithCheckmarkButton")
 const harvested = readHarvest(
   harvestFilesFor(__dirname, "TextWithCheckmarkButton")
 )
@@ -66,7 +75,7 @@ const cases = {
     ),
   },
 }
-const twins = twinCases(cases, {
+const twins = frozenTwinCases(TWINS, cases, {
   source: "components/TextWithCheckmarkButton/TextWithCheckmarkButton",
   tag: "TextWithCheckmarkButton",
   omit: ["key"],
@@ -97,48 +106,15 @@ describe("TextWithCheckmarkButton's twins draw what its class names drew", () =>
   const table = twins.flatMap((twin) =>
     PARITY_MATRIX.map((env) => ({ ...twin, env }))
   )
+  it("the twins are every case the class-name test pinned, but the drops", () => {
+    expectFrozenCover(TWINS, FIXTURE, table)
+  })
   it.each(table)(
     "$id ($sites.0) [$env.language $env.platform]",
     ({ id, element, env }) => {
-      expectParity(parityName(id, env), hostTree(element, env), {
+      expectTwin(TWINS, id, parityName(id, env), hostTree(element, env), {
         file: FIXTURE,
       })
     }
   )
-
-  it("each hand class draws something (the rows above prove something)", () => {
-    const plain = hostTree(
-      <TextWithCheckmarkButton
-        label="Satin"
-        isSelected={false}
-        onPress={() => undefined}
-      />,
-      { language: "en" }
-    )
-    HAND_CASES.forEach(({ name, props }) => {
-      const drawn = hostTree(
-        <TextWithCheckmarkButton onPress={() => undefined} {...props} />,
-        { language: "en" }
-      )
-      // Picked adds the check mark, so compare a picked hand case with a
-      // picked plain one.
-      const base = props.isSelected
-        ? hostTree(
-            <TextWithCheckmarkButton
-              label="Satin"
-              isSelected
-              onPress={() => undefined}
-            />,
-            { language: "en" }
-          )
-        : plain
-      expect({
-        name,
-        same: JSON.stringify(drawn) === JSON.stringify(base),
-      }).toEqual({
-        name,
-        same: false,
-      })
-    })
-  })
 })

@@ -1,0 +1,137 @@
+{
+ "component": "TextWithCheckmarkButton",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "115da10bdc": {
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:350"
+   ],
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": true,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport TextWithCheckmarkButton from \"components/TextWithCheckmarkButton/TextWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\n\nexport default <TextWithCheckmarkButton label={\"{getOptionLabel(opt)}\"} isSelected={true} onPress={__twin.values[0]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "b3a1a34188": {
+   "sites": [
+    "components/QuestionComponent/QuestionComponent.tsx:350"
+   ],
+   "props": {
+    "key": {
+     "$opaque": "idx"
+    },
+    "label": "{getOptionLabel(opt)}",
+    "isSelected": false,
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport TextWithCheckmarkButton from \"components/TextWithCheckmarkButton/TextWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\n\nexport default <TextWithCheckmarkButton label={\"{getOptionLabel(opt)}\"} isSelected={false} onPress={__twin.values[0]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "class bg-red over bg-white": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "label": "Satin",
+    "isSelected": false,
+    "className": "bg-red",
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport TextWithCheckmarkButton from \"components/TextWithCheckmarkButton/TextWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport styles from \"./styles\"\n\nexport default <TextWithCheckmarkButton label={\"Satin\"} isSelected={false} style={styles.textWithCheckmarkButton} onPress={__twin.values[0]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\nimport colors from \"@tappler/shared/src/styles/colors\"\n\nexport default StyleSheet.create({\n  textWithCheckmarkButton: {\n    backgroundColor: colors.red,\n  },\n})\n",
+   "values": [
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "class mr-[8] picked": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "label": "Satin",
+    "isSelected": true,
+    "className": "mr-[8]",
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport TextWithCheckmarkButton from \"components/TextWithCheckmarkButton/TextWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <TextWithCheckmarkButton label={\"Satin\"} isSelected={true} style={a.mr_8} onPress={__twin.values[0]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "class mt-[6]": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "label": "Satin",
+    "isSelected": false,
+    "className": "mt-[6]",
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport TextWithCheckmarkButton from \"components/TextWithCheckmarkButton/TextWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <TextWithCheckmarkButton label={\"Satin\"} isSelected={false} style={a.mt_6} onPress={__twin.values[0]} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  },
+  "class self-stretch over self-start": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "label": "Satin",
+    "isSelected": false,
+    "className": "self-stretch",
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "code": "import React from \"react\"\nimport TextWithCheckmarkButton from \"components/TextWithCheckmarkButton/TextWithCheckmarkButton\"\nimport __twin from \"__twin_site__\"\nimport styles from \"./styles\"\n\nexport default <TextWithCheckmarkButton label={\"Satin\"} isSelected={false} style={styles.textWithCheckmarkButton} onPress={__twin.values[0]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\n\nexport default StyleSheet.create({\n  textWithCheckmarkButton: {\n    alignSelf: \"stretch\",\n  },\n})\n",
+   "values": [
+    {
+     "$fn": true
+    }
+   ],
+   "left": []
+  }
+ },
+ "drops": {}
+}

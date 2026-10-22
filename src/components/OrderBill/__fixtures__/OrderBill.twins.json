@@ -1,0 +1,197 @@
+{
+ "component": "OrderBill",
+ "codemod": "c8c3b4b",
+ "cases": {
+  "3d3f59b60f delivery fee": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ],
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "delivery fee"
+    },
+    "isPickup": true
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\n\nexport default <OrderBill textStyle={__twin.values[0]} job={__twin.values[1]} isPickup={true} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "rtlText"
+    },
+    {
+     "$opaque": "delivery fee"
+    }
+   ],
+   "left": []
+  },
+  "3d3f59b60f no items": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ],
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "no items"
+    },
+    "isPickup": true
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\n\nexport default <OrderBill textStyle={__twin.values[0]} job={__twin.values[1]} isPickup={true} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "rtlText"
+    },
+    {
+     "$opaque": "no items"
+    }
+   ],
+   "left": []
+  },
+  "3d3f59b60f options, free delivery, discount": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ],
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "options, free delivery, discount"
+    },
+    "isPickup": true
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\n\nexport default <OrderBill textStyle={__twin.values[0]} job={__twin.values[1]} isPickup={true} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "rtlText"
+    },
+    {
+     "$opaque": "options, free delivery, discount"
+    }
+   ],
+   "left": []
+  },
+  "454d02b261 delivery fee": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ],
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "delivery fee"
+    },
+    "isPickup": false
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\n\nexport default <OrderBill textStyle={__twin.values[0]} job={__twin.values[1]} isPickup={false} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "rtlText"
+    },
+    {
+     "$opaque": "delivery fee"
+    }
+   ],
+   "left": []
+  },
+  "454d02b261 no items": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ],
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "no items"
+    },
+    "isPickup": false
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\n\nexport default <OrderBill textStyle={__twin.values[0]} job={__twin.values[1]} isPickup={false} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "rtlText"
+    },
+    {
+     "$opaque": "no items"
+    }
+   ],
+   "left": []
+  },
+  "454d02b261 options, free delivery, discount": {
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:858"
+   ],
+   "props": {
+    "textStyle": {
+     "$opaque": "rtlText"
+    },
+    "job": {
+     "$opaque": "options, free delivery, discount"
+    },
+    "isPickup": false
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\n\nexport default <OrderBill textStyle={__twin.values[0]} job={__twin.values[1]} isPickup={false} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "rtlText"
+    },
+    {
+     "$opaque": "options, free delivery, discount"
+    }
+   ],
+   "left": []
+  },
+  "class mt-[12]": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "job": {
+     "$opaque": "delivery fee"
+    },
+    "isPickup": false,
+    "className": "mt-[12]"
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\n\nexport default <OrderBill job={__twin.values[0]} isPickup={false} style={a.mt_12} />\n",
+   "styles": null,
+   "values": [
+    {
+     "$opaque": "delivery fee"
+    }
+   ],
+   "left": []
+  },
+  "class px-[16] bg-grey5": {
+   "sites": [
+    "hand"
+   ],
+   "props": {
+    "job": {
+     "$opaque": "options, free delivery, discount"
+    },
+    "isPickup": true,
+    "className": "px-[16] bg-grey5"
+   },
+   "code": "import React from \"react\"\nimport OrderBill from \"components/OrderBill/OrderBill\"\nimport __twin from \"__twin_site__\"\nimport { a } from \"@tappler/shared/src/ds\"\nimport styles from \"./styles\"\n\nexport default <OrderBill job={__twin.values[0]} isPickup={true} style={[a.px_16, styles.orderBill]} />\n",
+   "styles": "import { StyleSheet } from \"react-native\"\nimport colors from \"@tappler/shared/src/styles/colors\"\n\nexport default StyleSheet.create({\n  orderBill: {\n    backgroundColor: colors.grey5,\n  },\n})\n",
+   "values": [
+    {
+     "$opaque": "options, free delivery, discount"
+    }
+   ],
+   "left": []
+  }
+ },
+ "drops": {}
+}
