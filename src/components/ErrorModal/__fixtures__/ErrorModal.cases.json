@@ -1,0 +1,174 @@
+{
+ "component": "ErrorModal",
+ "capturedAt": "unknown",
+ "elements": 14,
+ "files": 13,
+ "cases": {
+  "1513908173": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "t:an_error_occurred"
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1349",
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1072"
+   ]
+  },
+  "0d7688f96b": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{errorMessage}",
+    "Icon": {
+     "$el": "EmailExistIcon",
+     "props": {
+      "width": 67,
+      "height": 64
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:174"
+   ]
+  },
+  "b10687eaf7": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{errorMessage}",
+    "Icon": {
+     "$el": "EmailExistIcon",
+     "props": {
+      "width": 67,
+      "height": 64
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/UpdateEmailScreen/UpdateEmailScreen.tsx:174"
+   ]
+  },
+  "95d8926820": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{errorMessage}",
+    "Icon": {
+     "$el": "PasswordErrorIcon",
+     "props": {
+      "width": 70,
+      "height": 57
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:177"
+   ]
+  },
+  "54b576198c": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{errorMessage}",
+    "Icon": {
+     "$el": "PasswordErrorIcon",
+     "props": {
+      "width": 70,
+      "height": 57
+     }
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:177"
+   ]
+  },
+  "87713f9d39": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "t:an_error_occurred"
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesDetailsScreen/MessagesDetailsScreen.tsx:1349",
+    "screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx:1072"
+   ]
+  },
+  "34ba447a7a": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{errorMessage}"
+   },
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:231",
+    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:148",
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:236",
+    "screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:169",
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:477",
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:172",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:343",
+    "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:213"
+   ]
+  },
+  "d7c44d257d": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{errorMessage}"
+   },
+   "sites": [
+    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:231",
+    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:148",
+    "screens/dashboardScreens/FoodOrderReviewScreen/FoodOrderReviewScreen.tsx:236",
+    "screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:169",
+    "screens/dashboardScreens/RequestSummaryScreen/RequestSummaryScreen.tsx:477",
+    "screens/dashboardScreens/UpdateMobileNumberScreen/UpdateMobileNumberScreen.tsx:172",
+    "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:343",
+    "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:213"
+   ]
+  },
+  "5116e1a97a": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{foodCancelError}"
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:680",
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:888"
+   ]
+  },
+  "f7243f8276": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "descr": "{foodCancelError}"
+   },
+   "sites": [
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:680",
+    "screens/dashboardScreens/JobDetailScreen/JobDetailScreen.tsx:888"
+   ]
+  }
+ }
+}
