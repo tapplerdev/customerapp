@@ -18,220 +18,153 @@
     "primitiveImport"
   ],
   "totals": {
-    "className": 1862,
-    "px": 0,
-    "legacy": 0,
-    "familySystem": 0,
-    "colorLiteral": 161,
-    "primitives": 591,
-    "bridge": 0,
+    "className": 1522,
+    "px": 30,
+    "legacy": 50,
+    "familySystem": 1,
+    "colorLiteral": 157,
+    "primitives": 476,
+    "bridge": 4,
     "classKey": 0,
-    "classProp": 16,
-    "classImport": 15,
-    "primitiveImport": 129
+    "classProp": 9,
+    "classImport": 7,
+    "primitiveImport": 91
   },
   "directories": {
     "src": {
-      "className": 1862,
-      "colorLiteral": 161,
-      "primitives": 591,
-      "classProp": 16,
-      "classImport": 15,
-      "primitiveImport": 129
+      "className": 1522,
+      "px": 30,
+      "legacy": 50,
+      "familySystem": 1,
+      "colorLiteral": 157,
+      "primitives": 476,
+      "bridge": 4,
+      "classProp": 9,
+      "classImport": 7,
+      "primitiveImport": 91
     },
     "src/components": {
-      "className": 353,
-      "colorLiteral": 69,
-      "primitives": 115,
-      "classProp": 16,
-      "classImport": 8,
-      "primitiveImport": 38
+      "className": 13,
+      "px": 30,
+      "legacy": 50,
+      "familySystem": 1,
+      "colorLiteral": 65,
+      "bridge": 4,
+      "classProp": 9
     },
     "src/components/AddressSelectionModal": {
-      "className": 20,
-      "primitives": 10,
-      "primitiveImport": 1
+      "px": 3
     },
     "src/components/AnimatedSelectCategory": {
-      "className": 5,
-      "primitives": 1,
-      "classProp": 2,
-      "classImport": 1,
-      "primitiveImport": 1
+      "className": 2,
+      "px": 1,
+      "classProp": 1
     },
     "src/components/BannerContainer": {
-      "className": 5,
-      "primitives": 1,
-      "classProp": 2,
-      "primitiveImport": 1
+      "className": 2,
+      "legacy": 1,
+      "classProp": 2
     },
     "src/components/CalendarTimePicker": {
-      "className": 7,
-      "primitives": 3,
-      "primitiveImport": 1
+      "legacy": 3
     },
     "src/components/CalendarTimeSheet": {
-      "className": 8,
-      "primitives": 2,
-      "primitiveImport": 2
+      "px": 1,
+      "legacy": 2
     },
     "src/components/CancelJobFeedbackModal": {
-      "className": 16,
-      "colorLiteral": 1,
-      "primitives": 5,
-      "primitiveImport": 2
+      "legacy": 5,
+      "familySystem": 1,
+      "colorLiteral": 1
     },
     "src/components/ChipButton": {
-      "className": 2,
-      "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
-    },
-    "src/components/ErrorModal": {
-      "className": 1,
-      "primitiveImport": 2
+      "px": 1,
+      "legacy": 1,
+      "colorLiteral": 2
     },
     "src/components/FoodMenuItemRow": {
-      "className": 21,
-      "colorLiteral": 1,
-      "primitives": 8,
-      "primitiveImport": 2
+      "px": 2,
+      "colorLiteral": 1
     },
     "src/components/ImageViewerModal": {
-      "className": 4,
       "colorLiteral": 3
     },
     "src/components/ImageWithCheckmarkButton": {
-      "className": 4,
+      "className": 1,
       "colorLiteral": 3,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "bridge": 1,
+      "classProp": 1
     },
     "src/components/ImageWithTextButton": {
-      "className": 3,
+      "className": 1,
       "colorLiteral": 2,
-      "classProp": 1,
-      "classImport": 1
+      "classProp": 1
     },
     "src/components/InAppMessageBanner": {
-      "className": 10,
-      "colorLiteral": 1,
-      "primitives": 4,
-      "primitiveImport": 1
+      "legacy": 4,
+      "colorLiteral": 1
     },
     "src/components/LeaveReviewModal": {
-      "className": 9,
-      "primitives": 4,
-      "primitiveImport": 2
+      "legacy": 4
     },
     "src/components/LoadingOverlay": {
       "colorLiteral": 3
     },
     "src/components/LogoutModal": {
-      "className": 7
-    },
-    "src/components/MapPinPicker": {
-      "className": 11,
-      "primitives": 1,
-      "classProp": 1,
-      "primitiveImport": 1
-    },
-    "src/components/MessageBlockedModal": {
-      "className": 4,
-      "primitives": 2,
-      "primitiveImport": 2
+      "px": 1
     },
     "src/components/MessageComponent": {
-      "className": 24,
-      "colorLiteral": 13,
-      "primitives": 8,
-      "classImport": 1,
-      "primitiveImport": 1
+      "px": 1,
+      "legacy": 4,
+      "colorLiteral": 13
     },
     "src/components/MessagesComponent": {
-      "className": 24,
-      "primitives": 8,
-      "primitiveImport": 1
+      "legacy": 8
     },
     "src/components/OfferHistorySheet": {
-      "className": 14,
+      "px": 4,
+      "legacy": 4,
       "colorLiteral": 11,
-      "primitives": 7,
-      "primitiveImport": 1
+      "bridge": 2
     },
     "src/components/OfferUpdateCard": {
-      "className": 8,
-      "colorLiteral": 5,
-      "primitives": 6,
-      "primitiveImport": 1
+      "px": 4,
+      "legacy": 4,
+      "colorLiteral": 1
     },
     "src/components/OffersSection": {
-      "className": 4,
-      "colorLiteral": 1,
-      "classProp": 1
+      "colorLiteral": 1
     },
     "src/components/OrderBill": {
-      "className": 11,
-      "primitives": 6,
-      "classProp": 1,
-      "primitiveImport": 1
-    },
-    "src/components/OrderLocationMap": {
-      "className": 1
+      "className": 1,
+      "px": 4,
+      "classProp": 1
     },
     "src/components/ProCardBase": {
-      "className": 35,
-      "colorLiteral": 8,
-      "primitives": 12,
-      "primitiveImport": 2
+      "px": 3,
+      "legacy": 7,
+      "colorLiteral": 8
     },
     "src/components/PromoLine": {
       "className": 1,
       "classProp": 1
     },
     "src/components/QuestionComponent": {
-      "className": 34,
-      "colorLiteral": 1,
-      "primitives": 4,
-      "primitiveImport": 1
-    },
-    "src/components/RateComponent": {
-      "className": 11,
-      "primitives": 6,
-      "classProp": 1,
-      "primitiveImport": 1
-    },
-    "src/components/RenderTabBarIcon": {
-      "className": 3,
-      "primitives": 1,
-      "primitiveImport": 1
+      "legacy": 1,
+      "colorLiteral": 1
     },
     "src/components/ScaleableDistinctLabelComponent": {
-      "className": 3,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "bridge": 1
     },
     "src/components/SearchBar": {
-      "className": 4,
-      "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "primitiveImport": 1
+      "legacy": 1,
+      "colorLiteral": 2
     },
     "src/components/SearchLocationModal": {
-      "className": 14,
-      "colorLiteral": 3,
-      "primitives": 5,
-      "primitiveImport": 1
+      "colorLiteral": 3
     },
     "src/components/SearchMessagesComponent": {
-      "className": 3,
+      "px": 1,
       "colorLiteral": 1
     },
     "src/components/SkeletonLoader": {
@@ -243,31 +176,22 @@
       "colorLiteral": 1
     },
     "src/components/SuccessModal": {
-      "className": 7,
-      "colorLiteral": 1,
-      "primitives": 3,
-      "primitiveImport": 2
+      "px": 2,
+      "colorLiteral": 1
     },
     "src/components/SystemEventBubble": {
-      "className": 3,
-      "colorLiteral": 2,
-      "primitives": 2,
-      "primitiveImport": 1
+      "px": 1,
+      "colorLiteral": 2
     },
     "src/components/TabBar": {
-      "className": 5,
-      "colorLiteral": 1,
-      "primitives": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "px": 1,
+      "colorLiteral": 1
     },
     "src/components/TextWithCheckmarkButton": {
-      "className": 3,
+      "className": 1,
+      "legacy": 1,
       "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "classProp": 1
     },
     "src/components/scroll": {
       "className": 3
@@ -597,150 +521,101 @@
   },
   "files": {
     "src/components/AddressSelectionModal/AddressSelectionModal.tsx": {
-      "className": 20,
-      "primitives": 10,
-      "primitiveImport": 1
+      "px": 3
     },
     "src/components/AnimatedSelectCategory/AnimatedSelectCategory.tsx": {
-      "className": 5,
-      "primitives": 1,
-      "classProp": 2,
-      "classImport": 1,
-      "primitiveImport": 1
+      "className": 2,
+      "px": 1,
+      "classProp": 1
     },
     "src/components/BannerContainer/BannerContainer.tsx": {
-      "className": 5,
-      "primitives": 1,
-      "classProp": 2,
-      "primitiveImport": 1
+      "className": 2,
+      "legacy": 1,
+      "classProp": 2
     },
     "src/components/CalendarTimePicker/CalendarTimePicker.tsx": {
-      "className": 7,
-      "primitives": 3,
-      "primitiveImport": 1
+      "legacy": 3
     },
     "src/components/CalendarTimeSheet/CalendarTimeSheet.tsx": {
-      "className": 8,
-      "primitives": 2,
-      "primitiveImport": 2
+      "px": 1,
+      "legacy": 2
     },
     "src/components/CancelJobFeedbackModal/CancelJobFeedbackModal.tsx": {
-      "className": 16,
-      "colorLiteral": 1,
-      "primitives": 5,
-      "primitiveImport": 2
+      "legacy": 5,
+      "familySystem": 1,
+      "colorLiteral": 1
     },
     "src/components/ChipButton/ChipButton.tsx": {
-      "className": 2,
-      "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
-    },
-    "src/components/ErrorModal/ErrorModal.tsx": {
-      "className": 1,
-      "primitiveImport": 2
+      "px": 1,
+      "legacy": 1,
+      "colorLiteral": 2
     },
     "src/components/FoodMenuItemRow/FoodMenuItemRow.tsx": {
-      "className": 21,
-      "primitives": 8,
-      "primitiveImport": 2
+      "px": 2
     },
     "src/components/FoodMenuItemRow/styles.ts": {
       "colorLiteral": 1
     },
     "src/components/ImageViewerModal/ImageViewerModal.tsx": {
-      "className": 4,
       "colorLiteral": 3
     },
     "src/components/ImageWithCheckmarkButton/ImageWithCheckmarkButton.tsx": {
-      "className": 4,
+      "className": 1,
       "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "bridge": 1,
+      "classProp": 1
     },
     "src/components/ImageWithCheckmarkButton/styles.ts": {
       "colorLiteral": 1
     },
     "src/components/ImageWithTextButton/ImageWithTextButton.tsx": {
-      "className": 3,
+      "className": 1,
       "colorLiteral": 2,
-      "classProp": 1,
-      "classImport": 1
+      "classProp": 1
     },
     "src/components/InAppMessageBanner/InAppMessageBanner.tsx": {
-      "className": 10,
-      "colorLiteral": 1,
-      "primitives": 4,
-      "primitiveImport": 1
+      "legacy": 4,
+      "colorLiteral": 1
     },
     "src/components/LeaveReviewModal/LeaveReviewModal.tsx": {
-      "className": 9,
-      "primitives": 4,
-      "primitiveImport": 2
+      "legacy": 4
     },
     "src/components/LoadingOverlay/styles.ts": {
       "colorLiteral": 3
     },
     "src/components/LogoutModal/LogoutModal.tsx": {
-      "className": 7
-    },
-    "src/components/MapPinPicker/MapPinPicker.tsx": {
-      "className": 11,
-      "primitives": 1,
-      "classProp": 1,
-      "primitiveImport": 1
-    },
-    "src/components/MessageBlockedModal/MessageBlockedModal.tsx": {
-      "className": 4,
-      "primitives": 2,
-      "primitiveImport": 2
+      "px": 1
     },
     "src/components/MessageComponent/MessageComponent.tsx": {
-      "className": 24,
-      "colorLiteral": 13,
-      "primitives": 8,
-      "classImport": 1,
-      "primitiveImport": 1
+      "px": 1,
+      "legacy": 4,
+      "colorLiteral": 13
     },
     "src/components/MessagesComponent/MessagesComponent.tsx": {
-      "className": 24,
-      "primitives": 8,
-      "primitiveImport": 1
+      "legacy": 8
     },
     "src/components/OfferHistorySheet/OfferHistorySheet.tsx": {
-      "className": 14,
+      "px": 4,
+      "legacy": 4,
       "colorLiteral": 11,
-      "primitives": 7,
-      "primitiveImport": 1
+      "bridge": 2
     },
     "src/components/OfferUpdateCard/OfferUpdateCard.tsx": {
-      "className": 8,
-      "colorLiteral": 5,
-      "primitives": 6,
-      "primitiveImport": 1
+      "px": 4,
+      "legacy": 4,
+      "colorLiteral": 1
     },
     "src/components/OffersSection/OffersSection.tsx": {
-      "className": 4,
-      "colorLiteral": 1,
-      "classProp": 1
+      "colorLiteral": 1
     },
     "src/components/OrderBill/OrderBill.tsx": {
-      "className": 11,
-      "primitives": 6,
-      "classProp": 1,
-      "primitiveImport": 1
-    },
-    "src/components/OrderLocationMap/OrderLocationMap.tsx": {
-      "className": 1
+      "className": 1,
+      "px": 4,
+      "classProp": 1
     },
     "src/components/ProCardBase/ProCardBase.tsx": {
-      "className": 35,
-      "primitives": 12,
-      "primitiveImport": 2
+      "px": 3,
+      "legacy": 7
     },
     "src/components/ProCardBase/styles.ts": {
       "colorLiteral": 8
@@ -750,46 +625,23 @@
       "classProp": 1
     },
     "src/components/QuestionComponent/QuestionComponent.tsx": {
-      "className": 34,
-      "primitives": 4,
-      "primitiveImport": 1
+      "legacy": 1
     },
     "src/components/QuestionComponent/styles.ts": {
       "colorLiteral": 1
     },
-    "src/components/RateComponent/RateComponent.tsx": {
-      "className": 11,
-      "primitives": 6,
-      "classProp": 1,
-      "primitiveImport": 1
-    },
-    "src/components/RenderTabBarIcon/RenderTabBarIcon.tsx": {
-      "className": 3,
-      "primitives": 1,
-      "primitiveImport": 1
-    },
     "src/components/ScaleableDistinctLabelComponent/ScaleableDistinctLabelComponent.tsx": {
-      "className": 3,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "bridge": 1
     },
     "src/components/SearchBar/SearchBar.tsx": {
-      "className": 4,
-      "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "primitiveImport": 1
+      "legacy": 1,
+      "colorLiteral": 2
     },
     "src/components/SearchLocationModal/SearchLocationModal.tsx": {
-      "className": 14,
-      "colorLiteral": 3,
-      "primitives": 5,
-      "primitiveImport": 1
+      "colorLiteral": 3
     },
     "src/components/SearchMessagesComponent/SearchMessagesComponent.tsx": {
-      "className": 3,
+      "px": 1,
       "colorLiteral": 1
     },
     "src/components/SkeletonLoader/SkeletonLoader.tsx": {
@@ -803,33 +655,24 @@
       "colorLiteral": 1
     },
     "src/components/SuccessModal/SuccessModal.tsx": {
-      "className": 7,
-      "colorLiteral": 1,
-      "primitives": 3,
-      "primitiveImport": 2
+      "px": 2,
+      "colorLiteral": 1
     },
     "src/components/SystemEventBubble/SystemEventBubble.tsx": {
-      "className": 3,
-      "colorLiteral": 2,
-      "primitives": 2,
-      "primitiveImport": 1
+      "px": 1,
+      "colorLiteral": 2
     },
     "src/components/TabBar/TabBar.tsx": {
-      "className": 5,
-      "primitives": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "px": 1
     },
     "src/components/TabBar/styles.ts": {
       "colorLiteral": 1
     },
     "src/components/TextWithCheckmarkButton/TextWithCheckmarkButton.tsx": {
-      "className": 3,
+      "className": 1,
+      "legacy": 1,
       "colorLiteral": 2,
-      "primitives": 1,
-      "classProp": 1,
-      "classImport": 1,
-      "primitiveImport": 1
+      "classProp": 1
     },
     "src/components/scroll/index.tsx": {
       "className": 3
