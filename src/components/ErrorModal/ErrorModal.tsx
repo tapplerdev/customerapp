@@ -1,9 +1,9 @@
 import React from "react"
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 
 import CloseBigIcon from "assets/icons/cancel-big.svg"
+import { a } from "@tappler/shared/src/ds"
 
 interface Props {
   isVisible: boolean
@@ -25,7 +25,7 @@ const ErrorModal: React.FC<Props> = ({ onClose, isVisible, title, descr, Icon })
       titleBtn={t("OK")}
       onPress={onClose}
       Icon={Icon || <CloseBigIcon />}
-      className="pt-[16] px-[20] pb-[16]"
+      cardStyle={[a.py_16, a.px_20]}
     />
   )
 }
