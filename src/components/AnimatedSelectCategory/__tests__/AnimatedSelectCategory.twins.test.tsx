@@ -30,6 +30,7 @@ jest.mock("react-native-keyboard-aware-scroll-view", () => ({
 /* eslint-disable import/first */
 // The harvested class strings, compiled: a class the codemod leaves stays one.
 import "../__fixtures__/AnimatedSelectCategory.classes"
+import { HAND_CLASSED } from "../__fixtures__/AnimatedSelectCategory.hand"
 import {
   PARITY_MATRIX,
   captureMode,
@@ -54,7 +55,11 @@ const SECTION_TITLES = ["Main dishes", "Desserts", "Drinks", "Salads"]
 const FIXTURE = fixtureFileFor(
   path.join(__dirname, "AnimatedSelectCategory.parity.test.tsx")
 )
-const cases = readHarvest(harvestFilesFor(__dirname, "AnimatedSelectCategory"))
+const harvested = readHarvest(
+  harvestFilesFor(__dirname, "AnimatedSelectCategory")
+)
+// The call site's cases, and the hand cases whose class sets a colour and a margin too.
+const cases = { ...harvested, cases: { ...harvested.cases, ...HAND_CLASSED } }
 const build = () =>
   twinCases(cases, {
     source: "components/AnimatedSelectCategory",

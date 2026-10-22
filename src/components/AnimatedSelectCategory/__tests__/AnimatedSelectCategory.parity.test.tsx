@@ -45,6 +45,10 @@ jest.mock("react-native-keyboard-aware-scroll-view", () => ({
 // The harvested class strings, compiled (see the file).
 import "../__fixtures__/AnimatedSelectCategory.classes"
 import {
+  HAND_CLASSED,
+  HAND_CLASSES,
+} from "../__fixtures__/AnimatedSelectCategory.hand"
+import {
   PARITY_MATRIX,
   captureCommit,
   expectParity,
@@ -115,9 +119,16 @@ if (harvesting()) {
   })
 } else {
   const harvested = readHarvest(FILES)
-  const cases: Record<string, HarvestedCase> = { ...harvested.cases, ...HAND }
+  const cases: Record<string, HarvestedCase> = {
+    ...harvested.cases,
+    ...HAND,
+    ...HAND_CLASSED,
+  }
 
-  describeCompiledClasses(harvested, FILES, classStringsOf(harvested.cases))
+  describeCompiledClasses(harvested, FILES, [
+    ...classStringsOf(harvested.cases),
+    ...HAND_CLASSES,
+  ])
 
   describe("AnimatedSelectCategory draws as before", () => {
     const table = Object.entries(cases).flatMap(([id, entry]) =>
