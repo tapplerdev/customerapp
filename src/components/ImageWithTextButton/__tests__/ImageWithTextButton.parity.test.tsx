@@ -16,6 +16,9 @@ import React from "react"
  * ImageWithTextButton before its conversion (each case names the commit).
  * Both languages, both platforms.
  *
+ * By hand too: the answer's own className (see __fixtures__/ImageWithTextButton.hand.tsx),
+ * which no call site passes now.
+ *
  * ImageWithTextButton.twins.test.tsx draws the same cases through the twin
  * the codemod writes, against these same trees.
  *
@@ -39,6 +42,7 @@ global.fetch = jest.fn(() => new Promise<never>(() => undefined)) as never
 /* eslint-disable import/first */
 // The harvested class strings, compiled (see the file).
 import "../__fixtures__/ImageWithTextButton.classes"
+import { HAND, HAND_CLASSES } from "../__fixtures__/ImageWithTextButton.hand"
 import {
   PARITY_MATRIX,
   captureCommit,
@@ -95,9 +99,12 @@ if (harvesting()) {
   })
 } else {
   const harvested = readHarvest(FILES)
-  const { cases } = harvested
+  const cases = { ...harvested.cases, ...HAND }
 
-  describeCompiledClasses(harvested, FILES, classStringsOf(harvested.cases))
+  describeCompiledClasses(harvested, FILES, [
+    ...classStringsOf(harvested.cases),
+    ...HAND_CLASSES,
+  ])
 
   describe("ImageWithTextButton draws as before", () => {
     const table = Object.entries(cases).flatMap(([id, entry]) =>
