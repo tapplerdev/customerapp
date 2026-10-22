@@ -4,9 +4,10 @@
 //
 // Kept by hand. `yarn ds:colors` (scripts/ds-colors.js) generated this file
 // from tailwind.config.js; W3.4 deleted both with the rest of the class-era
-// tools, and they live on at the archive tag archive/ca-pass1-tools. A value
-// changed here shows in the parity trees of the components that draw it
-// (OfferUpdateCard, ImageViewerModal, CalendarTimePicker, MapPinPicker).
+// tools, and they live on at the archive tag archive/ca-pass1-tools. The six
+// values something reads (OfferUpdateCard, ImageViewerModal, CalendarTimePicker
+// and MapPinPicker's styles) are pinned by those components' parity trees: a
+// changed one fails them. grey55Class and blue1 are read by nothing.
 export default {
   red7: "#F76363",
   grey55Class: "#C6C6C6", // the grey55 class's colour; shared's grey55 is #00000091
