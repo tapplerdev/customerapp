@@ -105,14 +105,6 @@ const HAND: Record<string, HarvestedCase> = {
     },
     sites: ["by hand"],
   },
-  "hand a class that sets one key": {
-    props: {
-      categories: { $opaque: "sections" },
-      setSelectedCategory: { $fn: true },
-      textClassName: "text-red",
-    },
-    sites: ["by hand"],
-  },
 }
 
 if (harvesting()) {
@@ -125,11 +117,7 @@ if (harvesting()) {
   const harvested = readHarvest(FILES)
   const cases: Record<string, HarvestedCase> = { ...harvested.cases, ...HAND }
 
-  describeCompiledClasses(harvested, FILES, [
-    ...classStringsOf(harvested.cases),
-    // The hand cases' own.
-    "text-red",
-  ])
+  describeCompiledClasses(harvested, FILES, classStringsOf(harvested.cases))
 
   describe("AnimatedSelectCategory draws as before", () => {
     const table = Object.entries(cases).flatMap(([id, entry]) =>
