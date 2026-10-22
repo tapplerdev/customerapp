@@ -1,0 +1,56 @@
+{
+ "component": "BannerContainer",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "cc6800f4e3": {
+   "props": {
+    "bannerText": "t:offers",
+    "borderRadius": 10,
+    "containerClassName": "py-[2] flex-row flex-wrap items-center justify-around",
+    "children": [
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     },
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     }
+    ]
+   },
+   "sites": [
+    "components/OffersSection/OffersSection.tsx:106"
+   ]
+  },
+  "ee93576892": {
+   "props": {
+    "bannerText": "t:offers",
+    "borderRadius": 6,
+    "containerClassName": "px-[8] py-[0] flex-row items-center justify-around",
+    "children": [
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     },
+     {
+      "$el": "SvgUriContainer",
+      "props": {
+       "width": 120
+      }
+     }
+    ]
+   },
+   "sites": [
+    "components/OffersSection/OffersSection.tsx:106"
+   ]
+  }
+ }
+}
