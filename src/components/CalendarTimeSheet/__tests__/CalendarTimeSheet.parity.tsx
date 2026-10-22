@@ -26,6 +26,7 @@ import {
   captureCommit,
   expectParity,
   parityName,
+  type ParityAllowance,
 } from "testing/hostTreeParity"
 import {
   componentImport,
@@ -38,6 +39,9 @@ import {
 } from "testing/harvest"
 import { pressText, treeAfter } from "testing/screenKit"
 /* eslint-enable import/first */
+
+/** What Button draws differently from the ActionBtn it replaced (listed deltas only, on its root): Confirm, once the sheet is open */
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const FILES = harvestFilesFor(__dirname, "CalendarTimeSheet")
 
@@ -127,7 +131,9 @@ if (harvesting()) {
         platform: env.platform,
         navigation: "none",
       })
-      expectParity(parityName(id, env), tree)
+      expectParity(parityName(id, env), tree, {
+        allow: entry.props.isVisible === true ? BUTTON : undefined,
+      })
     })
   })
   // Confirm is a disabled grey button until a window is picked, then red.
@@ -159,7 +165,9 @@ if (harvesting()) {
           env,
           STEPS[name as keyof typeof STEPS] as never
         )
-        expectParity(parityName(`pressed ${name}`, env), tree)
+        expectParity(parityName(`pressed ${name}`, env), tree, {
+          allow: BUTTON,
+        })
       }
     )
   })
