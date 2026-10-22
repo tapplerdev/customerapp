@@ -14,11 +14,12 @@ rule); what differs from proapp is called out where it matters.
 | `hostTreeParity.ts` | Renders in an environment (language, RTL, platform, fonts, insets), normalizes the host tree, captures and compares fixtures. The gate. |
 | `screenKit/` | Renders a whole screen the way the app does, with mocked data and native modules, under `jest.parity.config.js`. |
 | `harvest/` | Reads a component's real call sites into prop sets and freezes them (`<Name>.cases.json`). A component's twin test draws its frozen call sites (`<Name>.twins.json`: each set as the codemod converted it at the W3.1 freeze, `frozenTwinCases`); every other harvest test checks its cases hand the component no class (`expectClassFree`). |
-| `buttonLooks/` | ActionBtn's own harvest and translator (the tools' side, CA-W0-T; the codemod loads `translate.ts`). `legacyPrimitives.ts` is the scan that fails on ActionBtn or DmText back in app code, in any spelling (`harvest.pass1.test.ts`). |
+| `buttonLooks/` | B's two Button look files (`ButtonLooks.cases.json`, `ButtonLooks.table.json`), pinned by hash in `frozenLooks.test.ts`. ActionBtn's harvest, translator and live comparison went in W3.4 (see "The archive tag"). |
+| `classGuard.ts` | The runtime guard (W3.4): an element with a class string, or a DmText or ActionBtn, fails where it is made. The screen kit runs every render under it. See "The guards" below. |
 | `trueSheet.tsx` | The stand-in for `@lodev09/react-native-true-sheet` in both jest configs (see "What the kit mocks"). |
-| `nativewind.ts`, `svgStub.ts` | NativeWind's output for a class string with customerapp's tailwind.config.js (class-era: only the `*.pass1.test.*` suites use it); an SVG icon as a host element named after it. |
+| `svgStub.ts` | An SVG icon as a host element named after it. |
 
-## After W3.1 and W3.2: the proofs need no NativeWind
+## After W3.1, W3.2, W3.3 and W3.4: the proofs need no NativeWind
 
 W3.2 took NativeWind's Babel plugin (babel.config.js) and types
 (`src/types/declarations.d.ts`) out of the build, so a class string draws
@@ -45,16 +46,16 @@ nothing. W3.1 had made every proof independent of it:
   `twinCases` and the compiled-class reference were deleted in W3.1, and a
   harvest writes only its cases. They live at the local tag
   `archive/ca-pass1-tools` (the last commit with the plugin on and every
-  gate green), with the live halves under `yarn test:pass1-tools`
+  gate green), with the live halves that ran under `yarn test:pass1-tools`
   (`*.pass1.test.*`: the class-era tools, `hostTreeParity.pass1.test.tsx`).
+  W3.4 then deleted those tools too: see "The archive tag" below.
 - **The frozen set** that must stay byte-identical until the pass-1 proof is
   done: `**/__parity__/**`, `*.twins.json`, `*.cases.json`, `*.hand.tsx`,
   `*.handCases.tsx`, `buttonLooks/__fixtures__/ButtonLooks.*.json`.
   `git diff --stat <W3.2> -- <those>` is empty at every later gate.
-- **Refreezing a twin file** (W3.1 only: it runs the codemod, and freezeTwins.ts and the codemod stay
-  until W3.4): `DS_FREEZE_TWINS=1 jest <twin test>` (kit twins: `-c
-  jest.parity.config.js`). Re-running it over the 9 files rewrites them
-  byte-identically.
+- **Refreezing a twin file** was W3.1 only (it ran the codemod): `DS_FREEZE_TWINS=1`
+  refuses now, naming the archive tag, where the freeze and the codemod live on.
+  Re-running it over the 9 files there rewrote them byte-identically.
 
 What W3.2 flipped, in one commit:
 
@@ -63,8 +64,9 @@ What W3.2 flipped, in one commit:
   prefixed `ds-w3-`. Metro's transform key never sees babel.config.js, so the
   prefix (not `--reset-cache`, which empties the cache every Metro on the
   machine shares) is what stops a transform made with the plugin being served.
-  Bump it again after any change to babel.config.js. `nativewind` and
-  `tailwindcss` stay installed (and `tailwind.config.js` stays) until W3.4.
+  Bump it again after any change to babel.config.js. `nativewind`, `tailwindcss`
+  and `clsx` stay in package.json: removing them is an install, which is not
+  part of W3 (`tailwind.config.js` went in W3.4).
 - **The control**: `__tests__/noPluginControl.test.tsx` in `yarn test` draws a
   className on a View (`__fixtures__/ClassNameOnView.tsx`) and expects it on
   the host as a plain prop, then resolves babel.config.js's plugins for an app
@@ -72,27 +74,107 @@ What W3.2 flipped, in one commit:
   `test`, `development` and `production` envs: no NativeWind plugin, wrap or
   require. A plugin put back anywhere fails it (jest alone runs in `test`, so
   the other two envs are what the Metro bundles use).
-- **After the flip** `yarn test:pass1-tools` fails by design (its suites need
-  the plugin, the nativewind types or tailwind.config.js, and `*.pass1` halves
-  draw class names); run it at `archive/ca-pass1-tools`. `yarn ds:probe` exits 1
-  (its own positive control wants the plugin in babel.config.js) and has
-  nothing to wrap. The other gates run as before.
+- **W3.3 stripped the class plumbing** from customerapp's own components: the
+  twin slots of AnimatedSelectCategory (ClassNameText to ds `Text`), BannerContainer
+  (two), ImageWithCheckmarkButton, ImageWithTextButton, OrderBill, PromoLine,
+  SkeletonLoader and TextWithCheckmarkButton (`classNameSlot(DmView)` to a
+  DmView with `style`), and the three className threadings in
+  `components/scroll/index.tsx`. 13 className attributes and 9 className prop
+  types went; every frozen proof stayed byte-identical.
 
 ### tsc
 
-W3.2's set is d35860c's 32 errors plus the six className errors in
-`src/components/scroll/index.tsx` (:144 :211 :263 TS2339 and :150 :220 :269
-TS2769: React Native's ScrollView, FlatList and KeyboardAwareScrollView take no
-className without the types), which W3.3 strips with the threadings. The
-codemod's class-era fixtures (`scripts/__fixtures__/ds-codemod`, `nw-resolve`,
-`nw-runtime-oracle.js`, `nw-wrap-probe`) are excluded in tsconfig.json: they are
-typed against nativewind/types and their tools run only at the archive tag
-(`yarn ds:paths --write` keeps the `exclude` key but not its comment).
+The set is d35860c's 32 errors: W3.2 added the six className errors in
+`src/components/scroll/index.tsx` (React Native's ScrollView, FlatList and
+KeyboardAwareScrollView take no className without the types), which W3.3
+stripped with the threadings. tsconfig.json's `exclude` is back to
+`**/Pods/**` (W3.2 listed the codemod's class-era fixtures there; W3.4 deleted
+them). `yarn ds:paths --write` keeps the `exclude` key but not its comment. Count
+a TS2578 (an unused `@ts-expect-error`, which the no-plugin control's
+ClassNameOnView carries) as new: it is what fails if the nativewind types come
+back.
+
+### The archive tag (W3.4)
+
+W3.4 deleted from customerapp everything that needed NativeWind to run: the
+codemod (`scripts/ds-codemod.js` and `ds-codemod/`, `yarn ds:codemod`,
+`ds:codemod:parity`), `nw-resolve.js` (`ds:resolve`), `nw-wrap-probe.js`
+(`ds:probe`), `ds-colors.js` (`ds:colors`), their fixtures and suites,
+`testing/nativewind.ts`, `buttonLooks`' harvest, translator, rewrites,
+legacyPrimitives, handLooks and `*.pass1` suites (B's two JSON files and
+`frozenLooks.test.ts` stay), `harvest/freezeTwins.ts`, `harvestJsxProps.ts`,
+every `*.pass1.test.*` half, `jest.pass1.config.js` (`yarn test:pass1-tools`)
+and `tailwind.config.js`. `src/styles/dsColors.ts` is kept by hand since; its
+header says what pins it.
+
+They live on at the local tag `archive/ca-pass1-tools` (customerapp c5a9e8e, the
+last commit with the plugin on and every gate green). To run them, export the
+tag and give the export a node_modules (an APFS clone, `cp -cR`, of this one),
+the `.env` and a real sibling `tappler-shared` (a real directory, as jest.config.js
+requires), then `yarn test:pass1-tools` there (8 suites, 213 tests when W3.2 ran it
+at the tag), or the tools themselves:
+
+```
+git -C <customerapp> archive archive/ca-pass1-tools | tar -x -C <scratch>/customerapp
+cp -cR <customerapp>/node_modules <scratch>/customerapp/ && cp <customerapp>/.env <scratch>/customerapp/
+```
+
+The codemod suite's `--proven` row needs e30b19a in the checkout's history, so
+run that one in a clone with history (a fresh `git init` fails it). The tag is local: `git push`
+doesn't send tags, and pushing it is Omar's call.
+
+### The guards (W3.4)
+
+Nothing draws through a class in customerapp any more, so nothing may hand one
+over. Ported from proapp's W3.4 (customerapp-plan.md, skeptic H5):
+
+- **The style ratchet, in `yarn test`** (and in `yarn ds:ratchet` on this tree's
+  own baseline). `scripts/__tests__/style-ratchet.test.js`'s W3.4 block reads the
+  tree, not the baseline, and wants six totals at 0: className (JSX attributes,
+  `tw` included), DmText/ActionBtn elements, and four counts of app code
+  (src/testing, whose harnesses build classes and DmTexts on purpose, is left
+  out): className-family keys in object literals (also set as a member),
+  className-family property signatures in prop types, `nativewind` and `clsx`
+  imports, and DmText/ActionBtn imports from tappler-shared. `--update
+  --accept-rises` can't bring one back (the CLI refuses to write one). The
+  baseline scans `src`, pinned. LegacyText is the bridge (`bridge`), never a
+  primitive; pass 2 takes it to 0.
+- **The class guard, in `yarn test:parity`** (`classGuard.ts`, installed by
+  `screenKit/setup.ts`). Every element a kit render makes goes through
+  react/jsx-runtime, react/jsx-dev-runtime, React.createElement or
+  React.cloneElement, each wrapped in place in every registry the kit loads. An
+  element with a non-empty className-family string, or of shared's DmText or
+  ActionBtn, throws where it is made, naming the prop, the element, the
+  component that made it and the ones above it. shared's components still take a
+  class and hand it on as `className={undefined}` or `""` when a caller gives
+  none, and those pass. A refusal an error boundary catches fails the test in
+  the setup's afterEach, and a session's `tree()` fails on a host that still
+  carries a class (`refuseHostClasses`). Component tests stay out (their
+  stand-ins carry harvested props); a render can opt in with
+  `withClassGuard(() => ...)`. The proof is
+  `screenKit/__tests__/classGuard.parity.tsx`, on
+  `screenKit/__fixtures__/ClassGuardProbe.tsx`. A key the ratchet can't read as a
+  literal (`{ ["class" + "Name"]: x }`) belongs to the guard alone.
+- **The build, in `yarn test`.** `scripts/__tests__/noNativewindTransform.test.js`:
+  babel.config.js resolves no NativeWind plugin or preset in envs test,
+  development and production (Metro on each platform and babel-jest; a file under
+  src, one in shared, one at the root, a plugin handed over as a function
+  included), and a canary under src comes out with no `nativewind` in it. The
+  resolved lists are the check that counts: a plugin put back with no tailwind
+  config compiles nothing. `noPluginControl.test.tsx` (W3.2) is the other half,
+  and draws a className under jest. Not ported from proapp: its per-file
+  `ds:transform-sweep` (every src file and the shared modules it reaches,
+  compiled and read, for before a capture); the served bundle's check (W3 plan
+  §5.4) is what stands in for it.
+- **Types.** tsc refuses className on React Native's components and on every
+  customerapp component, none of which declares one (the ratchet keeps it so).
+  tappler-shared's components keep their class props for proapp until W4; the
+  ratchet and the class guard cover those.
 
 ## The jest configs
 
 `yarn test` is the default config. Component parity tests live there (`*.test.tsx`). It ignores
-`*.parity.tsx` and `*.pass1.test.*` (the class-era tools' suites, `jest.pass1.config.js`). It, and
+`*.parity.tsx`. It, and
 so every config built on it, refuses to run with `../tappler-shared` a symlink or missing (jest
 then drew shared's components without their NativeWind styles: `yarn test` failed 17 tests, and a
 capture would have baked in uncompiled classes, so parity passed for the wrong reason).
@@ -143,7 +225,8 @@ read a real key or URL in a test.
 
 This is pass 1's W1/W2 workflow, as it was run (the class-name path it
 captured from, its codemod, `describeCompiledClasses`, `twinCases` and the
-`*.classes.tsx` are gone since W3.1: see above, and `archive/ca-pass1-tools`).
+`*.classes.tsx` are gone since W3.1, and the codemod and the other class-era
+tools since W3.4: see above, and `archive/ca-pass1-tools`).
 Pass 2 captures from the code as it is, with steps 1 and 3 and the gates in 6.
 
 The order matters. The fixture has to come from the code before your change, or it proves nothing.
@@ -153,7 +236,8 @@ The order matters. The fixture has to come from the code before your change, or 
    `yarn ds:parity:capture <test file>` (add `--cacheDirectory <yours>`). Commit the test and its
    fixtures on their own, before the conversion commit. Capture refuses to overwrite a case;
    `--force` is only for recapturing from old code.
-2. **Convert.** The codemod (`yarn ds:codemod`, with your own `--latent latent-bugs/<area>.md`),
+2. **Convert.** The codemod (`yarn ds:codemod`, with your own `--latent latent-bugs/<area>.md`;
+   at the archive tag since W3.4, and there is no class left for it here),
    then whatever it left, by hand.
 3. **Assert.** Run the test normally. Every case must be equal. A missing case fails instead of
    capturing itself.
@@ -190,8 +274,8 @@ The order matters. The fixture has to come from the code before your change, or 
    total). Full `yarn test`, `yarn test:parity` and `yarn test:parity:reverse` are green.
    `yarn ds:ratchet` is OK (never `--update`), and so is
    `yarn ds:ratchet --strict '<area>/**' --strict-metrics className`.
-   `yarn ds:probe` shows 0 BUG. customerapp has no React Compiler, so proapp's compiler-coverage
-   gate doesn't apply.
+   (`yarn ds:probe` showed 0 BUG until W3.2 took the plugin out; it is at the archive tag.)
+   customerapp has no React Compiler, so proapp's compiler-coverage gate doesn't apply.
 
 **Prove each pressable.** A handler swapped for one that does nothing draws the same tree until it
 is pressed (the example's fifth mutant), so give every converted pressable a row that presses it
