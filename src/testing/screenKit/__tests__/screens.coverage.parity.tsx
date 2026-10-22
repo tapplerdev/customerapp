@@ -327,15 +327,19 @@ describe.each(PLATFORMS)("every screen file [%s]", (platform) => {
     SWEEP_MS
   )
 
-  // proapp's W1.5 target: the screen files with class names (the ones W2
-  // converts) render, nine in ten at least.
+  // proapp's W1.5 target was the screen files with class names (the ones W2
+  // converts), nine in ten of them rendering. W2 is done and none is left, so
+  // the ratio over them is 0 of 0: the target now holds over every screen
+  // file, and the files with a class name must stay none.
   it(
-    "renders at least 90% of the screen files with class names",
+    "renders at least 90% of the screen files, none with a class name left",
     async () => {
       await sweptOnce(platform)
-      const withClasses = [...reports.values()].filter((r) => r.className)
-      const rendered = withClasses.filter((r) => covered(r, platform))
-      expect(rendered.length / withClasses.length).toBeGreaterThanOrEqual(0.9)
+      const all = [...reports.values()]
+      expect(all.length).toBeGreaterThan(0)
+      expect(all.filter((r) => r.className).map((r) => r.file)).toEqual([])
+      const rendered = all.filter((r) => covered(r, platform))
+      expect(rendered.length / all.length).toBeGreaterThanOrEqual(0.9)
     },
     SWEEP_MS
   )
