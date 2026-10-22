@@ -19,6 +19,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -84,6 +85,9 @@ const FILLED = [
   type(4, "01012345678"),
 ]
 
+// Register is an ActionBtn turned into a ds Button by the conversion: Button's own height and accessibility props, on the rows that draw it.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = { label: string; answer?: keyof typeof ANSWERS; steps?: Step[] }
 const CASES: Case[] = [
   { label: "as opened" },
@@ -106,7 +110,8 @@ describe("GateRegisterScreen", () => {
     async ({ label, answer, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, answer), env, steps)
+        await treeAfter(load, optionsFor(env, answer), env, steps),
+        { allow: BUTTON }
       )
     }
   )

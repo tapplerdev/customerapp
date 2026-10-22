@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 
-import { ActionBtn, DmAuthInput, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmAuthInput, DmView } from "@tappler/shared/src/components/UI"
 import ErrorModal from "components/ErrorModal"
 import { useCustomerSignUpMutation, useAuthMutation, useLazyGetCustomerMeQuery } from "services/api"
 import { setTokens } from "store/auth/slice"
@@ -15,6 +15,8 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import HideIcon from "assets/icons/hide-password.svg"
 import FlagEgyptIcon from "assets/icons/flag-egypt.svg"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import { gateRegisterScreenStyles } from "./styles"
 
 interface FormValues {
   firstName: string
@@ -102,16 +104,20 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={[]}>
+    <SafeAreaView style={[a.flex_1, gateRegisterScreenStyles.safeArea]} edges={[]}>
       <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 27 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
-        <DmView className="flex-row items-center px-[16] py-[12]">
+        <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
           <DmView
-            className="w-[32] h-[32] items-center justify-center"
+            style={[
+              gateRegisterScreenStyles.iconWrap,
+              a.items_center,
+              a.justify_center,
+            ]}
             hitSlop={HIT_SLOP_DEFAULT}
             onPress={() => navigation.goBack()}
           >
@@ -120,17 +126,17 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
               style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
             />
           </DmView>
-          <DmView className="flex-1 items-center">
-            <DmText className="text-16 font-custom600 text-black">
+          <DmView style={[a.flex_1, a.items_center]}>
+            <Text size={16} weight="semibold" leading="legacy">
               {t("register_a_new_account")}
-            </DmText>
+            </Text>
           </DmView>
-          <DmView className="w-[32]" />
+          <DmView style={gateRegisterScreenStyles.box} />
         </DmView>
-        <DmView className="h-[0.7] bg-grey19" />
+        <DmView style={gateRegisterScreenStyles.box2} />
 
         {/* Form */}
-        <DmView className="mt-[24] px-[19]">
+        <DmView style={[a.mt_24, gateRegisterScreenStyles.box3]}>
           <Controller
             control={control}
             rules={{ required: true }}
@@ -139,25 +145,25 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
             )}
             name="firstName"
           />
-          <DmView className="h-[0.7] bg-grey1" />
+          <DmView style={gateRegisterScreenStyles.box4} />
           <Controller
             control={control}
             rules={{ required: true }}
             render={({ field: { value, onChange } }) => (
-              <DmAuthInput value={value} placeholder={t("last_name")} onChangeText={onChange} isBorderVisible={false} wrapperClassName="mt-[14]" />
+              <DmAuthInput value={value} placeholder={t("last_name")} onChangeText={onChange} isBorderVisible={false} wrapperStyle={a.mt_14} />
             )}
             name="lastName"
           />
-          <DmView className="h-[0.7] bg-grey1" />
+          <DmView style={gateRegisterScreenStyles.box4} />
           <Controller
             control={control}
             rules={{ required: true }}
             render={({ field: { value, onChange } }) => (
-              <DmAuthInput value={value} placeholder={t("your_email")} onChangeText={onChange} keyboardType="email-address" isBorderVisible={false} wrapperClassName="mt-[14]" />
+              <DmAuthInput value={value} placeholder={t("your_email")} onChangeText={onChange} keyboardType="email-address" isBorderVisible={false} wrapperStyle={a.mt_14} />
             )}
             name="email"
           />
-          <DmView className="h-[0.7] bg-grey1" />
+          <DmView style={gateRegisterScreenStyles.box4} />
           <Controller
             control={control}
             rules={{ required: true, minLength: 6 }}
@@ -170,28 +176,28 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
                 secureTextEntry={isPasswordVisible}
                 onIconPress={() => setPasswordVisible(!isPasswordVisible)}
                 isBorderVisible={false}
-                wrapperClassName="mt-[14]"
+                wrapperStyle={a.mt_14}
                 Icon={<HideIcon fill={!isPasswordVisible ? colors.black : colors.greyPlaceholder} />}
               />
             )}
             name="password"
           />
-          <DmView className="h-[0.7] bg-grey1" />
+          <DmView style={gateRegisterScreenStyles.box4} />
           <Controller
             control={control}
             rules={{ required: true, validate: (val) => val.startsWith("01") && val.length === 11 }}
             render={({ field: { value, onChange } }) => (
-              <DmView className="mt-[8]">
-                <DmView className="flex-row items-center">
-                  <DmView className="flex-row items-center mr-[10]">
+              <DmView style={a.mt_8}>
+                <DmView style={[a.flex_row, a.items_center]}>
+                  <DmView style={[a.flex_row, a.items_center, a.mr_10]}>
                     <FlagEgyptIcon width={24} height={16} />
-                    <DmText className="ml-[6] text-13 font-custom400 text-black">+20</DmText>
+                    <Text size={13} leading="legacy" style={a.ml_6}>+20</Text>
                   </DmView>
-                  <DmView className="flex-1">
+                  <DmView style={a.flex_1}>
                     <DmAuthInput value={value} placeholder={t("mobile_number")} onChangeText={onChange} keyboardType="phone-pad" maxLength={11} isBorderVisible={false} />
                   </DmView>
                 </DmView>
-                <DmView className="border-b-0.5 border-grey1" />
+                <DmView style={gateRegisterScreenStyles.box5} />
               </DmView>
             )}
             name="mobileNumber"
@@ -199,32 +205,34 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
         </DmView>
 
         {/* Gender */}
-        <DmView className="mt-[16] px-[19]">
-          <DmText className="text-13 font-custom400 text-greyPlaceholder">{t("gender")}</DmText>
-          <DmView className="flex-row mt-[10]">
-            <DmView className="flex-row items-center mr-[30]" onPress={() => setValue("gender", "female")}>
-              <DmView className="w-[22] h-[22] rounded-full border-1 border-grey1 items-center justify-center">
-                {selectedGender === "female" && <DmView className="w-[12] h-[12] rounded-full bg-red" />}
+        <DmView style={[a.mt_16, gateRegisterScreenStyles.box3]}>
+          <Text size={13} leading="legacy" color="placeholder">{t("gender")}</Text>
+          <DmView style={[a.flex_row, a.mt_10]}>
+            <DmView style={[a.flex_row, a.items_center, a.mr_30]} onPress={() => setValue("gender", "female")}>
+              <DmView style={[gateRegisterScreenStyles.box6, a.border_1, a.items_center, a.justify_center]}>
+                {selectedGender === "female" && <DmView style={gateRegisterScreenStyles.box7} />}
               </DmView>
-              <DmText className="ml-[8] text-14 font-custom400">{t("female")}</DmText>
+              <Text size={14} leading="legacy" style={a.ml_8}>{t("female")}</Text>
             </DmView>
-            <DmView className="flex-row items-center" onPress={() => setValue("gender", "male")}>
-              <DmView className="w-[22] h-[22] rounded-full border-1 border-grey1 items-center justify-center">
-                {selectedGender === "male" && <DmView className="w-[12] h-[12] rounded-full bg-red" />}
+            <DmView style={[a.flex_row, a.items_center]} onPress={() => setValue("gender", "male")}>
+              <DmView style={[gateRegisterScreenStyles.box6, a.border_1, a.items_center, a.justify_center]}>
+                {selectedGender === "male" && <DmView style={gateRegisterScreenStyles.box7} />}
               </DmView>
-              <DmText className="ml-[8] text-14 font-custom400">{t("male")}</DmText>
+              <Text size={14} leading="legacy" style={a.ml_8}>{t("male")}</Text>
             </DmView>
           </DmView>
         </DmView>
 
         {/* Register button */}
-        <DmView className="px-[53]">
-          <ActionBtn
-            className={`mt-[40] h-[44] ${isFormReady ? "bg-red" : ""}`}
+        <DmView style={gateRegisterScreenStyles.buttonWrap}>
+          <Button
+            size="md"
+            loadingSurface={isFormReady ? "brand" : undefined}
+            style={a.mt_40}
             onPress={() => handleSubmit(() => onSubmit())()}
             title={t("register")}
             isLoading={isLoading}
-            disable={!isFormReady}
+            disabled={!isFormReady}
           />
         </DmView>
       </AppKeyboardAwareScrollView>

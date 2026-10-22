@@ -17,6 +17,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -73,6 +74,9 @@ const showPassword: Step = (root) =>
   pressIcon(root, { icon: "svg:hide-password" })
 const FILLED = [type(0, "Mona.Adel@Example.com"), type(1, "secret123")]
 
+// Log In is an ActionBtn turned into a ds Button by the conversion: Button's own height and accessibility props, on the rows that draw it.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = { label: string; answer?: keyof typeof ANSWERS; steps?: Step[] }
 const CASES: Case[] = [
   { label: "as opened" },
@@ -91,7 +95,8 @@ describe("GateSignInScreen", () => {
     async ({ label, answer, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, answer), env, steps)
+        await treeAfter(load, optionsFor(env, answer), env, steps),
+        { allow: BUTTON }
       )
     }
   )
