@@ -19,6 +19,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -73,6 +74,10 @@ const pickMale: Step = (root, env) => pressTitled(root, copy(env, "male"))
 const pickFemale: Step = (root, env) => pressTitled(root, copy(env, "female"))
 const save: Step = (root, env) => pressTitled(root, copy(env, "save"))
 
+// Save is an ActionBtn turned into a ds Button by the conversion: Button's own
+// height and accessibility props, on every row (the button is always drawn).
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = {
   label: string
   who?: typeof base
@@ -97,7 +102,8 @@ describe("MyInformationScreen", () => {
     async ({ label, who, save: answer, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, who, answer), env, steps)
+        await treeAfter(load, optionsFor(env, who, answer), env, steps),
+        { allow: BUTTON }
       )
     }
   )

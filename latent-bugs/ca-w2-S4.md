@@ -15,3 +15,5 @@ repeat.
 | --- | --- | --- | --- |
 | src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx:172 | DmView | `items-left` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx:297 | DmView | `items-left` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
+| src/screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:86 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
+| src/screens/dashboardScreens/MyInformationScreen/MyInformationScreen.tsx:104 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
