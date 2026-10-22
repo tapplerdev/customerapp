@@ -1,0 +1,37 @@
+{
+ "component": "MessagesComponent",
+ "capturedAt": "unknown",
+ "elements": 2,
+ "files": 2,
+ "cases": {
+  "49afa2fa6f": {
+   "props": {
+    "item": {
+     "$opaque": "item"
+    },
+    "onPress": {
+     "$fn": true
+    },
+    "onArchive": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/MessagesScreen/MessagesScreen.tsx:88"
+   ]
+  },
+  "40173f8146": {
+   "props": {
+    "item": {
+     "$opaque": "item"
+    },
+    "onPress": {
+     "$fn": true
+    }
+   },
+   "sites": [
+    "screens/dashboardScreens/ArchivedMessagesScreen/ArchivedMessagesScreen.tsx:30"
+   ]
+  }
+ }
+}
