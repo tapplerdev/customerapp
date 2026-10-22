@@ -10,7 +10,7 @@ import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
 import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AddressInfo } from "navigation/types"
@@ -22,6 +22,8 @@ import LocationRedIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 import { AppFlatList } from "components/scroll"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type FlatCategory = ServiceCategoryType & {
   serviceName: string
@@ -184,16 +186,16 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
       <>
         <DmView
           onPress={() => handleSelectCategory(item)}
-          className="px-[24] py-[14]"
+          style={[a.px_24, a.py_14]}
         >
-          <DmText className="text-14 leading-[18px] font-custom500 text-black">
+          <Text size={14} weight="medium">
             {name}
-          </DmText>
-          <DmText className="text-11 leading-[14px] font-custom400 text-grey3 mt-[2]">
+          </Text>
+          <Text size={11} leading="tight" color="tertiary" style={a.mt_2}>
             {parentName}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="ml-[24] h-[0.5] bg-grey5" />
+        <DmView style={[a.ml_24, styles.box]} />
       </>
     )
   }
@@ -209,28 +211,27 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
 
   const content = (
     <DmView
-      className="flex-1 bg-white"
-      style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10, overflow: "hidden" }}
+      style={[a.flex_1, styles.list, { borderTopLeftRadius: 10, borderTopRightRadius: 10, overflow: "hidden" }]}
     >
       {/* Header */}
-      <DmView className="flex-row items-center justify-between px-[20] pt-[16] pb-[12]">
+      <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_20, a.pt_16, a.pb_12]}>
         <DmView onPress={handleClose} hitSlop={HIT_SLOP_DEFAULT}>
-          <DmText className="text-14 leading-[18px] font-custom500 text-red">
+          <Text size={14} weight="medium" color="brand">
             {t("cancel")}
-          </DmText>
+          </Text>
         </DmView>
         <DmView onPress={handleClose} hitSlop={HIT_SLOP_DEFAULT}>
-          <DmText className="text-14 leading-[18px] font-custom600 text-red">
+          <Text size={14} weight="semibold" color="brand">
             {t("search")}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
 
       {/* Search inputs container — separated from the list below; see
           modalStyles.inputsContainer for why that is per-platform. */}
-      <DmView className="pb-[12] bg-white" style={modalStyles.inputsContainer}>
+      <DmView style={[a.pb_12, styles.list, modalStyles.inputsContainer]}>
         {/* Service search input */}
-        <DmView className="mx-[20] mb-[8] flex-row items-center bg-white rounded-full px-[14] h-[44]" style={modalStyles.inputBorder}>
+        <DmView style={[a.mx_20, a.mb_8, a.flex_row, a.items_center, styles.row, a.px_14, modalStyles.inputBorder]}>
           <SearchIcon width={16} height={16} />
           <TextInput
             ref={inputRef}
@@ -258,13 +259,12 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
         {/* Location field */}
         <DmView
           onPress={handleLocationPress}
-          className="mx-[20] flex-row items-center bg-white rounded-full px-[14] h-[40]"
-          style={modalStyles.inputBorder}
+          style={[a.mx_20, a.flex_row, a.items_center, styles.row2, a.px_14, modalStyles.inputBorder]}
         >
           <LocationRedIcon width={16} height={16} />
-          <DmText className="ml-[8] text-13 leading-[16px] font-custom400 text-black flex-1" numberOfLines={1}>
+          <Text size={13} leading="tight" style={[a.ml_8, a.flex_1]} numberOfLines={1}>
             {locationDisplay}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
 
@@ -273,9 +273,9 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
       {isFetching && !hasData ? (
         <DmView>
           {[64, 46, 72, 55, 38, 60].map((w, i) => (
-            <DmView key={i} className="px-[24] py-[14] border-b-0.5 border-b-grey5">
+            <DmView key={i} style={[a.px_24, a.py_14, styles.container]}>
               <SkeletonLoader width={`${w}%`} height={15} borderRadius={4} />
-              <DmView className="mt-[6]">
+              <DmView style={a.mt_6}>
                 <SkeletonLoader width={`${Math.max(24, w - 25)}%`} height={11} borderRadius={4} />
               </DmView>
             </DmView>
