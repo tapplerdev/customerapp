@@ -21,6 +21,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -108,6 +109,11 @@ const focusSearch: Step = (root) => fireHost(root, "TextInput", "onFocus")
 const search = (text: string): Step => (root) => typeInto(root, 0, text)
 const confirm: Step = (root, env) => pressTitled(root, copy(env, "confirm_my_location"))
 
+// Confirm is an ActionBtn turned into a ds Button by the conversion: Button's
+// own height and accessibility props, on the rows that draw it (the search
+// panel, which covers it, is the rows that start with "search").
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = {
   label: string
   here?: Here
@@ -137,7 +143,8 @@ describe("PickAddressScreen", () => {
     async ({ label, here, extra, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, here, extra), env, steps)
+        await treeAfter(load, optionsFor(env, here, extra), env, steps),
+        { allow: label.startsWith("search") ? undefined : BUTTON }
       )
     }
   )

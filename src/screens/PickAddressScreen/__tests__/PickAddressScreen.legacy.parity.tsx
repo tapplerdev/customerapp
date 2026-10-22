@@ -21,6 +21,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -147,6 +148,10 @@ describe("SearchView", () => {
   )
 })
 
+// MapPickerView's Confirm is an ActionBtn turned into a ds Button by the
+// conversion: Button's own height and accessibility props, on every row.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 describe("MapPickerView", () => {
   const props = (initPosition: object | null = POSITION) => ({
     initPosition: initPosition ?? undefined,
@@ -174,7 +179,8 @@ describe("MapPickerView", () => {
           optionsFor(env, props(position), here),
           env,
           steps
-        )
+        ),
+        { allow: BUTTON }
       )
     }
   )

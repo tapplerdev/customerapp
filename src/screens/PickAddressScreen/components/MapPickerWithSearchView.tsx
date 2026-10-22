@@ -1,9 +1,4 @@
-import {
-  ActionBtn,
-  DmInput,
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
+import { DmInput, DmView } from "@tappler/shared/src/components/UI"
 import React, {
   useCallback,
   useEffect,
@@ -29,17 +24,7 @@ import LocationIcon from "assets/icons/location.svg"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import styles from "../styles"
-import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Easing,
-  Keyboard,
-  LayoutAnimation,
-  ListRenderItemInfo,
-  Platform,
-  UIManager,
-} from "react-native"
+import { ActivityIndicator, Alert, Animated, Easing, Keyboard, LayoutAnimation, ListRenderItemInfo, Platform, UIManager, StyleSheet } from "react-native"
 import useLocation from "@tappler/shared/src/hooks/useLocation"
 
 import {
@@ -50,6 +35,8 @@ import { isEgyptCountry } from "@tappler/shared/src/helpers/helpers"
 import { SHOULD_IGNORE_START_TEXT_ADDRESS } from "utils/constants"
 import colors from "@tappler/shared/src/styles/colors"
 import { AppFlatList } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { mapPickerWithSearchViewStyles } from "./styles"
 
 interface Props {
   initPosition?: MapPosition | undefined
@@ -96,16 +83,16 @@ const SearchResultItem = (props: {
 }) => (
   <DmView onPress={() => props.onPress(props.item)}>
     <DmView
-      className="py-[14] flex-row items-center border-b-1 border-b-grey8"
-      style={{ marginEnd: 16, paddingStart: 16 }}
+      style={[a.py_14, a.flex_row, a.items_center, a.border_b_1, mapPickerWithSearchViewStyles.row, { marginEnd: 16, paddingStart: 16 }]}
     >
       <LocationRedIcon />
-      <DmText
-        className="text-13 leading-[20px] font-custom400 flex-1"
-        style={{ marginStart: 12 }}
+      <Text
+        size={13}
+        leading="loose"
+        style={[a.flex_1, { marginStart: 12 }]}
       >
         {props.item.title}
-      </DmText>
+      </Text>
     </DmView>
   </DmView>
 )
@@ -441,13 +428,13 @@ const MapPickerWithSearchView: React.FC<Props> = ({
   )
 
   return (
-    <DmView className="w-full flex-1 bg-white">
-      <DmView className="w-full flex-1">
+    <DmView style={[a.w_full, a.flex_1, mapPickerWithSearchViewStyles.container]}>
+      <DmView style={[a.w_full, a.flex_1]}>
         {initPosition && (
           <>
             <MapView
               provider={PROVIDER_GOOGLE}
-              className="flex-1"
+              style={a.flex_1}
               ref={mapRef}
               initialRegion={{
                 latitude: initPosition.lat,
@@ -466,7 +453,11 @@ const MapPickerWithSearchView: React.FC<Props> = ({
 
             {/* Animated pin (ropacalapp-style bounce + shadow pulse) */}
             <DmView
-              className="absolute left-0 top-0 right-0 bottom-0 items-center justify-center"
+              style={[
+                StyleSheet.absoluteFill,
+                a.items_center,
+                a.justify_center,
+              ]}
               pointerEvents="none"
             >
               <Animated.View
@@ -504,15 +495,20 @@ const MapPickerWithSearchView: React.FC<Props> = ({
             {/* My location FAB (hidden while searching) */}
             {!isSearchMode && (
               <DropShadow
-                className="absolute right-[16] bottom-[46] w-[44] h-[44] rounded-full"
-                style={[
+                style={[a.absolute, mapPickerWithSearchViewStyles.shadow, 
                   styles.myLocationShadow,
                   isAndroid && styles.myLocationShadowAndroid,
                 ]}
               >
                 <DmView
                   onPress={onGoToMyLocation}
-                  className="w-full h-full rounded-full bg-white items-center justify-center"
+                  style={[
+                    a.w_full,
+                    a.h_full,
+                    mapPickerWithSearchViewStyles.iconWrap,
+                    a.items_center,
+                    a.justify_center,
+                  ]}
                 >
                   <MyLocationIcon />
                 </DmView>
@@ -525,16 +521,17 @@ const MapPickerWithSearchView: React.FC<Props> = ({
       {/* Confirm button (hidden while searching) */}
       {!isSearchMode && (
         <DmView
-          className="w-full px-[16] pt-[40]"
-          style={{ paddingBottom: Math.max(insets.bottom + 10, 30) }}
+          style={[a.w_full, a.px_16, a.pt_40, { paddingBottom: Math.max(insets.bottom + 10, 30) }]}
         >
-          <ActionBtn
+          <Button
             onPress={onConfirmAddress}
-            className={`h-[42] w-full ${
-              addressConfirming ? "bg-grey4" : ""
-            }`}
+            size="sm"
+            label="sm"
+            labelWeight="semibold"
+            labelLeading={px(21)}
+            loadingSurface="shade"
+            style={a.w_full}
             title={t("confirm_my_location")}
-            textClassName="text-13 leading-[21px] font-custom600"
             isLoading={addressConfirming}
           />
         </DmView>
@@ -549,15 +546,10 @@ const MapPickerWithSearchView: React.FC<Props> = ({
        */}
       {initPosition && (
         <DmView
-          className={
-            isSearchMode
-              ? "absolute left-0 right-0 top-0 bottom-0 bg-white"
-              : "absolute left-[16] right-[16]"
-          }
           style={
-            isSearchMode
+            [isSearchMode ? mapPickerWithSearchViewStyles.boxSearchMode : mapPickerWithSearchViewStyles.boxNotSearchMode, isSearchMode
               ? { paddingTop: insets.top }
-              : { top: insets.top + 12 }
+              : { top: insets.top + 12 }]
           }
         >
           <DropShadow
@@ -574,22 +566,21 @@ const MapPickerWithSearchView: React.FC<Props> = ({
             }
           >
             <DmView
-              className={
-                isSearchMode
-                  ? "w-full flex-row items-center bg-white px-[16] h-[56]"
-                  : `w-full flex-row items-center px-[12] h-[48] rounded-[12] ${
-                      isResolvingAddress ? "bg-grey38" : "bg-white"
-                    }`
-              }
+              style={isSearchMode ? mapPickerWithSearchViewStyles.rowSearchMode : [mapPickerWithSearchViewStyles.rowNotSearchMode, isResolvingAddress ? mapPickerWithSearchViewStyles.rowNotSearchModeResolvingAddress : mapPickerWithSearchViewStyles.container]}
             >
-              <DmView className="mr-[4]">
+              <DmView style={a.mr_4}>
                 <SearchIcon width={18} height={18} />
               </DmView>
-              <DmView className="flex-1">
+              <DmView style={a.flex_1}>
                 <DmInput
                   isAnimText={false}
-                  className="h-[48] bg-transparent border-0 px-[8]"
-                  inputClassName="text-14 leading-[19px] font-custom400"
+                  height={48}
+                  containerStyle={[
+                    mapPickerWithSearchViewStyles.dmInputContainer,
+                    a.border_b_0,
+                    a.px_8,
+                  ]}
+                  inputType={{ size: 14, weight: "regular", arabicLeading: px(19) }}
                   value={searchText}
                   placeholder={searchPlaceholder}
                   placeholderTextColor={placeholderColor}
@@ -599,7 +590,11 @@ const MapPickerWithSearchView: React.FC<Props> = ({
               </DmView>
               <DmView
                 onPress={onClearOrClose}
-                className="w-[32] h-[32] items-center justify-center"
+                style={[
+                  mapPickerWithSearchViewStyles.iconWrap2,
+                  a.items_center,
+                  a.justify_center,
+                ]}
               >
                 <CloseIcon width={12} height={12} />
               </DmView>
@@ -608,12 +603,12 @@ const MapPickerWithSearchView: React.FC<Props> = ({
 
           {/* Results / empty state / "use current location" — only when expanded */}
           {isSearchMode && (
-            <DmView className="flex-1 w-full bg-white">
-              <DmView className="border-b-1 border-b-grey8" />
+            <DmView style={[a.flex_1, a.w_full, mapPickerWithSearchViewStyles.container]}>
+              <DmView style={[a.border_b_1, mapPickerWithSearchViewStyles.row]} />
               {searchText.length > 0 ? (
                 isSearchLoading ||
                 (!isValidSearchText && searchResults.length === 0) ? (
-                  <DmView className="py-[20] items-center justify-center">
+                  <DmView style={[a.py_20, a.items_center, a.justify_center]}>
                     <ActivityIndicator color={colors.red} />
                   </DmView>
                 ) : searchResults.length > 0 ? (
@@ -623,25 +618,26 @@ const MapPickerWithSearchView: React.FC<Props> = ({
                     keyboardShouldPersistTaps="handled"
                   />
                 ) : (
-                  <DmView className="flex-1 items-center justify-center pt-[18]">
-                    <DmText className="text-14 leading-[18px] font-custom400 text-red">
+                  <DmView style={[a.flex_1, a.items_center, a.justify_center, a.pt_18]}>
+                    <Text size={14} color="brand">
                       {t("no_address_found")}
-                    </DmText>
+                    </Text>
                   </DmView>
                 )
               ) : (
                 <DmView onPress={onUseMyLocationFromSearch}>
                   <DmView
-                    className="py-[20] flex-row items-center border-b-1 border-b-grey8"
-                    style={{ marginEnd: 16, paddingStart: 16 }}
+                    style={[a.py_20, a.flex_row, a.items_center, a.border_b_1, mapPickerWithSearchViewStyles.row, { marginEnd: 16, paddingStart: 16 }]}
                   >
                     <LocationIcon />
-                    <DmText
-                      className="text-15 leading-[19px] font-custom500 flex-1"
-                      style={{ marginStart: 10 }}
+                    <Text
+                      size={15}
+                      weight="medium"
+                      leading="tight"
+                      style={[a.flex_1, { marginStart: 10 }]}
                     >
                       {t("use_current_location")}
-                    </DmText>
+                    </Text>
                   </DmView>
                 </DmView>
               )}

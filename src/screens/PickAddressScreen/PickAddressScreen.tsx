@@ -18,6 +18,8 @@ import MapPickerWithSearchView from "./components/MapPickerWithSearchView"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import { isArLang } from "@tappler/shared/src/helpers/helpers"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
+import { a } from "@tappler/shared/src/ds"
+import { pickAddressScreenStyles } from "./styles"
 
 type Props = RootStackScreenProps<"PickAddressScreen">
 const AnimatedScrollView = Animated.createAnimatedComponent(Animated.ScrollView)
@@ -130,9 +132,9 @@ const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView className="w-full flex-1 bg-white">
+    <SafeAreaView style={[a.w_full, a.flex_1, pickAddressScreenStyles.safeArea]}>
       <AnimatedScrollView
-        className="w-full flex-1"
+        style={[a.w_full, a.flex_1]}
         ref={scrollViewRef}
         scrollEnabled={false}
         horizontal={true}

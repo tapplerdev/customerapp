@@ -1,6 +1,6 @@
 /* eslint-disable no-extra-parens */
 /* eslint-disable no-useless-escape */
-import { DmInput, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmInput, DmView } from "@tappler/shared/src/components/UI"
 import React, { useCallback, useRef, useState } from "react"
 import SearchIcon from "assets/icons/search-black.svg"
 import CloseIcon from "assets/icons/close.svg"
@@ -20,6 +20,8 @@ import colors from "@tappler/shared/src/styles/colors"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import { isEgyptCountry } from "@tappler/shared/src/helpers/helpers"
 import { AppFlatList } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import { searchViewStyles } from "./styles"
 
 interface Props {
   onClose: () => void
@@ -39,14 +41,14 @@ const ItemAddress = (props: {
 }) => {
   return (
     <DmView
-      className="mr-[16] border-b-1 border-b-grey8"
+      style={[a.mr_16, a.border_b_1, searchViewStyles.container]}
       onPress={() => props.onPress(props.item)}
     >
-      <DmView className="pb-[16] pt-[24] pl-[16] w-full flex-row items-center justify-center">
+      <DmView style={[a.pb_16, a.pt_24, a.pl_16, a.w_full, a.flex_row, a.items_center, a.justify_center]}>
         <LocationRedIcon />
-        <DmText className="ml-[12] text-13 leading-[20px] font-custom400 flex-1">
+        <Text size={13} leading="loose" style={[a.ml_12, a.flex_1]}>
           {props.item.title}
-        </DmText>
+        </Text>
       </DmView>
     </DmView>
   )
@@ -146,26 +148,31 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
   )
 
   return (
-    <KeyboardAvoidingView className="w-full flex-1 pt-[8]">
-      <DmView className="w-full px-[16] flex-row items-center justify-center">
+    <KeyboardAvoidingView style={[a.w_full, a.flex_1, a.pt_8]}>
+      <DmView style={[a.w_full, a.px_16, a.flex_row, a.items_center, a.justify_center]}>
         <DmInput
           isAnimText={false}
           Icon={<SearchIcon />}
-          iconContainerClassName="mr-[8]"
-          className="h-[42] bg-grey38 border-0 flex-1"
-          inputClassName="text-15 leading-[19px] font-custom400"
+          iconContainerStyle={a.mr_8}
+          height={42}
+          containerStyle={[
+            searchViewStyles.dmInputContainer,
+            a.border_b_0,
+            a.flex_1,
+          ]}
+          inputType={{ size: 15, weight: "regular", arabicLeading: px(19) }}
           value={searchText}
           placeholder={t("search_for_your_address")}
           onChangeText={onSearchTextChange}
         />
-        <DmView className="py-[8] pl-[12]" onPress={onClose}>
+        <DmView style={[a.py_8, a.pl_12]} onPress={onClose}>
           <CloseIcon width={14} height={14} />
         </DmView>
       </DmView>
       {searchText.length > 0 ? (
         <>
           {isLoading || (searchResults.length === 0 && !isValidSearchText) ? (
-            <DmView className="mt-[14]">
+            <DmView style={a.mt_14}>
               <ActivityIndicator color={colors.red} />
             </DmView>
           ) : (
@@ -174,10 +181,10 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
               renderItem={renderListItem}
               keyExtractor={(item) => item.id || String(item.position?.lat) + String(item.position?.lng)}
               ListEmptyComponent={
-                <DmView className="flex-1 items-center justify-center pt-[18]">
-                  <DmText className="text-14 leading-[18px] font-custom400 text-red">
+                <DmView style={[a.flex_1, a.items_center, a.justify_center, a.pt_18]}>
+                  <Text size={14} color="brand">
                     {t("no_address_found")}
-                  </DmText>
+                  </Text>
                 </DmView>
               }
             />
@@ -185,13 +192,20 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
         </>
       ) : (
         <DmView
-          className="w-full py-[20] px-[16] flex-row items-center justify-center"
+          style={[
+            a.w_full,
+            a.py_20,
+            a.px_16,
+            a.flex_row,
+            a.items_center,
+            a.justify_center,
+          ]}
           onPress={onUseMyLocation}
         >
           <LocationIcon />
-          <DmText className="text-15 leading-[19px] font-custom500 flex-1 ml-[6]">
+          <Text size={15} weight="medium" leading="tight" style={[a.flex_1, a.ml_6]}>
             {t("use_current_location")}
-          </DmText>
+          </Text>
         </DmView>
       )}
     </KeyboardAvoidingView>

@@ -13,6 +13,7 @@ repeat.
 
 | Site | Element | Class | Why it renders nothing |
 | --- | --- | --- | --- |
+| src/screens/PickAddressScreen/components/MapPickerWithSearchView.tsx:577 | DmView | `rounded-[12]` | Tailwind generates "border-radius: 12", which NativeWind 2.0.11 has no React Native style for (a bare number; the px form, rounded-[12px], is what maps) |
 | src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx:172 | DmView | `items-left` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx:297 | DmView | `items-left` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:132 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
