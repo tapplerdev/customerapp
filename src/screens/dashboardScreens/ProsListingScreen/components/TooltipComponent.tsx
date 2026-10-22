@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 import { TooltipProps } from "rn-tourguide"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { setDontShowBestDealTooltip } from "store/auth/slice"
 
 import TutorialArrowIcon from "assets/icons/tutorial-arrow.svg"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { tooltipComponentStyles } from "./styles"
 
 const TooltipComponent: React.ComponentType<TooltipProps> = ({ handleStop }) => {
   const { t, i18n } = useTranslation()
@@ -23,41 +25,41 @@ const TooltipComponent: React.ComponentType<TooltipProps> = ({ handleStop }) => 
   }
 
   return (
-    <DmView className="items-center">
+    <DmView style={a.items_center}>
       <DmView style={[isAr ? { transform: [{ scaleX: -1 }] } : undefined]}>
         <TutorialArrowIcon width={140} height={140} />
       </DmView>
-      <DmText className="mt-[-10] text-13 leading-[20px] text-white font-custom600 text-center">
+      <Text size={13} weight="semibold" leading="loose" color="inverse" align="center" style={tooltipComponentStyles.howToGetBestDeal}>
         {t("how_to_get_best_deal")}
-      </DmText>
-      <DmText className="mt-[4] text-11 leading-[16px] text-white font-custom400 text-center px-[10]">
+      </Text>
+      <Text size={11} leading="loose" color="inverse" align="center" style={[a.mt_4, a.px_10]}>
         {t("best_deal_tip_text")}
-      </DmText>
+      </Text>
 
       {/* Don't show again checkbox */}
       <TouchableOpacity
-        className="flex-row items-center mt-[12]"
+        style={[a.flex_row, a.items_center, a.mt_12]}
         onPress={() => setDontShow((prev) => !prev)}
         activeOpacity={0.7}
       >
         <DmView
-          className="w-[18] h-[18] rounded-3 border-1 border-white items-center justify-center"
-          style={dontShow ? { backgroundColor: "white" } : undefined}
+          style={[tooltipComponentStyles.box, a.border_1, a.items_center, a.justify_center, dontShow ? { backgroundColor: "white" } : undefined]}
         >
           {dontShow && (
-            <DmText className="text-10 text-red font-custom700">✓</DmText>
+            <Text size={10} weight="bold" leading="legacy" color="brand">✓</Text>
           )}
         </DmView>
-        <DmText className="ml-[6] text-11 text-white font-custom400">
+        <Text size={11} leading="legacy" color="inverse" style={a.ml_6}>
           {t("do_not_show_again")}
-        </DmText>
+        </Text>
       </TouchableOpacity>
 
-      <DmView className="mt-[14] w-[150]">
-        <ActionBtn
+      <DmView style={[a.mt_14, tooltipComponentStyles.buttonWrap]}>
+        <Button
           title={t("got_it")}
           onPress={handleGotIt}
-          className="rounded-10 h-[34]"
+          size={px(34)}
+          shape="r10"
         />
       </DmView>
     </DmView>
