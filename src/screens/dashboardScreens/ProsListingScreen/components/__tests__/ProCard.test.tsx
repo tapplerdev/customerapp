@@ -116,7 +116,12 @@ describe("ProCard: the OFFERS tab", () => {
     expect(tabLabels(card)).toEqual(["OFFER", "OFFERS"])
     // The footer band: the tab right over the stickers' band.
     const footer = kids(card)[kids(card).length - 1]
-    expect(footer.props.className).toBe("mt-[14] overflow-hidden")
+    expect(StyleSheet.flatten(footer.props.style)).toMatchObject({
+      marginTop: 14,
+      overflow: "hidden",
+      marginHorizontal: -15,
+      marginBottom: -12,
+    })
     const [tab, band] = kids(kids(footer)[0])
     expect(tabLabels(tab)).toEqual(["OFFERS"])
     expect(isBand(band)).toBe(true)
