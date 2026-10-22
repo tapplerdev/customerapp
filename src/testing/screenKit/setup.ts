@@ -9,14 +9,56 @@
  * reach is swapped for a stand-in (nativeMocks.ts); the network is shut
  * (backend.ts answers RTK Query and the render's `http` answers; anything
  * else that tries is refused, loudly); the store is the kit's (store.ts); the
- * app's module state is fresh per row (rowState.ts). No component of ours is
- * mocked.
+ * app's module state is fresh per row (rowState.ts); every element is checked
+ * for a class or a DmText/ActionBtn (testing/classGuard). No component of
+ * ours is mocked.
  */
-import { jest } from "@jest/globals"
+import { afterEach, jest } from "@jest/globals"
+
+import { failOnClassGuardViolations } from "testing/classGuard"
 
 import { shutTheNetwork } from "./backend"
 
 shutTheNetwork()
+
+// ---------------------------------------------------------------------------
+// The class guard (testing/classGuard, W3 plan §5.3, ported from proapp's
+// W3.4): in every registry the kit loads, an element made with a non-empty
+// class string, or of tappler-shared's DmText or ActionBtn, throws where it is
+// made, with the component that made it. Nothing is mocked away: React and
+// the JSX runtimes are the real ones with their element functions wrapped in
+// place, and DmText's and ActionBtn's modules are the real ones, registered
+// as they load (the UI barrel loads both for every screen).
+
+jest.mock("react", () =>
+  require("testing/classGuard").guardReact(jest.requireActual("react"))
+)
+jest.mock("react/jsx-runtime", () =>
+  require("testing/classGuard").guardJsxRuntime(
+    jest.requireActual("react/jsx-runtime")
+  )
+)
+jest.mock("react/jsx-dev-runtime", () =>
+  require("testing/classGuard").guardJsxRuntime(
+    jest.requireActual("react/jsx-dev-runtime")
+  )
+)
+jest.mock("@tappler/shared/src/components/UI/DmText/DmText", () =>
+  require("testing/classGuard").forbid(
+    jest.requireActual("@tappler/shared/src/components/UI/DmText/DmText"),
+    "DmText"
+  )
+)
+jest.mock("@tappler/shared/src/components/UI/ActionBtn/ActionBtn", () =>
+  require("testing/classGuard").forbid(
+    jest.requireActual("@tappler/shared/src/components/UI/ActionBtn/ActionBtn"),
+    "ActionBtn"
+  )
+)
+
+// A refusal an error boundary swallowed (the screen drew its fallback) still
+// fails the test that caused it.
+afterEach(failOnClassGuardViolations)
 
 // ---------------------------------------------------------------------------
 // The test file's own module registry has no layout direction. A module the

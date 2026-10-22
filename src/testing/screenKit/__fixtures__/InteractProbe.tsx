@@ -3,19 +3,16 @@
  * shared's components (titled buttons, links, fields), each writing down what
  * it got, and a timer for wait(). Some refuse a customer: a disabled and a
  * loading button, a disabled link and touchable, a row whose touchable its
- * own lock disables, a field that isn't editable, one you press.
+ * own lock disables, a field that isn't editable, one you press. The buttons
+ * are ds Buttons and the links' words ds Text: the kit refuses ActionBtn and
+ * DmText since W3.4 (testing/classGuard), as no screen draws them any more.
  */
 import React, { useEffect, useState } from "react"
 import { Text, TouchableOpacity, View } from "react-native"
 import { useTranslation } from "react-i18next"
 
-import {
-  ActionBtn,
-  DmInput,
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
-import { Button } from "@tappler/shared/src/ds"
+import { DmInput, DmView } from "@tappler/shared/src/components/UI"
+import { Button, Text as DsText } from "@tappler/shared/src/ds"
 
 // A titled row whose touchable isn't its first host, and whose lock is its
 // own prop (not `disabled`): only the touchable says it refuses a tap.
@@ -49,25 +46,25 @@ const InteractProbe = () => {
   }, [])
   return (
     <DmView>
-      <ActionBtn title={t("save")} onPress={() => press("save")} />
-      <ActionBtn title="Locked" disable onPress={() => press("locked")} />
-      <ActionBtn title="Sending" isLoading onPress={() => press("sending")} />
+      <Button title={t("save")} onPress={() => press("save")} />
+      <Button title="Locked" disabled onPress={() => press("locked")} />
+      <Button title="Sending" isLoading onPress={() => press("sending")} />
       <Button title="Pay" disabled onPress={() => press("pay")} />
       <DmView onPress={() => press("link")}>
-        <DmText>{t("delete_account")}</DmText>
+        <DsText size={14}>{t("delete_account")}</DsText>
       </DmView>
       <DmView onPress={() => press("disabled link")} disabled>
-        <DmText>Disabled link</DmText>
+        <DsText size={14}>Disabled link</DsText>
       </DmView>
       <TouchableOpacity onPress={() => press("disabled touch")} disabled>
         <Text>Disabled touch</Text>
       </TouchableOpacity>
       <LockedRow title="Locked row" locked onPress={() => press("locked")} />
       <DmView onPress={() => press("help 1")}>
-        <DmText>Help</DmText>
+        <DsText size={14}>Help</DsText>
       </DmView>
       <DmView onPress={() => press("help 2")}>
-        <DmText>Help</DmText>
+        <DsText size={14}>Help</DsText>
       </DmView>
       <DmInput value={name} onChangeText={setName} placeholder="Name" />
       <DmInput value={city} onChangeText={setCity} placeholder="City" />

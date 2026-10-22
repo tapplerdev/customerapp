@@ -13,6 +13,7 @@ import { jest } from "@jest/globals"
 import type { ReactTestInstance } from "react-test-renderer"
 import type { EdgeInsets } from "react-native-safe-area-context"
 
+import { refuseHostClasses } from "testing/classGuard"
 import {
   renderParity,
   type HostNode,
@@ -382,7 +383,10 @@ const unansweredRefreshError = (request: BackendRequest) =>
   )
 
 export type ScreenSession = {
-  /** The normalized host tree right now (hostTreeParity's). */
+  /**
+   * The normalized host tree right now (hostTreeParity's). A host in it that
+   * still carries a class fails (classGuard's refuseHostClasses).
+   */
   tree: () => HostNode | null
   /** Run the clock (and flush) again, after an interaction. */
   settle: (ms?: number) => Promise<void>
@@ -519,7 +523,7 @@ export const openScreen = async (
     return {
       tree: () => {
         refreshAnswered()
-        return live.tree()
+        return refuseHostClasses(live.tree())
       },
       settle: (ms = 500) => settle(ms),
       act: async (fn, settleMs = 500, what) => {
