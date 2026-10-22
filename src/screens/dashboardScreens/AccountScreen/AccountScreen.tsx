@@ -176,7 +176,7 @@ const AccountScreen: React.FC = () => {
             <DmChecbox
               title={t("arabic")}
               isChecked={i18n.language === "ar"}
-              textClassName="font-sans400"
+              textType={{ weight: "regular" }}
               onPress={() => handleChangeLanguage("ar")}
             />
             <DmChecbox
@@ -301,7 +301,7 @@ const AccountScreen: React.FC = () => {
           <DmChecbox
             title={t("arabic")}
             isChecked={i18n.language === "ar"}
-            textClassName="font-sans400"
+            textType={{ weight: "regular" }}
             onPress={() => handleChangeLanguage("ar")}
           />
           <DmChecbox
