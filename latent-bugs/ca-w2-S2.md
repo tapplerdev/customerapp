@@ -20,3 +20,4 @@ repeat.
 | src/screens/dashboardScreens/ProProfileScreen/ProProfileScreen.tsx:471 | DmText | `font-plain` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx:35 | DmText | `leading-[15]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
 | src/screens/dashboardScreens/SubCategoriesScreen/SubCategoriesScreen.tsx:67 | DmText | `leading-[19]` | unitless arbitrary line height; NativeWind 2 emits nothing for it (leading-[Npx] works) |
+| src/screens/onboardingScreens/WelcomeScreen/WelcomeScreen.tsx:83 | DmText | `font-sans400` | TheSans-Regular is a face the app doesn't ship (Info.plist UIAppFonts), so iOS draws the system face; kept as a `LegacyText family="system"` with the face named in its style, drawing what iOS draws today |
