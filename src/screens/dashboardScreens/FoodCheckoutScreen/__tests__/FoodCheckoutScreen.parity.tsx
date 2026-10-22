@@ -23,7 +23,12 @@ import {
   PRO_FOOD,
   SERVICE_FOOD,
 } from "testing/screenKit/fixtures/entities"
-import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
+import {
+  PARITY_MATRIX,
+  expectParity,
+  parityName,
+  type ParityAllowance,
+} from "testing/hostTreeParity"
 import { pressContaining } from "testing/pressContaining"
 
 import {
@@ -47,6 +52,13 @@ import {
  * (a Button: dead until the order can be sent, then it hands the review
  * screen its payload, or sends a guest to sign in).
  */
+
+// Review order was an ActionBtn: Button's listed deltas, per state. Where the
+// order can't be sent yet (no address, out of range, not scheduled, an empty
+// basket) the button is dead and shows the disabled view flag instead of the
+// accessibility props.
+const ENABLED: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+const DISABLED: ParityAllowance[] = ["buttonHeight", "buttonDisabledView"]
 
 const load = () => require("../FoodCheckoutScreen")
 const PARAMS = ROUTE_PARAMS.FoodCheckoutScreen
@@ -95,46 +107,71 @@ type Case = {
   insets?: { bottom: number }
   /** The kitchen's menu and profile already in the cache, as a visit from its menu leaves them. */
   warm?: boolean
+  allow: ParityAllowance[]
 }
 const CASES: Case[] = [
   {
     name: "delivery, address, both modes",
     drafts: [DRAFT_ONE_LINE],
     api: api(),
+    allow: ENABLED,
   },
-  { name: "no address", drafts: [DRAFT_ONE_LINE], api: api(), address: null },
-  { name: "pickup", drafts: [DRAFT_PICKUP], api: api(), warm: true },
+  {
+    name: "no address",
+    drafts: [DRAFT_ONE_LINE],
+    api: api(),
+    address: null,
+    allow: DISABLED,
+  },
+  {
+    name: "pickup",
+    drafts: [DRAFT_PICKUP],
+    api: api(),
+    warm: true,
+    allow: ENABLED,
+  },
   {
     name: "out of the delivery zone, pickup reachable",
     drafts: [DRAFT_ONE_LINE],
     api: api({ checkDelivery: check(false, true) }),
+    allow: DISABLED,
   },
   {
     name: "out of the zone and out of pickup range",
     drafts: [DRAFT_ONE_LINE],
     api: api({ checkDelivery: check(false, false) }),
+    allow: DISABLED,
   },
   {
     name: "pickup out of range, delivery reachable",
     drafts: [DRAFT_PICKUP],
     api: api({ checkDelivery: check(true, false) }),
     warm: true,
+    allow: DISABLED,
   },
   {
     name: "a category that schedules",
     drafts: [DRAFT_ONE_LINE],
     api: api({ getServiceById: { data: service(["asap", "date"]) } }),
+    allow: ENABLED,
   },
   {
     name: "needs notice, scheduling offered",
     drafts: [DRAFT_RICH],
     api: api({ getServiceById: { data: service(["asap", "date"]) } }),
+    allow: DISABLED,
   },
-  { name: "needs notice, the pro confirms", drafts: [DRAFT_RICH], api: api() },
+  {
+    name: "needs notice, the pro confirms",
+    drafts: [DRAFT_RICH],
+    api: api(),
+    allow: ENABLED,
+  },
   {
     name: "cash only, kitchen hours",
     drafts: [DRAFT_ONE_LINE],
     api: api({ getProProfile: { data: CASH_ONLY } }),
+    allow: ENABLED,
   },
   {
     name: "delivery only kitchen",
@@ -142,20 +179,28 @@ const CASES: Case[] = [
     api: api({
       getProMenu: { data: { ...RICH_MENU, isPickupEnabled: false } },
     }),
+    allow: ENABLED,
   },
-  { name: "everything loading", drafts: [DRAFT_ONE_LINE], api: {} },
-  { name: "empty basket", drafts: [], api: api() },
+  {
+    name: "everything loading",
+    drafts: [DRAFT_ONE_LINE],
+    api: {},
+    allow: ENABLED,
+  },
+  { name: "empty basket", drafts: [], api: api(), allow: DISABLED },
   {
     name: "no bottom inset",
     drafts: [DRAFT_ONE_LINE],
     api: api(),
     insets: { bottom: 0 },
+    allow: ENABLED,
   },
   {
     name: "bottom inset 48",
     drafts: [DRAFT_ONE_LINE],
     api: api(),
     insets: { bottom: 48 },
+    allow: ENABLED,
   },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
@@ -182,7 +227,8 @@ describe("FoodCheckoutScreen, captured from the unconverted code", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
     expectParity(
       parityName(c.name, c.env),
-      await renderScreen(load, options(c, c.env))
+      await renderScreen(load, options(c, c.env)),
+      { allow: c.allow }
     )
   })
 })
@@ -225,11 +271,15 @@ describe("FoodCheckoutScreen, the controls", () => {
         await session.act(() => {
           pressText(session.root, copy(env, "pickup"))
         })
-        expectParity(parityName("pickup chosen", env), session.tree())
+        expectParity(parityName("pickup chosen", env), session.tree(), {
+          allow: ENABLED,
+        })
         await session.act(() => {
           pressText(session.root, copy(env, "delivery"))
         })
-        expectParity(parityName("delivery chosen again", env), session.tree())
+        expectParity(parityName("delivery chosen again", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }
@@ -244,7 +294,9 @@ describe("FoodCheckoutScreen, the controls", () => {
         await session.act(() => {
           pressContaining(session.root, copy(env, "card_on_delivery"))
         })
-        expectParity(parityName("card chosen", env), session.tree())
+        expectParity(parityName("card chosen", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }
@@ -259,7 +311,9 @@ describe("FoodCheckoutScreen, the controls", () => {
         await session.act(() => {
           pressContaining(session.root, copy(env, "change"))
         })
-        expectParity(parityName("address sheet open", env), session.tree())
+        expectParity(parityName("address sheet open", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }
@@ -274,7 +328,9 @@ describe("FoodCheckoutScreen, the controls", () => {
         await session.act(() => {
           pressContaining(session.root, copy(env, "schedule_delivery"))
         })
-        expectParity(parityName("calendar sheet open", env), session.tree())
+        expectParity(parityName("calendar sheet open", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }
@@ -296,7 +352,9 @@ describe("FoodCheckoutScreen, the controls", () => {
             }
           ).cart.carts[PRO_FOOD.id].orderNotes
         ).toBe("Leave it with the doorman")
-        expectParity(parityName("notes typed", env), session.tree())
+        expectParity(parityName("notes typed", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }
@@ -314,7 +372,9 @@ describe("FoodCheckoutScreen, the controls", () => {
         await session.act(() => {
           pressContaining(session.root, copy(env, "switch_to_pickup"))
         })
-        expectParity(parityName("switched to pickup", env), session.tree())
+        expectParity(parityName("switched to pickup", env), session.tree(), {
+          allow: ENABLED,
+        })
       } finally {
         session.unmount()
       }

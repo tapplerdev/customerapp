@@ -1,12 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 
 // Components
-import {
-  ActionBtn,
-  DmChecbox,
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 import { TextInput } from "react-native"
@@ -43,6 +38,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodCheckoutScreen">
 
@@ -474,31 +470,28 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
 
 
   const sectionTitle = (label: string) => (
-    <DmText className="text-15 leading-[19px] font-custom700 mb-[10]">
+    <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
       {label}
-    </DmText>
+    </Text>
   )
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
-    <DmView className="flex-row items-center justify-between mt-[8]">
-      <DmText
-        className={
-          bold
-            ? "text-15 leading-[19px] font-custom700"
-            : "text-13 leading-[17px] font-custom400 text-grey2"
-        }
+    <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_8]}>
+      <Text
+        size={bold ? 15 : 13}
+        weight={bold ? "bold" : "regular"}
+        leading={bold ? "tight" : px(17)}
+        color={bold ? "primary" : "secondary"}
       >
         {label}
-      </DmText>
-      <DmText
-        className={
-          bold
-            ? "text-15 leading-[19px] font-custom700"
-            : "text-13 leading-[17px] font-custom500"
-        }
+      </Text>
+      <Text
+        size={bold ? 15 : 13}
+        weight={bold ? "bold" : "medium"}
+        leading={bold ? "tight" : px(17)}
       >
         {value}
-      </DmText>
+      </Text>
     </DmView>
   )
 
@@ -508,50 +501,54 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // are per-pro and persisted, so even walking back to the listing is
   // recoverable.
   const zoneBanner = () => (
-    <DmView className="mt-[10] px-[10] py-[8] rounded-8 bg-pink1">
-      <DmText className="text-12 leading-[16px] font-custom600 text-red">
+    <DmView style={[a.mt_10, a.px_10, a.py_8, styles.container]}>
+      <Text size={12} weight="semibold" color="brand">
         {t(isPickup ? "outside_pickup_range" : "outside_delivery_zone")}
-      </DmText>
-      <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-red">
+      </Text>
+      <Text size={11} color="brand" style={a.mt_2}>
         {t(
           isPickup ? "outside_pickup_range_descr" : "outside_delivery_zone_descr"
         )}
-      </DmText>
+      </Text>
 
-      <DmView className="flex-row items-center mt-[8]">
+      <DmView style={[a.flex_row, a.items_center, a.mt_8]}>
         {/* Cheapest possible escape: the same cart, the other mode. Only
             offered when that mode is actually reachable. */}
         {!!alternativeMode && (
           <DmView
-            className="px-[12] py-[7] rounded-8 bg-red"
+            style={[a.px_12, styles.textWrap]}
             hitSlop={HIT_SLOP_DEFAULT}
             onPress={() => setSelectedMode(alternativeMode)}
           >
-            <DmText className="text-11 leading-[15px] font-custom600 text-white">
+            <Text size={11} weight="semibold" color="inverse">
               {t(
                 alternativeMode === "pickup"
                   ? "switch_to_pickup"
                   : "switch_to_delivery"
               )}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         <DmView
-          className={`px-[12] py-[7] rounded-8 border-0.5 border-red ${alternativeMode ? "ml-[8]" : ""}`}
+          style={[
+            a.px_12,
+            styles.findOtherProsWrap,
+            alternativeMode ? a.ml_8 : undefined,
+          ]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleFindOtherPros}
         >
-          <DmText className="text-11 leading-[15px] font-custom600 text-red">
+          <Text size={11} weight="semibold" color="brand">
             {t("find_other_pros")}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
 
       {/* Say it plainly, or leaving looks like losing the cart. */}
-      <DmText className="mt-[6] text-10 leading-[14px] font-custom400 text-red">
+      <Text size={10} leading={px(14)} color="brand" style={a.mt_6}>
         {t("cart_kept_note")}
-      </DmText>
+      </Text>
     </DmView>
   )
 
@@ -572,14 +569,13 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
    */
   return (
     <SafeAreaView
-      className="flex-1 bg-white"
       edges={["top"]}
-      style={{ paddingBottom: keyboardInset }}
+      style={[a.flex_1, styles.safeArea, { paddingBottom: keyboardInset }]}
     >
       {/* Header */}
-      <DmView className="flex-row items-center px-[12] py-[10] bg-white border-b-0.2 border-b-grey19">
+      <DmView style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
@@ -588,17 +584,17 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 leading-[20px] font-custom700">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="bold">
             {t("checkout")}
-          </DmText>
+          </Text>
           {!!cart.proName && (
-            <DmText className="mt-[2] text-12 leading-[15px] font-custom400 text-grey2">
+            <Text size={12} leading="tight" color="secondary" style={a.mt_2}>
               {cart.proName}
-            </DmText>
+            </Text>
           )}
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
 
       <AppScrollView
@@ -607,9 +603,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {/* Fulfillment mode — only when the pro offers both */}
         {availableModes.length > 1 && (
-          <DmView className="mb-[20]">
+          <DmView style={a.mb_20}>
             {sectionTitle(t("fulfillment"))}
-            <DmView className="flex-row">
+            <DmView style={a.flex_row}>
               {availableModes.map((mode, i) => {
                 const active = selectedMode === mode
                 return (
@@ -628,12 +624,13 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                       borderColor: active ? colors.red : colors.grey14,
                     }}
                   >
-                    <DmText
-                      className="text-14 leading-[18px] font-custom600"
+                    <Text
+                      size={14}
+                      weight="semibold"
                       style={{ color: active ? colors.white : colors.black }}
                     >
                       {t(mode)}
-                    </DmText>
+                    </Text>
                   </DmView>
                 )
               })}
@@ -647,16 +644,16 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             the journey — and there is nothing for them to change. */}
         {sectionTitle(t(isPickup ? "pickup_from" : "deliver_to"))}
         {isPickup ? (
-          <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
-            <DmText className="text-13 leading-[18px] font-custom500">
+          <DmView style={[a.p_14, styles.box2]}>
+            <Text size={13} weight="medium">
               {pickupArea || t("pickup_area_unavailable")}
-            </DmText>
+            </Text>
             {/* Area only until the order is accepted. These are home cooks —
                 the exact address is theirs to give, not ours to publish to
                 anyone who opens a checkout. */}
-            <DmText className="mt-[4] text-11 leading-[15px] font-custom400 text-grey2">
+            <Text size={11} color="secondary" style={a.mt_4}>
               {t("exact_address_after_acceptance")}
-            </DmText>
+            </Text>
             {/* Pickup still depends on the customer's address: the pro caps
                 how far they will let people travel from. Silent until now,
                 which meant a 400 at Submit. */}
@@ -664,50 +661,52 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         ) : (
           <DmView
-            className="p-[14] rounded-12 border-0.5 border-grey14"
+            style={[a.p_14, styles.box2]}
             onPress={() => setAddressModalVisible(true)}
           >
-            <DmView className="flex-row items-center justify-between">
-              <DmText
-                className="flex-1 text-13 leading-[18px] font-custom500"
+            <DmView style={[a.flex_row, a.items_center, a.justify_between]}>
+              <Text
+                size={13}
+                weight="medium"
+                style={a.flex_1}
                 numberOfLines={2}
               >
                 {orderAddress?.address || t("choose_address")}
-              </DmText>
-              <DmText className="ml-[10] text-12 leading-[15px] font-custom600 text-red">
+              </Text>
+              <Text size={12} weight="semibold" leading="tight" color="brand" style={a.ml_10}>
                 {t("change")}
-              </DmText>
+              </Text>
             </DmView>
             {outOfZone && zoneBanner()}
           </DmView>
         )}
 
         {/* Delivery time */}
-        <DmView className="mt-[20]">
+        <DmView style={a.mt_20}>
           {sectionTitle(t(isPickup ? "pickup_time" : "delivery_time"))}
 
           {/* Says WHICH item and WHEN. A bare "this needs notice" leaves the
               customer unable to act on it — the useful move is usually to drop
               that one item. Advisory: "now" is still selectable below. */}
           {!!leadTimeHours && (
-            <DmView className="mb-[10] px-[12] py-[10] rounded-8 bg-grey58">
-              <DmText className="text-12 leading-[16px] font-custom600">
+            <DmView style={[a.mb_10, a.px_12, a.py_10, styles.box3]}>
+              <Text size={12} weight="semibold">
                 {t("needs_notice_title", {
                   name: slowestLine?.name,
                   hours: leadTimeHours,
                 })}
-              </DmText>
-              <DmText className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2">
+              </Text>
+              <Text size={11} color="secondary" style={a.mt_2}>
                 {canScheduleLater
                   ? t("needs_notice_earliest", { when: earliestLabel })
                   : t("needs_notice_pro_confirms")}
-              </DmText>
+              </Text>
             </DmView>
           )}
 
-          <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
+          <DmView style={[a.p_14, styles.box2]}>
             <DmView
-              className="flex-row items-center justify-between"
+              style={[a.flex_row, a.items_center, a.justify_between]}
               onPress={() => {
                 hasChosenTiming.current = true
                 setDeliverNow(true)
@@ -715,9 +714,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                 setScheduledSlot(null)
               }}
             >
-              <DmText className="text-13 leading-[17px] font-custom500">
+              <Text size={13} weight="medium" leading={px(17)}>
                 {t(isPickup ? "pick_up_now" : "deliver_now")}
-              </DmText>
+              </Text>
               <DmChecbox variant="circle" isChecked={deliverNow} />
             </DmView>
             {/* Only offered when the category is configured for it — the
@@ -725,22 +724,22 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                 the customer could do about it. */}
             {canScheduleLater && (
               <>
-                <DmView className="h-[0.5] bg-grey14 my-[12]" />
+                <DmView style={[styles.box4, a.my_12]} />
                 <DmView
-                  className="flex-row items-center justify-between"
+                  style={[a.flex_row, a.items_center, a.justify_between]}
                   onPress={() => {
                     hasChosenTiming.current = true
                     setCalendarVisible(true)
                   }}
                 >
-                  <DmView className="flex-1">
-                    <DmText className="text-13 leading-[17px] font-custom500">
+                  <DmView style={a.flex_1}>
+                    <Text size={13} weight="medium" leading={px(17)}>
                       {t(isPickup ? "schedule_pickup" : "schedule_delivery")}
-                    </DmText>
+                    </Text>
                     {!deliverNow && !!scheduledDate && (
-                      <DmText className="mt-[3] text-12 leading-[15px] font-custom400 text-grey2">
+                      <Text size={12} leading="tight" color="secondary" style={styles.text}>
                         {scheduleLabel}
-                      </DmText>
+                      </Text>
                     )}
                   </DmView>
                   <DmChecbox variant="circle" isChecked={!deliverNow} />
@@ -749,30 +748,30 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
           </DmView>
           {!!todayHours && (
-            <DmText className="mt-[6] text-11 leading-[15px] font-custom400 text-grey2">
+            <Text size={11} color="secondary" style={a.mt_6}>
               {t("kitchen_hours")}: {todayHours}
-            </DmText>
+            </Text>
           )}
         </DmView>
 
         {/* Payment */}
-        <DmView className="mt-[20]">
+        <DmView style={a.mt_20}>
           {sectionTitle(t("payment_method"))}
-          <DmView className="p-[14] rounded-12 border-0.5 border-grey14">
+          <DmView style={[a.p_14, styles.box2]}>
             {paymentOptions.map((option, index) => (
               <React.Fragment key={option.key}>
                 {index > 0 && (
-                  <DmView className="h-[0.5] bg-grey14 my-[12]" />
+                  <DmView style={[styles.box4, a.my_12]} />
                 )}
                 <DmView
-                  className="flex-row items-center justify-between"
+                  style={[a.flex_row, a.items_center, a.justify_between]}
                   onPress={() => setPaymentMethod(option.key)}
                   // One accepted method is not a choice — show it, don't ask.
                   disabled={paymentOptions.length === 1}
                 >
-                  <DmText className="text-13 leading-[17px] font-custom500">
+                  <Text size={13} weight="medium" leading={px(17)}>
                     {option.label}
-                  </DmText>
+                  </Text>
                   {paymentOptions.length > 1 && (
                     <DmChecbox
                       variant="circle"
@@ -786,9 +785,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Order notes */}
-        <DmView className="mt-[20]">
+        <DmView style={a.mt_20}>
           {sectionTitle(t("order_notes"))}
-          <DmView className="bg-white" style={styles.notesBorder}>
+          <DmView style={[styles.safeArea, styles.notesBorder]}>
             <TextInput
               value={cart.orderNotes}
               onChangeText={(text) => dispatch(setOrderNotes({ proId, notes: text }))}
@@ -801,24 +800,25 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Order summary */}
-        <DmView className="mt-[20] p-[14] rounded-12 bg-grey36">
-          <DmText className="text-14 leading-[18px] font-custom700 mb-[4]">
+        <DmView style={[a.mt_20, a.p_14, styles.list]}>
+          <Text size={14} weight="bold" style={a.mb_4}>
             {t("order_summary")}
-          </DmText>
+          </Text>
           {cart.items.map((line) => (
             <DmView
               key={line.uid}
-              className="flex-row items-center justify-between mt-[6]"
+              style={[a.flex_row, a.items_center, a.justify_between, a.mt_6]}
             >
-              <DmText
-                className="flex-1 text-12 leading-[16px] font-custom400"
+              <Text
+                size={12}
+                style={a.flex_1}
                 numberOfLines={1}
               >
                 {line.quantity}× {line.name}
-              </DmText>
+              </Text>
             </DmView>
           ))}
-          <DmView className="h-[0.7] bg-grey14 mt-[10]" />
+          <DmView style={[styles.box5, a.mt_10]} />
           {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
           {/* Nothing is delivered on a pickup order, so the row would read
               "Free" — a claim, not an omission. */}
@@ -837,14 +837,15 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           shadow cast upward onto the content it covers. The button keeps its
           own pill radius. */}
       <DmView
-        className="px-[16] pt-[14] bg-white"
-        style={[styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
+        style={[a.px_16, a.pt_14, styles.safeArea, styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
       >
-        <ActionBtn
+        <Button
           title={t("review_order")}
-          className="h-[44]"
-          textClassName="text-14 leading-[18px] font-custom600"
-          disable={!canSubmit}
+          size="md"
+          label={14}
+          labelWeight="semibold"
+          labelLeading="normal"
+          disabled={!canSubmit}
           onPress={canSubmit ? handleReviewOrder : undefined}
         />
       </DmView>
