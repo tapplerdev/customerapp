@@ -16,7 +16,12 @@ import { screenState } from "testing/screenKit/states"
 import { DATA } from "testing/screenKit/fixtures/api"
 import { ADDRESS, ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import { JOB_FOOD, PRO_FOOD } from "testing/screenKit/fixtures/entities"
-import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
+import {
+  PARITY_MATRIX,
+  expectParity,
+  parityName,
+  type ParityAllowance,
+} from "testing/hostTreeParity"
 
 import {
   DRAFT_ONE_LINE,
@@ -35,6 +40,10 @@ import {
  * spinner, on success it clears the basket and goes to the success screen,
  * and a refusal opens the error sheet with the server's words.
  */
+
+// Submit Order was an ActionBtn: Button's listed deltas on every row that draws it
+// (in flight, refused, and the empty basket draw them as the others do).
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const load = () => require("../FoodOrderReviewScreen")
 const PARAMS = ROUTE_PARAMS.FoodOrderReviewScreen!
@@ -104,7 +113,8 @@ describe("FoodOrderReviewScreen, captured from the unconverted code", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
     expectParity(
       parityName(c.name, c.env),
-      await renderScreen(load, options(c, c.env))
+      await renderScreen(load, options(c, c.env)),
+      { allow: BUTTON }
     )
   })
 })
@@ -149,7 +159,9 @@ describe("FoodOrderReviewScreen, the controls", () => {
         await session.act(() => {
           pressTitled(session.root, copy(env, "submit_order"))
         })
-        expectParity(parityName("submitting", env), session.tree())
+        expectParity(parityName("submitting", env), session.tree(), {
+          allow: BUTTON,
+        })
         const sent = session
           .requests()
           .filter((r) => r.endpoint === "createJob")
@@ -213,7 +225,9 @@ describe("FoodOrderReviewScreen, the controls", () => {
         await session.act(() => {
           pressTitled(session.root, copy(env, "submit_order"))
         })
-        expectParity(parityName("refused", env), session.tree())
+        expectParity(parityName("refused", env), session.tree(), {
+          allow: BUTTON,
+        })
         expect(JSON.stringify(session.tree())).toContain(
           "Grilled chicken is sold out"
         )
