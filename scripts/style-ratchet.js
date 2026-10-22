@@ -1262,12 +1262,15 @@ const main = (argv) => {
   // baseline the CLI fails on each file that holds one.
   const absolute =
     opts.root === ROOT && opts.baseline === DEFAULT_BASELINE
-      ? absoluteViolations(result.files).filter(
-          (a) =>
-            !cmp.violations.some((v) => v.file === a.file && v.metric === a.metric)
-        )
+      ? absoluteViolations(result.files)
       : []
-  cmp.violations.push(...absolute)
+  // (a file whose count also rose against the baseline is reported once)
+  cmp.violations.push(
+    ...absolute.filter(
+      (a) =>
+        !cmp.violations.some((v) => v.file === a.file && v.metric === a.metric)
+    )
+  )
   const unmatched = opts.strict.filter((g) => cmp.strictMatched[g] === 0)
   if (unmatched.length) {
     for (const g of unmatched)
