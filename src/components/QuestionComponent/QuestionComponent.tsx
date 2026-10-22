@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo, useState } from "react"
 import { I18nManager, Keyboard, TextInput } from "react-native"
 
-import { DmChecbox, DmInput, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmInput, DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import { ServiceQuestionType, QuestionOptionType } from "types/cms"
 import { useTranslation } from "react-i18next"
@@ -18,6 +18,7 @@ import CalendarTimePicker, {
 import CheckmarkIcon from "assets/icons/check-mark.svg"
 import styles from "./styles"
 import { AppScrollView } from "components/scroll"
+import { Text, a as atoms } from "@tappler/shared/src/ds"
 
 interface Props {
   item: ServiceQuestionType
@@ -283,15 +284,15 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
-          <DmView className="flex-row" style={{ gap }}>{chips}</DmView>
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
+          <DmView style={[atoms.flex_row, { gap }]}>{chips}</DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView className="flex-row flex-wrap mt-[16]" style={{ gap }}>{chips}</DmView>
+      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.mt_16, { gap }]}>{chips}</DmView>
     }
-    return <DmView className="mt-[16]" style={{ gap }}>{chips}</DmView>
+    return <DmView style={[atoms.mt_16, { gap }]}>{chips}</DmView>
   }
 
   const renderImageWithText = () => {
@@ -308,15 +309,15 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
-          <DmView className="flex-row items-center">{elements}</DmView>
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
+          <DmView style={[atoms.flex_row, atoms.items_center]}>{elements}</DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView className="flex-row flex-wrap items-center mt-[16]">{elements}</DmView>
+      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.items_center, atoms.mt_16]}>{elements}</DmView>
     }
-    return <DmView className="mt-[16] items-start">{elements}</DmView>
+    return <DmView style={[atoms.mt_16, atoms.items_start]}>{elements}</DmView>
   }
 
   const renderImageWithCheckmark = () => {
@@ -333,15 +334,15 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
-          <DmView className="flex-row items-center">{elements}</DmView>
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
+          <DmView style={[atoms.flex_row, atoms.items_center]}>{elements}</DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView className="flex-row flex-wrap items-center mt-[16]">{elements}</DmView>
+      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.items_center, atoms.mt_16]}>{elements}</DmView>
     }
-    return <DmView className="mt-[16] items-start">{elements}</DmView>
+    return <DmView style={[atoms.mt_16, atoms.items_start]}>{elements}</DmView>
   }
 
   const renderTextWithCheckmark = () => {
@@ -357,15 +358,15 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-[16]">
-          <DmView className="flex-row">{elements}</DmView>
+        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
+          <DmView style={atoms.flex_row}>{elements}</DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView className="flex-row flex-wrap mt-[16]">{elements}</DmView>
+      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.mt_16]}>{elements}</DmView>
     }
-    return <DmView className="mt-[16]">{elements}</DmView>
+    return <DmView style={atoms.mt_16}>{elements}</DmView>
   }
 
   const renderQuestionOptions = () => {
@@ -380,16 +381,22 @@ const QuestionComponent: React.FC<Props> = ({
         return renderTextWithCheckmark()
       case "checkmark":
         return (
-          <DmView className="mt-[16]">
+          <DmView style={atoms.mt_16}>
             {visibleOptions?.map((opt, idx) => (
               <DmView
                 key={idx}
                 onPress={() => handleSelectOption(opt)}
-                className={`flex-row items-center justify-between ${idx === 0 ? 'pb-[16]' : 'py-[16]'} ${hideBorders ? '' : 'border-b border-grey29'}`}
+                style={[
+                  atoms.flex_row,
+                  atoms.items_center,
+                  atoms.justify_between,
+                  idx === 0 ? atoms.pb_16 : atoms.py_16,
+                  !hideBorders && styles.containerNotHideBorders,
+                ]}
               >
-                <DmText className="text-13 font-custom400 flex-1">
+                <Text size={13} leading="legacy" style={atoms.flex_1}>
                   {getOptionLabel(opt)}
-                </DmText>
+                </Text>
                 {isOptionSelected(opt) && (
                   <CheckmarkIcon width={20} height={20} fill="#CC0000" />
                 )}
@@ -399,11 +406,11 @@ const QuestionComponent: React.FC<Props> = ({
         )
       case "checkbox":
         return (
-          <DmView className="mt-[16]">
+          <DmView style={atoms.mt_16}>
             {visibleOptions?.map((opt, idx) => (
               <DmChecbox
-                className={idx > 0 ? "mt-[16]" : ""}
-                textClassName="flex-1"
+                style={idx > 0 && atoms.mt_16}
+                textStyle={atoms.flex_1}
                 variant="square"
                 size={compact ? 20 : undefined}
                 key={idx}
@@ -416,11 +423,11 @@ const QuestionComponent: React.FC<Props> = ({
         )
       case "radio":
         return (
-          <DmView className="mt-[16]">
+          <DmView style={atoms.mt_16}>
             {visibleOptions?.map((opt, idx) => (
               <DmChecbox
-                className={idx > 0 ? "mt-[16]" : ""}
-                textClassName="flex-1"
+                style={idx > 0 && atoms.mt_16}
+                textStyle={atoms.flex_1}
                 variant="circle"
                 size={compact ? 20 : undefined}
                 key={idx}
@@ -433,11 +440,11 @@ const QuestionComponent: React.FC<Props> = ({
         )
       default:
         return (
-          <DmView className="mt-[16]">
+          <DmView style={atoms.mt_16}>
             {visibleOptions?.map((opt, idx) => (
               <DmChecbox
-                className={idx > 0 ? "mt-[16]" : ""}
-                textClassName="flex-1"
+                style={idx > 0 && atoms.mt_16}
+                textStyle={atoms.flex_1}
                 variant={item.type === "multipleChoice" ? "square" : "circle"}
                 size={compact ? 20 : undefined}
                 key={idx}
@@ -452,23 +459,22 @@ const QuestionComponent: React.FC<Props> = ({
   }
 
   return (
-    <DmView className="mb-[25] px-[14]">
+    <DmView style={[styles.container, atoms.px_14]}>
       {(item.type === "oneChoice" || item.type === "multipleChoice") && (
         <>
-          <DmText className={compact ? "text-15 leading-[19px] font-custom700" : "text-15 leading-[19px] font-custom600"}>
+          <Text size={15} weight={compact ? "bold" : "semibold"} leading="tight">
             {getQuestionText()}
-          </DmText>
+          </Text>
           {renderQuestionOptions()}
         </>
       )}
       {(item.type === "shortAnswer" || item.type === "paragraph") && (
         <>
-          <DmText className={compact ? "text-15 leading-[19px] font-custom700 mb-[12]" : "text-15 leading-[19px] font-custom600 mb-[12]"}>
+          <Text size={15} weight={compact ? "bold" : "semibold"} leading="tight" style={compact ? atoms.mb_12 : atoms.mb_12}>
             {getQuestionText()}
-          </DmText>
+          </Text>
           <DmView
-            className="bg-white"
-            style={[styles.inputBorder, { borderColor: colors.grey5 }]}
+            style={[styles.inputWrap, styles.inputBorder, { borderColor: colors.grey5 }]}
           >
             <TextInput
               value={inputValue}
@@ -491,9 +497,9 @@ const QuestionComponent: React.FC<Props> = ({
       )}
       {item.type === "dateTime" && (
         <>
-          <DmText className={compact ? "text-15 leading-[19px] font-custom700 mb-[12]" : "text-15 leading-[19px] font-custom600 mb-[12]"}>
+          <Text size={15} weight={compact ? "bold" : "semibold"} leading="tight" style={compact ? atoms.mb_12 : atoms.mb_12}>
             {getQuestionText()}
-          </DmText>
+          </Text>
           {/* A question's own card always shows the picker. The compact Job
               Details list shows the answer and opens the picker in place on
               a tap, rather than stacking a sheet on top of its sheet. */}
@@ -511,7 +517,7 @@ const QuestionComponent: React.FC<Props> = ({
             />
           )}
           {(!compact || isDatePickerOpen) && (
-            <DmView className={compact ? "mt-[8]" : undefined}>
+            <DmView style={compact ? atoms.mt_8 : undefined}>
               <CalendarTimePicker
                 initialDate={answeredDay}
                 initialTimeSlot={answeredSlot}
