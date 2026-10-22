@@ -303,11 +303,6 @@ const QuestionComponent: React.FC<Props> = ({
         imageUrl={opt.icon || ""}
         isSelected={isOptionSelected(opt)}
         onPress={() => handleSelectOption(opt)}
-        className={
-          layout === "onePerRow" ? "mb-[16]" :
-          layout === "wrap" ? "mr-[16] mb-[16]" :
-          "mr-[16]"
-        }
       />
     ))
 
@@ -333,11 +328,6 @@ const QuestionComponent: React.FC<Props> = ({
         imageUrl={opt.icon || ""}
         isSelected={isOptionSelected(opt)}
         onPress={() => handleSelectOption(opt)}
-        className={
-          layout === "onePerRow" ? "mb-[16]" :
-          layout === "wrap" ? "mr-[16] mb-[16]" :
-          "mr-[16]"
-        }
       />
     ))
 
@@ -362,11 +352,6 @@ const QuestionComponent: React.FC<Props> = ({
         label={getOptionLabel(opt)}
         isSelected={isOptionSelected(opt)}
         onPress={() => handleSelectOption(opt)}
-        className={
-          layout === "onePerRow" ? "mb-[12]" :
-          layout === "wrap" ? "mr-[12] mb-[12]" :
-          "mr-[12]"
-        }
       />
     ))
 

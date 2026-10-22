@@ -544,7 +544,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
           <DmView className="flex-1 items-center">
             <SkeletonLoader width={130} height={16} borderRadius={4} />
-            <SkeletonLoader width={90} height={11} borderRadius={4} className="mt-[6]" />
+            <SkeletonLoader width={90} height={11} borderRadius={4} />
           </DmView>
           <DmView className="w-[32] h-[32]" />
         </DmView>
@@ -554,15 +554,15 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         <DmView className="mt-[12] h-[0.5] bg-grey19" />
         <DmView className="px-[16] pt-[18]">
           <SkeletonLoader width={140} height={18} borderRadius={4} />
-          <SkeletonLoader width={230} height={13} borderRadius={4} className="mt-[8]" />
+          <SkeletonLoader width={230} height={13} borderRadius={4} />
           {[0, 1].map((i) => (
             <DmView key={i} className="flex-row mt-[22]">
               <SkeletonLoader width={85} height={85} borderRadius={4} />
               <DmView className="flex-1 ml-[12]">
                 <SkeletonLoader width="55%" height={15} borderRadius={4} />
-                <SkeletonLoader width="35%" height={12} borderRadius={4} className="mt-[8]" />
-                <SkeletonLoader width="45%" height={12} borderRadius={4} className="mt-[8]" />
-                <SkeletonLoader width="30%" height={16} borderRadius={8} className="mt-[10]" />
+                <SkeletonLoader width="35%" height={12} borderRadius={4} />
+                <SkeletonLoader width="45%" height={12} borderRadius={4} />
+                <SkeletonLoader width="30%" height={16} borderRadius={8} />
               </DmView>
             </DmView>
           ))}

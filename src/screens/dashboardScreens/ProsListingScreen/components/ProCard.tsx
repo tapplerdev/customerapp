@@ -271,7 +271,6 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
       {subscriptions.find((s: any) => s.product?.subType === "promoLine")?.promoStickerMessage && (
         <PromoLine
           promoMessage={subscriptions.find((s: any) => s.product?.subType === "promoLine").promoStickerMessage}
-          className="mt-[8]"
         />
       )}
 
