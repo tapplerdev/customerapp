@@ -18,6 +18,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -59,6 +60,9 @@ const ok: Step = (root, env) => pressTitled(root, copy(env, "OK"))
 
 const FILLED = [type(0, "oldpass1"), type(1, "newpass12"), type(2, "newpass12")]
 
+// The screen's save button is an ActionBtn turned into a ds Button by the conversion: Button's own height and accessibility props, on the rows that draw it.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = { label: string; answer?: keyof typeof ANSWERS; steps?: Step[] }
 const CASES: Case[] = [
   { label: "as opened" },
@@ -83,7 +87,8 @@ describe("ChangePasswordScreen", () => {
     async ({ label, answer, steps, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, answer), env, steps)
+        await treeAfter(load, optionsFor(env, answer), env, steps),
+        { allow: BUTTON }
       )
     }
   )
