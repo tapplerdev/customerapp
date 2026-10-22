@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   cardShadow: {
@@ -56,4 +57,58 @@ export default StyleSheet.create({
     elevation: 3,
   },
   italic: { fontStyle: "italic" },
+  container: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    paddingLeft: 15,
+    paddingRight: 15,
+    paddingTop: 15,
+  },
+  box: {
+    width: 85,
+    height: 85,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.grey8,
+  },
+  boxWrap: {
+    top: -8,
+  },
+  featuredWrap: {
+    height: 18,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    backgroundColor: colors.yellow,
+  },
+  featured: {
+    textTransform: "uppercase",
+  },
+  offerAmountWrap: {
+    paddingTop: 3,
+    paddingBottom: 3,
+  },
+  textWrap: {
+    top: -8,
+    right: -8,
+    width: 18,
+    height: 18,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.red,
+  },
+  textWrap2: {
+    left: 0,
+    right: 0,
+    top: 12,
+    bottom: 0,
+  },
 })

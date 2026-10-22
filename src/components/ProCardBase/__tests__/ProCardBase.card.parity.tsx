@@ -15,6 +15,7 @@ import {
   captureCommit,
   expectParity,
   parityName,
+  type ParityAllowance,
 } from "testing/hostTreeParity"
 import {
   buildProps,
@@ -47,6 +48,9 @@ import {
  */
 
 const load = () => require("../ProCardBase")
+
+/** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 const FILES = harvestFilesFor(__dirname, "ProCardBase")
 
@@ -187,9 +191,14 @@ if (harvesting()) {
         navigation: "none",
         props: { ...row.props, isAr: row.env.language === "ar" },
       })
-      // The card's buttons are ActionBtns the conversion turns into Buttons
-      // (their allowance is set with the conversion).
-      expectParity(parityName(row.name, row.env), tree)
+      // Select me and Pass are ActionBtns the conversion turned into Buttons:
+      // their listed deltas, on the rows that draw them.
+      const buttons = row.props.showSelectPassButtons && !row.props.isRejected
+      expectParity(
+        parityName(row.name, row.env),
+        tree,
+        buttons ? { allow: BUTTON } : undefined
+      )
     })
   })
 
