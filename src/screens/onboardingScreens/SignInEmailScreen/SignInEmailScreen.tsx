@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
 
-import { ActionBtn, DmAuthInput, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmAuthInput, DmView } from "@tappler/shared/src/components/UI"
 import ErrorModal from "components/ErrorModal"
 import { RootStackScreenProps } from "navigation/types"
 import { useAuthMutation, useLazyGetCustomerMeQuery } from "services/api"
@@ -15,6 +15,8 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import HideIcon from "assets/icons/hide-password.svg"
 import { AppKeyboardAwareScrollView } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"SignInEmailScreen">
 
@@ -106,7 +108,7 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       <AppKeyboardAwareScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -116,10 +118,10 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <DmView className="mt-[18]">
+        <DmView style={a.mt_18}>
           {/* Back button */}
           <DmView
-            className="w-[32] h-[32] items-center justify-center"
+            style={[styles.iconWrap, a.items_center, a.justify_center]}
             hitSlop={HIT_SLOP_DEFAULT}
             onPress={handleGoBack}
           >
@@ -130,12 +132,12 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Title */}
-          <DmText className="mt-[88] font-custom600 text-16 leading-[19px]">
+          <Text size={16} weight="semibold" leading="tight" style={styles.logInToYourAccount}>
             {t("log_in_to_your_account")}
-          </DmText>
+          </Text>
 
           {/* Form */}
-          <DmView className="pr-[2]">
+          <DmView style={a.pr_2}>
             <Controller
               control={control}
               rules={{ required: true }}
@@ -144,7 +146,7 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
                   value={value}
                   placeholder={t("your_email")}
                   onChangeText={onChange}
-                  wrapperClassName="mt-[24]"
+                  wrapperStyle={a.mt_24}
                   textContentType="oneTimeCode"
                   keyboardType="email-address"
                   autoComplete="off"
@@ -160,7 +162,7 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
                   value={value}
                   placeholder={t("your_password")}
                   onChangeText={onChange}
-                  wrapperClassName="mt-[8]"
+                  wrapperStyle={a.mt_8}
                   onIconPress={handleTogglePasswordVisible}
                   secureTextEntry={isPasswordVisible}
                   textContentType="oneTimeCode"
@@ -181,32 +183,33 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Forgot password */}
-          <DmView className="mt-[21]" onPress={handleForgotPassword}>
-            <DmText className="font-custom400 text-red text-12 leading-[15px]">
+          <DmView style={styles.forgotYourPasswordWrap} onPress={handleForgotPassword}>
+            <Text size={12} leading="tight" color="brand">
               {t("forgot_your_password")}
-            </DmText>
+            </Text>
           </DmView>
 
           {/* Login button */}
-          <DmView className="px-[34]">
-            <ActionBtn
-              className="mt-[32] h-[44]"
+          <DmView style={styles.buttonWrap}>
+            <Button
+              size="md"
+              style={a.mt_32}
               onPress={() => handleSubmit(() => onSubmit())()}
               title={t("log_In")}
               isLoading={isLoading}
-              disable={isLoading}
+              disabled={isLoading}
             />
           </DmView>
 
           {/* Register link */}
-          <DmView className="mt-[24]" onPress={handleGoRegister}>
-            <DmText className="text-12 leading-[15px] font-custom400 text-center">
+          <DmView style={a.mt_24} onPress={handleGoRegister}>
+            <Text size={12} leading="tight" align="center">
               {t("dont_have_an_account")}
-              <DmText className="text-red text-12 leading-[15px] font-custom400">
+              <Text size={12} leading="tight" color="brand">
                 {" "}
                 {t("sign_up")}
-              </DmText>
-            </DmText>
+              </Text>
+            </Text>
           </DmView>
         </DmView>
       </AppKeyboardAwareScrollView>
