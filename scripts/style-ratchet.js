@@ -81,10 +81,12 @@
  * - LegacyText may rise only in a file whose DmText/ActionBtn count falls by
  *   at least as much (each one replaces a DmText), and nowhere else.
  * - className keys, className prop types, nativewind/clsx imports and
- *   DmText/ActionBtn imports may only fall, file by file. (proapp's W3.4
- *   added them with an absolute check that all six class totals are 0;
- *   customerapp takes the metrics now, in pass 1, and the absolute check at
- *   its own W3.4.)
+ *   DmText/ActionBtn imports may only fall, file by file. Since W3.4 every
+ *   one of them is 0, as are className and DmText/ActionBtn: the "holds for
+ *   this tree" test in scripts/__tests__/style-ratchet.test.js checks those
+ *   six totals are 0 on every `yarn test`, whatever the baseline says, and so
+ *   does `yarn ds:ratchet` on this tree's own baseline, so `--update
+ *   --accept-rises` can't bring one back.
  * - --strict <glob> (repeatable): in matching files className, px() and
  *   legacy must be 0, except on the components named by --allow, the legacy
  *   ones a converted screen still has to hand a className (MainModal, DmInput,
@@ -159,6 +161,9 @@ const LABEL = {
 }
 // Counted in app code only (JEST_ONLY), and may only fall.
 const APP_ONLY = ["classKey", "classProp", "classImport", "primitiveImport"]
+// The totals that are 0 since W3.4, checked absolutely: by the ratchet's test,
+// and by the CLI on this tree's own baseline.
+const ZERO_SINCE_W3 = ["className", "primitives", ...APP_ONLY]
 // `nativewind` (or a subpath) and `clsx`.
 const CLASS_MODULE = /^(?:nativewind|clsx)(?:\/|$)/
 // What pass 1 writes in place of a className or a bare DmText/ActionBtn.
@@ -801,6 +806,21 @@ const appOnly = (rel, counted) => {
   }
 }
 
+/**
+ * What breaks the W3.4 zeros, file by file: each of ZERO_SINCE_W3's counts
+ * above 0, as a violation of its own (from 0).
+ */
+const absoluteViolations = (files) =>
+  Object.entries(files).flatMap(([file, { counts }]) =>
+    ZERO_SINCE_W3.filter((m) => counts[m] > 0).map((m) => ({
+      file,
+      metric: m,
+      from: 0,
+      to: counts[m],
+      rule: `${LABEL[m]} must be 0 since W3.4, whatever the baseline says`,
+    }))
+  )
+
 const CODE_EXTENSIONS = [".tsx", ".ts", ".jsx", ".js"]
 
 /**
@@ -1237,6 +1257,17 @@ const main = (argv) => {
     dirs,
     root: opts.root,
   })
+  // Since W3.4 the six totals are 0 in this tree, whatever its baseline says
+  // (one taken with --update --accept-rises included): on the tree's own
+  // baseline the CLI fails on each file that holds one.
+  const absolute =
+    opts.root === ROOT && opts.baseline === DEFAULT_BASELINE
+      ? absoluteViolations(result.files).filter(
+          (a) =>
+            !cmp.violations.some((v) => v.file === a.file && v.metric === a.metric)
+        )
+      : []
+  cmp.violations.push(...absolute)
   const unmatched = opts.strict.filter((g) => cmp.strictMatched[g] === 0)
   if (unmatched.length) {
     for (const g of unmatched)
@@ -1250,6 +1281,13 @@ const main = (argv) => {
 
   if (opts.update) {
     // The first baseline is today's state, not a rise from nothing.
+    if (absolute.length) {
+      console.error(
+        `${formatReport({ ...cmp, strictViolations: [] })}\n\n` +
+          "style-ratchet: not updating: className and DmText/ActionBtn are 0 in this tree since W3.4, and so are the className keys, prop types and nativewind/clsx and DmText/ActionBtn imports; --accept-rises doesn't take them"
+      )
+      return 1
+    }
     if (existing && cmp.violations.length && !opts.acceptRises) {
       console.error(
         `${formatReport({ ...cmp, strictViolations: [] })}\n\n` +
@@ -1282,6 +1320,8 @@ module.exports = {
   CLASSNAME_ATTR,
   METRICS,
   APP_ONLY,
+  ZERO_SINCE_W3,
+  absoluteViolations,
   DEFAULT_BASELINE,
   main,
 }

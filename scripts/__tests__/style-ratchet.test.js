@@ -31,6 +31,8 @@ const {
   isColourLiteral,
   CLASSNAME_ATTR,
   APP_ONLY,
+  ZERO_SINCE_W3,
+  absoluteViolations,
   DEFAULT_BASELINE,
   main,
 } = require("../style-ratchet")
@@ -679,11 +681,114 @@ describe("CLI", () => {
     expect(formatReport(cmp)).toContain("style-ratchet: OK")
   })
 
-  // proapp's W3.4 checks the className, DmText/ActionBtn and app-only
-  // totals are 0 here, from the tree rather than the baseline. customerapp
-  // is in pass 1 (W0): the app-only counts are metrics that may only fall,
-  // and its own W3.4 brings the absolute check (customerapp-plan.md W3,
-  // skeptic H5).
+  // On since W3.4 (W3 plan §5.1, customerapp-plan.md skeptic H5): src holds
+  // no className and no DmText/ActionBtn at all, nor anything that hands one
+  // over without an attribute or an element to count. Read from the tree,
+  // not the baseline, so `--update --accept-rises` can't bring one back.
+  // LegacyText is not in it: it is the pass-1 bridge, counted as `bridge`
+  // and never as a primitive (the test after this block), and pass 2 takes
+  // it to 0.
+  describe("W3.4: no className and no DmText/ActionBtn anywhere in src", () => {
+    const NONE = Object.fromEntries(ZERO_SINCE_W3.map((m) => [m, 0]))
+    const zeroSinceW3 = (cmp) =>
+      Object.fromEntries(ZERO_SINCE_W3.map((m) => [m, cmp.totals.to[m]]))
+
+    it("the className and DmText/ActionBtn totals are 0, and so are the className keys, prop types and nativewind/clsx and DmText/ActionBtn imports", () => {
+      const committed = JSON.parse(fs.readFileSync(DEFAULT_BASELINE, "utf8"))
+      const cmp = compare(committed, scan({ dirs: committed.scanned }), {
+        dirs: committed.scanned,
+      })
+      expect(ZERO_SINCE_W3).toEqual([
+        "className",
+        "primitives",
+        "classKey",
+        "classProp",
+        "classImport",
+        "primitiveImport",
+      ])
+      expect(zeroSinceW3(cmp)).toEqual(NONE)
+      expect(cmp.classNameProps.props).toBe(0)
+    })
+
+    it("the baseline scans the whole of src", () => {
+      // With `"scanned": []` or a narrower list the check above would read
+      // less than the app (the review of proapp's W3.4, F4): it is pinned.
+      const committed = JSON.parse(fs.readFileSync(DEFAULT_BASELINE, "utf8"))
+      expect(committed.scanned).toEqual(["src"])
+      const result = scan({ dirs: ["src"] })
+      const cmp = compare(toBaseline(result, ["src"]), result, {
+        dirs: ["src"],
+      })
+      expect(zeroSinceW3(cmp)).toEqual(NONE)
+    })
+
+    it("reads the tree, not the baseline: a rise --accept-rises recorded still fails it", () => {
+      // src's counts with one className key added to a screen, against a
+      // baseline written from them (what --update --accept-rises leaves):
+      // the rise check passes, the check above doesn't.
+      const result = scan({ dirs: ["src"] })
+      const file = Object.keys(result.files).find((f) =>
+        f.startsWith("src/screens/")
+      )
+      const counted = result.files[file]
+      result.files[file] = {
+        ...counted,
+        counts: { ...counted.counts, classKey: counted.counts.classKey + 1 },
+      }
+      const cmp = compare(toBaseline(result, ["src"]), result, {
+        dirs: ["src"],
+      })
+      expect(cmp.violations).toEqual([])
+      expect(zeroSinceW3(cmp)).toEqual({ ...NONE, classKey: 1 })
+    })
+
+    it("the CLI fails each file that holds one, one a rise already recorded included", () => {
+      const counts = (over) => ({
+        counts: { ...Object.fromEntries(ZERO_SINCE_W3.map((m) => [m, 0])), ...over },
+      })
+      expect(
+        absoluteViolations({
+          "src/A.tsx": counts({}),
+          "src/B.tsx": counts({ className: 2, classImport: 1 }),
+        })
+      ).toEqual([
+        expect.objectContaining({
+          file: "src/B.tsx",
+          metric: "className",
+          from: 0,
+          to: 2,
+          rule: expect.stringContaining("must be 0 since W3.4"),
+        }),
+        expect.objectContaining({
+          file: "src/B.tsx",
+          metric: "classImport",
+          to: 1,
+        }),
+      ])
+    })
+
+    it("counts a className, a DmText import and a class key in a screen, so a planted one trips the totals", () => {
+      const code = [
+        'import React from "react"',
+        'import { View } from "react-native"',
+        'import { DmText } from "@tappler/shared/src/components/UI"',
+        'import clsx from "clsx"',
+        'export const X = ({ on }: { on: boolean }) => (',
+        '  <View className={clsx("mt-[4]", on && "px-[8]")}><DmText>hi</DmText></View>',
+        ")",
+        "export const props = { textClassName: 'x' }",
+        "export interface P { titleClassName?: string }",
+      ].join("\n")
+      expect(countSource(code, "X.tsx").counts).toMatchObject({
+        className: 1,
+        primitives: 1,
+        primitiveImport: 1,
+        classImport: 1,
+        classKey: 1,
+        classProp: 1,
+      })
+    })
+  })
 
   it("never counts a LegacyText as a primitive, so an absolute primitives check leaves it alone", () => {
     const code = [
