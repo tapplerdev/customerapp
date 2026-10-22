@@ -7,7 +7,7 @@
  */
 import type { ReactTestInstance } from "react-test-renderer"
 
-import type { CartDraft } from "store/cart/slice"
+import type { CartDraft, CartState } from "store/cart/slice"
 import type { CartItemType, FoodMenuType } from "types/food"
 
 import {
@@ -261,3 +261,16 @@ export const checkedBoxes = (root: ReactTestInstance): boolean[] =>
       { deep: false }
     )
     .map((node) => node.props.isChecked as boolean)
+
+/** A signed-in customer's state holding these drafts (and the order address, when given). */
+export const cartState = (
+  auth: object,
+  drafts: CartDraft[],
+  address: CartState["address"] = null
+) => ({
+  auth,
+  cart: {
+    carts: Object.fromEntries(drafts.map((draft) => [draft.proId, draft])),
+    address,
+  },
+})
