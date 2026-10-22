@@ -1,11 +1,7 @@
 import React, { useState } from "react"
 
 // Components
-import {
-  ActionBtn,
-  DmText,
-  DmView,
-} from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Image, TouchableOpacity } from "react-native"
 
@@ -34,6 +30,8 @@ import TapplerLogoIcon from "assets/icons/tappler-logo-red.svg"
 import authImg from "assets/images/auth.png"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const APP_VERSION = "1.0.0"
 const APP_BUILD = "1"
@@ -72,16 +70,14 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
 
   // Show the OPPOSITE language as the toggle target
   const toggleLabel = language === "en" ? "عربي" : "English"
-  const toggleFontClass =
-    language === "en" ? "font-sans700" : "font-montserrat700"
 
   if (isLoading) {
     return <LoadingOverlay />
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <DmView className="flex-row justify-between items-center px-[24] pt-[12]">
+    <SafeAreaView style={[a.flex_1, styles.safeArea]}>
+      <DmView style={[a.flex_row, a.justify_between, a.items_center, a.px_24, a.pt_12]}>
         {hasGuestLocation ? (
           <TouchableOpacity onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.reset({ index: 0, routes: [{ name: "HomeTabs" }] })} activeOpacity={0.7}>
             <ChevronLeftIcon
@@ -97,9 +93,9 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
           activeOpacity={0.7}
           style={{ paddingHorizontal: 8, paddingVertical: 4 }}
         >
-          <DmText className={`text-15 text-red ${toggleFontClass}`}>
+          <Text size={15} weight="bold" leading="legacy" color="brand" family={language === "en" ? "arabic" : "latin"}>
             {toggleLabel}
-          </DmText>
+          </Text>
         </TouchableOpacity>
       </DmView>
 
@@ -107,16 +103,16 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 22 }}
         showsVerticalScrollIndicator={false}
       >
-        <DmView className="items-center mt-[20]">
-          <DmText className="text-20 font-custom600 text-black1 text-center">
+        <DmView style={[a.items_center, a.mt_20]}>
+          <Text size={20} weight="semibold" leading="legacy" align="center" style={styles.welcomeToTappler}>
             {t("welcome_to_tappler")}
-          </DmText>
-          <DmText className="mt-[8] text-12 text-black1 font-custom400 text-center">
+          </Text>
+          <Text size={12} leading="legacy" align="center" style={[a.mt_8, styles.welcomeToTappler]}>
             {t("choose_signup_method")}
-          </DmText>
+          </Text>
         </DmView>
 
-        <DmView className="items-center mt-[16]">
+        <DmView style={[a.items_center, a.mt_16]}>
           <Image
             source={authImg}
             style={{ width: 303, height: 202 }}
@@ -124,48 +120,57 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
           />
         </DmView>
 
-        <DmView className="mt-[16]">
-          <ActionBtn
-            Icon={<EmailIcon width={22} height={22} />}
+        <DmView style={a.mt_16}>
+          <Button
+            icon={<EmailIcon width={22} height={22} />}
             title={t("sign_in_with_email")}
+            shape="r10"
             variant="white"
-            className="rounded-10"
-            textClassName="text-13"
+            label="sm"
+            labelLeading="legacy"
             onPress={handleEmail}
           />
-          <ActionBtn
-            Icon={<FacebookIcon width={22} height={22} />}
+          <Button
+            icon={<FacebookIcon width={22} height={22} />}
             title={t("sign_in_with_facebook")}
+            shape="r10"
             variant="white"
-            className="mt-[10] rounded-10"
-            textClassName="text-13"
+            label="sm"
+            labelLeading="legacy"
+            style={a.mt_10}
             onPress={handleFacebook}
           />
-          <ActionBtn
-            Icon={<GoogleIcon width={22} height={22} />}
+          <Button
+            icon={<GoogleIcon width={22} height={22} />}
             title={t("sign_in_with_google")}
+            shape="r10"
             variant="white"
-            className="mt-[10] rounded-10"
-            textClassName="text-13"
+            label="sm"
+            labelLeading="legacy"
+            style={a.mt_10}
             onPress={handleGoogle}
           />
 
           {!hasGuestLocation ? (
-            <ActionBtn
-              Icon={<GuestIcon width={22} height={22} />}
+            <Button
+              icon={<GuestIcon width={22} height={22} />}
               title={t("continue_as_guest")}
+              shape="r10"
               variant="white"
-              className="mt-[66] rounded-10"
-              textClassName="text-13"
+              label="sm"
+              labelLeading="legacy"
+              style={styles.button}
               onPress={handleGuest}
             />
           ) : (
-            <ActionBtn
+            <Button
               title={t("dont_have_an_account")}
-              descr={t("create_an_account")}
+              description={t("create_an_account")}
+              shape="r10"
               variant="white"
-              className="mt-[66] rounded-10"
-              textClassName="text-13"
+              label="sm"
+              labelLeading="legacy"
+              style={styles.button}
               onPress={() => navigation.navigate("RegisterScreen")}
             />
           )}
@@ -173,34 +178,34 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
       </AppScrollView>
 
       {/* Logo + Terms & Version — pinned to bottom */}
-      <DmView className="items-center pb-[16] pt-[8]" style={language === "ar" ? { paddingRight: 20 } : { paddingLeft: 10 }}>
+      <DmView style={[a.items_center, a.pb_16, a.pt_8, language === "ar" ? { paddingRight: 20 } : { paddingLeft: 10 }]}>
         <TapplerLogoIcon width={40} height={40} />
       </DmView>
-      <DmView className="items-center pb-[16]">
-        <DmView className="flex-row items-center justify-center">
+      <DmView style={[a.items_center, a.pb_16]}>
+        <DmView style={[a.flex_row, a.items_center, a.justify_center]}>
           <TouchableOpacity
             onPress={() => {}}
             activeOpacity={0.7}
           >
-            <DmText className="font-custom600 text-grey3 text-11">
+            <Text size={11} weight="semibold" leading="legacy" color="tertiary">
               {t("terms_of_service")}
-            </DmText>
+            </Text>
           </TouchableOpacity>
-          <DmText className="mx-[10] font-custom600 text-grey3 text-11">
+          <Text size={11} weight="semibold" leading="legacy" color="tertiary" style={a.mx_10}>
             |
-          </DmText>
+          </Text>
           <TouchableOpacity
             onPress={() => {}}
             activeOpacity={0.7}
           >
-            <DmText className="font-custom600 text-grey3 text-11">
+            <Text size={11} weight="semibold" leading="legacy" color="tertiary">
               {t("privacy_policy")}
-            </DmText>
+            </Text>
           </TouchableOpacity>
         </DmView>
-        <DmText className="mt-[5] font-custom500 text-grey3 text-center text-9">
+        <Text size={9} weight="medium" leading="legacy" color="tertiary" align="center" style={styles.text}>
           {`${t("version")} ${APP_VERSION} - ${t("build")}:${APP_BUILD}`}
-        </DmText>
+        </Text>
       </DmView>
     </SafeAreaView>
   )

@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   headerZIndex: { zIndex: 3 },
@@ -36,5 +37,99 @@ export default StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
     zIndex: 20,
+  },
+  safeArea: {
+    backgroundColor: colors.white,
+  },
+  animated: {
+    backgroundColor: colors.white,
+    borderBottomWidth: 0.3,
+    borderTopColor: colors.grey2,
+    borderRightColor: colors.grey2,
+    borderBottomColor: colors.grey2,
+    borderLeftColor: colors.grey2,
+  },
+  iconWrap: {
+    width: 28,
+    height: 28,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.white,
+  },
+  text: {
+    flexShrink: 1,
+  },
+  iconWrap2: {
+    left: 18,
+    width: 28,
+    height: 28,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.white,
+  },
+  textWrap: {
+    backgroundColor: colors.grey8,
+  },
+  boxWrap: {
+    paddingTop: 11,
+    borderTopColor: colors.grey53,
+    borderRightColor: colors.grey53,
+    borderBottomColor: colors.grey53,
+    borderLeftColor: colors.grey53,
+  },
+  box: {
+    paddingLeft: 15,
+    paddingRight: 19,
+  },
+  text2: {
+    marginTop: 11,
+  },
+  box2: {
+    paddingTop: 15,
+    borderTopColor: colors.grey53,
+    borderRightColor: colors.grey53,
+    borderBottomColor: colors.grey53,
+    borderLeftColor: colors.grey53,
+  },
+  containerIndex: {
+    marginLeft: 15,
+  },
+  boxWrap2: {
+    paddingTop: 17,
+    paddingBottom: 17,
+    borderTopColor: colors.grey53,
+    borderRightColor: colors.grey53,
+    borderBottomColor: colors.grey53,
+    borderLeftColor: colors.grey53,
+  },
+  box3: {
+    width: 8,
+    height: 8,
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.red,
+  },
+  textWrapAr: {
+    width: 60,
+  },
+  textWrapNotAr: {
+    width: 45,
+  },
+  boxWrap3: {
+    paddingTop: 15,
+    paddingBottom: 13,
+    borderTopColor: colors.grey53,
+    borderRightColor: colors.grey53,
+    borderBottomColor: colors.grey53,
+    borderLeftColor: colors.grey53,
+  },
+  text3: {
+    textTransform: "capitalize",
   },
 })

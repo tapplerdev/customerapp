@@ -1,10 +1,9 @@
 import React, { useMemo } from "react"
-import clsx from "clsx"
 import { useTranslation } from "react-i18next"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 
 import { useGetNotificationsQuery } from "services/api"
@@ -15,6 +14,8 @@ import { RootStackParamList } from "navigation/types"
 import LogoIconEn from "assets/icons/logo-en.svg"
 import LogoIconAr from "assets/icons/logo-ar.svg"
 import BellIcon from "assets/icons/bell.svg"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const HomeHeader: React.FC = () => {
   const { i18n } = useTranslation()
@@ -52,31 +53,25 @@ const HomeHeader: React.FC = () => {
   }
 
   return (
-    <DmView className="px-[16] py-[10] flex-row items-center justify-between">
+    <DmView style={[a.px_16, a.py_10, a.flex_row, a.items_center, a.justify_between]}>
       <DmView
-        className={clsx(
-          "flex-row items-center",
-          isAr ? "order-2" : "order-1",
-        )}
+        style={[a.flex_row, a.items_center]}
       >
         <LogoIcon width={logoWidth} height={logoHeight} />
       </DmView>
 
       <DmView
-        className={clsx(
-          "flex-row items-center z-10",
-          isAr ? "order-1" : "",
-        )}
+        style={[a.flex_row, a.items_center, styles.row]}
       >
         {/* Bell + badge sized/offset exactly like proapp's HeaderDashboard */}
         {isAuth && (
           <DmView onPress={handleNotifications}>
             <BellIcon width={24} height={28} fill={colors.grey2} />
             {!!unreaded && (
-              <DmView className="absolute top-[-8] right-[-8] bg-red rounded-full w-[20] h-[20] items-center justify-center">
-                <DmText className="text-13 leading-[16px] text-white font-custom700 text-right">
+              <DmView style={[a.absolute, styles.textWrap, a.items_center, a.justify_center]}>
+                <Text size={13} weight="bold" leading="tight" color="inverse" align="end">
                   {badgeLabel}
-                </DmText>
+                </Text>
               </DmView>
             )}
           </DmView>

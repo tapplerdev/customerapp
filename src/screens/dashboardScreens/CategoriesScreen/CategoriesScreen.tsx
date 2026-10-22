@@ -4,7 +4,7 @@ import Animated, { FadeIn } from "react-native-reanimated"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useGetServicesQuery } from "services/api"
 import { ServiceCategoryType, ServiceType } from "types/cms"
@@ -18,6 +18,8 @@ import SearchIcon from "assets/icons/search-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { useServiceAddressFlow } from "hooks/useServiceAddressFlow"
 import { AppFlatList } from "components/scroll"
+import { Text, a } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"CategoriesScreen">
 
@@ -104,10 +106,10 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
         : () => handleSubCategoryPress(item.category, item.parentService)
     return (
       <DmView onPress={onPress}>
-        <DmView className="flex-row items-center px-[19] py-[17]">
-          <DmText className="flex-1 text-12 leading-[15px] font-custom500 text-black">
+        <DmView style={[a.flex_row, a.items_center, styles.row]}>
+          <Text size={12} weight="medium" leading="tight" style={a.flex_1}>
             {name}
-          </DmText>
+          </Text>
           <ChevronLeftIcon
             width={16}
             height={16}
@@ -115,7 +117,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
             style={isAr ? undefined : { transform: [{ rotate: "180deg" }] }}
           />
         </DmView>
-        <DmView className="mr-[16] border-b-1 border-grey8" />
+        <DmView style={[a.mr_16, a.border_b_1, styles.box]} />
       </DmView>
     )
   }
@@ -125,7 +127,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
   const renderSkeleton = () => (
     <DmView>
       {[60, 45, 70, 50, 65, 55, 72, 48].map((width, i) => (
-        <DmView key={i} className="py-[17] px-[19] border-b-1 border-b-grey8">
+        <DmView key={i} style={[styles.container, a.border_b_1]}>
           <SkeletonLoader width={`${width}%`} height={15} borderRadius={4} />
         </DmView>
       ))}
@@ -143,11 +145,11 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
     // then snapped down. The inner FadeIn below is fine: it sits under a header
     // whose position has already settled, and it earns its keep by re-fading
     // the results on every query.
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[12] py-[10]">
+      <DmView style={[a.flex_row, a.items_center, a.px_12, a.py_10]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={() => navigation.goBack()}
         >
@@ -157,8 +159,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
           />
         </DmView>
         <DmView
-          className="flex-1 flex-row items-center mx-[8] h-[42] bg-white rounded-full px-[14]"
-          style={{
+          style={[a.flex_1, a.flex_row, a.items_center, a.mx_8, styles.row2, a.px_14, {
             borderWidth: 1,
             borderColor: "#E0E0E0",
             shadowColor: "#000",
@@ -166,7 +167,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
             shadowOpacity: 0.12,
             shadowRadius: 4,
             elevation: 3,
-          }}
+          }]}
         >
           <SearchIcon width={14} height={14} />
           <TextInput
@@ -190,7 +191,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </DmView>
       </DmView>
-      <DmView className="h-[0.5] bg-grey4" />
+      <DmView style={styles.box2} />
 
       {/* Content: skeleton while loading/searching, results fade in per query */}
       {showSkeleton ? (
@@ -215,10 +216,10 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
             contentContainerStyle={{ paddingBottom: 20 }}
             getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
             ListEmptyComponent={
-              <DmView className="flex-1 items-center justify-center pt-[80]">
-                <DmText className="text-14 font-custom500 text-grey3">
+              <DmView style={[a.flex_1, a.items_center, a.justify_center, styles.noResultsFoundWrap]}>
+                <Text size={14} weight="medium" leading="legacy" color="tertiary">
                   {t("no_results_found")}
-                </DmText>
+                </Text>
               </DmView>
             }
           />

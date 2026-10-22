@@ -1,4 +1,5 @@
 import { Platform, StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   cardShadow: {
@@ -41,4 +42,87 @@ export default StyleSheet.create({
     }),
   },
   profilePhoto: { width: 85, height: 85 },
+  list: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    paddingLeft: 15,
+    paddingRight: 15,
+    paddingTop: 15,
+  },
+  box: {
+    width: 85,
+    height: 85,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.grey8,
+  },
+  boxWrap: {
+    top: -8,
+  },
+  featuredWrap: {
+    height: 18,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    backgroundColor: colors.yellow,
+  },
+  featured: {
+    textTransform: "uppercase",
+  },
+  text: {
+    flexShrink: 1,
+  },
+  row: {
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+    backgroundColor: colors.grey16,
+  },
+  container: {
+    borderTopLeftRadius: 9999,
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+    borderBottomLeftRadius: 9999,
+  },
+  containerAccent: {
+    backgroundColor: colors.red2,
+  },
+  containerNotAccent: {
+    backgroundColor: colors.grey16,
+  },
+  iconWrap: {
+    height: 34,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+})
+
+export const tooltipComponentStyles = StyleSheet.create({
+  howToGetBestDeal: {
+    marginTop: -10,
+  },
+  box: {
+    width: 18,
+    height: 18,
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+    borderBottomRightRadius: 3,
+    borderBottomLeftRadius: 3,
+    borderTopColor: colors.white,
+    borderRightColor: colors.white,
+    borderBottomColor: colors.white,
+    borderLeftColor: colors.white,
+  },
+  buttonWrap: {
+    width: 150,
+  },
 })

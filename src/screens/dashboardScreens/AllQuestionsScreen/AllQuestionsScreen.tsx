@@ -4,7 +4,7 @@ import type { ScrollView } from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { AllQuestionsParams } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -16,6 +16,8 @@ import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
   proToCustomer: "at_my_location",
@@ -149,21 +151,24 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
       See useKeyboardInset for why Android gets 0.
     */
     <SafeAreaView
-      className="flex-1 bg-white"
       edges={[]}
-      style={{ paddingBottom: keyboardInset }}
+      style={[atoms.flex_1, dsStyles.safeArea, { paddingBottom: keyboardInset }]}
     >
       {/* Header */}
-      <DmView className="items-center pt-[16] pb-[12] px-[20]">
-        <DmView className="flex-row items-center justify-center w-full">
-          <DmView className="flex-1" />
-          <DmText className="text-16 leading-[20px] font-custom700 text-black">
+      <DmView style={[atoms.items_center, atoms.pt_16, atoms.pb_12, atoms.px_20]}>
+        <DmView style={[atoms.flex_row, atoms.items_center, atoms.justify_center, atoms.w_full]}>
+          <DmView style={atoms.flex_1} />
+          <Text size={16} weight="bold">
             {t("job_details")}
-          </DmText>
-          <DmView className="flex-1 items-end">
+          </Text>
+          <DmView style={[atoms.flex_1, atoms.items_end]}>
             <DmView
               onPress={handleClose}
-              className="w-[32] h-[32] items-center justify-center"
+              style={[
+                dsStyles.iconWrap,
+                atoms.items_center,
+                atoms.justify_center,
+              ]}
               hitSlop={HIT_SLOP_DEFAULT}
             >
               <CloseIcon width={16} height={16} color={colors.red} />
@@ -175,30 +180,30 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
       {/* Scrollable content */}
       <AppScrollView
         ref={scrollRef}
-        className="flex-1"
+        style={atoms.flex_1}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
         bounces={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Category name + subtitle */}
-        <DmView className="px-[24] pt-[20] pb-[16]">
-          <DmText className="text-20 leading-[24px] font-custom700 text-black">
+        <DmView style={[atoms.px_24, atoms.pt_20, atoms.pb_16]}>
+          <Text size={20} weight="bold" leading="tight">
             {categoryName}
-          </DmText>
-          <DmText className="text-13 leading-[18px] font-custom400 text-grey3 mt-[4]">
+          </Text>
+          <Text size={13} color="tertiary" style={atoms.mt_4}>
             {t("answer_questions_for_better_matches")}
-          </DmText>
+          </Text>
         </DmView>
 
         {/* Place of service question */}
         {placeOfServiceOptions.length > 1 && (
           <>
-            <DmView className="mx-[24] h-[1] bg-grey5" />
-            <DmView className="px-[24] pt-[20] pb-[8]">
-              <DmText className="text-15 leading-[19px] font-custom700 text-black mb-[14]">
+            <DmView style={[atoms.mx_24, dsStyles.box]} />
+            <DmView style={[atoms.px_24, atoms.pt_20, atoms.pb_8]}>
+              <Text size={15} weight="bold" leading="tight" style={atoms.mb_14}>
                 {t("how_do_you_want_service")}
-              </DmText>
+              </Text>
               {placeOfServiceOptions.map((option) => {
                 const isSelected = selectedPlaceOfService === option
                 const labelKey = PLACE_OF_SERVICE_LABELS[option] || option
@@ -206,17 +211,25 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
                   <DmView
                     key={option}
                     onPress={() => handleSelectPlaceOfService(option)}
-                    className="flex-row items-center justify-between py-[12]"
+                    style={[
+                      atoms.flex_row,
+                      atoms.items_center,
+                      atoms.justify_between,
+                      atoms.py_12,
+                    ]}
                   >
-                    <DmText className="text-13 leading-[16px] font-custom400 text-black flex-1">
+                    <Text size={13} leading="tight" style={atoms.flex_1}>
                       {t(labelKey)}
-                    </DmText>
+                    </Text>
                     <DmView
-                      className={`w-[20] h-[20] rounded-full border-2 items-center justify-center ${
-                        isSelected ? "border-red" : "border-grey5"
-                      }`}
+                      style={[
+                        dsStyles.box2,
+                        atoms.items_center,
+                        atoms.justify_center,
+                        isSelected ? dsStyles.boxSelected : dsStyles.boxNotSelected,
+                      ]}
                     >
-                      {isSelected && <DmView className="w-[12] h-[12] rounded-full bg-red" />}
+                      {isSelected && <DmView style={dsStyles.box3} />}
                     </DmView>
                   </DmView>
                 )
@@ -228,9 +241,9 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
         {/* All customer questions */}
         {allQuestions.map((question) => (
           <React.Fragment key={`${question.id}-${resetKey}`}>
-            <DmView className="mx-[24] h-[1] bg-grey5" />
-            <DmView className="pt-[20] pb-[4]">
-              <DmView className="px-[10]">
+            <DmView style={[atoms.mx_24, dsStyles.box]} />
+            <DmView style={[atoms.pt_20, atoms.pb_4]}>
+              <DmView style={atoms.px_10}>
                 <QuestionComponent
                   item={question}
                   onChangeAnswer={handleChangeAnswer}
@@ -245,24 +258,24 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
         ))}
 
         {/* Reset at bottom */}
-        <DmView className="mx-[24] h-[1] bg-grey5 mt-[8]" />
-        <DmView onPress={handleResetAll} className="px-[24] py-[16]">
-          <DmText className="text-14 leading-[18px] font-custom600 text-red">
+        <DmView style={[atoms.mx_24, dsStyles.box, atoms.mt_8]} />
+        <DmView onPress={handleResetAll} style={[atoms.px_24, atoms.py_16]}>
+          <Text size={14} weight="semibold" color="brand">
             {t("reset_all")}
-          </DmText>
+          </Text>
         </DmView>
       </AppScrollView>
 
       {/* Bottom button */}
       <DmView
-        className="px-[16] pt-[17] bg-white"
-        style={[styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
+        style={[atoms.px_16, dsStyles.buttonWrap, styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
       >
-        <ActionBtn
+        <Button
           title={t("see_matches")}
           onPress={handleSeeMatches}
-          className="h-[52] rounded-10"
-          textClassName="text-16 font-custom600"
+          size={px(52)}
+          shape="r10"
+          labelWeight="semibold"
         />
       </DmView>
     </SafeAreaView>

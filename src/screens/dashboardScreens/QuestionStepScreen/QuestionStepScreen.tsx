@@ -3,7 +3,7 @@ import { Animated, Dimensions, Easing, Keyboard, StyleSheet } from "react-native
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
-import { ActionBtn, DmChecbox, DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { QuestionFlowParams } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -18,6 +18,8 @@ import { questionFlowEventBus } from "events/questionFlowEventBus"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 // Maps place-of-service values to their i18n label keys (same as AllQuestionsScreen)
 const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
@@ -215,15 +217,16 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
   })()
 
   const renderPlaceOfServiceStep = () => (
-    <DmView className="px-[14]">
-      <DmText className="text-22 leading-[28px] font-custom700 mb-[24]">
+    <DmView style={atoms.px_14}>
+      <Text size={22} weight="bold" leading={px(28)} style={atoms.mb_24}>
         {t("how_do_you_want_service")}
-      </DmText>
+      </Text>
       {ctx.placeOfServiceOptions.map((place) => (
         <DmChecbox
           key={place}
-          className="py-[14]"
-          textClassName="flex-1 text-14 leading-[18px] font-custom400"
+          style={atoms.py_14}
+          textType={{ size: 14, leading: "normal", weight: "regular" }}
+          textStyle={atoms.flex_1}
           variant="circle"
           title={t(PLACE_OF_SERVICE_LABELS[place] || place)}
           onPress={() => ctx.setSelectedPlaceOfService(place)}
@@ -241,14 +244,13 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
       See useKeyboardInset for why Android gets 0.
     */
     <SafeAreaView
-      className="flex-1 bg-white"
       edges={[]}
-      style={{ paddingBottom: keyboardInset }}
+      style={[atoms.flex_1, dsStyles.safeArea, { paddingBottom: keyboardInset }]}
     >
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] pt-[12] pb-[8]">
+      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_16, atoms.pt_12, atoms.pb_8]}>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[dsStyles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={handleBack}
         >
@@ -257,13 +259,13 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[atoms.flex_1, atoms.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {ctx.categoryName}
-          </DmText>
+          </Text>
         </DmView>
         <DmView
-          className="w-[32] h-[32] items-center justify-center"
+          style={[dsStyles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
           onPress={ctx.onDone}
         >
@@ -272,10 +274,9 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
       </DmView>
 
       {/* Progress bar */}
-      <DmView className="h-[3] bg-grey5">
+      <DmView style={dsStyles.boxWrap}>
         <DmView
-          className="h-[3] bg-red"
-          style={{ width: `${Math.round(progress * 100)}%` }}
+          style={[dsStyles.box, { width: `${Math.round(progress * 100)}%` }]}
         />
       </DmView>
 
@@ -302,15 +303,15 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
 
       {/* Bottom button */}
       <DmView
-        className="px-[16] pt-[17] bg-white"
-        style={[styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
+        style={[atoms.px_16, dsStyles.buttonWrap, styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
       >
-        <ActionBtn
+        <Button
           title={isLastStep ? t("done") : t("next")}
           onPress={handleNext}
-          disable={!isCurrentAnswered}
-          className="h-[52] rounded-10"
-          textClassName="text-16 font-custom600"
+          disabled={!isCurrentAnswered}
+          size={px(52)}
+          shape="r10"
+          labelWeight="semibold"
         />
       </DmView>
     </SafeAreaView>
@@ -550,7 +551,7 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
 
   return (
     <SharedStateContext.Provider value={sharedState}>
-      <DmView className="flex-1 bg-white">
+      <DmView style={[atoms.flex_1, dsStyles.safeArea]}>
         {stepStack.map((stepIdx, i) => {
           // During a pop the card below is already "returning" — treat it as
           // uncovered so its parallax-return runs alongside the pop.

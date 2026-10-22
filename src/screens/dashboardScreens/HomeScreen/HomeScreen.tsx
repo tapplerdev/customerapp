@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 
 import SearchBar from "components/SearchBar"
 
@@ -17,6 +17,8 @@ import HomeHeader from "./components/HomeHeader"
 import PresetSection from "./components/PresetSection"
 import HomeSkeletonScreen from "screens/HomeSkeletonScreen/HomeSkeletonScreen"
 import { AppScrollView } from "components/scroll"
+import { Text, a as atoms } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 const HomeScreen: React.FC = () => {
   const { i18n } = useTranslation()
@@ -60,26 +62,26 @@ const HomeScreen: React.FC = () => {
 
   return (
     <Animated.View entering={FadeIn.duration(300)} style={{ flex: 1 }}>
-      <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+      <SafeAreaView edges={["top"]} style={[atoms.flex_1, styles.safeArea]}>
         <HomeHeader />
         <SearchBar
           onPress={() => navigation.navigate("TapplyAIScreen")}
           onFilterPress={() => navigation.navigate("CategoriesScreen")}
         />
-        <DmView className="h-[12]" />
+        <DmView style={styles.box} />
 
         {!sections || sections.length === 0 ? (
-          <DmView className="flex-1 items-center justify-center px-[40]">
-            <DmText className="text-16 font-custom600 text-grey3 text-center">
+          <DmView style={[atoms.flex_1, atoms.items_center, atoms.justify_center, atoms.px_40]}>
+            <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
               {isError
                 ? "Failed to load home content"
                 : "No content available yet"}
-            </DmText>
-            <DmText className="mt-[8] text-12 font-custom400 text-grey3 text-center">
+            </Text>
+            <Text size={12} leading="legacy" color="tertiary" align="center" style={atoms.mt_8}>
               {isError
                 ? "Please check your connection and try again."
                 : "An admin needs to publish an active CMS preset."}
-            </DmText>
+            </Text>
           </DmView>
         ) : (
           <AppScrollView
