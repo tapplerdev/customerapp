@@ -4,6 +4,28 @@ import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 
+// The banner's red tab: the text in white capitals, rounded on top, from the
+// start edge (left in English, right in Arabic). BannerContainer draws it over
+// its box, and OffersSection's strip over the pro card's sticker band, so the
+// card labels the stickers the way the profile page does.
+//
+// It takes no className. NativeWind's babel plugin wraps a component imported
+// by its file path, as this one is, and the wrapper hands the component a
+// style prop in place of the className. So a caller that needs to move the
+// tab wraps it in a DmView.
+export const BannerTab: React.FC<{ text: string }> = ({ text }) => (
+  <DmView className="flex-row justify-start">
+    <DmView
+      className="bg-red px-[4] py-[2]"
+      style={styles.tabRadius}
+    >
+      <DmText className="text-white text-10 font-custom700">
+        {text.toUpperCase()}
+      </DmText>
+    </DmView>
+  </DmView>
+)
+
 interface BannerContainerProps {
   bannerText: string
   children: React.ReactNode
@@ -23,16 +45,7 @@ const BannerContainer: React.FC<BannerContainerProps> = ({
 }) => {
   return (
     <DmView className={className}>
-      <DmView className="flex-row justify-start">
-        <DmView
-          className="bg-red px-[4] py-[2]"
-          style={styles.tabRadius}
-        >
-          <DmText className="text-white text-10 font-custom700">
-            {bannerText.toUpperCase()}
-          </DmText>
-        </DmView>
-      </DmView>
+      <BannerTab text={bannerText} />
 
       <DmView
         className={`bg-white ${containerClassName || "px-[8] py-[8]"}`}
