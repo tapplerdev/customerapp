@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -11,6 +11,8 @@ import { useDeleteCustomerAddressMutation } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"ViewAddressScreen">
 
@@ -39,88 +41,88 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {name}
-          </DmText>
+          </Text>
         </DmView>
         <DmView
           onPress={() => setDeleteModalVisible(true)}
           hitSlop={HIT_SLOP_DEFAULT}
         >
-          <DmText className="text-14 font-custom600 text-red">
+          <Text size={14} weight="semibold" leading="legacy" color="brand">
             {t("delete")}
-          </DmText>
+          </Text>
         </DmView>
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box} />
 
       <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingTop: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Place Nick Name */}
-        <DmView className="mb-[20]">
-          <DmText className="text-11 font-custom700 text-black mb-[6] px-[24]">
+        <DmView style={a.mb_20}>
+          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
             {t("place_nick_name")}
-          </DmText>
-          <DmText className="text-14 font-custom400 text-black pb-[8] px-[24]">
+          </Text>
+          <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {name}
-          </DmText>
-          <DmView className="h-[0.7] bg-grey19" />
+          </Text>
+          <DmView style={styles.box} />
         </DmView>
 
         {/* Address */}
-        <DmView className="mb-[20]">
-          <DmText className="text-11 font-custom700 text-black mb-[6] px-[24]">
+        <DmView style={a.mb_20}>
+          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
             {t("address")}
-          </DmText>
-          <DmText className="text-14 font-custom400 text-black pb-[8] px-[24]">
+          </Text>
+          <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {streetAddress || "-"}
-          </DmText>
-          <DmView className="h-[0.7] bg-grey19" />
+          </Text>
+          <DmView style={styles.box} />
         </DmView>
 
         {/* City */}
-        <DmView className="mb-[20]">
-          <DmText className="text-11 font-custom700 text-black mb-[6] px-[24]">
+        <DmView style={a.mb_20}>
+          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
             {t("city")}
-          </DmText>
-          <DmText className="text-14 font-custom400 text-black pb-[8] px-[24]">
+          </Text>
+          <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {city || "-"}
-          </DmText>
-          <DmView className="h-[0.7] bg-grey19" />
+          </Text>
+          <DmView style={styles.box} />
         </DmView>
 
         {/* Governorate */}
-        <DmView className="mb-[20]">
-          <DmText className="text-11 font-custom700 text-black mb-[6] px-[24]">
+        <DmView style={a.mb_20}>
+          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
             {t("governorate")}
-          </DmText>
-          <DmText className="text-14 font-custom400 text-black pb-[8] px-[24]">
+          </Text>
+          <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {governorate || "-"}
-          </DmText>
-          <DmView className="h-[0.7] bg-grey19" />
+          </Text>
+          <DmView style={styles.box} />
         </DmView>
 
         {/* Place Type */}
-        <DmView className="mb-[20]">
-          <DmText className="text-11 font-custom700 text-black mb-[6] px-[24]">
+        <DmView style={a.mb_20}>
+          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
             {t("place_type")}
-          </DmText>
-          <DmText className="text-14 font-custom400 text-black pb-[8] px-[24]">
+          </Text>
+          <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {type || "-"}
-          </DmText>
-          <DmView className="h-[0.7] bg-grey19" />
+          </Text>
+          <DmView style={styles.box} />
         </DmView>
       </AppScrollView>
 
@@ -130,16 +132,17 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setDeleteModalVisible(false)}
         Icon={<DeleteIcon width={48} height={48} />}
         title={t("confirm_delete_address")}
-        classNameTitle="mt-[17] text-14 leading-[22px] font-custom600"
+        titleType={{ size: 14, leading: px(22) }}
+        titleStyle={styles.mainModalTitle}
         isBtnsTwo
         titleBtn={t("yes")}
         titleBtnSecond={t("no")}
         onPress={handleDelete}
         onPressSecond={() => setDeleteModalVisible(false)}
         isLoading={isDeleting}
-        classNameModal="px-[17]"
-        classNameBtns="h-[40]"
-        classNameBtnsWrapper="mt-[20] mx-[15]"
+        modalStyle={styles.mainModalModal}
+        btnsStyle={styles.mainModalBtns}
+        btnsWrapperStyle={[a.mt_20, styles.mainModalBtnsWrapper]}
       />
     </SafeAreaView>
   )

@@ -20,6 +20,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -73,6 +74,10 @@ const TYPED = [
   type(3, "Cairo"),
 ]
 
+// Add address is an ActionBtn turned into a ds Button by the conversion:
+// Button's own height and accessibility props, on every row.
+const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 type Case = { label: string; params?: object | null; steps?: Step[] }
 const CASES: Case[] = [
   { label: "prefilled from the picker, no type" },
@@ -96,7 +101,8 @@ describe("AddNewAddressScreen", () => {
           optionsFor(env, params === null ? undefined : params),
           env,
           steps
-        )
+        ),
+        { allow: BUTTON }
       )
     }
   )

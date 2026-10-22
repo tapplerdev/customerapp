@@ -15,6 +15,7 @@ import {
   PARITY_MATRIX,
   expectParity,
   parityName,
+  type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
 
@@ -37,6 +38,10 @@ const optionsFor = (env: ParityEnv, address: object | null = ADDRESS) => ({
   route: { name: "SaveAddressSheetScreen", params: { address: address ?? undefined } },
 })
 
+// No thanks and Save are ActionBtns turned into ds Buttons by the conversion:
+// Button's own height and accessibility props, on every row.
+const BUTTONS: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
+
 const CASES: { label: string; address?: object | null }[] = [
   { label: "an address with city and governorate" },
   { label: "street only", address: STREET_ONLY },
@@ -50,7 +55,8 @@ describe("SaveAddressSheetScreen", () => {
     async ({ label, address, env }) => {
       expectParity(
         parityName(label, env),
-        await treeAfter(load, optionsFor(env, address), env)
+        await treeAfter(load, optionsFor(env, address), env),
+        { allow: BUTTONS }
       )
     }
   )

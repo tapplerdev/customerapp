@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react"
 import { I18nManager } from "react-native"
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -13,6 +13,8 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import { AppScrollView } from "components/scroll"
+import { Text, a, px } from "@tappler/shared/src/ds"
+import styles from "./styles"
 
 type Props = RootStackScreenProps<"MySavedAddressesScreen">
 
@@ -58,23 +60,23 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [navigation])
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white">
+    <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView className="flex-row items-center px-[16] py-[12]">
-        <DmView onPress={onGoBack} className="w-[32] h-[32] items-center justify-center">
+      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView className="flex-1 items-center">
-          <DmText className="text-16 font-custom600 text-black">
+        <DmView style={[a.flex_1, a.items_center]}>
+          <Text size={16} weight="semibold" leading="legacy">
             {t("my_saved_addresses")}
-          </DmText>
+          </Text>
         </DmView>
-        <DmView className="w-[32]" />
+        <DmView style={styles.box} />
       </DmView>
-      <DmView className="h-[0.7] bg-grey19" />
+      <DmView style={styles.box2} />
 
       <AppScrollView
         contentContainerStyle={{ paddingTop: 4, flexGrow: 1 }}
@@ -111,46 +113,46 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
               }
             }}
           >
-            <DmView className="flex-row items-center px-[16] py-[10]">
-              <DmView className="flex-1">
-                <DmText className="text-13 font-custom700 text-black mb-[2]">
+            <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_10]}>
+              <DmView style={a.flex_1}>
+                <Text size={13} weight="bold" leading="legacy" style={a.mb_2}>
                   {item.name}
-                </DmText>
-                <DmText className="text-12 font-custom400 text-black leading-[18px]">
+                </Text>
+                <Text size={12} leading={px(18)}>
                   {item.address.streetAddress || ""}
-                </DmText>
+                </Text>
                 {(item.address.city || item.address.governorate) && (
-                  <DmText className="text-12 font-custom400 text-black leading-[18px]">
+                  <Text size={12} leading={px(18)}>
                     {item.address.city ? `${item.address.city}, ` : ""}
                     {item.address.governorate || ""}
-                  </DmText>
+                  </Text>
                 )}
               </DmView>
               <DmView style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}>
                 <ChevronRightIcon width={18} height={18} color={colors.red} />
               </DmView>
             </DmView>
-            <DmView className="h-[0.7] bg-grey19" style={{ marginStart: 16 }} />
+            <DmView style={[styles.box2, { marginStart: 16 }]} />
           </DmView>
         ))}
 
         {/* Empty state */}
         {savedAddresses.length === 0 && (
-          <DmView className="items-center mt-[40]">
-            <DmText className="text-13 font-custom400 text-grey3">
+          <DmView style={[a.items_center, a.mt_40]}>
+            <Text size={13} leading="legacy" color="tertiary">
               {t("no_saved_addresses")}
-            </DmText>
+            </Text>
           </DmView>
         )}
 
         {/* Add New Address */}
-        <DmView onPress={handleAddNewAddress} className="flex-row items-center px-[16] py-[12]">
-          <DmText className="text-16 font-custom700 text-red" style={{ marginEnd: 6 }}>
+        <DmView onPress={handleAddNewAddress} style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
+          <Text size={16} weight="bold" leading="legacy" color="brand" style={{ marginEnd: 6 }}>
             +
-          </DmText>
-          <DmText className="text-13 font-custom700 text-black">
+          </Text>
+          <Text size={13} weight="bold" leading="legacy">
             {t("add_new_address")}
-          </DmText>
+          </Text>
         </DmView>
       </AppScrollView>
     </SafeAreaView>

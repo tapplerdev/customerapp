@@ -15,6 +15,10 @@ repeat.
 | --- | --- | --- | --- |
 | src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx:172 | DmView | `items-left` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
 | src/screens/dashboardScreens/AccountScreen/AccountScreen.tsx:297 | DmView | `items-left` | unknown class: neither Tailwind's defaults nor tailwind.config.js define it |
+| src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:132 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
+| src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:152 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
+| src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:172 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
+| src/screens/dashboardScreens/AddNewAddressScreen/AddNewAddressScreen.tsx:192 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
 | src/screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:105 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
 | src/screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:126 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
 | src/screens/dashboardScreens/ChangePasswordScreen/ChangePasswordScreen.tsx:152 | TextInput | `font-custom400` | font-customNNN works only on DmText and ActionBtn (their takeFontStyles); here NativeWind emits nothing for it |
