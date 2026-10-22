@@ -362,6 +362,95 @@ describe("FoodCheckoutScreen, the controls", () => {
   )
 
   it.each(envs)(
+    "a date and a slot from the calendar sheet draw the schedule label, and Deliver now takes it back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(byName("a category that schedules"), env)
+      // The sheet's own picking is CalendarTimePicker's (W1 rows): what it hands
+      // the screen is onConfirm's date and slot, which the label reads.
+      const confirm = (date: string, slot?: { start: string; end: string }) =>
+        session.act(() => {
+          const sheet = session.root.findAll(
+            (n) =>
+              typeof n.type !== "string" &&
+              typeof n.props.onConfirm === "function" &&
+              typeof n.props.hideSpecialOptions === "boolean",
+            { deep: false }
+          )[0]
+          sheet.props.onConfirm(date, slot)
+        })
+      try {
+        await confirm("2026-10-21", { start: "10:00", end: "12:00" })
+        expectParity(parityName("tomorrow, 10 to 12", env), session.tree(), {
+          allow: ENABLED,
+        })
+        await confirm("2026-10-20", { start: "09:00", end: "15:00" })
+        expectParity(parityName("today, 9 am to 3 pm", env), session.tree(), {
+          allow: ENABLED,
+        })
+        await confirm("2026-10-28", { start: "18:00", end: "00:00" })
+        expectParity(
+          parityName("a week on, to midnight", env),
+          session.tree(),
+          {
+            allow: ENABLED,
+          }
+        )
+        await confirm("2026-10-23")
+        expectParity(parityName("a date, no slot", env), session.tree(), {
+          allow: ENABLED,
+        })
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "deliver_now"))
+        })
+        expectParity(parityName("deliver now again", env), session.tree(), {
+          allow: ENABLED,
+        })
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a scheduled order hands the review screen its date and slot [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(byName("a category that schedules"), env)
+      try {
+        await session.act(() => {
+          const sheet = session.root.findAll(
+            (n) =>
+              typeof n.type !== "string" &&
+              typeof n.props.onConfirm === "function" &&
+              typeof n.props.hideSpecialOptions === "boolean",
+            { deep: false }
+          )[0]
+          sheet.props.onConfirm("2026-10-21", { start: "10:00", end: "12:00" })
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "review_order"))
+        })
+        expect(session.navigation.actions).toMatchObject([
+          {
+            type: "NAVIGATE",
+            payload: {
+              name: "FoodOrderReviewScreen",
+              params: {
+                payload: {
+                  dateType: "date",
+                  dates: [{ date: "2026-10-21" }],
+                  timeSlots: [{ start: "10:00", end: "12:00" }],
+                },
+              },
+            },
+          },
+        ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
     "the zone banner's Switch to pickup changes the mode, and the banner goes [$env.language $env.platform]",
     async ({ env }) => {
       const session = await open(
