@@ -158,6 +158,9 @@ const CASES: Case[] = [
   { state: "a long name", options: withPro({ ...FULL, businessName: "Hassan Home Services, Heating, Plumbing and Everything Else Around the House Company Limited" }) },
   { state: "a long name, featured, an individual", options: withPro({ ...withCategory(PRO_INDIVIDUAL, [sticker(1, "featuredPro")], true), registeredName: "Abdel Rahman Mohamed Ibrahim El Sayed Hassan Mahmoud Fahmy" }) },
   { state: "the listing's categories win over the pro's", options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }) },
+  // OffersSection's banner sizes its stickers from the window it loaded with.
+  { state: "four stickers", options: withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])) },
+  { state: "four stickers, a 390-wide phone", options: { ...withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])), window: { width: 390 } } },
   { state: "scrolled past the photo", options: withPro(FULL), steps: [scrollTo(300), wait(300)] },
   { state: "scrolled halfway into the header", options: withPro(FULL), steps: [scrollTo(260), wait(300)] },
   { state: "scrolled back up", options: withPro(FULL), steps: [scrollTo(300), wait(300), scrollTo(0), wait(300)] },
@@ -172,9 +175,11 @@ function SIGNED_PLAIN() {
 }
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
+// A window's rows together (each window is a registry of its own).
+const ordered = [...rows.filter((r) => !r.options.window), ...rows.filter((r) => r.options.window)]
 
 describe("ProProfileScreen, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, options, steps, env }) => {
+  it.each(ordered)("$state [$env.language $env.platform]", async ({ state, options, steps, env }) => {
     const tree = await treeAfter(
       load,
       { ...options, lang: env.language, platform: env.platform },
