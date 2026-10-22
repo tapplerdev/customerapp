@@ -19,6 +19,7 @@ jest.mock("react-native-localize", () =>
 /* eslint-disable import/first */
 // The harvested class strings, compiled: a class the codemod leaves stays one.
 import "../__fixtures__/BannerContainer.classes"
+import { HAND_CLASSED } from "../__fixtures__/BannerContainer.hand"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import {
   PARITY_MATRIX,
@@ -46,7 +47,9 @@ const ELEMENTS = {
 const FIXTURE = fixtureFileFor(
   path.join(__dirname, "BannerContainer.parity.test.tsx")
 )
-const cases = readHarvest(harvestFilesFor(__dirname, "BannerContainer"))
+const harvested = readHarvest(harvestFilesFor(__dirname, "BannerContainer"))
+// The call site's cases, and the hand cases that pass the block's class too.
+const cases = { ...harvested, cases: { ...harvested.cases, ...HAND_CLASSED } }
 const build = () =>
   twinCases(cases, {
     source: "components/BannerContainer/BannerContainer",

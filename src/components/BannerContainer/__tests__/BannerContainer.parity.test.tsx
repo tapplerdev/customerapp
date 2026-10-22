@@ -33,6 +33,10 @@ jest.mock("react-native-localize", () =>
 /* eslint-disable import/first */
 // The harvested class strings, compiled (see the file).
 import "../__fixtures__/BannerContainer.classes"
+import {
+  HAND_CLASSED,
+  HAND_CLASSES,
+} from "../__fixtures__/BannerContainer.hand"
 import { DmText, DmView } from "@tappler/shared/src/components/UI"
 import {
   PARITY_MATRIX,
@@ -66,17 +70,12 @@ type Props = React.ComponentProps<typeof BannerContainer>
 /**
  * By hand: the one call site passes a box class and no block class, so no
  * harvested row draws the box's own 8pt padding (what a box class, even an
- * empty one, replaces) or a block class.
+ * empty one, replaces). The cases that pass a block class are in
+ * __fixtures__/BannerContainer.hand.tsx, with the twins test reading them too.
  */
 const HAND: Record<string, Props> = {
   "hand no box class (the padded box)": {
     bannerText: "Offers",
-    children: <DmText>x</DmText>,
-  },
-  "hand padded box, a block class, radius 6": {
-    bannerText: "Offers",
-    className: "mt-[16]",
-    borderRadius: 6,
     children: <DmText>x</DmText>,
   },
   "hand an empty box class": {
@@ -85,9 +84,6 @@ const HAND: Record<string, Props> = {
     children: <DmText>x</DmText>,
   },
 }
-
-/** The class strings the hand cases pass (NativeWind compiles this file's). */
-const HAND_CLASSES = ["mt-[16]"]
 
 const FILES = harvestFilesFor(__dirname, "BannerContainer")
 
@@ -122,7 +118,7 @@ if (harvesting()) {
   })
 } else {
   const harvested = readHarvest(FILES)
-  const { cases } = harvested
+  const cases = { ...harvested.cases, ...HAND_CLASSED }
 
   describeCompiledClasses(harvested, FILES, [
     ...classStringsOf(harvested.cases),
