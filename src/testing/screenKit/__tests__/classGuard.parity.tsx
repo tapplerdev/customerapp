@@ -14,10 +14,9 @@ import { PARITY_MATRIX, type HostNode } from "testing/hostTreeParity"
 /*
  * The kit's class guard (testing/classGuard, installed by setup.ts, W3 plan
  * §5.3, ported from proapp's W3.4), on probe screens
- * (__fixtures__/ClassGuardProbe): one that hands no class, through shared components that hand theirs on as undefined, draws;
- * each one that hands an element a class, or renders DmText or ActionBtn,
- * fails where the element is made, naming the prop, the element and who
- * made it. Each row that expects a refusal takes it from the kept list, so
+ * (__fixtures__/ClassGuardProbe): one that hands no class draws; each one
+ * that hands an element a class fails where the element is made, naming the
+ * prop, the element and who made it. Each row that expects a refusal takes it from the kept list, so
  * setup.ts's afterEach sees only what a row didn't expect.
  */
 
@@ -47,7 +46,7 @@ describe("the kit's class guard", () => {
       PARITY_MATRIX.filter((env) => env.language === "en")
     )
   )(
-    "lets a screen with no class draw, shared components' undefined and empty classes included [$env.platform]",
+    "lets a screen with no class draw, an empty and an undefined one included [$env.platform]",
     async ({ env }) => {
       const { tree, message, kept } = await outcome("Clean", env.platform)
       expect(message).toBeNull()
@@ -60,10 +59,6 @@ describe("the kit's class guard", () => {
     rowsByPlatform(
       [
         { name: "ClassOnDmView", what: 'className="mt-[4]" reaches <DmView>' },
-        {
-          name: "RendersDmText",
-          what: "<DmText> is rendered: tappler-shared's DmText can't draw in customerapp",
-        },
       ] as { name: Probe; what: string }[],
       PARITY_MATRIX.filter((env) => env.language === "en")
     )
@@ -78,7 +73,6 @@ describe("the kit's class guard", () => {
   )
 
   it.each([
-    ["RendersActionBtn", "<ActionBtn> is rendered", "RendersActionBtn"],
     [
       "ClassThroughCreateElement",
       'className="flex-1 bg-white" reaches <View>',

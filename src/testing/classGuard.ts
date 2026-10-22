@@ -4,20 +4,14 @@
 /**
  * Jest only. The runtime half of W3's guard (W3 plan §5.3, customerapp-plan.md
  * skeptic H5), ported from proapp's. Since W3.2 customerapp has no
- * NativeWind, so a class string that reaches an element draws nothing, and
- * tappler-shared's DmText and ActionBtn, which draw through classes (DmText
- * its guard: 14/22, black, left; ActionBtn its whole look), draw wrong. Here
- * either fails the run where the element is made, naming the component that
- * made it and the components above it, instead of drawing nothing quietly.
+ * NativeWind, so a class string that reaches an element draws nothing. Here
+ * it fails the run where the element is made, naming the component that made
+ * it and the components above it, instead of drawing nothing quietly.
  *
- * An element fails when
- * - a className-family prop (className, className*, *ClassName and
- *   NativeWind's `tw`: the style ratchet's family) holds a non-empty string.
- *   tappler-shared's components still take theirs (for proapp, until W4) and
- *   hand them on as `className={undefined}` or an empty string when a caller
- *   gave none; neither draws anything, so both pass;
- * - its type is tappler-shared's DmText or ActionBtn (registered with
- *   `forbid` as their modules load).
+ * An element fails when a className-family prop (className, className*,
+ * *ClassName and `tw`: the style ratchet's family) holds a non-empty
+ * string. (tappler-shared's DmText and ActionBtn, which drew through
+ * classes, went in W4 with its class props.)
  *
  * The screen kit installs it for every render (screenKit/setup.ts, `yarn
  * test:parity`, so every screen parity file and `ds:parity:screens`): it
@@ -39,8 +33,6 @@ import type { HostChild, HostNode } from "testing/hostTreeParity"
 export const CLASS_FAMILY = /^className|^tw$|ClassName$/
 
 type GuardState = {
-  /** DmText and ActionBtn, as each module registry loaded them. */
-  forbidden: WeakMap<object, string>
   violations: string[]
 }
 
@@ -48,7 +40,7 @@ const KEY = "__dsClassGuard"
 const state = (): GuardState => {
   const holder = globalThis as unknown as Record<string, GuardState>
   if (!holder[KEY]) {
-    holder[KEY] = { forbidden: new WeakMap(), violations: [] }
+    holder[KEY] = { violations: [] }
   }
   return holder[KEY]
 }
@@ -76,24 +68,6 @@ export const failOnClassGuardViolations = () => {
       `class guard: ${refused.length} refusal(s) during this test, caught on the way (an error boundary?):\n\n${refused.join("\n\n")}`
     )
   }
-}
-
-/**
- * Refuse a module's default export (DmText or ActionBtn) wherever an
- * element of it is made. Returns the module unchanged, for a mock factory.
- */
-export const forbid = <M extends { default?: unknown }>(
-  module: M,
-  name: string
-): M => {
-  const component = module?.default
-  if (
-    component &&
-    (typeof component === "function" || typeof component === "object")
-  ) {
-    state().forbidden.set(component as object, name)
-  }
-  return module
 }
 
 /** A fiber, as React's dev build hangs one on an element (`_owner`). */
@@ -136,25 +110,9 @@ const isComponent = (type: unknown) =>
     (typeof (type as Named).render === "function" ||
       typeof (type as Named).type === "function"))
 
-const forbiddenName = (type: unknown): string | undefined =>
-  type && (typeof type === "function" || typeof type === "object")
-    ? state().forbidden.get(type as object)
-    : undefined
-
-const WHY: Record<string, string> = {
-  DmText: "it draws its guard (14/22, black, left) through classes",
-  ActionBtn: "it draws its whole look through classes",
-}
-
 /** What is wrong with an element, if anything. */
 const problemsOf = (element: AnyElement): string[] => {
   const problems: string[] = []
-  const banned = forbiddenName(element.type)
-  if (banned) {
-    problems.push(
-      `<${banned}> is rendered: tappler-shared's ${banned} can't draw in customerapp, ${WHY[banned] ?? "through classes"}`
-    )
-  }
   const props = element.props ?? {}
   Object.keys(props).forEach((key) => {
     const value = props[key]
@@ -291,9 +249,8 @@ export const refuseHostClasses = (tree: HostNode | null): HostNode | null => {
 /**
  * Run `fn` with the guard on in this module registry (a component test's,
  * outside the kit): React's and the JSX runtimes' element functions wrapped
- * in place, and tappler-shared's DmText and ActionBtn refused. Everything is
- * put back afterwards, and the refusals `fn` caused are dropped with it, so
- * the caller asserts on the throw.
+ * in place. Everything is put back afterwards, and the refusals `fn` caused
+ * are dropped with it, so the caller asserts on the throw.
  */
 export const withClassGuard = <T>(fn: () => T): T => {
   const react = require("react") as ReactLike
@@ -301,11 +258,6 @@ export const withClassGuard = <T>(fn: () => T): T => {
     require("react/jsx-runtime"),
     require("react/jsx-dev-runtime"),
   ] as JsxRuntimeLike[]
-  forbid(require("@tappler/shared/src/components/UI/DmText/DmText"), "DmText")
-  forbid(
-    require("@tappler/shared/src/components/UI/ActionBtn/ActionBtn"),
-    "ActionBtn"
-  )
   const saved = {
     createElement: react.createElement,
     cloneElement: react.cloneElement,

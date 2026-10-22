@@ -7,14 +7,14 @@
  * through the config with `comments: false` as Metro compiles a release,
  * comes out with no `nativewind` in it at all.
  *
- * Each check has its control: the same config with `nativewind/babel` put
- * back (as a programmatic plugin, which Babel merges with the config's own,
- * and with a throwaway tailwind config, because the plugin compiles nothing
- * without one) fails every one of them, so a check that can't see the plugin
- * fails too, once with the plugin put back as a plugin and once carried by a
- * preset. The resolved lists are the check that counts: a plugin put back
- * with no tailwind config (customerapp's went in W3.4) compiles nothing, so
- * the canary alone would pass it (`env: { production: { plugins:
+ * Each check has its control: the same config with a stand-in for
+ * `nativewind/babel` put back (scripts/nativewind-stand-in.js, since the
+ * package itself left node_modules in W4: a programmatic plugin, which Babel
+ * merges with the config's own) fails every one of them, so a check that
+ * can't see the plugin fails too, once with the plugin put back as a plugin
+ * and once carried by a preset. The resolved lists are the check that
+ * counts: a plugin put back with no tailwind config (customerapp's went in
+ * W3.4) compiles nothing, so the canary alone would pass it (`env: { production: { plugins:
  * ["nativewind/babel"] } }` fails the nine production rows above, and the
  * canary's row not at all). The lists come from `loadOptions`, which expands
  * every preset into the plugins it brings (review-ca-w3 F3): `loadPartialConfig`
@@ -28,14 +28,15 @@
  * shared file under each env.
  */
 const fs = require("fs")
-const os = require("os")
 const path = require("path")
 const babel = require("@babel/core")
 
-// The plugin's own function, to tell it when a config hands it over as a
-// value (`plugins: [require("nativewind/babel")]`), which has no name or file
-// for Babel to resolve (proapp's review-w3-4 F3).
-const NATIVEWIND_PLUGIN = require("nativewind/babel")
+// A stand-in for the plugin (the real one is gone from node_modules), and its
+// own function, to tell it when a config hands it over as a value
+// (`plugins: [require("nativewind/babel")]`), which has no name or file for
+// Babel to resolve (proapp's review-w3-4 F3).
+const STAND_IN = require("./../nativewind-stand-in")
+const NATIVEWIND_PLUGIN = require(STAND_IN.plugin)
 
 const ROOT = path.resolve(__dirname, "..", "..")
 const SHARED = path.resolve(ROOT, "..", "tappler-shared")
@@ -65,28 +66,11 @@ const CANARY_SOURCE = [
   "",
 ].join("\n")
 
-// The control's tailwind config, in a directory of its own.
-const control = fs.mkdtempSync(path.join(os.tmpdir(), "no-nativewind-"))
-const CONTROL_TAILWIND = path.join(control, "tailwind.config.js")
-fs.writeFileSync(
-  CONTROL_TAILWIND,
-  'module.exports = { content: ["./src/**/*.{jsx,tsx}"], theme: { extend: {} } }\n'
-)
-afterAll(() => fs.rmSync(control, { recursive: true, force: true }))
-
 // How the control puts NativeWind back: as a plugin, or inside a preset (a
 // local preset file does the same: `module.exports = () => ({ plugins: [...] })`).
 const PUT_BACK = {
-  plugin: {
-    plugins: [["nativewind/babel", { tailwindConfig: CONTROL_TAILWIND }]],
-  },
-  preset: {
-    presets: [
-      () => ({
-        plugins: [["nativewind/babel", { tailwindConfig: CONTROL_TAILWIND }]],
-      }),
-    ],
-  },
+  plugin: { plugins: [STAND_IN.plugin] },
+  preset: { presets: [() => ({ plugins: [STAND_IN.plugin] })] },
 }
 
 // `withPlugin`: false, true (as a plugin), or "plugin" / "preset".
@@ -193,5 +177,37 @@ describe("a canary under src comes out with no nativewind in it", () => {
     const code = out(envName, true)
     expect(code).toMatch(/require\(["']nativewind["']\)/)
     expect(code).toContain("StyledComponent")
+  })
+})
+
+describe("the build declares no NativeWind, tailwind or clsx", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "package.json"), "utf8")
+  )
+  const FIELDS = [
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "optionalDependencies",
+  ]
+  const GONE = ["nativewind", "tailwindcss", "clsx"]
+
+  it.each(GONE)("%s is in no dependency list", (name) => {
+    expect(FIELDS.filter((field) => name in (manifest[field] ?? {}))).toEqual(
+      []
+    )
+  })
+
+  it("has no tailwind config left", () => {
+    expect(
+      fs
+        .readdirSync(ROOT)
+        .filter((file) => /^tailwind\.config\.[cm]?[jt]s$/.test(file))
+    ).toEqual([])
+  })
+
+  it("has no NativeWind package in node_modules (control: the stand-in is the only one)", () => {
+    expect(() => require.resolve("nativewind", { paths: [ROOT] })).toThrow()
+    expect(fs.existsSync(STAND_IN.plugin)).toBe(true)
   })
 })

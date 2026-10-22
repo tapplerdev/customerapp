@@ -41,9 +41,6 @@
       "arabic-digits": [
         "node_modules/arabic-digits/index.ts"
       ],
-      "clsx": [
-        "node_modules/clsx/clsx.d.mts"
-      ],
       "i18next": [
         "node_modules/i18next/index.d.mts"
       ],

@@ -1,7 +1,7 @@
 import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
+import { type NoShorthands } from "@tappler/shared/src/ds"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import styles from "./styles"
 

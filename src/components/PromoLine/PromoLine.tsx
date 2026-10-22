@@ -2,7 +2,7 @@ import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 
 import SharedPromoLine from "@tappler/shared/src/components/PromoLine"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
+import { type NoShorthands } from "@tappler/shared/src/ds"
 
 interface PromoLineProps {
   promoMessage: string

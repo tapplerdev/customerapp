@@ -9,7 +9,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated"
 import { DmView } from "@tappler/shared/src/components/UI"
-import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
+import { type NoShorthands } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 interface Props {
