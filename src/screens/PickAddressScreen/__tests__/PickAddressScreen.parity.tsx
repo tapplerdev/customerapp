@@ -239,9 +239,14 @@ describe("PickAddressScreen presses", () => {
       expect(JSON.stringify(session.tree())).not.toBe(opened)
       await run(session, env, [(root) => pressText(root, copy(env, "use_current_location"))])
       expect(JSON.stringify(session.tree())).toBe(opened)
-      // The map button asks for the fix (it never moves a mock map).
+      // The map button asks for a fix (it never moves a mock map, so the
+      // request is what shows it was pressed).
+      const Geolocation = require("@react-native-community/geolocation").default
+      const asked = jest.spyOn(Geolocation, "getCurrentPosition")
       await run(session, env, [(root) => pressIcon(root, { icon: "svg:my-location-red" })])
+      expect(asked).toHaveBeenCalledTimes(1)
       expect(JSON.stringify(session.tree())).toBe(opened)
+      asked.mockRestore()
     } finally {
       session.unmount()
     }

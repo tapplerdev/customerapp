@@ -204,10 +204,14 @@ describe("MapPickerView", () => {
         })
         expect(onClose).toHaveBeenCalledTimes(1)
         const before = JSON.stringify(session.tree())
+        const Geolocation = require("@react-native-community/geolocation").default
+        const asked = jest.spyOn(Geolocation, "getCurrentPosition")
         await session.act(() => {
           pressIcon(session.root, { icon: "svg:my-location-red" })
         })
+        expect(asked).toHaveBeenCalledTimes(1)
         expect(JSON.stringify(session.tree())).toBe(before)
+        asked.mockRestore()
       } finally {
         session.unmount()
       }
