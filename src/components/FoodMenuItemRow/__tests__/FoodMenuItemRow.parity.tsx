@@ -25,6 +25,7 @@ import {
   captureCommit,
   expectParity,
   parityName,
+  type ParityAllowance,
 } from "testing/hostTreeParity"
 import {
   componentImport,
@@ -36,6 +37,9 @@ import {
   type HarvestOptions,
 } from "testing/harvest"
 /* eslint-enable import/first */
+
+/** What Button draws differently from the ActionBtn it replaced (listed deltas only, on its root): the pre-order badge (a Button with no onPress) */
+const BUTTON: ParityAllowance[] = ["buttonHeight"]
 
 const FILES = harvestFilesFor(__dirname, "FoodMenuItemRow")
 
@@ -144,7 +148,9 @@ if (harvesting()) {
         navigation: "none",
         window: { width: row.width },
       })
-      expectParity(parityName(id, env), tree)
+      expectParity(parityName(id, env), tree, {
+        allow: row.variant === "pre-order only" ? BUTTON : undefined,
+      })
     })
   })
 }

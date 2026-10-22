@@ -20,6 +20,52 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
+  container: {
+    paddingBottom: 23,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.grey14,
+  },
+  text: {
+    marginTop: 5,
+  },
+  row: {
+    marginTop: 13,
+  },
+  eGP: {
+    textDecorationLine: "line-through",
+  },
+  button: {
+    alignSelf: "auto",
+  },
+  box: {
+    marginLeft: 21,
+  },
+  box2: {
+    bottom: 8,
+    left: 0,
+    right: 0,
+  },
+  row2: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 4,
+    height: 30,
+  },
+  iconWrap: {
+    width: 26,
+    height: 30,
+  },
+  iconWrap2: {
+    width: 34,
+    height: 26,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 4,
+  },
 })
 
 export default styles
