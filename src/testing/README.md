@@ -15,7 +15,7 @@ rule); what differs from proapp is called out where it matters.
 | `screenKit/` | Renders a whole screen the way the app does, with mocked data and native modules, under `jest.parity.config.js`. |
 | `harvest/` | Reads a component's real call sites into prop sets and freezes them (`<Name>.cases.json`). A component's twin test draws its frozen call sites (`<Name>.twins.json`: each set as the codemod converted it at the W3.1 freeze, `frozenTwinCases`); every other harvest test checks its cases hand the component no class (`expectClassFree`). |
 | `buttonLooks/` | B's two Button look files (`ButtonLooks.cases.json`, `ButtonLooks.table.json`), pinned by hash in `frozenLooks.test.ts`. ActionBtn's harvest, translator and live comparison went in W3.4 (see "The archive tag"). |
-| `classGuard.ts` | The runtime guard (W3.4): an element with a class string, or a DmText or ActionBtn, fails where it is made. The screen kit runs every render under it. See "The guards" below. |
+| `classGuard.ts` | The runtime guard (W3.4): an element with a class string fails where it is made. The screen kit runs every render under it. See "The guards" below. |
 | `trueSheet.tsx` | The stand-in for `@lodev09/react-native-true-sheet` in both jest configs (see "What the kit mocks"). |
 | `svgStub.ts` | An SVG icon as a host element named after it. |
 
@@ -64,9 +64,9 @@ What W3.2 flipped, in one commit:
   prefixed `ds-w3-`. Metro's transform key never sees babel.config.js, so the
   prefix (not `--reset-cache`, which empties the cache every Metro on the
   machine shares) is what stops a transform made with the plugin being served.
-  Bump it again after any change to babel.config.js. `nativewind`, `tailwindcss`
-  and `clsx` stay in package.json: removing them is an install, which is not
-  part of W3 (`tailwind.config.js` went in W3.4).
+  Bump it again after any change to babel.config.js. (`nativewind`,
+  `tailwindcss` and `clsx` stayed in package.json until W4's install;
+  `tailwind.config.js` went in W3.4.)
 - **The control**: `__tests__/noPluginControl.test.tsx` in `yarn test` draws a
   className on a View (`__fixtures__/ClassNameOnView.tsx`) and expects it on
   the host as a plain prop, then resolves babel.config.js's plugins for an app
@@ -102,7 +102,10 @@ taken whole (however spelled: trailing `/`, `/index.ts`), a computed-key
 destructure, or an import from `src/testing` or a `__fixtures__` folder, which
 the scan itself skips. It needs no NativeWind, and its suite
 (`buttonLooks/__tests__/legacyPrimitives.test.ts`) runs in `yarn test`. It is
-the one check that sees a DmText in a state no kit row draws.
+the one check that sees a DmText in a state no kit row draws. Since W4 the
+components themselves are gone from tappler-shared, so an import of either also
+fails tsc and the module's resolve; the scan still names them, for a stand-in
+someone writes under the same name.
 
 ### The archive tag (W3.4)
 
@@ -153,11 +156,11 @@ over. Ported from proapp's W3.4 (customerapp-plan.md, skeptic H5):
   `screenKit/setup.ts`). Every element a kit render makes goes through
   react/jsx-runtime, react/jsx-dev-runtime, React.createElement or
   React.cloneElement, each wrapped in place in every registry the kit loads. An
-  element with a non-empty className-family string, or of shared's DmText or
-  ActionBtn, throws where it is made, naming the prop, the element, the
-  component that made it and the ones above it. shared's components still take a
-  class and hand it on as `className={undefined}` or `""` when a caller gives
-  none, and those pass. A refusal an error boundary catches fails the test in
+  element with a non-empty className-family string throws where it is made,
+  naming the prop, the element, the component that made it and the ones above
+  it. (Until W4 it refused shared's DmText and ActionBtn too; they are gone,
+  and shared's components take no class prop to hand on.) A refusal an error
+  boundary catches fails the test in
   the setup's afterEach, and a session's `tree()` fails on a host that still
   carries a class (`refuseHostClasses`). Component tests stay out (their
   stand-ins carry harvested props); a render can opt in with
@@ -171,15 +174,20 @@ over. Ported from proapp's W3.4 (customerapp-plan.md, skeptic H5):
   src, one in shared, one at the root, a plugin handed over as a function
   included), and a canary under src comes out with no `nativewind` in it. The
   resolved lists are the check that counts: a plugin put back with no tailwind
-  config compiles nothing. `noPluginControl.test.tsx` (W3.2) is the other half,
-  and draws a className under jest. Not ported from proapp: its per-file
+  config compiles nothing. The controls put back a stand-in for the plugin
+  (`scripts/nativewind-stand-in.js`: the package is gone from node_modules since
+  W4), and the same file checks package.json holds none of `nativewind`,
+  `tailwindcss` and `clsx`, and that no tailwind config is left.
+  `noPluginControl.test.tsx` (W3.2) is the other half, and draws a className
+  under jest. Not ported from proapp: its per-file
   `ds:transform-sweep` (every src file and the shared modules it reaches,
   compiled and read, for before a capture); the served bundle's check (W3 plan
   §5.4) is what stands in for it.
-- **Types.** tsc refuses className on React Native's components and on every
+- **Types.** tsc refuses className on React Native's components, on
+  tappler-shared's components (W4 took their class props out) and on every
   customerapp component, none of which declares one (the ratchet keeps it so).
-  tappler-shared's components keep their class props for proapp until W4; the
-  ratchet and the class guard cover those.
+  A className that arrives in a spread or an untyped object is the class
+  guard's and the ratchet's.
 
 ## The jest configs
 
@@ -351,7 +359,7 @@ in the kit.
 ## A screen (W2)
 
 The templates are `testing/screenKit/__tests__/workflow.parity.tsx` (capture, converted, mutant, on
-the kit's own ExampleScreen) and `example.parity.tsx` (a real customer screen, WelcomeScreen, with
+the kit's own ExampleScreen, whose class-name original W4 deleted) and `example.parity.tsx` (a real customer screen, WelcomeScreen, with
 presses and five mutants).
 
 ```tsx
@@ -634,8 +642,8 @@ proxy answers it 503) and Home still draws.
   handler or screen still fails.
 - **Before W3** (done in W3.1): the self-tests that drew class names were
   rewritten: KitProbe's face is ds Text, workflow.parity compares the converted and
-  mutant ExampleScreens only (the class-name one stays as the fixture's record, rendered by
-  nothing), and the five WelcomeScreen mutants are copies of the converted screen.
+  mutant ExampleScreens only (the class-name one stayed as the fixture's record, rendered by
+  nothing, until W4 deleted it with DmText and ActionBtn), and the five WelcomeScreen mutants are copies of the converted screen.
 
 ## Coverage: `yarn ds:parity:screens`
 
