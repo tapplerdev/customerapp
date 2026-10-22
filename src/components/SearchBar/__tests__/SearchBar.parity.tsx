@@ -20,6 +20,7 @@ import {
 import {
   buildProps,
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
@@ -78,12 +79,17 @@ const HAND: Case[] = [
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases (and an empty classes file)", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "SearchBar", OPTIONS, captureCommit())
     })
   })
 } else {
   const cases = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(cases.cases)
+  })
+
   const harvested: Case[] = Object.entries(cases.cases).map(([id, entry]) => ({
     name: `${id} (${entry.sites[0]})`,
     props: buildProps(entry.props),

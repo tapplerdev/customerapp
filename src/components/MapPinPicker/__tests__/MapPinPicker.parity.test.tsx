@@ -12,7 +12,7 @@ import React from "react"
  * were captured from MapPinPicker before its conversion (each case names
  * the commit). Both languages, both platforms.
  *
- *   DS_HARVEST=1 jest <this file>              re-harvest (writes the cases and classes)
+ *   DS_HARVEST=1 jest <this file>              re-harvest (writes the cases)
  *   yarn ds:parity:capture <this file> --force  recapture, on the old code only
  */
 
@@ -24,8 +24,6 @@ jest.mock("react-native-localize", () =>
 /* eslint-enable global-require, @typescript-eslint/no-var-requires */
 
 /* eslint-disable import/first */
-// The harvested class strings, compiled (see the file).
-import "../__fixtures__/MapPinPicker.classes"
 import {
   PARITY_MATRIX,
   captureCommit,
@@ -34,17 +32,16 @@ import {
   parityName,
 } from "testing/hostTreeParity"
 import {
-  componentImport,
   buildProps,
-  classStringsOf,
+  componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
   writeHarvest,
-  type HarvestedCase,
   type HarvestOptions,
+  type HarvestedCase,
 } from "testing/harvest"
-import { describeCompiledClasses } from "testing/harvest/compiledClasses"
 import MapPinPicker from "../MapPinPicker"
 /* eslint-enable import/first */
 
@@ -87,15 +84,18 @@ const HAND: Record<string, HarvestedCase> = {
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases and the class strings NativeWind has to compile", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "MapPinPicker", OPTIONS, captureCommit())
     })
   })
 } else {
   const harvested = readHarvest(FILES)
-  const cases: Record<string, HarvestedCase> = { ...harvested.cases, ...HAND }
 
-  describeCompiledClasses(harvested, FILES, classStringsOf(harvested.cases))
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(harvested.cases)
+  })
+
+  const cases: Record<string, HarvestedCase> = { ...harvested.cases, ...HAND }
 
   describe("MapPinPicker draws as before", () => {
     const table = Object.entries(cases).flatMap(([id, entry]) =>

@@ -20,6 +20,7 @@ import {
 import {
   buildProps,
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
@@ -165,12 +166,17 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases (and an empty classes file)", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "ProCardBase", OPTIONS, captureCommit())
     })
   })
 } else {
   const cases = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(cases.cases)
+  })
+
   const sets = Object.entries(cases.cases).flatMap(([id, entry]) =>
     DATA.map(({ name, props }) => ({
       name: `${id} ${name}`,

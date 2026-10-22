@@ -28,12 +28,13 @@ import {
 } from "testing/hostTreeParity"
 import {
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
   writeHarvest,
-  type HarvestedCase,
   type HarvestOptions,
+  type HarvestedCase,
 } from "testing/harvest"
 import { guestState, screenState } from "testing/screenKit/states"
 import { GUEST_LOCATION } from "testing/screenKit/fixtures/users"
@@ -132,6 +133,11 @@ if (harvesting()) {
   })
 } else {
   const harvested = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(harvested.cases)
+  })
+
   const cases: Record<string, HarvestedCase> = harvested.cases
   const rows = rowsByPlatform(
     Object.entries(cases).flatMap(([id, entry]) =>

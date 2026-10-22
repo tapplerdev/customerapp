@@ -18,6 +18,7 @@ import {
 import {
   buildProps,
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
@@ -62,12 +63,17 @@ const TEXTS = [
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases (and an empty classes file)", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "SearchMessagesComponent", OPTIONS, captureCommit())
     })
   })
 } else {
   const cases = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(cases.cases)
+  })
+
   const sets = Object.entries(cases.cases).flatMap(([id, entry]) =>
     TEXTS.map(({ name, text }) => ({
       name: `${id} ${name}`,

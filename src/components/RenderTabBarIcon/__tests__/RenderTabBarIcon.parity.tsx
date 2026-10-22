@@ -13,6 +13,7 @@ import {
 import {
   buildProps,
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
@@ -60,12 +61,17 @@ const BADGES = [
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases (and an empty classes file)", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "RenderTabBarIcon", OPTIONS, captureCommit())
     })
   })
 } else {
   const cases = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(cases.cases)
+  })
+
   const sets = Object.entries(cases.cases).flatMap(([id, entry]) =>
     // Only the messages tab passes a badge; the others are drawn without.
     (entry.props.type === "messages" ? BADGES : BADGES.slice(0, 1)).map(

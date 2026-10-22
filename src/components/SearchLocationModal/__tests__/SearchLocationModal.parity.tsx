@@ -20,6 +20,7 @@ import {
 import {
   buildProps,
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
@@ -83,12 +84,17 @@ const ANSWERS = [
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases (and an empty classes file)", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "SearchLocationModal", OPTIONS, captureCommit())
     })
   })
 } else {
   const cases = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(cases.cases)
+  })
+
   const shown = Object.entries(cases.cases).filter(
     ([, entry]) => entry.props.isVisible
   )

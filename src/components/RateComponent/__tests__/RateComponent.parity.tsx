@@ -13,6 +13,7 @@ import {
 import {
   buildProps,
   componentImport,
+  expectClassFree,
   harvestFilesFor,
   harvesting,
   readHarvest,
@@ -63,12 +64,17 @@ const RATINGS: { name: string; rate: number; reviewsCount?: number }[] = [
 
 if (harvesting()) {
   describe("the harvest", () => {
-    it("writes the cases (and an empty classes file)", () => {
+    it("writes the cases", () => {
       writeHarvest(FILES, "RateComponent", OPTIONS, captureCommit())
     })
   })
 } else {
   const cases = readHarvest(FILES)
+
+  it("the cases hand it no class, no DmText and no ActionBtn", () => {
+    expectClassFree(cases.cases)
+  })
+
   const sets = Object.entries(cases.cases).flatMap(([id, entry]) =>
     RATINGS.map(({ name, rate, reviewsCount }) => ({
       name: `${id} ${name}`,
