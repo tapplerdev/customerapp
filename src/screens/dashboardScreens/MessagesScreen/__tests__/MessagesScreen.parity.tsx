@@ -152,12 +152,19 @@ type Case = {
   state: ReturnType<typeof screenState>
   api: BackendFixtures
   allow?: ParityAllowance[]
+  window?: { width: number; height: number }
 }
 const signedIn = screenState("data")
 const CASES: Case[] = [
   { name: "chats", state: signedIn, api: chats(AT_LEAST_ONE_OF_EACH) },
   { name: "empty", state: signedIn, api: chats([]) },
   { name: "loading", state: signedIn, api: {} },
+  {
+    name: "chats, small phone",
+    state: signedIn,
+    api: chats(AT_LEAST_ONE_OF_EACH),
+    window: { width: 390, height: 844 },
+  },
   {
     name: "signed out",
     state: guestState("data"),
@@ -166,7 +173,11 @@ const CASES: Case[] = [
     allow: ["buttonHeight", "buttonAccessibility"],
   },
 ]
-const rows = rowsByPlatform(CASES, PARITY_MATRIX)
+// A window is part of a registry: keep a window's rows together, last.
+const rows = rowsByPlatform(
+  [...CASES.filter((c) => !c.window), ...CASES.filter((c) => c.window)],
+  PARITY_MATRIX
+)
 
 describe("MessagesScreen, captured from the unconverted code", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
@@ -176,6 +187,7 @@ describe("MessagesScreen, captured from the unconverted code", () => {
       api: c.api,
       lang: env.language,
       platform: env.platform,
+      ...(c.window ? { window: c.window } : {}),
     })
     expectParity(parityName(c.name, env), tree, { allow: c.allow })
   })
@@ -267,7 +279,10 @@ describe("MessagesScreen, search and presses", () => {
   it.each(envs)(
     "Log in, signed out, opens the sign-in [$env.language $env.platform]",
     async ({ env }) => {
-      const session = await open(env, CASES[3])
+      const session = await open(
+        env,
+        CASES.find((c) => c.name === "signed out")!
+      )
       try {
         await session.act(() => {
           pressTitled(session.root, copy(env, "log_In"))
