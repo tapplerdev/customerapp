@@ -6,6 +6,8 @@ import { DmView } from "@tappler/shared/src/components/UI"
 
 import CloseIcon from "assets/icons/close.svg"
 import { AppFlatList } from "components/scroll"
+import { a } from "@tappler/shared/src/ds"
+import dsStyles from "./styles"
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window")
 
@@ -48,12 +50,11 @@ const ImageViewerModal: React.FC<Props> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <DmView className="flex-1 bg-black">
+      <DmView style={[a.flex_1, dsStyles.list]}>
         {/* Close button */}
         <DmView
           onPress={onClose}
-          className="absolute z-10 w-[40] h-[40] rounded-full bg-white/20 items-center justify-center"
-          style={{ top: insets.top + 10, left: 16 }}
+          style={[a.absolute, dsStyles.iconWrap, a.items_center, a.justify_center, { top: insets.top + 10, left: 16 }]}
         >
           <CloseIcon width={16} height={16} color="white" />
         </DmView>
@@ -79,14 +80,12 @@ const ImageViewerModal: React.FC<Props> = ({
         {/* Page indicator */}
         {images.length > 1 && (
           <DmView
-            className="absolute flex-row items-center justify-center"
-            style={{ bottom: insets.bottom + 20, left: 0, right: 0 }}
+            style={[a.absolute, a.flex_row, a.items_center, a.justify_center, { bottom: insets.bottom + 20, left: 0, right: 0 }]}
           >
             {images.map((_, index) => (
               <DmView
                 key={index}
-                className="mx-[3]"
-                style={[
+                style={[dsStyles.container, 
                   styles.dot,
                   index === currentIndex ? styles.dotActive : styles.dotInactive,
                 ]}
