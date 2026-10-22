@@ -1,0 +1,42 @@
+{
+ "component": "ImageViewerModal",
+ "capturedAt": "unknown",
+ "elements": 1,
+ "files": 1,
+ "cases": {
+  "c6b8608f6d": {
+   "props": {
+    "isVisible": false,
+    "onClose": {
+     "$fn": true
+    },
+    "images": {
+     "$opaque": "mediaItems"
+    },
+    "initialIndex": {
+     "$opaque": "viewerIndex"
+    }
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:561"
+   ]
+  },
+  "9e20ae3558": {
+   "props": {
+    "isVisible": true,
+    "onClose": {
+     "$fn": true
+    },
+    "images": {
+     "$opaque": "mediaItems"
+    },
+    "initialIndex": {
+     "$opaque": "viewerIndex"
+    }
+   },
+   "sites": [
+    "components/MessageComponent/MessageComponent.tsx:561"
+   ]
+  }
+ }
+}
