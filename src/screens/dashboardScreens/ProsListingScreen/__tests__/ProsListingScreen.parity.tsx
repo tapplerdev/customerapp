@@ -189,7 +189,8 @@ type Case = {
 
 // Button's two listed deltas, on the states whose tree holds a Button a conversion made: Continue
 // (a pro selected; and the shortlist-notice row, which selects one), the gate's Try again (the
-// listing's conversion), and Show results on every row with the filters sheet open (its own).
+// listing's conversion), Show results on every row with the filters sheet open and See matches on every row with the
+// job-details editor open (their own).
 // Emptied or cut to one, each of those rows fails; no other row needs them.
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
@@ -219,10 +220,10 @@ const CASES: Case[] = [
   { state: "the flow done, the list narrowed", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000)] },
   { state: "the flow with one plain question (no place step)", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }, NO_PLACE) },
   // The job-details editor
-  { state: "the job-details editor", options: withApi(RICH), steps: [jobBanner(1, 4)] },
-  { state: "the editor, answers picked", options: withApi(RICH), steps: [jobBanner(1, 4), place("at_pro_location"), option("Repair"), option("The tap"), (root) => typeInto(root, 0, "Hello")] },
+  { state: "the job-details editor", options: withApi(RICH), steps: [jobBanner(1, 4)] , allow: BUTTON },
+  { state: "the editor, answers picked", options: withApi(RICH), steps: [jobBanner(1, 4), place("at_pro_location"), option("Repair"), option("The tap"), (root) => typeInto(root, 0, "Hello")] , allow: BUTTON },
   { state: "the editor, See matches", options: withApi(RICH), steps: [jobBanner(1, 4), option("Repair"), seeMatches, wait(1000)] },
-  { state: "the editor with a single place", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }), steps: [jobBanner(1, 1)] },
+  { state: "the editor with a single place", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }), steps: [jobBanner(1, 1)] , allow: BUTTON },
   // The filters
   { state: "the filters", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon] , allow: BUTTON },
   { state: "the filters, online (no distance)", options: withApi(RICH), steps: [filtersIcon] , allow: BUTTON },
