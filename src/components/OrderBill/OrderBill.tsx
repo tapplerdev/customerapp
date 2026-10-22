@@ -1,18 +1,32 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { StyleProp, TextStyle } from "react-native"
+import type { StyleProp, ViewStyle } from "react-native"
 
-import { DmText, DmView } from "@tappler/shared/src/components/UI"
+import { DmView } from "@tappler/shared/src/components/UI"
+import { classNameSlot } from "@tappler/shared/src/components/classNameSlots"
+import type { NoShorthands } from "@tappler/shared/src/components/classStyles"
+import { Text, a, px, type DsTextStyle } from "@tappler/shared/src/ds"
 import { formatMoney } from "store/cart/slice"
 import { JobType } from "types/job"
+import styles from "./styles"
+
+// The bill's root as a slot: a caller's className, then `style` (see
+// classNameSlots). It has no styles of its own.
+const Root = classNameSlot(DmView)
 
 interface Props {
   job: JobType
   /** Pickup orders have no delivery fee line — the customer collects. */
   isPickup?: boolean
+  /** The bill, as classes. */
   className?: string
   /**
-   * Applied to every DmText here. Callers inside a right-to-left layout pass
+   * The bill, as a style, after `className`. Like every twin it takes one key
+   * per side or corner (see NoShorthands).
+   */
+  style?: StyleProp<ViewStyle & NoShorthands>
+  /**
+   * Applied to every text here. Callers inside a right-to-left layout pass
    * their own alignment style (see MessagesDetailsScreen's `rtlText`), because
    * DmText hardcodes `text-left` into its base className and a className
    * override does not reliably beat it — the `style` prop does.
@@ -20,7 +34,7 @@ interface Props {
    * Without this the bill was the one block in the chat sheet aligning
    * differently from every row directly above it in Arabic.
    */
-  textStyle?: StyleProp<TextStyle>
+  textStyle?: StyleProp<DsTextStyle>
 }
 
 /**
@@ -53,6 +67,7 @@ const OrderBill: React.FC<Props> = ({
   job,
   isPickup = false,
   className = "",
+  style,
   textStyle,
 }) => {
   const { t } = useTranslation()
@@ -78,31 +93,37 @@ const OrderBill: React.FC<Props> = ({
   const orderTotal = subtotal + deliveryFee - orderDiscount
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
-    <DmView key={label} className="flex-row items-center justify-between mb-[6]">
-      <DmText
+    <DmView key={label} style={[a.flex_row, a.items_center, a.justify_between, a.mb_6]}>
+      <Text
+        size={13}
+        weight={bold ? "bold" : "regular"}
+        leading={px(17)}
+        color={bold ? "primary" : "secondary"}
         style={textStyle}
-        className={`text-13 leading-[17px] ${
-          bold ? "font-custom700" : "font-custom400 text-grey2"
-        }`}
       >
         {label}
-      </DmText>
-      <DmText
+      </Text>
+      <Text
+        size={13}
+        weight={bold ? "bold" : "medium"}
+        leading={px(17)}
         style={textStyle}
-        className={`text-13 leading-[17px] ${
-          bold ? "font-custom700" : "font-custom500"
-        }`}
       >
         {value}
-      </DmText>
+      </Text>
     </DmView>
   )
 
   return (
-    <DmView className={className}>
-      <DmText style={textStyle} className="mb-[10] text-13 leading-[16px] font-custom600">
+    <Root className={className} style={style}>
+      <Text
+        size={13}
+        weight="semibold"
+        leading="tight"
+        style={[a.mb_10, textStyle]}
+      >
         {t("order_details")}
-      </DmText>
+      </Text>
 
       {items.map((line) => {
         const choiceNames = (line.selectedOptions ?? []).flatMap((option) =>
@@ -111,27 +132,27 @@ const OrderBill: React.FC<Props> = ({
         return (
           <DmView
             key={line.id}
-            className="flex-row items-start justify-between mb-[8]"
+            style={[a.flex_row, a.items_start, a.justify_between, a.mb_8]}
           >
-            <DmView className="flex-1 mr-[10]">
-              <DmText style={textStyle} className="text-13 leading-[17px] font-custom500">
+            <DmView style={[a.flex_1, a.mr_10]}>
+              <Text size={13} weight="medium" leading={px(17)} style={textStyle}>
                 {line.quantity}× {line.name}
-              </DmText>
+              </Text>
               {!!choiceNames.length && (
-                <DmText style={textStyle} className="mt-[2] text-11 leading-[15px] font-custom400 text-grey2">
+                <Text size={11} color="secondary" style={[a.mt_2, textStyle]}>
                   {choiceNames.join(", ")}
-                </DmText>
+                </Text>
               )}
             </DmView>
-            <DmText style={textStyle} className="text-13 leading-[17px] font-custom500">
+            <Text size={13} weight="medium" leading={px(17)} style={textStyle}>
               {formatMoney((Number(line.price) + choicesTotalFor(line)) * line.quantity)}{" "}
               {t("EGP")}
-            </DmText>
+            </Text>
           </DmView>
         )
       })}
 
-      <DmView className="h-[0.7] bg-grey14 mt-[6] mb-[8]" />
+      <DmView style={[styles.box, a.mt_6, a.mb_8]} />
       {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
       {!isPickup &&
         totalsRow(
@@ -141,7 +162,7 @@ const OrderBill: React.FC<Props> = ({
       {orderDiscount > 0 &&
         totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
       {totalsRow(t("order_total"), `${formatMoney(orderTotal)} ${t("EGP")}`, true)}
-    </DmView>
+    </Root>
   )
 }
 
