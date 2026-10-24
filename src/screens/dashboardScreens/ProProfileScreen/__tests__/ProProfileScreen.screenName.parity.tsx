@@ -87,7 +87,7 @@ describe("ProProfileScreen, the approved screen name", () => {
     try {
       for (const [index, step] of (steps ?? []).entries()) {
         // eslint-disable-next-line no-await-in-loop
-        await session.act(() => step(session.root), 500, `step ${index + 1}`)
+        await session.act(() => step(session.root, env), 500, `step ${index + 1}`)
       }
       const tree = session.tree()
       expect(shows(tree, draws)).toBe(true)
