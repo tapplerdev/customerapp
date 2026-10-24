@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
+  root: { flex: 1 },
   screenBg: { backgroundColor: "#FFFFFF" },
   searchPill: {
     borderWidth: 1,

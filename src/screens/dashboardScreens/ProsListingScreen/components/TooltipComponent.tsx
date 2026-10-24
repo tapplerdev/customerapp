@@ -2,7 +2,6 @@ import React, { useState } from "react"
 import { TouchableOpacity } from "react-native"
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
-import { TooltipProps } from "rn-tourguide"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import { setDontShowBestDealTooltip } from "store/auth/slice"
@@ -11,7 +10,12 @@ import TutorialArrowIcon from "assets/icons/tutorial-arrow.svg"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import { tooltipComponentStyles } from "./styles"
 
-const TooltipComponent: React.ComponentType<TooltipProps> = ({ handleStop }) => {
+type TooltipProps = {
+  /** Closes the tip (the CoachMark's `visible` goes false). */
+  handleStop?: () => void
+}
+
+const TooltipComponent: React.FC<TooltipProps> = ({ handleStop }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const dispatch = useDispatch()

@@ -1,9 +1,10 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
-import { TourGuideZone } from "rn-tourguide"
+import { View } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
+import type { CoachMarkTarget } from "@tappler/shared/src/components/CoachMark"
 import colors from "@tappler/shared/src/styles/colors"
 import { ProType } from "types/pro"
 import RateComponent from "components/RateComponent/RateComponent"
@@ -41,14 +42,15 @@ interface Props {
   onSelect: (pro: ProType) => void
   onMessage?: (pro: ProType) => void
   onPressProfile?: (pro: ProType) => void
-  isTourTarget?: boolean
+  // The first card of the listing carries the "best deal" tip's CoachMark target.
+  tourTarget?: CoachMarkTarget
   // Food (hasMenu) listing: shortlisting doesn't apply — the select button
   // becomes a solid "Food Menu" action instead
   foodMode?: boolean
   onViewMenu?: (pro: ProType) => void
 }
 
-const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPressProfile, isTourTarget, foodMode, onViewMenu }) => {
+const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPressProfile, tourTarget, foodMode, onViewMenu }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
@@ -339,10 +341,12 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
 
   return (
     <DmView style={[a.mx_16, a.mb_12]}>
-      {isTourTarget ? (
-        <TourGuideZone zone={1} shape="rectangle" borderRadius={20} text="">
+      {tourTarget ? (
+        // onLayout keeps the View from being flattened away on Android, which
+        // the target's measureInWindow needs (see CoachMark).
+        <View ref={tourTarget.ref} onLayout={tourTarget.onLayout}>
           {innerCard}
-        </TourGuideZone>
+        </View>
       ) : (
         innerCard
       )}
