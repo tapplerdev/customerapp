@@ -96,7 +96,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     } catch (e) {}
   }
 
-  const displayName = pro?.proType === "company" ? pro?.businessName : pro?.registeredName
+  // A menu service shows its approved screen name (the kitchen's name); with
+  // none approved, today's business / registered name.
+  const displayName =
+    pro?.serviceScreenName ||
+    (pro?.proType === "company" ? pro?.businessName : pro?.registeredName)
   const isCompany = pro?.proType === "company"
   const overallScore = pro?.reviewScore?.overallScore || 0
   const reviewsCount = pro?.reviewScore?.reviewsCount || 0

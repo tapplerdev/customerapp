@@ -94,6 +94,12 @@ export type ProType = {
   registeredName: string
   businessName?: string
   screenName?: string
+  // GET /pros/:id?serviceCategoryId only: the newest APPROVED screen name of
+  // THAT service (a menu service's kitchen name). null = none approved; absent
+  // when no serviceCategoryId was sent. `screenName` above is the pro's last
+  // approved name in ANY service, so a two-kitchen pro would show one kitchen's
+  // name on the other.
+  serviceScreenName?: string | null
   // Straight-line km to the pro (backend-computed; set only when the list
   // request carries a customer address). Food cards render it.
   distanceKm?: number
