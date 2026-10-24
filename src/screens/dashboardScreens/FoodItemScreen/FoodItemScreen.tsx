@@ -395,18 +395,21 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
             <PlusIcon color={colors.red} />
           </DmView>
         </DmView>
-        <Button
-          disabled={missingRequired}
-          title={t("add_to_cart_for_egp_count", {
-            price: formatMoney(totalPrice * count),
-          })}
-          size={px(41)}
-          label="sm"
-          labelWeight="semibold"
-          dim={missingRequired ? true : undefined}
-          style={styles.button2}
-          onPress={missingRequired ? undefined : handleAddToCart}
-        />
+        {/* Not dimmed: absent until every required option group has its
+            choices (Omar, 2026-10-24), so the customer is not offered a
+            button that does nothing. missingRequired is still the one rule. */}
+        {!missingRequired && (
+          <Button
+            title={t("add_to_cart_for_egp_count", {
+              price: formatMoney(totalPrice * count),
+            })}
+            size={px(41)}
+            label="sm"
+            labelWeight="semibold"
+            style={styles.button2}
+            onPress={handleAddToCart}
+          />
+        )}
       </DmView>
     </SafeAreaView>
   )

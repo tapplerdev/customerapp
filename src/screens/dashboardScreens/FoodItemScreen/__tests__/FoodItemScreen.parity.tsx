@@ -36,16 +36,22 @@ import {
  * insets (the gap under the footer is 45 whatever the inset up to 45, so a
  * zero bottom inset would draw what the default does: only 48 is a row, and
  * a zero top inset), and a customer who has chosen. Presses: close, the
- * choices, the stepper (minus is dead at one), Add to cart (dead until the
- * required choice is made; it adds the line and goes back) and Back.
+ * choices, the stepper (minus is dead at one), Add to cart (it adds the line
+ * and goes back) and Back.
+ *
+ * Add to cart is hidden until every required option group is satisfied
+ * (snags #506, C1; it was a disabled button). That changed the three rows
+ * that drew the dish before its required choice (options, options with a 48
+ * bottom inset, options with no top inset): they are retired from this file,
+ * their frozen fixtures left as they were, and the hidden state has its own
+ * rows in FoodItemScreen.addToCart.parity.tsx. Every row here that draws the
+ * button (the dishes without a required group, and the dish once chosen) is
+ * unchanged.
  */
 
 // The Add to cart, pre-order badge and Back buttons were ActionBtns: Button's
-// listed deltas, per state. A disabled Add to cart (the required choice is
-// not made yet) shows the disabled view flag instead of the accessibility
-// props; the loading row draws none.
+// listed deltas; the loading row draws none.
 const ENABLED: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
-const DISABLED: ParityAllowance[] = ["buttonHeight", "buttonDisabledView"]
 
 const load = () => require("../FoodItemScreen")
 const BASE = ROUTE_PARAMS.FoodItemScreen!
@@ -58,25 +64,14 @@ type Case = {
   insets?: { top?: number; bottom?: number }
   allow?: ParityAllowance[]
 }
+/** The dish with a required choice, before the customer has made it. */
+const OPTIONS_DISH: Case = { name: "options", menuItemId: 411 }
 const CASES: Case[] = [
-  { name: "options", menuItemId: 411, allow: DISABLED },
   { name: "discount, no options", menuItemId: 412, allow: ENABLED },
   { name: "pre-order", menuItemId: 431, allow: ENABLED },
   { name: "no price, photo or description", menuItemId: 421, allow: ENABLED },
   { name: "loading", menuItemId: 411, api: {} },
   { name: "unavailable", menuItemId: 999, allow: ENABLED },
-  {
-    name: "options, bottom inset 48",
-    menuItemId: 411,
-    insets: { bottom: 48 },
-    allow: DISABLED,
-  },
-  {
-    name: "options, no top inset",
-    menuItemId: 411,
-    insets: { top: 0 },
-    allow: DISABLED,
-  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
@@ -106,7 +101,7 @@ describe("FoodItemScreen, captured from the unconverted code", () => {
 })
 
 const envs = rowsByPlatform([{}], PARITY_MATRIX)
-const open = (env: (typeof PARITY_MATRIX)[number], c: Case = CASES[0]) =>
+const open = (env: (typeof PARITY_MATRIX)[number], c: Case = OPTIONS_DISH) =>
   openScreen(load, options(c, env))
 
 const lines = (store: { getState: () => unknown }) =>
@@ -208,30 +203,37 @@ describe("FoodItemScreen, choosing and adding", () => {
   )
 
   it.each(envs)(
-    "Add to cart is dead until the required choice is made, then adds the line and goes back [$env.language $env.platform]",
+    "Add to cart is not there until the required choice is made, then adds the line and goes back [$env.language $env.platform]",
     async ({ env }) => {
       const session = await open(env)
       // The button's title carries the price, so find it by the words before it.
       const prefix = copy(env, "add_to_cart_for_egp_count").split("{{")[0]
-      const addButton = () => {
-        const found = session.root.findAll(
+      const addButtons = () =>
+        session.root.findAll(
           (node) =>
             typeof node.props.title === "string" &&
             node.props.title.startsWith(prefix),
           { deep: false }
         )
-        expect(found).toHaveLength(1)
-        return found[0]
-      }
       try {
-        expect(addButton().props.onPress).toBeUndefined()
+        expect(addButtons()).toHaveLength(0)
         await session.act(() => {
           pressCheckbox(session.root, 1)
           pressIcon(session.root, { icon: "svg:plus" })
         })
-        expect(typeof addButton().props.onPress).toBe("function")
+        expect(addButtons()).toHaveLength(1)
+        // Unchosen again, it goes again.
         await session.act(() => {
-          addButton().props.onPress()
+          pressCheckbox(session.root, 1)
+        })
+        expect(addButtons()).toHaveLength(0)
+        await session.act(() => {
+          pressCheckbox(session.root, 1)
+        })
+        const addButton = addButtons()[0]
+        expect(typeof addButton.props.onPress).toBe("function")
+        await session.act(() => {
+          addButton.props.onPress()
         })
         expect(lines(session.store)).toMatchObject([
           {
@@ -268,7 +270,10 @@ describe("FoodItemScreen, choosing and adding", () => {
   it.each(envs)(
     "Back on the unavailable screen goes back [$env.language $env.platform]",
     async ({ env }) => {
-      const session = await open(env, CASES[5])
+      const session = await open(
+        env,
+        CASES.find((c) => c.name === "unavailable")
+      )
       try {
         await session.act(() => {
           pressTitled(session.root, copy(env, "back"))

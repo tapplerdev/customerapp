@@ -584,7 +584,7 @@ editing them in an area branch.
   list and the app-state middleware's tags against `src/store/index.ts`), React Navigation,
   i18next, NativeWind, tappler-shared, react-native-safe-area-context, react-native-screens,
   gesture-handler (its own jest setup), react-native-calendars, the keyboard-aware scroll view,
-  rn-tourguide, every one of our components.
+  every one of our components.
 
 ### The App smoke test
 

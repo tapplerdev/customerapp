@@ -4,14 +4,10 @@ import { FlashList } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import { useFocusEffect } from "@react-navigation/native"
-import {
-  TourGuideProvider,
-  useTourGuideController,
-} from "rn-tourguide"
-
 import FastImage from "react-native-fast-image"
 
 import { DmView } from "@tappler/shared/src/components/UI"
+import CoachMark, { useCoachMarkTarget } from "@tappler/shared/src/components/CoachMark"
 import { RootStackScreenProps } from "navigation/types"
 import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyOpenChatQuery, useLazyGetChatMessagesQuery } from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
@@ -68,7 +64,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const prefetchProfile = api.usePrefetch("getProProfile")
   const prefetchMenu = api.usePrefetch("getProMenu")
 
-  const { canStart, start } = useTourGuideController()
+  // The "best deal" tip: a CoachMark over the first card.
+  const tourTarget = useCoachMarkTarget()
+  const [tipOpen, setTipOpen] = useState(false)
+  const closeTip = useCallback(() => setTipOpen(false), [])
 
   const [isProfileLoading, setIsProfileLoading] = useState(false)
   const [isErrorModalVisible, setErrorModalVisible] = useState(false)
@@ -648,15 +647,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // saying nothing, and it costs them a tap to dismiss.
   useEffect(() => {
     if (
-      canStart &&
       !isFoodCategory &&
       !dontShowBestDealTooltip &&
       data?.data?.length
     ) {
-      const timer = setTimeout(() => start(), 500)
+      const timer = setTimeout(() => setTipOpen(true), 500)
       return () => clearTimeout(timer)
     }
-  }, [canStart, isFoodCategory, dontShowBestDealTooltip, data?.data?.length])
+  }, [isFoodCategory, dontShowBestDealTooltip, data?.data?.length])
 
   const handleGoBack = () => {
     navigation.goBack()
@@ -813,13 +811,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           onSelect={handleToggleSelect}
           onMessage={handleMessage}
           onPressProfile={handlePressProfile}
-          isTourTarget={index === 0}
+          tourTarget={index === 0 ? tourTarget : undefined}
           foodMode={isFoodCategory}
           onViewMenu={handleViewMenu}
         />
       )
     },
-    [selectedPros, handleToggleSelect, handleMessage, handlePressProfile, isFoodCategory, handleViewMenu]
+    [selectedPros, handleToggleSelect, handleMessage, handlePressProfile, isFoodCategory, handleViewMenu, tourTarget]
   )
 
   return (
@@ -1121,46 +1119,35 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         onApply={handleFiltersDismiss}
       />
 
+
+      {/* The "best deal" tip, over the first card. Tapping the dim does
+          nothing (as before); Got it, or Android back, closes it. */}
+      <CoachMark
+        visible={tipOpen}
+        target={tourTarget}
+        onDismiss={closeTip}
+        placement="below"
+        // The tooltip's arrow icon points up into the card, so it overlaps the
+        // card's bottom edge: rn-tourguide put it 13 under the hole and pulled
+        // it up 70 (marginTop), which nets to -55.
+        gap={-55}
+        borderRadius={22}
+        padding={2}
+      >
+        <TooltipComponent handleStop={closeTip} />
+      </CoachMark>
     </View>
   )
 }
 
 const ProsListingScreen: React.FC<Props> = (props) => {
+  // The screen's outer fill. It is what rn-tourguide's provider drew round the
+  // screen, kept as a plain View so the host tree (and its frozen parity
+  // proofs) stays the one the tour library produced.
   return (
-    <TourGuideProvider
-      preventOutsideInteraction
-      tooltipComponent={TooltipComponent}
-      /*
-       * Load-bearing, and the prop name reads backwards from what it does.
-       *
-       * rn-tourguide's Modal.js:76 runs, on Android only and by default:
-       *   if (!androidStatusBarVisible) obj.top -= StatusBar.currentHeight
-       * That is right for an app whose content starts BELOW the status bar,
-       * where measure()'s page coordinates and the overlay's origin disagree by
-       * exactly that much. This app sets `translucent={true}` in App.tsx and
-       * draws under the status bar, so the two already agree and the subtraction
-       * is pure loss: it slid the spotlight UP by one status bar.
-       *
-       * Measured on an API 35 emulator before the fix — first card
-       * [42,449][1038,864], hole y 389..796: the same HEIGHT (407 vs 415, so the
-       * mask does track the card, whatever its subscriptions/badges make it)
-       * sitting 60px high against a 63px status bar. The symptom was bare white
-       * above the photo and the card's own Chat / Select-me buttons falling
-       * outside the hole where the 0.7 backdrop dimmed them — which reads as a
-       * clipped card rather than an offset mask, and sends you looking at card
-       * sizing instead.
-       *
-       * Passing true skips the subtraction. iOS never ran that branch.
-       */
-      androidStatusBarVisible
-      maskOffset={0}
-      borderRadius={20}
-      tooltipStyle={{ overflow: "visible", marginTop: -70 }}
-      animationDuration={400}
-      backdropColor="rgba(0, 0, 0, 0.7)"
-    >
+    <View style={styles.root}>
       <ProsListingContent {...props} />
-    </TourGuideProvider>
+    </View>
   )
 }
 

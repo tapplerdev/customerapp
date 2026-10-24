@@ -30,9 +30,6 @@ jest.mock("@tappler/shared/src/components/UI", () => {
 jest.mock("react-native-fast-image", () =>
   Object.assign(() => null, { resizeMode: { cover: "cover" } })
 )
-jest.mock("rn-tourguide", () => ({
-  TourGuideZone: ({ children }: { children?: React.ReactNode }) => children,
-}))
 jest.mock("components/RateComponent/RateComponent", () => () => null)
 jest.mock("components/SvgUriContainer/SvgUriContainer", () => {
   const { createElement } = jest.requireActual("react") as typeof React
