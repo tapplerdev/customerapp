@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals"
 import React, { act } from "react"
-import { Dimensions, I18nManager, Platform, View } from "react-native"
+import { Animated, Dimensions, I18nManager, Platform, View } from "react-native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import TestRenderer from "react-test-renderer"
 
@@ -236,9 +236,35 @@ describe("CoachMark", () => {
     act(() => {
       tip().props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 200 } } })
     })
-    expect(flat(tip()).opacity).toBeUndefined()
     // Under the hole (300 + 100) and its gap, whole inside the safe area.
     expect(flat(tip()).top).toBe(412)
+  })
+
+  it("raises the tooltip into place once it is measured", async () => {
+    const timing = jest.spyOn(Animated, "timing")
+    try {
+      const m = mount({ visible: true, placement: "below", gap: 12 })
+      await settle()
+      const tip = () => m.renderer.root.findByProps({ testID: "tip" }).parent!.parent!
+      const flat = (n: Node) => Object.assign({}, ...[n.props.style].flat(5).filter(Boolean))
+      // Nothing moves before the tooltip's height is known.
+      expect(timing).not.toHaveBeenCalled()
+      act(() => {
+        tip().props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 200 } } })
+      })
+      // It starts lowered and clear, and rises on the native driver over 1 s
+      // (the end values live on the UI thread, out of the test renderer's reach).
+      expect(flat(tip()).opacity).toBe(0)
+      expect(flat(tip()).transform).toEqual([{ translateY: 16 }])
+      expect(timing).toHaveBeenCalledTimes(1)
+      expect(timing.mock.calls[0][1]).toMatchObject({
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    } finally {
+      timing.mockRestore()
+    }
   })
 
   it("asks onDismiss on Android back, and on the dim only when it is allowed", async () => {
