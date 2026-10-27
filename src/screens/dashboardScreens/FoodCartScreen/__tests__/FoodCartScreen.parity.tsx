@@ -27,6 +27,10 @@ import {
   DRAFT_ONE_LINE,
   DRAFT_PICKUP,
   DRAFT_RICH,
+  DRAFT_RICH_REPRICED,
+  DRAFT_RICH_WITHOUT_BASBOUSA,
+  MENU_LARGE_DEARER,
+  MENU_WITHOUT_BASBOUSA,
   RICH_MENU,
   cartState,
 } from "../../FoodMenuScreen/__fixtures__/food"
@@ -69,6 +73,18 @@ const CASES: Case[] = [
   { name: "empty basket", drafts: [] },
   { name: "no bottom inset", drafts: [DRAFT_ONE_LINE], insets: { bottom: 0 } },
   { name: "bottom inset 48", drafts: [DRAFT_ONE_LINE], insets: { bottom: 48 } },
+  // Phase 3c: the basket after Order Review repaired it against a menu that
+  // moved (utils/foodCartRepair), beside that menu.
+  {
+    name: "after a repair, a price moved",
+    drafts: [DRAFT_RICH_REPRICED],
+    api: { ...DATA, getProMenu: { data: MENU_LARGE_DEARER } },
+  },
+  {
+    name: "after a repair, a dish removed",
+    drafts: [DRAFT_RICH_WITHOUT_BASBOUSA],
+    api: { ...DATA, getProMenu: { data: MENU_WITHOUT_BASBOUSA } },
+  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
