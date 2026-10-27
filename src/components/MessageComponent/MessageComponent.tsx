@@ -41,6 +41,11 @@ interface Props {
   showReadReceipt?: boolean
   readByName?: string
   isUploading?: boolean
+  // What the order is, for the lines whose wording depends on it. The server
+  // posts one key per step for both modes ("food_order_delivered" is also a
+  // pickup's last step), so the chat screen says which kind of order this is.
+  isFoodOrder?: boolean
+  isPickup?: boolean
 }
 
 // ── Fade-in image tile ──
@@ -91,6 +96,8 @@ const MessageComponent: React.FC<Props> = React.memo(
     showReadReceipt = false,
     readByName = "",
     isUploading = false,
+    isFoodOrder = false,
+    isPickup = false,
   }) => {
     const { t, i18n } = useTranslation()
     const isAr = i18n.language === "ar"
@@ -165,6 +172,20 @@ const MessageComponent: React.FC<Props> = React.memo(
           ? item.text
           : null
       const isExpiryEvent = !!eventTextKey
+      // The wording some of the server's keys need for THIS order. The server
+      // posts "food_order_delivered" as a pickup's last step too, which reads
+      // "Your order was delivered" to someone who walked in and collected it;
+      // and a moderated order is not a "request" (job_cancelled_by_tappler is
+      // the service-request line, and the one the server posts for both).
+      const textKeyFor = (key: string): string => {
+        if (isPickup && key === "food_order_delivered") {
+          return "food_order_picked_up"
+        }
+        if (isFoodOrder && key === "job_cancelled_by_tappler") {
+          return "food_order_cancelled_by_tappler_descr"
+        }
+        return key
+      }
       // Which side a system row sits on is decided by WHO DID IT, not by the
       // fact that it is a system row. The customer's own actions belong with
       // the customer's messages; the pro's belong with the pro's. Getting this
@@ -212,7 +233,7 @@ const MessageComponent: React.FC<Props> = React.memo(
               ]}
             >
               <SystemEventBubble
-                textKey={eventTextKey}
+                textKey={textKeyFor(eventTextKey)}
                 time={time}
                 incoming={isProAction}
                 tone={isFoodProgress ? "progress" : "alert"}
@@ -251,7 +272,7 @@ const MessageComponent: React.FC<Props> = React.memo(
               ]}
             >
               <Text size={11} leading="tight" color="brand">
-                {t(item.text || "")}
+                {t(textKeyFor(item.text || ""))}
               </Text>
             </DmView>
           )}

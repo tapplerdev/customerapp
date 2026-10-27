@@ -590,6 +590,17 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   }, [sendLocation])
 
+  // What kind of order this thread is about, for the system lines whose words
+  // depend on it (a pickup's last step is "picked up", not "delivered"; a
+  // moderated order is not a "request"). Read from the full details and from
+  // the chat's own copy of the job, whichever has it: the details arrive after
+  // the thread does.
+  const orderJobs: any[] = [glanceJob, chatPreview.chat.job].filter(Boolean)
+  const isFoodChat = orderJobs.some(
+    (job) => !!job.serviceCategory?.hasMenu || !!job.foodOrderItems?.length
+  )
+  const chatIsPickup = orderJobs.some((job) => job.placeOfService === "pickup")
+
   // ── Render items ──
   const renderItem = ({ item }: { item: FlatItem }) => {
     if (item.type === "date") {
@@ -610,6 +621,8 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         showReadReceipt={item.showReadReceipt}
         readByName={context.proName}
         isUploading={attachments.isMessageUploading(item.message.id)}
+        isFoodOrder={isFoodChat}
+        isPickup={isFoodChat && chatIsPickup}
       />
     )
   }

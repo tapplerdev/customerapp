@@ -36,11 +36,15 @@ const REVIEW_EVENT = "system.account:customer.jobs.review"
 
 // A job in one of these is over: the customer has to act (order elsewhere),
 // and the update must never be swallowed by the on-screen suppression below.
-const ORDER_ENDED_STATUSES = ["declined", "cancelledByPro", "cancelled"]
+// `ended` is the clock closing an order nobody answered, or one the restaurant
+// never marked finished: the news is "this is over", on the very screen that
+// still reads "Sent to Pro" until it refetches.
+const ORDER_ENDED_STATUSES = ["declined", "cancelledByPro", "cancelled", "ended"]
 // The food order's own terminal status, set unconditionally by the cancel
 // itself — unlike job.status, which depends on a backend settle step that can
-// bail silently.
-const ORDER_ENDED_FOOD_STATUSES = ["cancelled"]
+// bail silently. Expiry writes `ended` on the row too. The banner reads this
+// from the notification's top-level foodOrderStatus, not from the job.
+const ORDER_ENDED_FOOD_STATUSES = ["cancelled", "ended"]
 
 /**
  * Where a notification tap should land, or null to stay put.

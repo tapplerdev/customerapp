@@ -191,9 +191,28 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       // 409 is the server saying the kitchen already started — the one failure
       // the customer can actually understand and act on, so it gets its own
       // message instead of the generic "an error occurred".
-      const status = (e as { status?: number })?.status
-      const message =
-        status === 409 ? t("food_order_already_preparing") : t("an_error_occurred")
+      //
+      // 403 is the order being over (the restaurant ended it, the clock did, or
+      // this same cancel already went through and the answer was lost): say so,
+      // so the customer is not told "an error occurred" about an order that is
+      // already dead. The screen under the sheet refetches by itself: cancelJob
+      // invalidates Jobs, and RTK Query does that for a rejected mutation too
+      // (the press test counts the order's requests, so a change there shows).
+      // The exception is FOOD_ORDER_BUSY, also a 403: the order is fine and a
+      // retry will work, so it keeps the generic message.
+      const { status, data } = (e ?? {}) as {
+        status?: number
+        data?: { code?: string }
+      }
+      const code = data?.code
+      const noLongerActive =
+        code === "FOOD_ORDER_NOT_ACTIVE" ||
+        (status === 403 && code !== "FOOD_ORDER_BUSY")
+      const message = noLongerActive
+        ? t("food_order_no_longer_active")
+        : status === 409
+          ? t("food_order_already_preparing")
+          : t("an_error_occurred")
       runAfterFoodConfirmGone(() => {
         setFoodCancelError(message)
         setErrorModalVisible(true)
