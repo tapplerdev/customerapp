@@ -313,6 +313,29 @@ describe("repairCart", () => {
     expect(result.changed).toBe(true)
   })
 
+  it("reads the photo, pre-order flag and lead time from the menu", () => {
+    // Checkout schedules from the line's lead time, so a stale one shows a
+    // wrong ETA. None of these is something the server checks.
+    const menu = menuOf(
+      dish({
+        photo: "https://example.com/new.jpg",
+        isPreOrderOnly: true,
+        leadTimeHours: 24,
+      })
+    )
+    const result = repairCart([molokhiaLine()], menu)
+    expect(result.changed).toBe(false)
+    expect(result.lines[0]).toMatchObject({
+      photo: "https://example.com/new.jpg",
+      isPreOrderOnly: true,
+      leadTimeHours: 24,
+    })
+
+    // A dish with no photo keeps the line's.
+    const noPhoto = repairCart([molokhiaLine()], menuOf(dish({ photo: "" })))
+    expect(noPhoto.lines[0].photo).toBe("https://example.com/molokhia.jpg")
+  })
+
   it("does not call a changed strikethrough price a change", () => {
     // The list price moved but what the customer pays didn't.
     const result = repairCart(

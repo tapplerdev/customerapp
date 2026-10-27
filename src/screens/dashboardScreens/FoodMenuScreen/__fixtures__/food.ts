@@ -254,12 +254,32 @@ export const MENU_WITHOUT_BASBOUSA: FoodMenuType = {
   })),
 }
 
+/*
+ * DRAFT_RICH's lines as the repair writes them: it also reads each dish's
+ * photo, pre-order flag and lead time from the menu (the lines were built
+ * without the flags, and Basbousa's without a photo).
+ */
+const REPAIRED_MOLOKHIA: CartItemType = {
+  ...MOLOKHIA_LINE,
+  isPreOrderOnly: false,
+  leadTimeHours: null,
+}
+const REPAIRED_CHICKEN: CartItemType = {
+  ...CHICKEN_LINE,
+  isPreOrderOnly: false,
+  leadTimeHours: null,
+}
+const REPAIRED_BASBOUSA: CartItemType = {
+  ...BASBOUSA_LINE,
+  photo: PHOTO("basbousa"),
+}
+
 /** DRAFT_RICH after the repair against MENU_LARGE_DEARER: the Large pick costs 35. */
 export const DRAFT_RICH_REPRICED: CartDraft = {
   ...DRAFT_RICH,
   items: [
     {
-      ...MOLOKHIA_LINE,
+      ...REPAIRED_MOLOKHIA,
       selectedOptions: [
         {
           optionName: "Size",
@@ -268,15 +288,15 @@ export const DRAFT_RICH_REPRICED: CartDraft = {
         MOLOKHIA_LINE.selectedOptions![1],
       ],
     },
-    CHICKEN_LINE,
-    BASBOUSA_LINE,
+    REPAIRED_CHICKEN,
+    REPAIRED_BASBOUSA,
   ],
 }
 
 /** DRAFT_RICH after the repair against MENU_WITHOUT_BASBOUSA: the dessert line is gone. */
 export const DRAFT_RICH_WITHOUT_BASBOUSA: CartDraft = {
   ...DRAFT_RICH,
-  items: [MOLOKHIA_LINE, CHICKEN_LINE],
+  items: [REPAIRED_MOLOKHIA, REPAIRED_CHICKEN],
 }
 
 /** A draft an hour and a half old: the sweep drops it. */

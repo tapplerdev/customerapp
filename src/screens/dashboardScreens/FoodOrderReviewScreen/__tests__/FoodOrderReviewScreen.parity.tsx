@@ -335,6 +335,11 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
         expect(JSON.stringify(session.tree())).toContain(
           copy(env, "food_menu_changed_repriced")
         )
+        // The pop-up says the menu changed, not "Error", and draws a warning.
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "food_menu_changed_title")
+        )
+        expect(JSON.stringify(session.tree())).toContain("svg:warning-triangle")
         expect(basket(session.store)).toEqual(DRAFT_RICH_REPRICED.items)
         // One send, the refused one. The repair never sends another.
         expect(sentOrders(session)).toHaveLength(1)
@@ -416,6 +421,13 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
         expect(JSON.stringify(session.tree())).toContain(
           "order items don't match the pro's current menu"
         )
+        // Not the repair's pop-up: the usual Error title, no warning.
+        expect(JSON.stringify(session.tree())).not.toContain(
+          copy(env, "food_menu_changed_title")
+        )
+        expect(JSON.stringify(session.tree())).not.toContain(
+          "svg:warning-triangle"
+        )
         expect(basket(session.store)).toEqual(DRAFT_RICH.items)
       } finally {
         session.unmount()
@@ -487,6 +499,116 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
         expect(session.navigation.actions).toMatchObject([
           { type: "NAVIGATE", payload: { name: "RequestSuccessScreen" } },
         ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a dish given a new id by an approval is repaired, and the pop-up says the menu was updated [$env.language $env.platform]",
+    async ({ env }) => {
+      const reIded = {
+        ...RICH_MENU,
+        menuSections: RICH_MENU.menuSections.map((section) => ({
+          ...section,
+          menuItems: section.menuItems.map((item) => ({
+            ...item,
+            id: item.id + 1000,
+          })),
+        })),
+      }
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: menuThenMenu(reIded),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "food_menu_changed_updated")
+        )
+        expect(basket(session.store)?.map((l) => l.menuItemId)).toEqual([
+          1411, 1412, 1431,
+        ])
+        expect(sentOrders(session)).toHaveLength(1)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "nothing left in the basket: its own message, then back to the restaurant's menu [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: menuThenMenu({ ...RICH_MENU, menuSections: [] }),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "food_menu_changed_emptied")
+        )
+        expect(basket(session.store)).toBeUndefined()
+        expect(sentOrders(session)).toHaveLength(1)
+        // Still here while the pop-up is up.
+        expect(session.navigation.actions).toEqual([])
+
+        // iOS ends a present on a 2 s backstop under jest, and a close waits
+        // for it (the kit's Step.settleMs says so).
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        }, 2500)
+        expect(session.navigation.actions).toMatchObject([
+          {
+            type: "POP_TO",
+            payload: {
+              name: "FoodMenuScreen",
+              params: {
+                proId: PRO_FOOD.id,
+                serviceCategoryId: DRAFT_RICH.serviceCategoryId,
+                serviceId: DRAFT_RICH.serviceId,
+                proName: DRAFT_RICH.proName,
+                categoryName: DRAFT_RICH.categoryName,
+                fulfillmentMode: "delivery",
+              },
+            },
+          },
+        ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a basket that was only repriced stays on Order Review when the pop-up closes [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: menuThenMenu(MENU_LARGE_DEARER),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        }, 2500)
+        expect(session.navigation.actions).toEqual([])
       } finally {
         session.unmount()
       }
