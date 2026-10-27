@@ -8,7 +8,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import { RootStackScreenProps } from "navigation/types"
+import { RootStackParamList, RootStackScreenProps } from "navigation/types"
 import {
   useCreateJobMutation,
   useGetProMenuQuery,
@@ -26,6 +26,7 @@ import {
 } from "store/cart/slice"
 import { buildFoodOrderItems, repairCart } from "utils/foodCartRepair"
 import ErrorModal from "components/ErrorModal"
+import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
 
 import styles from "./styles"
@@ -42,9 +43,10 @@ const isMenuChangedRefusal = (error: any): boolean =>
   error?.data?.validationErrors?.foodOrderItems != null
 
 // Last look before committing. Checkout gathers and validates; this screen
-// confirms and commits — which is why the built payload arrives as a param
-// rather than this screen re-deriving it from scratch. It is plain JSON, so it
-// crosses the navigation boundary without a serialisation warning.
+// confirms and commits. The built payload arrives as a param (plain JSON, so
+// it crosses the navigation boundary without a serialisation warning), but its
+// food lines are rebuilt from the live basket on submit: when the menu moved
+// and the basket was repaired here, what gets sent is what is on screen.
 const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const {
     proId,
@@ -69,6 +71,14 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isSubmitting, setSubmitting] = useState(false)
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  // Set when the menu changed under the basket: the pop-up then has its own
+  // title and icon, because the order did not fail, the basket was fixed.
+  const [errorTitle, setErrorTitle] = useState<string | undefined>(undefined)
+  // Set when the repair left nothing in the basket. The pop-up closes onto the
+  // restaurant's menu: there is no basket left to check here.
+  const [backToMenu, setBackToMenu] = useState<
+    RootStackParamList["FoodMenuScreen"] | null
+  >(null)
 
   const { data: menu } = useGetProMenuQuery(
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
@@ -104,14 +114,30 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
     const repair = repairCart(cart.items, fresh)
     if (!repair.changed) return false
 
+    // The draft goes when its last line does, so the menu's route params are
+    // read from it first.
+    const menuParams = {
+      proId: cart.proId,
+      serviceCategoryId: cart.serviceCategoryId,
+      serviceId: cart.serviceId,
+      proName: cart.proName,
+      categoryName: cart.categoryName,
+      fulfillmentMode: cart.fulfillmentMode,
+    }
     dispatch(replaceCartLines({ proId, lines: repair.lines }))
+
+    const emptied = repair.lines.length === 0
+    setErrorTitle(t("food_menu_changed_title"))
+    setBackToMenu(emptied ? menuParams : null)
     setErrorMessage(
       t(
-        repair.removed.length
-          ? "food_menu_changed_removed"
-          : repair.repriced.length
-            ? "food_menu_changed_repriced"
-            : "food_menu_changed_updated"
+        emptied
+          ? "food_menu_changed_emptied"
+          : repair.removed.length
+            ? "food_menu_changed_removed"
+            : repair.repriced.length
+              ? "food_menu_changed_repriced"
+              : "food_menu_changed_updated"
       )
     )
     setErrorVisible(true)
@@ -139,6 +165,8 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       const message = validationErrors
         ? Object.values(validationErrors).flat().join(", ")
         : error?.data?.message || t("an_error_occurred")
+      setErrorTitle(undefined)
+      setBackToMenu(null)
       setErrorMessage(String(message))
       setErrorVisible(true)
     } finally {
@@ -300,6 +328,15 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       <ErrorModal
         isVisible={isErrorVisible}
         onClose={() => setErrorVisible(false)}
+        // After the pop-up has closed, never beside it (CLAUDE.local.md)
+        onModalHide={() => {
+          if (!backToMenu) return
+          const params = backToMenu
+          setBackToMenu(null)
+          navigation.popTo("FoodMenuScreen", params)
+        }}
+        title={errorTitle}
+        Icon={errorTitle ? <WarningTriangleIcon width={48} height={43} /> : undefined}
         descr={errorMessage}
       />
     </SafeAreaView>

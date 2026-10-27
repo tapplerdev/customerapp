@@ -188,12 +188,18 @@ const resolveLine = (
       price,
       originalPrice: Number(dish.price) || 0,
       selectedOptions: selectedOptions.length ? selectedOptions : undefined,
+      // Display and scheduling fields come from the menu too. Checkout reads
+      // the line's lead time for its notice, and the delivery-speed fields go
+      // live with Phase 5, so a stale copy would show a wrong ETA.
+      photo: dish.photo || line.photo,
+      isPreOrderOnly: dish.isPreOrderOnly,
+      leadTimeHours: dish.leadTimeHours,
     },
   }
 }
 
-// Whether the server would see a different line: originalPrice, which only
-// draws the strikethrough, doesn't count.
+// Whether the server would see a different line: originalPrice (the
+// strikethrough) and the display and scheduling fields don't count.
 const differsForServer = (before: CartItemType, after: CartItemType): boolean =>
   JSON.stringify(buildFoodOrderItems([before])) !==
   JSON.stringify(buildFoodOrderItems([after]))

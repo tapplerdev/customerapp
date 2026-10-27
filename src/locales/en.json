@@ -401,6 +401,8 @@
   "food_menu_changed_repriced": "Some prices on this menu just changed. Your basket is updated, so check the total before you order.",
   "food_menu_changed_removed": "Some items in your basket are no longer available and were removed. Check your basket before you order.",
   "food_menu_changed_updated": "This menu was just updated. Your basket is up to date, so you can place your order now.",
+  "food_menu_changed_title": "The menu changed",
+  "food_menu_changed_emptied": "The items in your basket aren't available anymore. Pick again from the menu.",
   "job_expired": "Job expired",
   "request_ended": "This request has ended",
   "request_ended_descr": "Start a fresh copy to get offers",
