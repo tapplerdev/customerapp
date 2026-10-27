@@ -473,7 +473,7 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
         await session.act(() => {
           pressTitled(session.root, copy(env, "submit_order"))
         })
-        const orders = sentOrders(session) as {
+        const orders = sentOrders(session) as unknown as {
           args: { body: { foodOrderItems: { name: string; selectedOptions?: { choices: { price: number }[] }[] }[] } }
         }[]
         expect(orders).toHaveLength(2)
