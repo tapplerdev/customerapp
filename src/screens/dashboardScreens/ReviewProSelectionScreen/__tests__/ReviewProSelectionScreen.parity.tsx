@@ -21,7 +21,12 @@ import {
 } from "testing/hostTreeParity"
 import type { JobType } from "types/job"
 
-import { JOB_ALL_REVIEWED, JOB_REVIEWABLE } from "../../__fixtures__/jobStates"
+import {
+  FOOD_COURIER,
+  FOOD_DELIVERED,
+  JOB_ALL_REVIEWED,
+  JOB_REVIEWABLE,
+} from "../../__fixtures__/jobStates"
 
 /*
  * ReviewProSelectionScreen: the pros a customer can still review, after
@@ -31,6 +36,10 @@ import { JOB_ALL_REVIEWED, JOB_REVIEWABLE } from "../../__fixtures__/jobStates"
  * review, three (a photo, a company's, none) beside a reviewed one and one
  * only selected, and nothing left to review. Presses: each pro opens the
  * review form with its own id, the X goes back.
+ *
+ * A food order is reviewable once it is delivered and not before: the daily
+ * reminder and an old push can open this screen for an order that has not
+ * arrived, and its restaurant must not be on the list.
  */
 
 const load = () => require("../ReviewProSelectionScreen")
@@ -47,6 +56,8 @@ const CASES: Case[] = [
   { state: "one pro to review" },
   { state: "three pros to review", job: JOB_REVIEWABLE },
   { state: "nothing left to review", job: JOB_ALL_REVIEWED },
+  { state: "a delivered food order: its restaurant", job: FOOD_DELIVERED },
+  { state: "a food order still on its way: nobody", job: FOOD_COURIER },
 ]
 
 const answer = (job: Case["job"]) => {
@@ -103,6 +114,40 @@ describe("ReviewProSelectionScreen: presses", () => {
         expect(session.navigation.actions).toHaveLength(3)
       } finally {
         session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a delivered food order's restaurant can be picked, one still on its way cannot [$language $platform]",
+    async (env) => {
+      const late = await openScreen(
+        load,
+        options({ state: "late", job: FOOD_COURIER }, env)
+      )
+      try {
+        expect(JSON.stringify(late.tree())).not.toContain("Laila's Kitchen")
+      } finally {
+        late.unmount()
+      }
+      const done = await openScreen(
+        load,
+        options({ state: "done", job: FOOD_DELIVERED }, env)
+      )
+      try {
+        await done.act(() => {
+          pressContaining(done.root, "Laila's Kitchen")
+        })
+        const last = done.navigation.actions.at(-1) as {
+          payload: { name: string; params: object }
+        }
+        expect(last.payload.name).toBe("ReviewFormScreen")
+        expect(last.payload.params).toEqual({
+          jobId: JOB.id,
+          proId: 1003,
+        })
+      } finally {
+        done.unmount()
       }
     }
   )

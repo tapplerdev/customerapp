@@ -17,7 +17,7 @@ import {
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
 import { DATA, SERVER_ERROR } from "testing/screenKit/fixtures/api"
-import { CHAT } from "testing/screenKit/fixtures/entities"
+import { CHAT, JOB_FOOD } from "testing/screenKit/fixtures/entities"
 import {
   PARITY_MATRIX,
   expectParity,
@@ -34,9 +34,12 @@ import {
   ENDED,
   FOOD,
   FOOD_DELIVERED,
+  FOOD_PICKUP,
+  FOOD_PICKUP_JOB,
   JOB_DETAILS,
   LONG_THREAD,
   NO_PHOTO,
+  ORDER_KIND_EVENTS,
   SYSTEM_EVENTS,
   THREAD,
   WITH_OFFER,
@@ -57,6 +60,9 @@ import {
  */
 
 const load = () => require("../MessagesDetailsScreen")
+
+/** The food order's details, as the screen's glance sheet fetches them. */
+const JOB_FOOD_DETAILS = JOB_FOOD
 
 type Case = {
   name: string
@@ -111,6 +117,27 @@ const CASES: Case[] = [
   },
   { name: "attachments", preview: DIRECT, messages: ATTACHMENTS },
   { name: "system lines", preview: FOOD, messages: SYSTEM_EVENTS },
+  {
+    name: "system lines, a delivery order",
+    preview: FOOD,
+    messages: ORDER_KIND_EVENTS,
+    api: apiFor(FOOD, ORDER_KIND_EVENTS, {
+      getCustomerJobDetails: { data: JOB_FOOD_DETAILS },
+    }),
+  },
+  {
+    name: "system lines, a pickup order",
+    preview: FOOD_PICKUP,
+    messages: ORDER_KIND_EVENTS,
+    api: apiFor(FOOD_PICKUP, ORDER_KIND_EVENTS, {
+      getCustomerJobDetails: { data: FOOD_PICKUP_JOB },
+    }),
+  },
+  {
+    name: "system lines, a service request moderated",
+    preview: WITH_OFFER,
+    messages: ORDER_KIND_EVENTS.slice(3),
+  },
   {
     name: "attachments, small phone",
     preview: DIRECT,
@@ -708,6 +735,60 @@ describe("MessagesDetailsScreen, the list and the header", () => {
       } finally {
         session.unmount()
       }
+    }
+  )
+})
+
+describe("MessagesDetailsScreen: the order's mode and kind in its system lines", () => {
+  const thread = async (name: string, env: ParityEnv) => {
+    const session = await open(byName(name), env)
+    try {
+      return JSON.stringify(session.tree())
+    } finally {
+      session.unmount()
+    }
+  }
+
+  it.each(envs.map(({ env }) => env))(
+    "a pickup order's last step reads picked up, a delivery's reads delivered [$language $platform]",
+    async (env) => {
+      const pickup = await thread("system lines, a pickup order", env)
+      expect(pickup).toContain(copy(env, "food_order_picked_up"))
+      expect(pickup).not.toContain(copy(env, "food_order_delivered"))
+      expect(pickup).toContain(copy(env, "food_order_ready_for_pickup"))
+
+      const delivery = await thread("system lines, a delivery order", env)
+      expect(delivery).toContain(copy(env, "food_order_delivered"))
+      expect(delivery).not.toContain(copy(env, "food_order_picked_up"))
+    }
+  )
+
+  it.each(envs.map(({ env }) => env))(
+    "a moderated order is not called a request; a moderated request still is [$language $platform]",
+    async (env) => {
+      const food = await thread("system lines, a delivery order", env)
+      expect(food).toContain(
+        copy(env, "food_order_cancelled_by_tappler_descr")
+      )
+      expect(food).not.toContain(copy(env, "job_cancelled_by_tappler"))
+
+      const request = await thread(
+        "system lines, a service request moderated",
+        env
+      )
+      expect(request).toContain(copy(env, "job_cancelled_by_tappler"))
+      expect(request).not.toContain(
+        copy(env, "food_order_cancelled_by_tappler_descr")
+      )
+    }
+  )
+
+  it.each(envs.map(({ env }) => env))(
+    "the accepted line no longer says it is being prepared [$language $platform]",
+    async (env) => {
+      const text = await thread("system lines, a delivery order", env)
+      expect(text).toContain(copy(env, "food_order_accepted"))
+      expect(copy(env, "food_order_accepted")).not.toMatch(/preparing|يحضّر/)
     }
   )
 })

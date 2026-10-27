@@ -296,10 +296,78 @@ export const FOOD_CANCELLED_BY_KITCHEN = foodJob({
     }),
   ],
 })
+/** The restaurant pulled it after accepting: the job settled to cancelledByPro and the reason is hidden from customers (Other). */
+export const FOOD_CANCELLED_BY_PLACE_NO_REASON = foodJob({
+  status: "cancelledByPro",
+  pros: [foodPro({ status: "cancelled", foodOrderCancelReason: undefined })],
+})
+/** A reason this build has no line for (newer than the build): the plain line, never the raw key. */
+export const FOOD_CANCELLED_BY_PLACE_UNKNOWN_REASON = foodJob({
+  status: "cancelledByPro",
+  pros: [
+    foodPro({ status: "cancelled", foodOrderCancelReason: "somethingNew" }),
+  ],
+})
+/** Moderation took it down. */
+export const FOOD_MODERATED = foodJob({
+  status: "cancelledByTappler",
+  pros: [foodPro({ status: "cancelledByTappler" })],
+})
+/** The clock ended an order the restaurant never answered. */
+export const FOOD_EXPIRED = foodJob({
+  status: "ended",
+  dateType: "asap",
+  deliveryFee: 0,
+  pros: [foodPro({ selectionStatus: "selected", status: "ended" })],
+})
+/** The clock ended an order the restaurant had accepted and never marked finished. */
+export const FOOD_CLOSED = foodJob({
+  status: "ended",
+  pros: [foodPro({ status: "ended" })],
+})
+export const FOOD_CLOSED_PICKUP = foodJob({
+  status: "ended",
+  placeOfService: "pickup",
+  deliveryFee: 0,
+  pros: [foodPro({ status: "ended" })],
+})
 export const FOOD_DECLINED = foodJob({
   pros: [foodPro({ selectionStatus: "proRejected", status: undefined })],
 })
 export const FOOD_NO_PRO = foodJob({ pros: [] })
+
+// ---------------------------------------------------------------------------
+// Talabati: food orders in each state the list words, and whether it may be reviewed
+
+const listedFood = (
+  id: number,
+  hoursAgo: number,
+  status: string,
+  pro: Partial<JobProType>
+): JobType => ({
+  ...JOB_FOOD,
+  id,
+  status,
+  requestedOn: HOURS_AGO(hoursAgo),
+  pros: [{ ...JOB_FOOD.pros![0], ...pro }],
+})
+
+export const TALABATI_FOOD_JOBS: JobType[] = [
+  // delivered, not yet reviewed: the one that offers "Leave review"
+  listedFood(8301, 1, "completed", { status: "delivered" }),
+  // accepted, then cooking, then on its way: no review yet
+  listedFood(8302, 2, "active", { status: "accepted" }),
+  listedFood(8303, 3, "active", { status: "withDeliveryCourier" }),
+  // the restaurant pulled it after accepting
+  listedFood(8304, 4, "cancelledByPro", { status: "cancelled" }),
+  // moderation
+  listedFood(8305, 5, "cancelledByTappler", { status: "cancelledByTappler" }),
+  // the clock: never answered, accepted and never finished
+  listedFood(8306, 6, "ended", { selectionStatus: "selected", status: "ended" }),
+  listedFood(8307, 7, "ended", { status: "ended" }),
+  // the customer's own cancel, after an accept
+  listedFood(8308, 8, "cancelled", { status: "accepted" }),
+]
 
 // ---------------------------------------------------------------------------
 // ReviewProSelection and ReviewForm
