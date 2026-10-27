@@ -16,6 +16,7 @@ import {
   formatMoney,
   hasDiscount,
 } from "store/cart/slice"
+import { cartLineUid } from "utils/foodCartRepair"
 
 // Helpers & Types
 import { RootStackScreenProps } from "navigation/types"
@@ -140,10 +141,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
       }))
 
     // Same item + same choice combination merges into one line
-    const uid = `${menuItem.id}:${selectedOptions
-      .map((o) => `${o.optionName}=${o.choices.map((c) => c.name).sort().join("+")}`)
-      .sort()
-      .join("|")}`
+    const uid = cartLineUid(menuItem.id, selectedOptions)
 
     dispatch(
       addCartItem({

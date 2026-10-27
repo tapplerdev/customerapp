@@ -31,6 +31,7 @@ import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 // Helpers & Types
 import { AddressInfo, RootStackScreenProps } from "navigation/types"
 import { CreateJobRequest } from "types/job"
+import { buildFoodOrderItems } from "utils/foodCartRepair"
 
 // Styles & Assets
 import styles from "./styles"
@@ -414,23 +415,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
             ],
           }),
         ...(cart.orderNotes && { orderNotes: cart.orderNotes }),
-        // Only the fields the backend validates — display-only extras
-        // (originalPrice, isPreOrderOnly) are stripped here.
-        foodOrderItems: cart.items.map((line) => ({
-          menuItemId: line.menuItemId,
-          name: line.name,
-          price: line.price,
-          quantity: line.quantity,
-          ...(line.selectedOptions?.length && {
-            selectedOptions: line.selectedOptions.map((option) => ({
-              optionName: option.optionName,
-              choices: option.choices.map((choice) => ({
-                name: choice.name,
-                price: choice.price,
-              })),
-            })),
-          }),
-        })),
+        // Only the fields the backend validates; Review rebuilds this list
+        // from the basket on submit, with the same helper.
+        foodOrderItems: buildFoodOrderItems(cart.items),
         paymentMethod,
       }
 

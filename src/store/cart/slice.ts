@@ -124,6 +124,26 @@ const cartSlice = createSlice({
       draft.lastUpdatedAt = Date.now()
     },
 
+    // The basket after a repair against the pro's current menu
+    // (utils/foodCartRepair). The lines are already final, so this only
+    // stores them. An empty list drops the draft, like removing the last line
+    // does. Touching the draft counts as activity: the customer is mid-checkout.
+    replaceCartLines: (
+      state,
+      action: PayloadAction<{ proId: number; lines: CartItemType[] }>
+    ) => {
+      const { proId, lines } = action.payload
+      const draft = state.carts[proId]
+      if (!draft) return
+
+      if (!lines.length) {
+        delete state.carts[proId]
+        return
+      }
+      draft.items = lines
+      draft.lastUpdatedAt = Date.now()
+    },
+
     // Every screen that can change where the order is going dispatches this:
     // the pros listing, the checkout sheet, the address pickers. One write,
     // and every screen in the flow reads the same value back.
@@ -165,6 +185,7 @@ export const {
   addCartItem,
   setCartItemQuantity,
   removeCartItem,
+  replaceCartLines,
   setBrowsingAddress,
   setOrderNotes,
   clearCart,

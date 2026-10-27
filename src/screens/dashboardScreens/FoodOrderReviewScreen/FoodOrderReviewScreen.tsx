@@ -9,7 +9,11 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
-import { useCreateJobMutation, useGetProMenuQuery } from "services/api"
+import {
+  useCreateJobMutation,
+  useGetProMenuQuery,
+  useLazyGetProMenuQuery,
+} from "services/api"
 import { useTypedSelector } from "store"
 import {
   cartLineTotal,
@@ -17,8 +21,10 @@ import {
   computeOrderTotals,
   emptyDraft,
   formatMoney,
+  replaceCartLines,
   selectDraft,
 } from "store/cart/slice"
+import { buildFoodOrderItems, repairCart } from "utils/foodCartRepair"
 import ErrorModal from "components/ErrorModal"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
 
@@ -27,6 +33,13 @@ import { AppScrollView } from "components/scroll"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodOrderReviewScreen">
+
+// The order check refused the lines because the menu moved under the basket.
+// The backend says so with a code (Phase 3); a backend from before it only
+// names the field, and that is the same refusal.
+const isMenuChangedRefusal = (error: any): boolean =>
+  error?.data?.code === "FOOD_ORDER_MENU_CHANGED" ||
+  error?.data?.validationErrors?.foodOrderItems != null
 
 // Last look before committing. Checkout gathers and validates; this screen
 // confirms and commits — which is why the built payload arrives as a param
@@ -61,6 +74,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
     { skip: !cart.serviceCategoryId }
   )
+  const [fetchMenu] = useLazyGetProMenuQuery()
 
   // Same helper checkout used, so the number approved here is the number sent.
   const { subtotal, deliveryFee, orderDiscount, total } = useMemo(
@@ -68,16 +82,59 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
     [cart.items, menu, isPickup]
   )
 
+  // Re-read the menu, repair the basket against it and say what happened.
+  // Returns false when there is nothing to tell the customer (the menu would
+  // not load, or it agrees with the basket), so the caller shows the server's
+  // own error as before. It never submits: the customer sees the new total,
+  // then decides.
+  const repairBasket = async (): Promise<boolean> => {
+    if (!cart.serviceCategoryId) return false
+
+    let fresh
+    try {
+      // preferCacheValue false: a forced refetch, the cached menu is the stale one
+      fresh = await fetchMenu(
+        { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
+        false
+      ).unwrap()
+    } catch {
+      return false
+    }
+
+    const repair = repairCart(cart.items, fresh)
+    if (!repair.changed) return false
+
+    dispatch(replaceCartLines({ proId, lines: repair.lines }))
+    setErrorMessage(
+      t(
+        repair.removed.length
+          ? "food_menu_changed_removed"
+          : repair.repriced.length
+            ? "food_menu_changed_repriced"
+            : "food_menu_changed_updated"
+      )
+    )
+    setErrorVisible(true)
+    return true
+  }
+
   const handleSubmitOrder = async () => {
     if (isSubmitting) return
 
     try {
       setSubmitting(true)
-      await createJob(payload).unwrap()
+      // The lines come from the basket on screen, not from the payload checkout
+      // built, so a repaired basket is what gets sent next time.
+      await createJob({
+        ...payload,
+        foodOrderItems: buildFoodOrderItems(cart.items),
+      }).unwrap()
       const successAddress = cartState.address ?? undefined
       dispatch(clearCart(proId))
       navigation.navigate("RequestSuccessScreen", { address: successAddress })
     } catch (error: any) {
+      if (isMenuChangedRefusal(error) && (await repairBasket())) return
+
       const validationErrors = error?.data?.validationErrors
       const message = validationErrors
         ? Object.values(validationErrors).flat().join(", ")
