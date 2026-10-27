@@ -189,4 +189,5 @@ export const ORDER_KIND_EVENTS: ChatMessageType[] = [
   at(7522, "system", 2, { text: "food_order_ready_for_pickup" }),
   at(7523, "system", 3, { text: "food_order_accepted" }),
   at(7524, "system", 4, { text: "job_cancelled_by_tappler" }),
+  at(7525, "system", 5, { text: "job_expired" }),
 ]

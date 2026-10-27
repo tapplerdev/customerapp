@@ -39,10 +39,14 @@ export const foodOrderEnd = (job: JobType): FoodOrderEnd | null => {
   if (job.status === "cancelledByTappler" || status === "cancelledByTappler") {
     return "cancelledByTappler"
   }
+  // A restaurant's reason is written only by its cancel, so one on the row
+  // means it was cancelled even where the status no longer says so: expiry used
+  // to overwrite a cancelled row (and its job) with `ended`.
   if (
     job.status === "cancelled" ||
     job.status === "cancelledByPro" ||
-    status === "cancelled"
+    status === "cancelled" ||
+    !!jobPro?.foodOrderCancelReason
   ) {
     // Whose cancel: `job.status === "cancelled"` is the customer's, but a
     // restaurant's cancel can leave it there too (rows from before the job

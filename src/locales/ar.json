@@ -544,6 +544,7 @@
   "food_cancel_missingIngredients": "بعض الأصناف غير متوفرة.",
   "food_cancel_deliveryNotPossible": "التوصيل إلى عنوانك غير ممكن.",
   "food_cancel_tooBusy": "المكان مشغول جدًا الآن.",
+  "food_order_expired": "الطلب انتهى",
   "food_order_picked_up": "استلمت طلبك. بالهنا والشفا.",
   "food_order_expired_descr": "المكان ماأكدش طلبك في الوقت. مادفعتش حاجة.",
   "food_order_closed_descr": "الطلب اتقفل تلقائيًا. كلّم المكان في الشات لو ماوصلكش.",

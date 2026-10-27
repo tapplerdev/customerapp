@@ -136,7 +136,7 @@ const CASES: Case[] = [
   {
     name: "system lines, a service request moderated",
     preview: WITH_OFFER,
-    messages: ORDER_KIND_EVENTS.slice(3),
+    messages: [ORDER_KIND_EVENTS[3], ORDER_KIND_EVENTS[4]],
   },
   {
     name: "attachments, small phone",
@@ -780,6 +780,22 @@ describe("MessagesDetailsScreen: the order's mode and kind in its system lines",
       expect(request).not.toContain(
         copy(env, "food_order_cancelled_by_tappler_descr")
       )
+    }
+  )
+
+  it.each(envs.map(({ env }) => env))(
+    "an expired order is not a job; an expired request still is [$language $platform]",
+    async (env) => {
+      const food = await thread("system lines, a delivery order", env)
+      expect(food).toContain(copy(env, "food_order_expired"))
+      expect(food).not.toContain(copy(env, "job_expired"))
+
+      const request = await thread(
+        "system lines, a service request moderated",
+        env
+      )
+      expect(request).toContain(copy(env, "job_expired"))
+      expect(request).not.toContain(copy(env, "food_order_expired"))
     }
   )
 

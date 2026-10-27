@@ -44,6 +44,7 @@ import {
   FOOD_DELIVERED,
   FOOD_EXPIRED,
   FOOD_MODERATED,
+  FOOD_MODERATION_LAG,
   FOOD_NO_PRO,
   FOOD_PICKUP,
   FOOD_PREPARING,
@@ -315,6 +316,24 @@ describe("JobDetailScreen's food order: presses", () => {
         expect(text(late)).not.toContain(copy(env, "cancel_order"))
       } finally {
         late.unmount()
+      }
+      // Never under a headline that says Cancelled: the menu asks the same
+      // question the headline does (moderation's lag window: the row says
+      // cancelled, the job still says active).
+      for (const [state, job] of [
+        ["lag", FOOD_MODERATION_LAG],
+        ["expired", FOOD_EXPIRED],
+        ["declined", FOOD_DECLINED],
+        ["restaurant", FOOD_CANCELLED_BY_PLACE_NO_REASON],
+      ] as const) {
+        const over = await open({ state, job }, env)
+        try {
+          await run(over, env, [dots])
+          expect(text(over)).toContain(copy(env, "my_request_details"))
+          expect(text(over)).not.toContain(copy(env, "cancel_order"))
+        } finally {
+          over.unmount()
+        }
       }
     }
   )

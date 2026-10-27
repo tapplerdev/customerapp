@@ -69,15 +69,7 @@ const detailsTransition = {
 // Yes. The server enforces the same cutoff (UNCANCELLABLE_FOOD_ORDER_STATUSES)
 // and answers 409; this only decides whether to offer the button.
 export const canCancelFoodOrder = (job: JobType): boolean => {
-  const jobPro = job.pros?.[0]
-  const status = jobPro?.status
-  const isCancelled = status === "cancelled" || job.status === "cancelled"
-  // A declined order has nothing left to cancel. It used to pass this check —
-  // a decline leaves `status` unset, so indexOf returned -1 — and the ••• menu
-  // went on offering Cancel for an order the restaurant had already refused.
-  //
-  const isDeclined =
-    jobPro?.selectionStatus === "proRejected" || job.status === "declined"
+  const status = job.pros?.[0]?.status
 
   // WHITELIST, not a blacklist.
   //
@@ -95,10 +87,14 @@ export const canCancelFoodOrder = (job: JobType): boolean => {
   //
   // Asking "is it live?" cannot leak that way, and it matches how the service
   // path has always gated the same menu (JobDetailScreen: status === "active").
+  //
+  // "Is it over?" is foodOrderEnd's answer, the one the headline reads, so the
+  // menu can never offer Cancel under a headline that says Cancelled (it did in
+  // moderation's lag window: the row cancelledByTappler, the job still active).
+  // A declined order has nothing left to cancel either, and is one of its ends.
   return (
     job.status === "active" &&
-    !isCancelled &&
-    !isDeclined &&
+    foodOrderEnd(job) === null &&
     !UNCANCELLABLE_FOOD_STATUSES.includes(status ?? "")
   )
 }

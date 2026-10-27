@@ -153,6 +153,30 @@ describe("ReviewProSelectionScreen: presses", () => {
   )
 
   it.each(PARITY_MATRIX)(
+    "leaves by itself for a food order with nobody to review, and only for that [$language $platform]",
+    async (env) => {
+      const goesBack = async (job: Case["job"]) => {
+        const session = await openScreen(load, options({ state: "back", job }, env))
+        try {
+          await session.act(() => {})
+          return session.navigation.actions.map((action) => action.type)
+        } finally {
+          session.unmount()
+        }
+      }
+      // an old push for an order still on its way
+      expect(await goesBack(FOOD_COURIER)).toEqual(["GO_BACK"])
+      // the order has not loaded yet: nothing to decide
+      expect(await goesBack("loading")).toEqual([])
+      // delivered: its restaurant is there to pick
+      expect(await goesBack(FOOD_DELIVERED)).toEqual([])
+      // a service request with nothing left keeps its screen, as before
+      expect(await goesBack(JOB_ALL_REVIEWED)).toEqual([])
+      expect(await goesBack(JOB_REVIEWABLE)).toEqual([])
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
     "the X goes back [$language $platform]",
     async (env) => {
       const session = await openScreen(load, options({ state: "x" }, env))

@@ -181,6 +181,8 @@ const MessageComponent: React.FC<Props> = React.memo(
         if (isPickup && key === "food_order_delivered") {
           return "food_order_picked_up"
         }
+        // "Job expired" is a service request's line; an order is not a job.
+        if (isFoodOrder && key === "job_expired") return "food_order_expired"
         if (isFoodOrder && key === "job_cancelled_by_tappler") {
           return "food_order_cancelled_by_tappler_descr"
         }

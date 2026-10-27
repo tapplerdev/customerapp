@@ -86,6 +86,11 @@ describe("foodOrderEnd", () => {
       "cancelledByPlace",
     ],
     [
+      "an old restaurant cancel that expiry overwrote to ended",
+      job("ended", { status: "ended", foodOrderCancelReason: "tooBusy" }),
+      "cancelledByPlace",
+    ],
+    [
       "moderated, on the job",
       job("cancelledByTappler", { status: "preparing" }),
       "cancelledByTappler",

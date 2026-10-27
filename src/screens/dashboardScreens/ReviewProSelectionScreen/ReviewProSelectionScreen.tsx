@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
@@ -34,6 +34,19 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
   const reviewablePros = job
     ? job.pros?.filter((p) => isReviewableJobPro(job, p)) || []
     : []
+
+  // A food order that has not been delivered has nobody to review, and an old
+  // push, or a reminder still in the bell list from before the server stopped
+  // sending them, can still open this screen for one: a title and nothing under
+  // it. Leave instead. Only for food (a service request's empty list stays as
+  // it was), only once the order has loaded, and only while this screen is the
+  // one showing: reviewing the last pro refreshes the job under the form that
+  // was just opened, and going back then would close the form.
+  const isFoodWithNobody =
+    !!job?.serviceCategory?.hasMenu && !reviewablePros.length
+  useEffect(() => {
+    if (isFoodWithNobody && navigation.isFocused()) navigation.goBack()
+  }, [isFoodWithNobody, navigation])
 
   const handleSelectPro = (proId: number) => {
     navigation.navigate("ReviewFormScreen", { jobId, proId })

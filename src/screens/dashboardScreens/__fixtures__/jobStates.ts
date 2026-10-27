@@ -313,6 +313,10 @@ export const FOOD_MODERATED = foodJob({
   status: "cancelledByTappler",
   pros: [foodPro({ status: "cancelledByTappler" })],
 })
+/** Moderation's lag window: the row is cancelledByTappler, the job still active. */
+export const FOOD_MODERATION_LAG = foodJob({
+  pros: [foodPro({ status: "cancelledByTappler" })],
+})
 /** The clock ended an order the restaurant never answered. */
 export const FOOD_EXPIRED = foodJob({
   status: "ended",

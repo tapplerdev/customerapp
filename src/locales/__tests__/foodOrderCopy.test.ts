@@ -16,6 +16,7 @@ const ar = i18n.getFixedT("ar")
 
 const KEYS = [
   "food_order_picked_up",
+  "food_order_expired",
   "food_order_expired_descr",
   "food_order_closed_descr",
   "food_order_closed_descr_pickup",

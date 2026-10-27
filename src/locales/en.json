@@ -544,6 +544,7 @@
   "food_cancel_missingIngredients": "Some items weren't available.",
   "food_cancel_deliveryNotPossible": "Delivery to your address wasn't possible.",
   "food_cancel_tooBusy": "The place is too busy right now.",
+  "food_order_expired": "Order expired",
   "food_order_picked_up": "You picked up your order. Enjoy your meal.",
   "food_order_expired_descr": "The place didn't confirm your order in time. You have not been charged.",
   "food_order_closed_descr": "This order was closed automatically. Message the place if it hasn't arrived.",
