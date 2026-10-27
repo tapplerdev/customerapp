@@ -30,6 +30,7 @@ import LottieView from "lottie-react-native"
 const AnimatedLottieView = RNAnimated.createAnimatedComponent(LottieView)
 import leaveReviewAnimation from "assets/animations/leave-review.json"
 import LeaveReviewModal from "components/LeaveReviewModal/LeaveReviewModal"
+import { foodOrderEnd, isReviewableJobPro } from "utils/foodOrderState"
 import TalabatiSkeleton from "./TalabatiSkeleton"
 import styles from "./styles"
 import { AppFlatList } from "components/scroll"
@@ -113,37 +114,24 @@ const TalabatiScreen: React.FC = () => {
 
   // A food order's real state lives on jobPro, not on job.status, and this
   // list has to say the same thing the order screen says about the same order.
+  // Both ask foodOrderEnd (utils/foodOrderState), which reads the job and the
+  // restaurant's row, because a restaurant refusing leaves job.status `active`
+  // (right for a service request, where other pros can still take it; a food
+  // order has one restaurant and nothing further can happen) and a restaurant
+  // that cancels AFTER accepting used to fall through to "Active" in green
+  // while the order screen said "Cancelled" in red.
   //
-  // Two ways an order dies, and they are different words to the customer:
-  //   declined  — the restaurant refused it outright (selectionStatus)
-  //   cancelled — it was pulled after being accepted, by either side (status)
-  //
-  // Only the second is visible in job.status, and only when the CUSTOMER did
-  // it. A restaurant refusing leaves job.status = "active", which is correct
-  // for a SERVICE request — other invited pros and opportunity pros can still
-  // take it — but a food order has one restaurant and no opportunity pros, so
-  // nothing further can happen to it.
-  //
-  // Returning the state rather than a boolean is what keeps this in step with
-  // FoodOrderView. The old boolean only recognised "declined", so a restaurant
-  // that cancelled AFTER accepting fell through to job.status and this list
-  // rendered "Active" in green while the order screen rendered "Cancelled" in
-  // red — the same order, two answers, in both languages.
-  const foodOrderTerminalState = (
-    job: JobType
-  ): "declined" | "cancelled" | null => {
-    if (!job.serviceCategory?.hasMenu) return null
-    const pros = job.pros ?? []
-    if (!pros.length) return null
-    // Checked first: an order that was accepted and then pulled reads as
-    // cancelled even though its pro row may also look refused.
-    if (pros.some((p) => p.status === "cancelled")) return "cancelled"
-    if (pros.every((p) => p.selectionStatus === "proRejected")) return "declined"
-    return null
-  }
+  // Three ways an order dies read as "Cancelled" here and on the order screen:
+  // the customer's cancel, the restaurant's, and moderation (which used to read
+  // "Expired" in this list). The clock's end reads "Expired" or "Closed", as it
+  // does on the order screen.
+  const foodOrderState = (job: JobType) =>
+    job.serviceCategory?.hasMenu && job.pros?.length ? foodOrderEnd(job) : null
 
   const getStatusColor = (job: JobType) => {
-    if (foodOrderTerminalState(job)) return colors.red
+    const foodState = foodOrderState(job)
+    if (foodState === "expired" || foodState === "closed") return "#707070"
+    if (foodState) return colors.red
     switch (job.status) {
       case "declined":
       case "cancelledByPro":
@@ -163,9 +151,11 @@ const TalabatiScreen: React.FC = () => {
   }
 
   const getStatusLabel = (job: JobType) => {
-    const foodState = foodOrderTerminalState(job)
+    const foodState = foodOrderState(job)
     if (foodState === "declined") return t("order_declined_by_restaurant")
-    if (foodState === "cancelled") return t("cancelled")
+    if (foodState === "expired") return t("expired")
+    if (foodState === "closed") return t("closed")
+    if (foodState) return t("cancelled")
     switch (job.status) {
       // Reuses the food label rather than a bare t("declined"), which does not
       // exist in either locale file here — i18next has no missing-key handler,
@@ -211,10 +201,11 @@ const TalabatiScreen: React.FC = () => {
     ).length || 0
   }
 
+  // A service request is reviewable once an offer is accepted; a food order
+  // only once it is delivered (isReviewableJobPro). "Leave review" used to show
+  // from Accepted on, and on a cancelled order.
   const hasPendingReview = (job: JobType) => {
-    return job.pros?.some((p) =>
-      p.selectionStatus === "offer" && !p.review
-    ) || false
+    return job.pros?.some((p) => isReviewableJobPro(job, p)) || false
   }
 
   const [reviewModalJob, setReviewModalJob] = useState<JobType | null>(null)
@@ -232,7 +223,7 @@ const TalabatiScreen: React.FC = () => {
     setReviewModalJob(null)
 
     const reviewablePros = reviewModalJob.pros?.filter((p) =>
-      p.selectionStatus === "offer" && !p.review
+      isReviewableJobPro(reviewModalJob, p)
     ) || []
 
     if (reviewablePros.length === 1) {

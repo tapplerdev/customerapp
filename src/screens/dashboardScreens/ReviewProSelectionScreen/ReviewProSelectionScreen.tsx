@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
@@ -6,6 +6,7 @@ import FastImage from "react-native-fast-image"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { useGetCustomerJobByIdQuery } from "services/api"
+import { isReviewableJobPro } from "utils/foodOrderState"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -26,10 +27,26 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
     ? isAr ? job.serviceCategory.nameAr : job.serviceCategory.nameEn
     : ""
 
-  // Pros that can be reviewed: have offer status and no review yet
-  const reviewablePros = job?.pros?.filter((p) =>
-    p.selectionStatus === "offer" && !p.review
-  ) || []
+  // Pros that can be reviewed: have offer status and no review yet, and for a
+  // food order, a delivered order. The daily reminder and an old push can open
+  // this screen for an order that has not arrived, and picking its restaurant
+  // here would score it for food the customer does not have.
+  const reviewablePros = job
+    ? job.pros?.filter((p) => isReviewableJobPro(job, p)) || []
+    : []
+
+  // A food order that has not been delivered has nobody to review, and an old
+  // push, or a reminder still in the bell list from before the server stopped
+  // sending them, can still open this screen for one: a title and nothing under
+  // it. Leave instead. Only for food (a service request's empty list stays as
+  // it was), only once the order has loaded, and only while this screen is the
+  // one showing: reviewing the last pro refreshes the job under the form that
+  // was just opened, and going back then would close the form.
+  const isFoodWithNobody =
+    !!job?.serviceCategory?.hasMenu && !reviewablePros.length
+  useEffect(() => {
+    if (isFoodWithNobody && navigation.isFocused()) navigation.goBack()
+  }, [isFoodWithNobody, navigation])
 
   const handleSelectPro = (proId: number) => {
     navigation.navigate("ReviewFormScreen", { jobId, proId })

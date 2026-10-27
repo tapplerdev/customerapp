@@ -12,6 +12,7 @@ import {
 
 import { useTranslation } from "react-i18next"
 import { formatMoney } from "store/cart/slice"
+import { foodOrderEnd } from "utils/foodOrderState"
 import { JobFoodOrderItemType, JobType } from "types/job"
 import colors from "@tappler/shared/src/styles/colors"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
@@ -68,15 +69,7 @@ const detailsTransition = {
 // Yes. The server enforces the same cutoff (UNCANCELLABLE_FOOD_ORDER_STATUSES)
 // and answers 409; this only decides whether to offer the button.
 export const canCancelFoodOrder = (job: JobType): boolean => {
-  const jobPro = job.pros?.[0]
-  const status = jobPro?.status
-  const isCancelled = status === "cancelled" || job.status === "cancelled"
-  // A declined order has nothing left to cancel. It used to pass this check —
-  // a decline leaves `status` unset, so indexOf returned -1 — and the ••• menu
-  // went on offering Cancel for an order the restaurant had already refused.
-  //
-  const isDeclined =
-    jobPro?.selectionStatus === "proRejected" || job.status === "declined"
+  const status = job.pros?.[0]?.status
 
   // WHITELIST, not a blacklist.
   //
@@ -94,10 +87,14 @@ export const canCancelFoodOrder = (job: JobType): boolean => {
   //
   // Asking "is it live?" cannot leak that way, and it matches how the service
   // path has always gated the same menu (JobDetailScreen: status === "active").
+  //
+  // "Is it over?" is foodOrderEnd's answer, the one the headline reads, so the
+  // menu can never offer Cancel under a headline that says Cancelled (it did in
+  // moderation's lag window: the row cancelledByTappler, the job still active).
+  // A declined order has nothing left to cancel either, and is one of its ends.
   return (
     job.status === "active" &&
-    !isCancelled &&
-    !isDeclined &&
+    foodOrderEnd(job) === null &&
     !UNCANCELLABLE_FOOD_STATUSES.includes(status ?? "")
   )
 }
@@ -152,36 +149,30 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
 
   const jobPro = job.pros?.[0]
   const status = jobPro?.status
-  const isCancelled = status === "cancelled" || job.status === "cancelled"
-  // The restaurant turned the order down. This lives on selectionStatus, a
-  // different axis from `status` — `status` is the kitchen workflow
-  // (accepted → preparing → …) and is never set at all on a decline, while
-  // job.status stays `active` because the customer's request is still live as
-  // far as the job is concerned.
+  // How the order ended, if it did: foodOrderEnd reads both axes (the job's
+  // status and the restaurant's row), because each can lag the other, and the
+  // Talabati list asks the same function so the two screens agree.
   //
-  // So a declined order fell through every branch below: not cancelled, no
-  // step, and the headline read "Order sent to Pro" indefinitely. The customer
-  // got the push saying the restaurant declined, opened the order, and the
-  // screen told them it was still sitting with the restaurant.
+  // Cancelled wins over declined, as it always did: an order the restaurant
+  // accepted and then pulled has both, and the cancelled branch shows the
+  // actual reason, which is more use to the customer than generic decline
+  // copy. A declined order is the restaurant refusing (selectionStatus, a
+  // different axis from `status`, which a decline never sets), and job.status
+  // can still be `active` on a historical row, so it is read from both.
   //
-  // job.status === "declined" is the backend's own terminal marker for a food
-  // order nobody can deliver any more. It is checked ALONGSIDE proRejected,
-  // not instead of it: historical rows carry proRejected with job.status still
-  // `active`, and dropping that limb would regress every one of them.
-  //
-  // `isCancelled` above is deliberately untouched, and it DOES win over this
-  // when a restaurant cancelled an order it had already accepted — that sets
-  // jobPro.status = "cancelled" while the job goes terminal, so both are true
-  // and `isCancelled` is evaluated first. That is the outcome we want: the
-  // cancelled branch shows the restaurant's actual reason, which is more use
-  // to the customer than generic decline copy.
-  //
-  // Do not "simplify" isCancelled by dropping its job.status limb either. That
-  // limb is the only signal for a CUSTOMER cancel — foodOrderCancelReason is
-  // written solely by the restaurant — and without it the status block
-  // collapses and the screen goes blank below the header.
-  const isDeclined =
-    jobPro?.selectionStatus === "proRejected" || job.status === "declined"
+  // The customer's own cancel is the only one with no reason on the row:
+  // foodOrderCancelReason is written solely by the restaurant. Do not
+  // "simplify" that limb away, or the status block collapses and the screen
+  // goes blank below the header.
+  const end = foodOrderEnd(job)
+  const isCancelled =
+    end === "cancelledByCustomer" ||
+    end === "cancelledByPlace" ||
+    end === "cancelledByTappler"
+  const isDeclined = end === "declined"
+  // The clock ended it. Two different sentences: an order the restaurant never
+  // answered, and one it had accepted and never marked finished.
+  const isEndedByClock = end === "expired" || end === "closed"
   // Declared here rather than beside the money below, because the timeline
   // above needs it and reads first.
   const isPickup = job.placeOfService === "pickup"
@@ -195,6 +186,32 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     readyForPickup: t("order_ready_for_pickup"),
     delivered: t(isPickup ? "order_picked_up" : "order_delivered"),
   }
+
+  // The sentence under the headline once the order is over. A restaurant's
+  // reason is shown when it is one this build knows; the server hides the
+  // free-text kind ("other") from customers, and a reason that was never given
+  // (or one newer than this build) reads as the plain fact instead of a raw key.
+  const placeReasonKey = jobPro?.foodOrderCancelReason
+    ? `food_cancel_${jobPro.foodOrderCancelReason}`
+    : null
+  const endDescription =
+    end === "cancelledByCustomer"
+      ? t("order_cancelled_descr")
+      : end === "cancelledByPlace"
+        ? placeReasonKey && i18n.exists(placeReasonKey)
+          ? t(placeReasonKey)
+          : t("food_order_cancelled_by_place_descr")
+        : end === "cancelledByTappler"
+          ? t("food_order_cancelled_by_tappler_descr")
+          : end === "expired"
+            ? t("food_order_expired_descr")
+            : end === "closed"
+              ? t(
+                  isPickup
+                    ? "food_order_closed_descr_pickup"
+                    : "food_order_closed_descr"
+                )
+              : ""
 
   // Pro identity for the header card. Everything here already rides on the
   // job (CustomerJobDetailsRelations loads prosProfilePhoto / prosDocuments /
@@ -216,9 +233,11 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     ? t("cancelled")
     : isDeclined
       ? t("order_declined_by_restaurant")
-      : currentStep >= 0
-        ? stepLabels[STEPS[currentStep]]
-        : t("order_sent_to_pro")
+      : isEndedByClock
+        ? t(end === "closed" ? "closed" : "expired")
+        : currentStep >= 0
+          ? stepLabels[STEPS[currentStep]]
+          : t("order_sent_to_pro")
 
   const [isDetailsOpen, setDetailsOpen] = useState(true)
 
@@ -412,7 +431,12 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
               // neither, so it reads red like cancelled — the two are the same
               // news to the customer: this order is not happening.
               style={[a.flex_1, {
-                color: isCancelled || isDeclined ? colors.red : colors.green,
+                color:
+                  isCancelled || isDeclined
+                    ? colors.red
+                    : isEndedByClock
+                      ? colors.grey2
+                      : colors.green,
               }]}
               numberOfLines={1}
             >
@@ -482,16 +506,15 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
 
       {/* Status */}
       <DmView style={a.mt_16} />
-      {isCancelled ? (
+      {isCancelled || isEndedByClock ? (
         // foodOrderCancelReason is only ever written by the RESTAURANT's
         // cancel. When the CUSTOMER cancels there is no reason, and this
         // rendered `false` — so the whole status block collapsed and the
-        // screen went blank below the header. Say who cancelled instead.
+        // screen went blank below the header. Say who ended it instead, and no
+        // timeline: an order that is over has no next step to show.
         <DmView style={[a.p_14, styles.textWrap2]}>
           <Text size={12} color="brand">
-            {jobPro?.foodOrderCancelReason
-              ? t(`food_cancel_${jobPro.foodOrderCancelReason}`)
-              : t("order_cancelled_descr")}
+            {endDescription}
           </Text>
         </DmView>
       ) : isDeclined ? (
@@ -571,10 +594,10 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
 
       {isDetailsOpen && (
         <DmView style={a.mt_14}>
-          {detailRow(
-            t(isPickup ? "pickup_from" : "delivery_address"),
-            addressLabel
-          )}
+          {/* A pickup order's address is the CUSTOMER's own (the place's is not
+              shared with them), so a "Pickup from" row would print their own
+              address back as if it were the restaurant's. */}
+          {!isPickup && detailRow(t("delivery_address"), addressLabel)}
           {detailRow(t(isPickup ? "pickup_time" : "delivery_time"), whenLabel)}
           {detailRow(
             t("payment_method"),

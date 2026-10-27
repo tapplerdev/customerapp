@@ -28,7 +28,7 @@
 | `cancelled` | Red | "Cancelled" | **Customer** | Customer calls `PATCH /jobs/:id/cancel` with cancel reasons |
 | `ended` | Grey (#707070) | "Expired" | **Cron job** (every minute) | Auto-expires active jobs based on date type (see below) |
 | `completed` | Green (#00BC3A) | "Completed" | **Review system** | Customer submits review with `proCompletedJob: true`. If `proCompletedJob: false`, status stays unchanged |
-| `cancelledByTappler` | Grey (#707070) | "Expired" | **Admin** | Pro reports job (fake/invalid/ads) → admin processes report as not valid → job cancelled, chat sends `job_cancelled_by_tappler` message |
+| `cancelledByTappler` | Grey (#707070) | "Expired" (a food order reads "Cancelled") | **Admin** | Pro reports job (fake/invalid/ads) → admin processes report as not valid → job cancelled, chat sends `job_cancelled_by_tappler` message |
 
 ### Auto-Expiry Rules (cron every minute)
 
@@ -85,21 +85,26 @@ Each job card in the FlatList:
 ### 1. Status line
 Always the **real backend status** — never overridden with client-side labels.
 
-**One exception: a declined food order.** `isDeclinedFoodOrder(job)` shows
-"Declined" in red when `serviceCategory.hasMenu` and every pro is
-`proRejected`, while `job.status` is still `active`.
+**One exception: a food order.** A food order's real state lives on its one
+restaurant row as well as on `job.status`, so the list asks
+`foodOrderEnd(job)` (`utils/foodOrderState`), the same function the order screen
+asks, and the two always agree:
+
+| `foodOrderEnd` | Label | Colour |
+|---|---|---|
+| `cancelledByCustomer`, `cancelledByPlace`, `cancelledByTappler` | "Cancelled" | red |
+| `declined` | "Declined" | red |
+| `expired` (the clock ended an order nobody answered) | "Expired" | grey |
+| `closed` (the clock ended an accepted order) | "Closed" | grey |
 
 This exists because the "All Pros Decline" rule below is a *service* rule. A
-service request survives a decline — other invited pros and opportunity pros
+service request survives a decline: other invited pros and opportunity pros
 can still take it, so `active` is honest. A food order has exactly one
-restaurant and no opportunity pros: once they decline, nothing further can
-happen, and the job sits at `active` in green until the expiry cron picks it
-up hours later.
+restaurant and no opportunity pros: once it declines, nothing further can
+happen. Moderation (`cancelledByTappler`) reads "Cancelled" here, not
+"Expired", because that is what the order screen says.
 
-This is a stopgap. The real fix is a terminal job state when the sole
-restaurant on a food order declines — then this override, and the matching
-ones in proapp's `LeadItem` and customerapp's `FoodOrderView`, all go away.
-Until that lands, do **not** add further client-side status overrides here.
+Do **not** add further client-side status overrides for service requests.
 
 ### 2. Offers badge
 Shows when `getOffersCount(job) > 0`. Counts:
@@ -115,9 +120,13 @@ pros where:
 ### 3. Leave Review button
 Shows when `hasPendingReview(job)` is true:
 ```
-pros.some(p => p.selectionStatus === "offer" && !p.review)
+pros.some(p => isReviewableJobPro(job, p))
+  = selectionStatus === "offer" && !p.review
+    && (not a food order || p.status === "delivered")
 ```
-= any pro who sent an offer but hasn't been reviewed.
+= any pro who sent an offer but hasn't been reviewed. A food order is only
+reviewable once it is delivered (or picked up: the same status); the reminder's
+`ReviewProSelectionScreen` applies the same rule.
 
 ### Independence
 All three elements are **independent**. Any combination can appear:

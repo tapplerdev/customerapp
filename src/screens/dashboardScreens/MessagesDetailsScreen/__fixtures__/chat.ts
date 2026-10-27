@@ -37,6 +37,12 @@ export const ENDED = preview({ ...JOB, status: "ended" })
 export const FOOD = preview(JOB_FOOD)
 /** A food order delivered: its chat is still open for a photo. */
 export const FOOD_DELIVERED = preview({ ...JOB_FOOD, status: "completed" })
+/** A food order to collect: the same chat, the order's mode is pickup. */
+export const FOOD_PICKUP_JOB: JobType = {
+  ...JOB_FOOD,
+  placeOfService: "pickup",
+}
+export const FOOD_PICKUP = preview(FOOD_PICKUP_JOB)
 /** A pro with no photo and no last-seen time: the initial in a red disc. */
 export const NO_PHOTO = preview(undefined, {
   pro: {
@@ -173,3 +179,15 @@ export const JOB_DETAILS: JobType = some<JobType>({
     { questionId: 704 },
   ] as unknown as JobType["questionsAnswers"],
 })
+
+/**
+ * The lines whose wording depends on the order: the last step (delivered, or
+ * picked up for a pickup) and moderation (an order is not a "request").
+ */
+export const ORDER_KIND_EVENTS: ChatMessageType[] = [
+  at(7521, "system", 1, { text: "food_order_delivered" }),
+  at(7522, "system", 2, { text: "food_order_ready_for_pickup" }),
+  at(7523, "system", 3, { text: "food_order_accepted" }),
+  at(7524, "system", 4, { text: "job_cancelled_by_tappler" }),
+  at(7525, "system", 5, { text: "job_expired" }),
+]

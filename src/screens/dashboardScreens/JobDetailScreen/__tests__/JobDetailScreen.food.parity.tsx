@@ -35,9 +35,16 @@ import {
   FOOD_ACCEPTED,
   FOOD_CANCELLED_BY_CUSTOMER,
   FOOD_CANCELLED_BY_KITCHEN,
+  FOOD_CANCELLED_BY_PLACE_NO_REASON,
+  FOOD_CANCELLED_BY_PLACE_UNKNOWN_REASON,
+  FOOD_CLOSED,
+  FOOD_CLOSED_PICKUP,
   FOOD_COURIER,
   FOOD_DECLINED,
   FOOD_DELIVERED,
+  FOOD_EXPIRED,
+  FOOD_MODERATED,
+  FOOD_MODERATION_LAG,
   FOOD_NO_PRO,
   FOOD_PICKUP,
   FOOD_PREPARING,
@@ -129,6 +136,18 @@ const CASES: Case[] = [
     state: "cancelled by the kitchen, with its reason",
     job: FOOD_CANCELLED_BY_KITCHEN,
   },
+  {
+    state: "cancelled by the restaurant, the reason hidden (Other)",
+    job: FOOD_CANCELLED_BY_PLACE_NO_REASON,
+  },
+  {
+    state: "cancelled by the restaurant, a reason this build has no line for",
+    job: FOOD_CANCELLED_BY_PLACE_UNKNOWN_REASON,
+  },
+  { state: "cancelled by moderation", job: FOOD_MODERATED },
+  { state: "expired, the restaurant never answered", job: FOOD_EXPIRED },
+  { state: "closed, accepted and never finished", job: FOOD_CLOSED },
+  { state: "closed, a pickup order", job: FOOD_CLOSED_PICKUP },
   { state: "declined by the restaurant", job: FOOD_DECLINED },
   { state: "no pro on the order", job: FOOD_NO_PRO },
   {
@@ -171,6 +190,12 @@ const CASES: Case[] = [
     state: "the cancel failed",
     job: FOOD_ACCEPTED,
     api: { cancelJob: { error: { status: 500, data: {} } } },
+    steps: confirm,
+  },
+  {
+    state: "the order is no longer active (403)",
+    job: FOOD_ACCEPTED,
+    api: { cancelJob: { error: { status: 403, data: {} } } },
     steps: confirm,
   },
 ]
@@ -292,6 +317,24 @@ describe("JobDetailScreen's food order: presses", () => {
       } finally {
         late.unmount()
       }
+      // Never under a headline that says Cancelled: the menu asks the same
+      // question the headline does (moderation's lag window: the row says
+      // cancelled, the job still says active).
+      for (const [state, job] of [
+        ["lag", FOOD_MODERATION_LAG],
+        ["expired", FOOD_EXPIRED],
+        ["declined", FOOD_DECLINED],
+        ["restaurant", FOOD_CANCELLED_BY_PLACE_NO_REASON],
+      ] as const) {
+        const over = await open({ state, job }, env)
+        try {
+          await run(over, env, [dots])
+          expect(text(over)).toContain(copy(env, "my_request_details"))
+          expect(text(over)).not.toContain(copy(env, "cancel_order"))
+        } finally {
+          over.unmount()
+        }
+      }
     }
   )
 
@@ -321,6 +364,62 @@ describe("JobDetailScreen's food order: presses", () => {
         expect(actions(yes).at(-1)!.type).toBe("GO_BACK")
       } finally {
         yes.unmount()
+      }
+    }
+  )
+
+  const refusal = (status: number, data: object) => ({
+    cancelJob: { error: { status, data } },
+  })
+
+  it.each(PARITY_MATRIX)(
+    "a cancel the server refuses as over names that and the order is refetched once, however it is worded [$language $platform]",
+    async (env) => {
+      for (const error of [
+        refusal(403, {}),
+        refusal(403, { code: "FOOD_ORDER_NOT_ACTIVE" }),
+        refusal(409, { code: "FOOD_ORDER_NOT_ACTIVE" }),
+      ]) {
+        const session = await open(
+          { state: "over", job: FOOD_ACCEPTED, api: error },
+          env
+        )
+        try {
+          const before = sent(session, "getCustomerJobById").length
+          await run(session, env, confirm)
+          expect(text(session)).toContain(copy(env, "food_order_no_longer_active"))
+          expect(text(session)).not.toContain(copy(env, "an_error_occurred"))
+          expect(sent(session, "getCustomerJobById").length).toBe(before + 1)
+          await run(session, env, [titled("OK"), wait(SETTLED)])
+          expect(text(session)).not.toContain(
+            copy(env, "food_order_no_longer_active")
+          )
+        } finally {
+          session.unmount()
+        }
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a cancel that met the lock (403 busy) asks to try again, not that the order is over [$language $platform]",
+    async (env) => {
+      const session = await open(
+        {
+          state: "busy",
+          job: FOOD_ACCEPTED,
+          api: refusal(403, { code: "FOOD_ORDER_BUSY" }),
+        },
+        env
+      )
+      try {
+        await run(session, env, confirm)
+        expect(text(session)).toContain(copy(env, "an_error_occurred"))
+        expect(text(session)).not.toContain(
+          copy(env, "food_order_no_longer_active")
+        )
+      } finally {
+        session.unmount()
       }
     }
   )
