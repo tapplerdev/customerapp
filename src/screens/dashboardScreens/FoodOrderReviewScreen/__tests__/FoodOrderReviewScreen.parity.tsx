@@ -27,6 +27,10 @@ import {
   DRAFT_ONE_LINE,
   DRAFT_PICKUP,
   DRAFT_RICH,
+  DRAFT_RICH_REPRICED,
+  DRAFT_RICH_WITHOUT_BASBOUSA,
+  MENU_LARGE_DEARER,
+  MENU_WITHOUT_BASBOUSA,
   RICH_MENU,
   cartState,
 } from "../../FoodMenuScreen/__fixtures__/food"
@@ -263,6 +267,226 @@ describe("FoodOrderReviewScreen, the controls", () => {
         expect(() =>
           pressTitled(session.root, copy(env, "submit_order"))
         ).toThrow(/disabled/)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
+
+/*
+ * A menu that moved under the basket (Trello #513, Phase 3c). The order check
+ * refuses; the screen refetches the menu, repairs the basket, and says so in
+ * the error pop-up. It never sends the order again on its own.
+ */
+const MENU_CHANGED = {
+  status: 400,
+  data: {
+    code: "FOOD_ORDER_MENU_CHANGED",
+    validationErrors: {
+      foodOrderItems: ["order items don't match the pro's current menu"],
+    },
+  },
+}
+// A backend from before the code: only the field's name says it.
+const MENU_CHANGED_OLD_BACKEND = {
+  status: 400,
+  data: { validationErrors: MENU_CHANGED.data.validationErrors },
+}
+
+/** The menu as the screen first loads it, then as the pro left it. */
+const menuThenMenu = (later: unknown) => {
+  let asked = 0
+  return () => ({ data: (asked++ === 0 ? RICH_MENU : later) as object })
+}
+
+type CartShape = {
+  cart: {
+    carts: Record<
+      number,
+      { items: { menuItemId: number; price: number; quantity: number }[] }
+    >
+  }
+}
+const basket = (store: { getState: () => unknown }) =>
+  (store.getState() as CartShape).cart.carts[PRO_FOOD.id]?.items
+
+const sentOrders = (session: { requests: () => { endpoint: string }[] }) =>
+  session.requests().filter((r) => r.endpoint === "createJob")
+
+describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
+  it.each(envs)(
+    "menu changed: repriced [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: menuThenMenu(MENU_LARGE_DEARER),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expectParity(parityName("menu changed: repriced", env), session.tree(), {
+          allow: BUTTON,
+        })
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "food_menu_changed_repriced")
+        )
+        expect(basket(session.store)).toEqual(DRAFT_RICH_REPRICED.items)
+        // One send, the refused one. The repair never sends another.
+        expect(sentOrders(session)).toHaveLength(1)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "menu changed: items removed [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: menuThenMenu(MENU_WITHOUT_BASBOUSA),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expectParity(
+          parityName("menu changed: items removed", env),
+          session.tree(),
+          { allow: BUTTON }
+        )
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "food_menu_changed_removed")
+        )
+        expect(basket(session.store)).toEqual(DRAFT_RICH_WITHOUT_BASBOUSA.items)
+        expect(sentOrders(session)).toHaveLength(1)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a backend without the code is repaired the same way [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED_OLD_BACKEND },
+          getProMenu: menuThenMenu(MENU_LARGE_DEARER),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "food_menu_changed_repriced")
+        )
+        expect(basket(session.store)).toEqual(DRAFT_RICH_REPRICED.items)
+        expect(sentOrders(session)).toHaveLength(1)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a menu that agrees with the basket leaves the server's words [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: { data: RICH_MENU },
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(JSON.stringify(session.tree())).toContain(
+          "order items don't match the pro's current menu"
+        )
+        expect(basket(session.store)).toEqual(DRAFT_RICH.items)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a menu that will not load leaves the server's words [$env.language $env.platform]",
+    async ({ env }) => {
+      let asked = 0
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: { error: MENU_CHANGED },
+          getProMenu: () =>
+            asked++ === 0
+              ? { data: RICH_MENU }
+              : { error: { status: 500, data: {} } },
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(JSON.stringify(session.tree())).toContain(
+          "order items don't match the pro's current menu"
+        )
+        expect(basket(session.store)).toEqual(DRAFT_RICH.items)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "the second Submit sends the repaired lines [$env.language $env.platform]",
+    async ({ env }) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: () =>
+            sent++ === 0 ? { error: MENU_CHANGED } : { data: JOB_FOOD },
+          getProMenu: menuThenMenu(MENU_LARGE_DEARER),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session) as {
+          args: { body: { foodOrderItems: { name: string; selectedOptions?: { choices: { price: number }[] }[] }[] } }
+        }[]
+        expect(orders).toHaveLength(2)
+        // First the lines the customer built, then the repaired ones.
+        expect(
+          orders[0].args.body.foodOrderItems[0].selectedOptions![0].choices[0].price
+        ).toBe(25)
+        expect(
+          orders[1].args.body.foodOrderItems[0].selectedOptions![0].choices[0].price
+        ).toBe(35)
+        expect(session.navigation.actions).toMatchObject([
+          { type: "NAVIGATE", payload: { name: "RequestSuccessScreen" } },
+        ])
       } finally {
         session.unmount()
       }
