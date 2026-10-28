@@ -1,6 +1,6 @@
 import React from "react"
 import { TextInput, StyleSheet, KeyboardAvoidingView, Platform } from "react-native"
-import Animated, { FadeInUp } from "react-native-reanimated"
+import Animated, { FadeInUp, LayoutAnimationConfig } from "react-native-reanimated"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -47,20 +47,25 @@ const TapplyAIScreen: React.FC<Props> = ({ navigation }) => {
         {/* Spacer top */}
         <DmView style={a.flex_1} />
 
-        {/* Logo + greeting — centered */}
-        <Animated.View
-          entering={FadeInUp.duration(400).delay(100)}
-          style={a.items_center}
-        >
-          <TapplerLogo width={80} height={80} />
+        {/* Logo + greeting — centered. The screen arrives already settled:
+            FadeInUp translates about 25pt, which read as the content coming in
+            at an angle while the native push was still sliding, so
+            skipEntering holds it for the screen's first mount. */}
+        <LayoutAnimationConfig skipEntering>
+          <Animated.View
+            entering={FadeInUp.duration(400).delay(100)}
+            style={a.items_center}
+          >
+            <TapplerLogo width={80} height={80} />
 
-          <Text size={22} weight="bold" leading={px(28)} style={a.mt_16}>
-            {t("hi_im_tapply")}
-          </Text>
-          <Text size={14} leading="loose" color="tertiary" style={a.mt_4}>
-            {t("how_can_i_help")}
-          </Text>
-        </Animated.View>
+            <Text size={22} weight="bold" leading={px(28)} style={a.mt_16}>
+              {t("hi_im_tapply")}
+            </Text>
+            <Text size={14} leading="loose" color="tertiary" style={a.mt_4}>
+              {t("how_can_i_help")}
+            </Text>
+          </Animated.View>
+        </LayoutAnimationConfig>
 
         {/* Spacer bottom */}
         <DmView style={a.flex_1} />

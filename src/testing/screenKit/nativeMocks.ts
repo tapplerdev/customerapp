@@ -312,6 +312,9 @@ export const reanimated = () => {
       return builder("Keyframe")
     },
     enableLayoutAnimations: noop,
+    // Draws no view of its own, as the real one: only its children.
+    LayoutAnimationConfig: ({ children }: { children?: React.ReactNode }) =>
+      children,
     configureReanimatedLogger: noop,
     ReanimatedLogLevel: { warn: 1, error: 2 },
   }
