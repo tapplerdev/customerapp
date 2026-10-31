@@ -74,6 +74,11 @@ export default StyleSheet.create({
   textWrap: {
     backgroundColor: colors.grey8,
   },
+  // The rule above each section (About me, Photos, Working Hours, Accepted
+  // Payments, Social Media): half a point, down from the full point
+  // `border-t-1` drew. Its colour is each section's own grey53. Mirrors
+  // proapp's preview of this page: keep in sync.
+  sectionRule: { borderTopWidth: 0.5 },
   boxWrap: {
     paddingTop: 11,
     borderTopColor: colors.grey53,

@@ -325,7 +325,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* About Me */}
         {!!pro.informationAbout && (
-          <DmView style={[styles.boxWrap, a.pb_8, a.border_t_1, a.mr_16]}>
+          <DmView style={[styles.boxWrap, a.pb_8, styles.sectionRule, a.mr_16]}>
             <DmView style={styles.box}>
               <Text size={14} weight="semibold">
                 {t("about_me")}
@@ -339,7 +339,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Photos & videos of work — per service, approved only */}
         {workPhotos.length > 0 && (
-          <DmView style={[styles.box2, a.pb_20, a.border_t_1, a.mr_16]}>
+          <DmView style={[styles.box2, a.pb_20, styles.sectionRule, a.mr_16]}>
             <DmView style={styles.box}>
               <Text size={14} weight="semibold">
                 {t("photos_of_work")}
@@ -411,7 +411,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Working Hours */}
         {pro.hours && pro.hours.length > 0 && (
-          <DmView style={[styles.boxWrap2, a.border_t_1, a.mr_16]}>
+          <DmView style={[styles.boxWrap2, styles.sectionRule, a.mr_16]}>
             <DmView style={styles.box}>
               <Text size={14} weight="semibold">
                 {t("working_hours")}
@@ -451,7 +451,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Payment Methods */}
         {pro.paymentMethods && pro.paymentMethods.length > 0 && (
-          <DmView style={[styles.boxWrap3, a.border_t_1, a.mr_16]}>
+          <DmView style={[styles.boxWrap3, styles.sectionRule, a.mr_16]}>
             <DmView style={styles.box}>
               <Text size={14} weight="semibold">
                 {t("accepted_payments")}
@@ -470,7 +470,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Social Media */}
         {pro.socials && pro.socials.length > 0 && (
-          <DmView style={[styles.boxWrap3, a.border_t_1, a.mr_16]}>
+          <DmView style={[styles.boxWrap3, styles.sectionRule, a.mr_16]}>
             <DmView style={styles.box}>
               <Text size={14} weight="semibold">
                 {t("social_media")}
