@@ -1,11 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo } from "react"
 
 // Components
 import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import type { FlatList } from "react-native"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
-import AnimatedSelectCategory from "components/AnimatedSelectCategory"
+import MenuSectionPills, {
+  useSectionScrollSpy,
+} from "@tappler/shared/src/components/MenuSectionPills"
 import FoodMenuItemRow from "components/FoodMenuItemRow"
 
 // Hooks & Redux
@@ -29,23 +30,23 @@ import { RootStackScreenProps } from "navigation/types"
 import { FoodMenuItemType, FoodMenuSectionType } from "types/food"
 
 // Styles & Assets
-import Animated, {
-  useSharedValue,
-} from "react-native-reanimated"
-import { Dimensions } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
-import { AppFlatList } from "components/scroll"
+import { AppScrollView } from "components/scroll"
 import { Text, a as atoms } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodMenuScreen">
 
 
 // The customer-side twin of proapp's FoodMenuStoreScreen preview: same
-// section tabs + item rows, but taps go to FoodItemScreen (real add-to-cart)
+// section pills + item rows, but taps go to FoodItemScreen (real add-to-cart)
 // and a View Basket bar rides the bottom once the cart has lines.
+//
+// The pills (#523, shared with proapp) sit above the list, so they stay put,
+// follow the section in view and scroll the list to the one tapped. Both read
+// `sections`, so a section with no items is in neither.
 const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
   const { proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode = "delivery" } =
     route.params
@@ -53,8 +54,6 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
-  const flatListRef = useRef<FlatList>(null)
-  const [, setSelectedSectionIndex] = useState(0)
 
   const { data: menu, isLoading, isError } = useGetProMenuQuery({
     proId,
@@ -100,13 +99,8 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     [sections]
   )
 
-  // The underline lives in AnimatedSelectCategory now. It used to be drawn
-  // here from SCREEN_WIDTH / sections.length, which only works while every tab
-  // is the same width — and tabs are sized to their labels now so they are not.
-  const handlePressTab = (idx: number) => {
-    setSelectedSectionIndex(idx)
-    flatListRef.current?.scrollToIndex({ index: idx, animated: true })
-  }
+  const { activeIndex, select, scrollRef, scrollProps, sectionLayout } =
+    useSectionScrollSpy(sections.length)
 
   const handlePressItem = useCallback(
     (item: FoodMenuItemType) => {
@@ -178,9 +172,13 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     [dispatch, draft, proId]
   )
 
-  const renderSection = ({ item }: { item: FoodMenuSectionType }) => {
+  const renderSection = (item: FoodMenuSectionType, index: number) => {
     return (
-      <DmView style={styles.container}>
+      <DmView
+        key={item.id}
+        style={styles.container}
+        onLayout={sectionLayout(index)}
+      >
         <Text size={20} weight="semibold" leading="tight" style={[atoms.mb_20, atoms.px_14]}>
           {item.title}
         </Text>
@@ -237,26 +235,23 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
       ) : (
         <DmView style={atoms.flex_1}>
-          <DmView style={styles.tabsWrapper}>
-            <AnimatedSelectCategory
-              categories={sectionTitles}
-              setSelectedCategory={handlePressTab}
-              textType={{ size: 13, leading: "tight", weight: "medium" }}
-            />
-          </DmView>
-          <AppFlatList
-            ref={flatListRef}
-            data={sections}
-            renderItem={renderSection}
-            keyExtractor={(section) => String(section.id)}
+          <MenuSectionPills
+            titles={sectionTitles}
+            activeIndex={activeIndex}
+            onSelect={select}
+          />
+          <AppScrollView
+            ref={scrollRef}
+            {...scrollProps}
             showsVerticalScrollIndicator={false}
-            onScrollToIndexFailed={() => {}}
             contentContainerStyle={{
               flexGrow: 1,
               paddingTop: 24,
               paddingBottom: 60 + insets.bottom + (basketVisible ? 70 : 0),
             }}
-          />
+          >
+            {sections.map(renderSection)}
+          </AppScrollView>
         </DmView>
       )}
 
