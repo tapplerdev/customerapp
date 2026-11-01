@@ -6,7 +6,8 @@ import { autoTrimSvgLeftPadding } from "@tappler/shared/src/helpers/svgTrim"
 
 interface Props {
   uri: string
-  width?: number
+  /** Points, or a share of the parent's width (an OFFERS box cell). */
+  width?: number | `${number}%`
   height?: number
   /** Normalise the per-sticker offset the CMS export bakes in, so a row of
    *  them stops looking ragged. See @tappler/shared svgTrim. */

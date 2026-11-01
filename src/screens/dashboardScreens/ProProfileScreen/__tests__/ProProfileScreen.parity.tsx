@@ -4,6 +4,7 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
+  copy,
   fireHost,
   openScreen,
   pressIcon,
@@ -38,6 +39,15 @@ import type { ProType, ProWorkPhotoType } from "types/pro"
  * The close buttons go back, each exactly once.
  */
 
+/*
+ * #522 redrew the hero (the name on its own line, the account type in a grey
+ * pill with the Featured sticker beside it, one red star and "x of 5 (N
+ * Reviews)" or the no-reviews box, the OFFERS box; the collapsed header's
+ * score is the one-star line too; the pill as tall as the Featured sticker,
+ * 24pt), so every state that changed is drawn again under a "#522 profile
+ * hero, pill as tall as Featured" name and captured beside the frozen ones,
+ * which no row draws any more.
+ */
 const load = () => require("../ProProfileScreen")
 
 const img = (n: number, extra: Partial<ProWorkPhotoType> = {}): ProWorkPhotoType => ({
@@ -127,6 +137,16 @@ const MINIMAL: ProType = {
   documents: [],
 }
 
+// A pro nobody has reviewed yet: the no-reviews box (#522).
+const UNREVIEWED: ProType = {
+  ...MINIMAL,
+  reviewScore: {
+    ...PRO_INDIVIDUAL.reviewScore,
+    overallScore: 0,
+    reviewsCount: 0,
+  } as ProType["reviewScore"],
+}
+
 const NO_PHOTO: ProType = { ...FULL, profilePhoto: undefined, profilePhoto150: undefined, profilePhoto720: undefined }
 
 const SIGNED = screenState("data")
@@ -150,24 +170,25 @@ type Case = {
 const CASES: Case[] = [
   // (A failed profile draws the same loading overlay as one still loading.)
   { state: "loading", options: { ...SIGNED, api: { ...DATA, getProProfile: "loading" }, route: withPro(PRO_INDIVIDUAL).route } },
-  { state: "the plain individual", options: SIGNED_PLAIN() },
-  { state: "a full company profile", options: withPro(FULL) },
-  { state: "a minimal profile", options: withPro(MINIMAL) },
-  { state: "no photo: the initial letter", options: withPro(NO_PHOTO) },
-  { state: "no photo, an individual", options: withPro({ ...MINIMAL, profilePhoto: undefined, registeredName: "Mona Adel" }) },
-  { state: "a long name", options: withPro({ ...FULL, businessName: "Hassan Home Services, Heating, Plumbing and Everything Else Around the House Company Limited" }) },
-  { state: "a long name, featured, an individual", options: withPro({ ...withCategory(PRO_INDIVIDUAL, [sticker(1, "featuredPro")], true), registeredName: "Abdel Rahman Mohamed Ibrahim El Sayed Hassan Mahmoud Fahmy" }) },
-  { state: "the listing's categories win over the pro's", options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }) },
+  { state: "the plain individual, #522 profile hero, pill as tall as Featured", options: SIGNED_PLAIN() },
+  { state: "a full company profile, #522 profile hero, pill as tall as Featured", options: withPro(FULL) },
+  { state: "a minimal profile, #522 profile hero, pill as tall as Featured", options: withPro(MINIMAL) },
+  { state: "a pro nobody has reviewed yet, #522 profile hero, pill as tall as Featured", options: withPro(UNREVIEWED) },
+  { state: "no photo: the initial letter, #522 profile hero, pill as tall as Featured", options: withPro(NO_PHOTO) },
+  { state: "no photo, an individual, #522 profile hero, pill as tall as Featured", options: withPro({ ...MINIMAL, profilePhoto: undefined, registeredName: "Mona Adel" }) },
+  { state: "a long name, #522 profile hero, pill as tall as Featured", options: withPro({ ...FULL, businessName: "Hassan Home Services, Heating, Plumbing and Everything Else Around the House Company Limited" }) },
+  { state: "a long name, featured, an individual, #522 profile hero, pill as tall as Featured", options: withPro({ ...withCategory(PRO_INDIVIDUAL, [sticker(1, "featuredPro")], true), registeredName: "Abdel Rahman Mohamed Ibrahim El Sayed Hassan Mahmoud Fahmy" }) },
+  { state: "the listing's categories win over the pro's, #522 profile hero, pill as tall as Featured", options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }) },
   // OffersSection's banner sizes its stickers from the window it loaded with.
-  { state: "four stickers", options: withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])) },
-  { state: "four stickers, a 390-wide phone", options: { ...withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])), window: { width: 390 } } },
-  { state: "scrolled past the photo", options: withPro(FULL), steps: [scrollTo(300), wait(300)] },
-  { state: "scrolled halfway into the header", options: withPro(FULL), steps: [scrollTo(260), wait(300)] },
-  { state: "scrolled back up", options: withPro(FULL), steps: [scrollTo(300), wait(300), scrollTo(0), wait(300)] },
-  { state: "the work-photo viewer open on the first tile", options: withPro(FULL), steps: [openViewer(0), wait(600)] },
-  { state: "the work-photo viewer open on a video", options: withPro(FULL), steps: [openViewer(2), wait(600)] },
-  { state: "no top inset", options: { ...withPro(FULL), insets: { top: 0 } } },
-  { state: "a notch", options: { ...withPro(FULL), insets: { top: 59 } } },
+  { state: "four stickers, #522 profile hero, pill as tall as Featured", options: withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])) },
+  { state: "four stickers, a 390-wide phone, #522 profile hero, pill as tall as Featured", options: { ...withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])), window: { width: 390 } } },
+  { state: "scrolled past the photo, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [scrollTo(300), wait(300)] },
+  { state: "scrolled halfway into the header, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [scrollTo(260), wait(300)] },
+  { state: "scrolled back up, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [scrollTo(300), wait(300), scrollTo(0), wait(300)] },
+  { state: "the work-photo viewer open on the first tile, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [openViewer(0), wait(600)] },
+  { state: "the work-photo viewer open on a video, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [openViewer(2), wait(600)] },
+  { state: "no top inset, #522 profile hero, pill as tall as Featured", options: { ...withPro(FULL), insets: { top: 0 } } },
+  { state: "a notch, #522 profile hero, pill as tall as Featured", options: { ...withPro(FULL), insets: { top: 59 } } },
 ]
 
 function SIGNED_PLAIN() {
@@ -193,6 +214,41 @@ describe("ProProfileScreen, captured from the unconverted code", () => {
 describe.each(PARITY_MATRIX)("ProProfileScreen presses [$language $platform]", (env: ParityEnv) => {
   const open = (options: object) =>
     openScreen(load, { ...options, lang: env.language, platform: env.platform } as RenderScreenOptions)
+
+  // #522: what the hero says, by the words a customer reads.
+  const heroText = async (pro: ProType) => {
+    const session = await open(withPro(pro))
+    try {
+      return JSON.stringify(session.tree())
+    } finally {
+      session.unmount()
+    }
+  }
+
+  it("a reviewed pro: the one-star score, the type in its pill, no box", async () => {
+    const text = await heroText(MINIMAL)
+    expect(text).toContain(copy(env, "individual"))
+    expect(text).toContain(`"${copy(env, "rating_score_of_5").replace("{{rate}}", "4.6")} "`)
+    expect(text).toContain(copy(env, "rating_reviews_count").replace("{{number}}", "18"))
+    expect(text).not.toContain(copy(env, "be_the_first_to_share_your_experience"))
+  })
+
+  it("one review, in the singular, in the hero and the collapsed header", async () => {
+    const text = await heroText({
+      ...MINIMAL,
+      reviewScore: { ...MINIMAL.reviewScore, overallScore: 5, reviewsCount: 1 } as ProType["reviewScore"],
+    })
+    const single = copy(env, "rating_reviews_count_single")
+    expect(text.split(JSON.stringify(single)).length - 1).toBe(2)
+    expect(text).not.toContain(copy(env, "rating_reviews_count").replace("{{number}}", "1"))
+  })
+
+  it("a pro nobody reviewed: the no-reviews box, no score", async () => {
+    const text = await heroText(UNREVIEWED)
+    expect(text).toContain(copy(env, "no_reviews_yet"))
+    expect(text).toContain(copy(env, "be_the_first_to_share_your_experience"))
+    expect(text).not.toContain(copy(env, "rating_score_of_5").replace("{{rate}}", "0"))
+  })
 
   it("both close buttons go back, each once", async () => {
     const session = await open(withPro(FULL))

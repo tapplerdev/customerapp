@@ -1,5 +1,6 @@
 import { Platform, StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { TRUST_STICKER_GAP } from "@tappler/shared/src/constants/trustSticker"
 
 export default StyleSheet.create({
   cardShadow: {
@@ -103,6 +104,14 @@ export default StyleSheet.create({
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
+  },
+  // The trust stickers, from the start edge, 10pt apart, wrapping (#522).
+  trustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    columnGap: TRUST_STICKER_GAP,
+    rowGap: 6,
   },
 })
 

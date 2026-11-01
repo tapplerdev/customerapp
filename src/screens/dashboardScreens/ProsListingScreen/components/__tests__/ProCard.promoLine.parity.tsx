@@ -12,6 +12,14 @@ import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
  * never read: captured before W1's prep deleted it.
  */
 
+/*
+ * #522 redrew the pro card (one red star and "x of 5 (N Reviews)" for a
+ * reviewed pro, "New on Tappler" kept for the rest; trust stickers in slots
+ * as tall as their art; the OFFERS box after the trust stickers in place of
+ * the pink footer band), so the states that draw one are drawn again under a
+ * "#522 card" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../ProCard")
 
 const promoLine = {
@@ -40,12 +48,12 @@ const proWith = (subscriptions: object[]) =>
   }) as never
 
 const CASES = [
-  { name: "promo line only", subscriptions: [promoLine] },
+  { name: "promo line only, #522 card", subscriptions: [promoLine] },
   {
-    name: "promo line and stickers",
+    name: "promo line and stickers, #522 card",
     subscriptions: [promoLine, sticker(1), sticker(2)],
   },
-  { name: "stickers only", subscriptions: [sticker(1)] },
+  { name: "stickers only, #522 card", subscriptions: [sticker(1)] },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

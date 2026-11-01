@@ -5,7 +5,6 @@ import FastImage from "react-native-fast-image"
 import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import RateComponent from "components/RateComponent/RateComponent"
-import OffersSection from "components/OffersSection/OffersSection"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 
@@ -16,6 +15,16 @@ import MailIcon from "assets/icons/mail.svg"
 
 import styles from "./styles"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import RatingSummary from "@tappler/shared/src/components/RatingSummary"
+import OffersBox, {
+  OFFER_STICKER_HEIGHT,
+} from "@tappler/shared/src/components/OffersBox"
+// A trust sticker's slot, only as tall as its art (#522), one copy for both
+// apps' cards.
+import {
+  TRUST_STICKER_HEIGHT,
+  TRUST_STICKER_WIDTH,
+} from "@tappler/shared/src/constants/trustSticker"
 
 interface ProCardBaseProps {
   // Pro data
@@ -75,6 +84,7 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
   const { t } = useTranslation()
 
   const promoLine = subscriptions.find((s: any) => s.product?.subType === "promoLine")
+  const motivational = subscriptions.filter((s: any) => s.product?.subType === "motivational")
 
   return (
     <DmView
@@ -125,11 +135,21 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           </DmView>
 
           <DmView style={a.mt_6}>
-            <RateComponent
-              rate={overallScore}
-              reviewsCount={reviewsCount}
-              itemSize={12}
-            />
+            {/* One red star and "4.5 of 5 (12 Reviews)" (#522); a pro
+                with no reviews keeps "New on Tappler". */}
+            {reviewsCount > 0 ? (
+              <RatingSummary
+                rate={overallScore}
+                reviewsCount={reviewsCount}
+                size={11}
+              />
+            ) : (
+              <RateComponent
+                rate={overallScore}
+                reviewsCount={reviewsCount}
+                itemSize={12}
+              />
+            )}
           </DmView>
 
           {/* Description */}
@@ -187,17 +207,23 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
         </DmView>
       )}
 
-      {/* Trust badges */}
+      {/* Trust badges: no box round them, each slot as tall as its art
+          (#522; the art is 143 x 19, so 150 wide is 20 tall), so two sit
+          side by side on a 375pt phone; a third wraps. */}
       {trustDocs.length > 0 && (
-        <DmView style={[a.mt_10, a.flex_row, a.flex_wrap]}>
+        <DmView style={[a.mt_10, styles.trustRow]}>
           {trustDocs.map((doc) => {
             const imageUrl = isAr
               ? doc.trustDocumentData?.trustProduct?.pictureAr
               : doc.trustDocumentData?.trustProduct?.pictureEn
             return (
-              <DmView key={doc.id} style={a.mr_10}>
+              <DmView key={doc.id}>
                 {imageUrl ? (
-                  <SvgUriContainer width={160} height={40} uri={imageUrl} />
+                  <SvgUriContainer
+                    width={TRUST_STICKER_WIDTH}
+                    height={TRUST_STICKER_HEIGHT}
+                    uri={imageUrl}
+                  />
                 ) : (
                   <Text size={10} weight="semibold" leading="legacy" color="tertiary">
                     {isAr
@@ -210,6 +236,28 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
             )
           })}
         </DmView>
+      )}
+
+      {/* The OFFERS box (#522): the red tab over a white bordered box, the
+          stickers spread evenly with thin dividers, after the trust
+          stickers as on the pro's own card. It replaces the pink footer
+          band. Each is the product's single picture, centred, untrimmed:
+          the CMS template's group translate is what centres the drawing in
+          its box (see OffersSection's strip). */}
+      {motivational.length > 0 && (
+        <OffersBox style={a.mt_12}>
+          {motivational.map((sub: any, idx: number) => {
+            const uri = isAr ? sub.product?.pictureAr : sub.product?.pictureEn
+            return uri ? (
+              <SvgUriContainer
+                key={sub.id || idx}
+                width="100%"
+                height={OFFER_STICKER_HEIGHT}
+                uri={uri}
+              />
+            ) : null
+          })}
+        </OffersBox>
       )}
 
       {/* Promo line */}
@@ -256,22 +304,6 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           <Text size={11} weight="medium" leading="legacy" color="tertiary" style={styles.italic}>
             {t("passed")}
           </Text>
-        </DmView>
-      )}
-
-      {/* Motivational stickers — the card's FOOTER band, under its OFFERS
-          tab: negative margins cancel the card's px-[15]/pb-[12] so it bleeds
-          to the edges, and the bottom corners pick up the card's rounded-20. */}
-      {subscriptions.some((s: any) => s.product?.subType === "motivational") && (
-        <DmView
-          style={[a.mt_14, a.overflow_hidden, {
-            marginHorizontal: -15,
-            marginBottom: -12,
-            borderBottomLeftRadius: 20,
-            borderBottomRightRadius: 20,
-          }]}
-        >
-          <OffersSection subscriptions={subscriptions} variant="strip" />
         </DmView>
       )}
     </DmView>
