@@ -38,8 +38,10 @@ import {
  * fresh one stays.
  *
  * #523 swapped the underline tabs for the shared section pills: the states
- * that draw the menu are captured under ", pills" names beside the frozen
- * ones (loading and unavailable draw no pills and are unchanged). The pills
+ * that draw the menu are captured under ", capped pills" names (a pill's
+ * width capped at 70% of the window, so a long title truncates) beside the
+ * frozen ones, the uncapped pills (", pills") and the underline tabs
+ * (loading and unavailable draw no pills and are unchanged). The pills
  * following the scroll, and a pill's scroll holding them, are behaviour
  * tests: the test renderer lays nothing out, so they hand the list its
  * measurements first.
@@ -73,16 +75,16 @@ type Case = {
 }
 const NO_CART = screenState("data")
 const CASES: Case[] = [
-  { name: "menu, no basket, pills", base: NO_CART, api: menu() },
-  { name: "menu, basket, pills", base: withCart(DRAFT_RICH), api: menu() },
+  { name: "menu, no basket, capped pills", base: NO_CART, api: menu() },
+  { name: "menu, basket, capped pills", base: withCart(DRAFT_RICH), api: menu() },
   {
-    name: "basket, no bottom inset, pills",
+    name: "basket, no bottom inset, capped pills",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 0 },
   },
   {
-    name: "basket, bottom inset 48, pills",
+    name: "basket, bottom inset 48, capped pills",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 48 },
@@ -94,7 +96,7 @@ const CASES: Case[] = [
     api: menu({ data: { ...RICH_MENU, menuSections: [] } }),
   },
   {
-    name: "no kitchen name, pills",
+    name: "no kitchen name, capped pills",
     base: NO_CART,
     api: menu(),
     params: { ...PARAMS, proName: "" },
@@ -233,7 +235,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         })
         expect(cartLines(session.store, PRO_FOOD.id)).toEqual([[412, 1]])
-        expectParity(parityName("quick add, pills", env), session.tree())
+        expectParity(parityName("quick add, capped pills", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -261,7 +263,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           [411, 1],
           [431, 30],
         ])
-        expectParity(parityName("trash twice, pills", env), session.tree())
+        expectParity(parityName("trash twice, capped pills", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -335,6 +337,32 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         await session.act(() => scrollList(list, 1300), 0, "scroll to the end")
         expect(activePill(session.root)).toEqual(["Desserts"])
         await session.act(() => scrollList(list, 0), 0, "scroll back up")
+        expect(activePill(session.root)).toEqual(["Mains"])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  // The list has 24 pt over Mains: its pill goes to the very top, and at the
+  // top it doesn't nudge the list.
+  it.each(envs)(
+    "the first pill scrolls to the list's top, and does nothing there [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(CASES[0], env)
+      try {
+        const list = await measured(session)
+        const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
+        scrollTo.mockClear()
+        await session.act(() => {
+          pressText(session.root, "Mains")
+        }, 0, "press Mains at the top")
+        expect(scrollTo).not.toHaveBeenCalled()
+        await session.act(() => scrollList(list, 900), 0, "scroll down")
+        await session.act(() => {
+          pressText(session.root, "Mains")
+        }, 0, "press Mains")
+        expect(scrollTo).toHaveBeenCalledWith({ y: 0, animated: true })
         expect(activePill(session.root)).toEqual(["Mains"])
       } finally {
         session.unmount()
