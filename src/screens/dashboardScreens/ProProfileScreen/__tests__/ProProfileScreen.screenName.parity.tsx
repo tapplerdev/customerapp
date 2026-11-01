@@ -32,8 +32,9 @@ import type { ProType } from "types/pro"
  * #522 redrew the hero (the name on its own line, the account type in a grey
  * pill with the Featured sticker beside it, one red star and "x of 5 (N
  * Reviews)" or the no-reviews box, the OFFERS box; the collapsed header's
- * score is the one-star line too), so every state that changed is drawn
- * again under a "#522 profile hero" name and captured beside the frozen ones,
+ * score is the one-star line too; the pill as tall as the Featured sticker,
+ * 24pt), so every state that changed is drawn again under a "#522 profile
+ * hero, pill as tall as Featured" name and captured beside the frozen ones,
  * which no row draws any more.
  */
 const load = () => require("../ProProfileScreen")
@@ -73,15 +74,15 @@ type Case = {
   steps?: Step[]
 }
 const CASES: Case[] = [
-  { state: "a company with an approved screen name, #522 profile hero", pro: company({ serviceScreenName: KITCHEN }), draws: KITCHEN, hides: PRO_COMPANY.businessName },
-  { state: "an individual with an approved screen name, #522 profile hero", pro: individual({ serviceScreenName: KITCHEN }), draws: KITCHEN, hides: PRO_INDIVIDUAL.registeredName },
-  { state: "a screen name, no photo: its initial, #522 profile hero", pro: company({ serviceScreenName: KITCHEN, profilePhoto: undefined, profilePhoto150: undefined, profilePhoto720: undefined }), draws: KITCHEN, hides: PRO_COMPANY.businessName },
-  { state: "a screen name, the header scrolled in, #522 profile hero", pro: company({ serviceScreenName: KITCHEN }), draws: KITCHEN, steps: [scrollTo(300), wait(300)] },
-  { state: "none approved: the business name, #522 profile hero", pro: company({ serviceScreenName: null }), draws: PRO_COMPANY.businessName as string, hides: KITCHEN },
-  { state: "none approved: the registered name, #522 profile hero", pro: individual({ serviceScreenName: null }), draws: PRO_INDIVIDUAL.registeredName, hides: KITCHEN },
+  { state: "a company with an approved screen name, #522 profile hero, pill as tall as Featured", pro: company({ serviceScreenName: KITCHEN }), draws: KITCHEN, hides: PRO_COMPANY.businessName },
+  { state: "an individual with an approved screen name, #522 profile hero, pill as tall as Featured", pro: individual({ serviceScreenName: KITCHEN }), draws: KITCHEN, hides: PRO_INDIVIDUAL.registeredName },
+  { state: "a screen name, no photo: its initial, #522 profile hero, pill as tall as Featured", pro: company({ serviceScreenName: KITCHEN, profilePhoto: undefined, profilePhoto150: undefined, profilePhoto720: undefined }), draws: KITCHEN, hides: PRO_COMPANY.businessName },
+  { state: "a screen name, the header scrolled in, #522 profile hero, pill as tall as Featured", pro: company({ serviceScreenName: KITCHEN }), draws: KITCHEN, steps: [scrollTo(300), wait(300)] },
+  { state: "none approved: the business name, #522 profile hero, pill as tall as Featured", pro: company({ serviceScreenName: null }), draws: PRO_COMPANY.businessName as string, hides: KITCHEN },
+  { state: "none approved: the registered name, #522 profile hero, pill as tall as Featured", pro: individual({ serviceScreenName: null }), draws: PRO_INDIVIDUAL.registeredName, hides: KITCHEN },
   // A pro-level screenName (another kitchen's) never reaches this screen's name.
-  { state: "another kitchen's pro-level screen name is ignored, #522 profile hero", pro: company({ screenName: "Other Kitchen", serviceScreenName: null }), draws: PRO_COMPANY.businessName as string, hides: "Other Kitchen" },
-  { state: "a blank screen name falls back, #522 profile hero", pro: company({ serviceScreenName: "" }), draws: PRO_COMPANY.businessName as string },
+  { state: "another kitchen's pro-level screen name is ignored, #522 profile hero, pill as tall as Featured", pro: company({ screenName: "Other Kitchen", serviceScreenName: null }), draws: PRO_COMPANY.businessName as string, hides: "Other Kitchen" },
+  { state: "a blank screen name falls back, #522 profile hero, pill as tall as Featured", pro: company({ serviceScreenName: "" }), draws: PRO_COMPANY.businessName as string },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

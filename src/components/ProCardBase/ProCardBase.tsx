@@ -19,11 +19,12 @@ import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import OffersBox, {
   OFFER_STICKER_HEIGHT,
 } from "@tappler/shared/src/components/OffersBox"
-
-// A trust sticker's slot, as tall as its art (143 x 19 at 150 wide). KEEP IN
-// SYNC with ProCard and the pro app's ProfileCardPreview.
-const TRUST_STICKER_WIDTH = 150
-const TRUST_STICKER_HEIGHT = 20
+// A trust sticker's slot, only as tall as its art (#522), one copy for both
+// apps' cards.
+import {
+  TRUST_STICKER_HEIGHT,
+  TRUST_STICKER_WIDTH,
+} from "@tappler/shared/src/constants/trustSticker"
 
 interface ProCardBaseProps {
   // Pro data
@@ -240,7 +241,9 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
       {/* The OFFERS box (#522): the red tab over a white bordered box, the
           stickers spread evenly with thin dividers, after the trust
           stickers as on the pro's own card. It replaces the pink footer
-          band. Each is the product's single picture, centred. */}
+          band. Each is the product's single picture, centred, untrimmed:
+          the CMS template's group translate is what centres the drawing in
+          its box (see OffersSection's strip). */}
       {motivational.length > 0 && (
         <OffersBox style={a.mt_12}>
           {motivational.map((sub: any, idx: number) => {

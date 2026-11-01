@@ -329,6 +329,7 @@
   "of": "من",
   "rating_score_of_5": "{{rate}} من 5",
   "rating_reviews_count": "({{number}} تقييمات)",
+  "rating_reviews_count_single": "(1 تقييم)",
   "no_reviews_yet": "لا توجد تقييمات بعد",
   "be_the_first_to_share_your_experience": "كن أول من يشارك تجربته",
   "not_yet_rated": "لم يتم التقييم بعد",

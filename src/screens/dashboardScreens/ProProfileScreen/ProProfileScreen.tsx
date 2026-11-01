@@ -39,7 +39,7 @@ import Video from "react-native-video"
 
 import CloseIcon from "assets/icons/close.svg"
 import PlayIcon from "assets/icons/play.svg"
-import styles from "./styles"
+import styles, { PILL_HEIGHT } from "./styles"
 import IndividualIcon from "assets/icons/individual.svg"
 import BusinessIcon from "assets/icons/business.svg"
 import FacebookIcon from "assets/icons/facebook-logo.svg"
@@ -290,7 +290,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
             {featuredUri && (
               <DmView style={a.ml_8}>
-                <FeaturedSticker uri={featuredUri} height={18} />
+                <FeaturedSticker uri={featuredUri} height={PILL_HEIGHT} />
               </DmView>
             )}
           </DmView>

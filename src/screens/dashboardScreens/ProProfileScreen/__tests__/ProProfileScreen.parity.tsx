@@ -43,8 +43,9 @@ import type { ProType, ProWorkPhotoType } from "types/pro"
  * #522 redrew the hero (the name on its own line, the account type in a grey
  * pill with the Featured sticker beside it, one red star and "x of 5 (N
  * Reviews)" or the no-reviews box, the OFFERS box; the collapsed header's
- * score is the one-star line too), so every state that changed is drawn
- * again under a "#522 profile hero" name and captured beside the frozen ones,
+ * score is the one-star line too; the pill as tall as the Featured sticker,
+ * 24pt), so every state that changed is drawn again under a "#522 profile
+ * hero, pill as tall as Featured" name and captured beside the frozen ones,
  * which no row draws any more.
  */
 const load = () => require("../ProProfileScreen")
@@ -169,25 +170,25 @@ type Case = {
 const CASES: Case[] = [
   // (A failed profile draws the same loading overlay as one still loading.)
   { state: "loading", options: { ...SIGNED, api: { ...DATA, getProProfile: "loading" }, route: withPro(PRO_INDIVIDUAL).route } },
-  { state: "the plain individual, #522 profile hero", options: SIGNED_PLAIN() },
-  { state: "a full company profile, #522 profile hero", options: withPro(FULL) },
-  { state: "a minimal profile, #522 profile hero", options: withPro(MINIMAL) },
-  { state: "a pro nobody has reviewed yet, #522 profile hero", options: withPro(UNREVIEWED) },
-  { state: "no photo: the initial letter, #522 profile hero", options: withPro(NO_PHOTO) },
-  { state: "no photo, an individual, #522 profile hero", options: withPro({ ...MINIMAL, profilePhoto: undefined, registeredName: "Mona Adel" }) },
-  { state: "a long name, #522 profile hero", options: withPro({ ...FULL, businessName: "Hassan Home Services, Heating, Plumbing and Everything Else Around the House Company Limited" }) },
-  { state: "a long name, featured, an individual, #522 profile hero", options: withPro({ ...withCategory(PRO_INDIVIDUAL, [sticker(1, "featuredPro")], true), registeredName: "Abdel Rahman Mohamed Ibrahim El Sayed Hassan Mahmoud Fahmy" }) },
-  { state: "the listing's categories win over the pro's, #522 profile hero", options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }) },
+  { state: "the plain individual, #522 profile hero, pill as tall as Featured", options: SIGNED_PLAIN() },
+  { state: "a full company profile, #522 profile hero, pill as tall as Featured", options: withPro(FULL) },
+  { state: "a minimal profile, #522 profile hero, pill as tall as Featured", options: withPro(MINIMAL) },
+  { state: "a pro nobody has reviewed yet, #522 profile hero, pill as tall as Featured", options: withPro(UNREVIEWED) },
+  { state: "no photo: the initial letter, #522 profile hero, pill as tall as Featured", options: withPro(NO_PHOTO) },
+  { state: "no photo, an individual, #522 profile hero, pill as tall as Featured", options: withPro({ ...MINIMAL, profilePhoto: undefined, registeredName: "Mona Adel" }) },
+  { state: "a long name, #522 profile hero, pill as tall as Featured", options: withPro({ ...FULL, businessName: "Hassan Home Services, Heating, Plumbing and Everything Else Around the House Company Limited" }) },
+  { state: "a long name, featured, an individual, #522 profile hero, pill as tall as Featured", options: withPro({ ...withCategory(PRO_INDIVIDUAL, [sticker(1, "featuredPro")], true), registeredName: "Abdel Rahman Mohamed Ibrahim El Sayed Hassan Mahmoud Fahmy" }) },
+  { state: "the listing's categories win over the pro's, #522 profile hero, pill as tall as Featured", options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }) },
   // OffersSection's banner sizes its stickers from the window it loaded with.
-  { state: "four stickers, #522 profile hero", options: withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])) },
-  { state: "four stickers, a 390-wide phone, #522 profile hero", options: { ...withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])), window: { width: 390 } } },
-  { state: "scrolled past the photo, #522 profile hero", options: withPro(FULL), steps: [scrollTo(300), wait(300)] },
-  { state: "scrolled halfway into the header, #522 profile hero", options: withPro(FULL), steps: [scrollTo(260), wait(300)] },
-  { state: "scrolled back up, #522 profile hero", options: withPro(FULL), steps: [scrollTo(300), wait(300), scrollTo(0), wait(300)] },
-  { state: "the work-photo viewer open on the first tile, #522 profile hero", options: withPro(FULL), steps: [openViewer(0), wait(600)] },
-  { state: "the work-photo viewer open on a video, #522 profile hero", options: withPro(FULL), steps: [openViewer(2), wait(600)] },
-  { state: "no top inset, #522 profile hero", options: { ...withPro(FULL), insets: { top: 0 } } },
-  { state: "a notch, #522 profile hero", options: { ...withPro(FULL), insets: { top: 59 } } },
+  { state: "four stickers, #522 profile hero, pill as tall as Featured", options: withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])) },
+  { state: "four stickers, a 390-wide phone, #522 profile hero, pill as tall as Featured", options: { ...withPro(withCategory(PRO_COMPANY, [sticker(2, "motivational"), sticker(3, "motivational"), sticker(4, "motivational"), sticker(5, "motivational")])), window: { width: 390 } } },
+  { state: "scrolled past the photo, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [scrollTo(300), wait(300)] },
+  { state: "scrolled halfway into the header, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [scrollTo(260), wait(300)] },
+  { state: "scrolled back up, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [scrollTo(300), wait(300), scrollTo(0), wait(300)] },
+  { state: "the work-photo viewer open on the first tile, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [openViewer(0), wait(600)] },
+  { state: "the work-photo viewer open on a video, #522 profile hero, pill as tall as Featured", options: withPro(FULL), steps: [openViewer(2), wait(600)] },
+  { state: "no top inset, #522 profile hero, pill as tall as Featured", options: { ...withPro(FULL), insets: { top: 0 } } },
+  { state: "a notch, #522 profile hero, pill as tall as Featured", options: { ...withPro(FULL), insets: { top: 59 } } },
 ]
 
 function SIGNED_PLAIN() {
@@ -230,6 +231,16 @@ describe.each(PARITY_MATRIX)("ProProfileScreen presses [$language $platform]", (
     expect(text).toContain(`"${copy(env, "rating_score_of_5").replace("{{rate}}", "4.6")} "`)
     expect(text).toContain(copy(env, "rating_reviews_count").replace("{{number}}", "18"))
     expect(text).not.toContain(copy(env, "be_the_first_to_share_your_experience"))
+  })
+
+  it("one review, in the singular, in the hero and the collapsed header", async () => {
+    const text = await heroText({
+      ...MINIMAL,
+      reviewScore: { ...MINIMAL.reviewScore, overallScore: 5, reviewsCount: 1 } as ProType["reviewScore"],
+    })
+    const single = copy(env, "rating_reviews_count_single")
+    expect(text.split(JSON.stringify(single)).length - 1).toBe(2)
+    expect(text).not.toContain(copy(env, "rating_reviews_count").replace("{{number}}", "1"))
   })
 
   it("a pro nobody reviewed: the no-reviews box, no score", async () => {

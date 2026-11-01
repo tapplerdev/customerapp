@@ -2,18 +2,22 @@ import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
 import { color } from "@tappler/shared/src/ds"
 
+/** The account type pill's and the Featured sticker's height (#522). */
+export const PILL_HEIGHT = 24
+
 export default StyleSheet.create({
   headerZIndex: { zIndex: 3 },
   heroZIndex: { zIndex: 5 },
-  // The account type's grey pill (#522): its icon and label, 8 in from each
-  // side, 4 above and below.
+  // The account type's grey pill (#522): its icon and label, 8 in from
+  // each side, as tall as the Featured sticker beside it (PILL_HEIGHT), as
+  // the mock draws the two. The label's line (16 in English, 21 in Arabic)
+  // sits centred in it, so the pill is the same height in both languages.
   typePill: {
     flexDirection: "row",
     alignItems: "center",
+    height: PILL_HEIGHT,
     paddingLeft: 8,
     paddingRight: 8,
-    paddingTop: 4,
-    paddingBottom: 4,
     borderRadius: 5,
     backgroundColor: color.divider,
   },
