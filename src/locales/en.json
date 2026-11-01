@@ -470,6 +470,7 @@
   "current_location": "Current location",
   "back": "Back",
   "food_menu": "Food Menu",
+  "menu_sections": "Menu sections",
   "available_for_delivery": "available for delivery",
   "menu_unavailable": "Menu unavailable right now",
   "delivery_fee_egp": "Delivery: EGP {{fee}}",

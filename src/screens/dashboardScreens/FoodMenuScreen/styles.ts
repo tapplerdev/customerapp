@@ -22,19 +22,15 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 36.5,
   },
+  // The list's content: 24 between the pill bar and the first section (the
+  // header's height is added on top).
+  listContent: {
+    flexGrow: 1,
+    paddingTop: 24,
+  },
+  // The page's white, which the header's info block and pill bar blend into.
   safeArea: {
     backgroundColor: colors.white,
-  },
-  row: {
-    backgroundColor: colors.white,
-    borderBottomColor: colors.grey19,
-  },
-  iconWrap: {
-    width: 32,
-    height: 32,
-  },
-  box: {
-    width: 32,
   },
   boxWrap: {
     left: 0,

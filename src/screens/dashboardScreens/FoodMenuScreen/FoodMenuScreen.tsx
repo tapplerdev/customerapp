@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useMemo } from "react"
+import Animated from "react-native-reanimated"
 
 // Components
 import { DmView } from "@tappler/shared/src/components/UI"
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import MenuSectionPills, {
   useSectionScrollSpy,
 } from "@tappler/shared/src/components/MenuSectionPills"
+import MenuStoreHeader from "@tappler/shared/src/components/MenuStoreHeader"
 import FoodMenuItemRow from "components/FoodMenuItemRow"
 
 // Hooks & Redux
 import { useTranslation } from "react-i18next"
 import { useDispatch } from "react-redux"
-import { useGetProMenuQuery } from "services/api"
+import { useGetProMenuQuery, useGetProProfileQuery } from "services/api"
 import { useTypedSelector } from "store"
 import {
   addCartItem,
@@ -30,35 +32,37 @@ import { RootStackScreenProps } from "navigation/types"
 import { FoodMenuItemType, FoodMenuSectionType } from "types/food"
 
 // Styles & Assets
-import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
-import ChevronLeftIcon from "assets/icons/chevron-left.svg"
-import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
-import { AppScrollView } from "components/scroll"
 import { Text, a as atoms } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodMenuScreen">
 
 
 // The customer-side twin of proapp's FoodMenuStoreScreen preview: same
-// section pills + item rows, but taps go to FoodItemScreen (real add-to-cart)
-// and a View Basket bar rides the bottom once the cart has lines.
+// header, section pills + item rows, but taps go to FoodItemScreen (real
+// add-to-cart) and a View Basket bar rides the bottom once the cart has lines.
 //
-// The pills (#523, shared with proapp) sit above the list, so they stay put,
-// follow the section in view and scroll the list to the one tapped. Both read
-// `sections`, so a section with no items is in neither.
+// #523 pass 2: the kitchen's collapsing header (shared MenuStoreHeader) sits
+// over the list: the pro's profile photo as the cover, the kitchen's name,
+// rating and delivery terms, folding into a compact bar as the menu scrolls,
+// with the pills (shared with proapp) stuck under it. The pills follow the
+// section in view and scroll the list to the one tapped, or to the one picked
+// from their sections sheet. Both read `sections`, so a section with no items
+// is in neither. The menu has no photo of its own, so the cover and rating
+// come from the pro's profile (the same query ProProfileScreen reads, so it
+// is usually cached); the name, the delivery terms and the menu draw first.
 const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
   const { proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode = "delivery" } =
     route.params
 
-  const { t, i18n } = useTranslation()
-  const isAr = i18n.language === "ar"
+  const { t } = useTranslation()
   const insets = useSafeAreaInsets()
 
   const { data: menu, isLoading, isError } = useGetProMenuQuery({
     proId,
     serviceCategoryId,
   })
+  const { data: pro } = useGetProProfileQuery({ proId, serviceCategoryId })
 
   const dispatch = useDispatch()
   const cart = useTypedSelector((state) => state.cart)
@@ -99,8 +103,47 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     [sections]
   )
 
-  const { activeIndex, select, scrollRef, scrollProps, sectionLayout } =
-    useSectionScrollSpy(sections.length)
+  const {
+    activeIndex,
+    select,
+    scrollRef,
+    scrollProps,
+    sectionLayout,
+    scrollY,
+    header,
+    onHeaderLayout,
+  } = useSectionScrollSpy(sections.length)
+
+  // The header: the card's name, else the kitchen's approved name, else
+  // the generic title; the profile's photo and rating once it has loaded.
+  const kitchenName =
+    proName ||
+    pro?.serviceScreenName ||
+    (pro?.proType === "company" ? pro?.businessName : pro?.registeredName) ||
+    t("food_menu")
+  const rating = useMemo(
+    () =>
+      pro
+        ? {
+            rate: pro.reviewScore?.overallScore || 0,
+            reviewsCount: pro.reviewScore?.reviewsCount || 0,
+          }
+        : null,
+    [pro]
+  )
+  const fulfilment = useMemo(
+    () =>
+      menu
+        ? {
+            delivery: !!menu.isDeliveryEnabled,
+            pickup: !!menu.isPickupEnabled,
+            deliveryFee: menu.deliveryCharge,
+            freeDeliveryOver: menu.freeDeliveryThreshold,
+          }
+        : null,
+    [menu]
+  )
+  const goBack = useCallback(() => navigation.goBack(), [navigation])
 
   const handlePressItem = useCallback(
     (item: FoodMenuItemType) => {
@@ -198,62 +241,76 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     )
   }
 
-  return (
-    <SafeAreaView style={[atoms.flex_1, styles.safeArea]} edges={["top"]}>
-      {/* Header */}
-      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_12, atoms.py_10, styles.row]}>
-        <DmView
-          style={[styles.iconWrap, atoms.items_center, atoms.justify_center]}
-          hitSlop={HIT_SLOP_DEFAULT}
-          onPress={() => navigation.goBack()}
-        >
-          <ChevronLeftIcon
-            color={colors.red}
-            style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
-          />
-        </DmView>
-        <DmView style={[atoms.flex_1, atoms.items_center]}>
-          <Text size={16} weight="bold">
-            {t("food_menu")}
-          </Text>
-          {!!proName && (
-            <Text size={12} leading="tight" color="secondary" style={atoms.mt_2}>
-              {proName}
-            </Text>
-          )}
-        </DmView>
-        <DmView style={styles.box} />
-      </DmView>
+  const top = header?.height ?? 0
+  const hasMenu = !isLoading && !isError && sections.length > 0
 
-      {isLoading ? (
-        <LoadingOverlay />
-      ) : isError || !sections.length ? (
-        <DmView style={[atoms.flex_1, atoms.items_center, atoms.justify_center, atoms.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
-            {t("menu_unavailable")}
-          </Text>
-        </DmView>
-      ) : (
-        <DmView style={atoms.flex_1}>
-          <MenuSectionPills
-            titles={sectionTitles}
-            activeIndex={activeIndex}
-            onSelect={select}
-          />
-          <AppScrollView
-            ref={scrollRef}
-            {...scrollProps}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingTop: 24,
-              paddingBottom: 60 + insets.bottom + (basketVisible ? 70 : 0),
-            }}
+  // Its own element, so a cart change doesn't re-render the header.
+  const pills = useMemo(
+    () =>
+      hasMenu ? (
+        <MenuSectionPills
+          titles={sectionTitles}
+          activeIndex={activeIndex}
+          onSelect={select}
+        />
+      ) : null,
+    [hasMenu, sectionTitles, activeIndex, select]
+  )
+
+  return (
+    <DmView style={[atoms.flex_1, styles.safeArea]}>
+      {/* Reanimated's, so the header can read its offset on the UI thread
+          (useSectionScrollSpy's scrollY). A member expression is invisible
+          to components/scroll's guard, so it carries the wrapper's prop.
+          Mounted in every state, so the header's offset always has a list
+          to follow; loading and "unavailable" fill it under the header. */}
+      <Animated.ScrollView
+        ref={scrollRef}
+        {...scrollProps}
+        alwaysBounceVertical={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingTop: top + (hasMenu ? styles.listContent.paddingTop : 0),
+            paddingBottom: 60 + insets.bottom + (basketVisible ? 70 : 0),
+          },
+        ]}
+      >
+        {isLoading ? (
+          <DmView style={atoms.flex_1}>
+            <LoadingOverlay />
+          </DmView>
+        ) : !hasMenu ? (
+          <DmView
+            style={[
+              atoms.flex_1,
+              atoms.items_center,
+              atoms.justify_center,
+              atoms.px_40,
+            ]}
           >
-            {sections.map(renderSection)}
-          </AppScrollView>
-        </DmView>
-      )}
+            <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+              {t("menu_unavailable")}
+            </Text>
+          </DmView>
+        ) : (
+          sections.map(renderSection)
+        )}
+      </Animated.ScrollView>
+
+      <MenuStoreHeader
+        scrollY={scrollY}
+        title={kitchenName}
+        // undefined while the profile loads (a plain cover), null for none.
+        photo={pro ? pro.profilePhoto || null : undefined}
+        rating={rating}
+        fulfilment={fulfilment}
+        onBack={goBack}
+        onLayoutChange={onHeaderLayout}
+      >
+        {pills}
+      </MenuStoreHeader>
 
       {/* Pinned white footer with an upward shadow — the same shape as the
           Filters sheet's "Show results" bar, so the bottom of the app behaves
@@ -293,7 +350,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         </DmView>
       )}
-    </SafeAreaView>
+    </DmView>
   )
 }
 

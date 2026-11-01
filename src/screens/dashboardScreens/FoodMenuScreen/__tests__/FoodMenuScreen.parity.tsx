@@ -1,6 +1,6 @@
-/* eslint-disable global-require, @typescript-eslint/no-var-requires --
-   the kit loads each render's modules in the render's registry. */
+ 
 import { describe, expect, it, jest } from "@jest/globals"
+import { StyleSheet } from "react-native"
 import type { ReactTestInstance } from "react-test-renderer"
 
 import {
@@ -45,6 +45,16 @@ import {
  * following the scroll, and a pill's scroll holding them, are behaviour
  * tests: the test renderer lays nothing out, so they hand the list its
  * measurements first.
+ *
+ * #523 pass 2 put the kitchen's collapsing header over the list (the pro's
+ * profile photo as the cover, the name, rating and delivery terms, then the
+ * pills with a sections button and a sliding highlight). Every state is
+ * drawn again under ", hero" names beside the frozen ones, plus the header's
+ * own states: no photo and no reviews, pickup only, the profile still
+ * loading, and the sections sheet open. The fold, the highlight's slide and
+ * the stretch run on the UI thread and draw nothing here; the header's
+ * layout reaching the spy (a tapped section lands under the folded header)
+ * and the sheet's rows are behaviour tests below.
  */
 
 const load = () => require("../FoodMenuScreen")
@@ -75,31 +85,58 @@ type Case = {
 }
 const NO_CART = screenState("data")
 const CASES: Case[] = [
-  { name: "menu, no basket, capped pills", base: NO_CART, api: menu() },
-  { name: "menu, basket, capped pills", base: withCart(DRAFT_RICH), api: menu() },
+  { name: "menu, no basket, hero", base: NO_CART, api: menu() },
+  { name: "menu, basket, hero", base: withCart(DRAFT_RICH), api: menu() },
   {
-    name: "basket, no bottom inset, capped pills",
+    name: "basket, no bottom inset, hero",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 0 },
   },
   {
-    name: "basket, bottom inset 48, capped pills",
+    name: "basket, bottom inset 48, hero",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 48 },
   },
-  { name: "loading", base: NO_CART, api: {} },
+  { name: "loading, hero", base: NO_CART, api: {} },
   {
-    name: "menu unavailable",
+    name: "menu unavailable, hero",
     base: NO_CART,
     api: menu({ data: { ...RICH_MENU, menuSections: [] } }),
   },
   {
-    name: "no kitchen name, capped pills",
+    name: "no kitchen name, hero",
     base: NO_CART,
     api: menu(),
     params: { ...PARAMS, proName: "" },
+  },
+  {
+    name: "no photo, no reviews, hero",
+    base: NO_CART,
+    api: {
+      ...menu(),
+      getProProfile: {
+        data: { ...PRO_FOOD, profilePhoto: undefined, reviewScore: undefined },
+      },
+    },
+  },
+  {
+    name: "pickup only, hero",
+    base: NO_CART,
+    api: menu({
+      data: { ...RICH_MENU, isDeliveryEnabled: false, isPickupEnabled: true },
+    }),
+  },
+  {
+    name: "profile still loading, hero",
+    base: NO_CART,
+    // No answer for the profile: it stays loading.
+    api: (() => {
+      const api: BackendFixtures = { ...menu() }
+      delete api.getProProfile
+      return api
+    })(),
   },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
@@ -235,7 +272,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         })
         expect(cartLines(session.store, PRO_FOOD.id)).toEqual([[412, 1]])
-        expectParity(parityName("quick add, capped pills", env), session.tree())
+        expectParity(parityName("quick add, hero", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -263,7 +300,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           [411, 1],
           [431, 30],
         ])
-        expectParity(parityName("trash twice, capped pills", env), session.tree())
+        expectParity(parityName("trash twice, hero", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -415,6 +452,147 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
             },
           },
         ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  // #523 pass 2: the header measured as a device would (a 360-pt hero with a
+  // 96-pt info block over a 52-pt pill bar). The list moves down under it,
+  // and a tapped section lands under the folded header (the status bar, the
+  // 48-pt compact bar and the pills), not under the screen's top.
+  const HERO = 360
+  const INFO = 96
+  const PILLS = 52
+  const measureHeader = async (session: Awaited<ReturnType<typeof open>>) => {
+    const hosts = (node: ReactTestInstance) => typeof node.type === "string"
+    // The hero lets touches through: the one host with a layout and no touches.
+    const hero = session.root.find(
+      (node) =>
+        hosts(node) && !!node.props.onLayout && node.props.pointerEvents === "none"
+    )
+    const info = hero.findAll(
+      (node) => node !== hero && hosts(node) && !!node.props.onLayout
+    )
+    expect(info).toHaveLength(1)
+    // The pill bar's wrapper: the first host above the pills' row with a layout.
+    const row = session.root.find(
+      (node) =>
+        !hosts(node) &&
+        typeof node.instance?.scrollTo === "function" &&
+        !!node.props.horizontal
+    )
+    let pills = row.parent
+    while (pills && !(hosts(pills) && pills.props.onLayout)) pills = pills.parent
+    expect(pills).toBeTruthy()
+    const layout = (height: number) => ({
+      nativeEvent: { layout: { x: 0, y: 0, width: 402, height } },
+    })
+    await session.act(
+      () => {
+        hero.props.onLayout(layout(HERO))
+        info[0].props.onLayout(layout(INFO))
+        pills!.props.onLayout(layout(PILLS))
+      },
+      0,
+      "measure the header"
+    )
+  }
+  const topInset = (env: (typeof PARITY_MATRIX)[number]) =>
+    env.platform === "ios" ? 62 : 24
+
+  it.each(envs)(
+    "the list sits under the header, and a pill lands its section under the folded header [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(CASES[0], env)
+      try {
+        await measureHeader(session)
+        const list = await measured(session)
+        expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingTop).toBe(HERO + PILLS + 24)
+        const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
+        scrollTo.mockClear()
+        await session.act(() => {
+          pressText(session.root, "Sides")
+        }, 0, "press Sides")
+        const sticky = topInset(env) + 48 + PILLS
+        expect(scrollTo).toHaveBeenCalledWith({ y: TOPS[1] - sticky, animated: true })
+        expect(activePill(session.root)).toEqual(["Sides"])
+        // And the reader's scroll counts a section reached under the header.
+        await session.act(() => scrollList(list, TOPS[1] - sticky), 0, "arrive")
+        await session.act(() => list.props.onScrollBeginDrag(), 0, "grab")
+        await session.act(
+          () => scrollList(list, TOPS[1] - sticky - 30),
+          0,
+          "Sides back under the anchor line"
+        )
+        expect(activePill(session.root)).toEqual(["Mains"])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  // The sections button: a sheet with every section; a row is a pill tap.
+  const sheetRows = (root: ReactTestInstance) =>
+    root.findAll(
+      (node) =>
+        typeof node.type === "string" &&
+        node.props.accessibilityRole === "button" &&
+        node.props.accessibilityState?.selected !== undefined
+    )
+  const sheetOf = (root: ReactTestInstance) =>
+    root.find(
+      (node) =>
+        typeof node.type !== "string" &&
+        (node.type as { name?: string }).name === "NativeActionSheet"
+    )
+
+  it.each(envs)(
+    "the sections button lists every section, and a row jumps there and closes the sheet [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(CASES[0], env)
+      try {
+        const list = await measured(session)
+        expect(sheetRows(session.root)).toHaveLength(0)
+        expect(sheetOf(session.root).props.isVisible).toBe(false)
+        const button = session.root.findAll(
+          (node) =>
+            node.props.accessibilityLabel === copy(env, "menu_sections") &&
+            typeof node.props.onPress === "function"
+        )
+        expect(button.length).toBeGreaterThan(0)
+        await session.act(() => {
+          button[0].props.onPress()
+        }, 0, "open the sheet")
+        expect(sheetOf(session.root).props.isVisible).toBe(true)
+        expect(
+          sheetRows(session.root).map((row) =>
+            row
+              .findAll((n) => String(n.type) === "Text")
+              .map((n) => n.children.join(""))
+              .join("")
+          )
+        ).toEqual(["Mains", "Sides", "Desserts"])
+        expectParity(parityName("sections sheet, hero", env), session.tree())
+        const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
+        scrollTo.mockClear()
+        // The row's own control (the pill shows the same title).
+        const dessertsRow = session.root.findAll(
+          (node) =>
+            typeof node.type !== "string" &&
+            typeof node.props.onPress === "function" &&
+            node.props.accessibilityRole === "button" &&
+            node.props.accessibilityState?.selected !== undefined &&
+            node
+              .findAll((n) => String(n.type) === "Text")
+              .some((n) => n.children.join("") === "Desserts")
+        )
+        expect(dessertsRow.length).toBeGreaterThan(0)
+        await session.act(() => dessertsRow[0].props.onPress(), 0, "pick Desserts")
+        expect(scrollTo).toHaveBeenCalledWith({ y: 1300, animated: true })
+        expect(activePill(session.root)).toEqual(["Desserts"])
+        expect(sheetOf(session.root).props.isVisible).toBe(false)
       } finally {
         session.unmount()
       }
