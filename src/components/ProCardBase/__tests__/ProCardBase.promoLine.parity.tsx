@@ -17,6 +17,14 @@ import {
  * a style it never read: captured before W1's prep deleted it.
  */
 
+/*
+ * #522 redrew the pro card (one red star and "x of 5 (N Reviews)" for a
+ * reviewed pro, "New on Tappler" kept for the rest; trust stickers in slots
+ * as tall as their art; the OFFERS box after the trust stickers in place of
+ * the pink footer band), so the states that draw one are drawn again under a
+ * "#522 card" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
@@ -49,13 +57,13 @@ const BASE = {
 }
 
 const CASES = [
-  { name: "promo line only", props: { ...BASE, subscriptions: [promoLine] } },
+  { name: "promo line only, #522 card", props: { ...BASE, subscriptions: [promoLine] } },
   {
-    name: "promo line and stickers",
+    name: "promo line and stickers, #522 card",
     props: { ...BASE, subscriptions: [promoLine, sticker(1), sticker(2)] },
   },
   {
-    name: "promo line, select and pass buttons",
+    name: "promo line, select and pass buttons, #522 card",
     props: {
       ...BASE,
       subscriptions: [promoLine],
@@ -63,7 +71,7 @@ const CASES = [
       offerAmount: 450,
     },
   },
-  { name: "no promo line", props: { ...BASE, subscriptions: [sticker(1)] } },
+  { name: "no promo line, #522 card", props: { ...BASE, subscriptions: [sticker(1)] } },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

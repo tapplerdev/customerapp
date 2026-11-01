@@ -59,6 +59,14 @@ import {
  * rn-tourguide draws it only once its zones have been measured.
  */
 
+/*
+ * #522 redrew the pro card (one red star and "x of 5 (N Reviews)" for a
+ * reviewed pro, "New on Tappler" kept for the rest; trust stickers in slots
+ * as tall as their art; the OFFERS box after the trust stickers in place of
+ * the pink footer band), so the states that draw one are drawn again under a
+ * "#522 card" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../ProsListingScreen")
 
 // ---------------------------------------------------------------------------
@@ -198,51 +206,51 @@ const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 const CASES: Case[] = [
   // The listing
   { state: "loading", options: withApi({ ...DATA, getProsForCategory: "loading" }) },
-  { state: "the pros", options: withApi(DATA) },
+  { state: "the pros, #522 card", options: withApi(DATA) },
   // (An empty list and a failed one draw the same: no pros found.)
   { state: "no pros, or the list failed", options: withApi({ ...DATA, getProsForCategory: SERVER_ERROR }) },
-  { state: "a food listing", options: withApi(FOOD, FOOD_PARAMS) },
+  { state: "a food listing, #522 card", options: withApi(FOOD, FOOD_PARAMS) },
   { state: "a food listing with no pros", options: withApi({ ...FOOD, getProsForCategory: { data: page([]) } }, FOOD_PARAMS) },
-  { state: "the service is still loading, place unknown (the gate's spinner)", options: withApi({ ...DATA, getServiceById: "loading" }, NO_PLACE) },
-  { state: "the service failed, place unknown (the gate's error)", options: withApi({ ...DATA, getServiceById: SERVER_ERROR }, NO_PLACE), allow: BUTTON },
+  { state: "the service is still loading, place unknown (the gate's spinner), #522 card", options: withApi({ ...DATA, getServiceById: "loading" }, NO_PLACE) },
+  { state: "the service failed, place unknown (the gate's error), #522 card", options: withApi({ ...DATA, getServiceById: SERVER_ERROR }, NO_PLACE), allow: BUTTON },
   { state: "every call failed", options: { ...SIGNED, api: ERROR, route: route() } },
-  { state: "five questions asked, a place chosen", options: withApi(RICH) },
-  { state: "one plain question, a place chosen", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }) },
-  { state: "an answered repost's banner", options: withApi(RICH, { initialAnswers: [{ questionId: 801, optionId: 8011 }, { questionId: 806, answer: "Hello" }] }) },
+  { state: "five questions asked, a place chosen, #522 card", options: withApi(RICH) },
+  { state: "one plain question, a place chosen, #522 card", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }) },
+  { state: "an answered repost's banner, #522 card", options: withApi(RICH, { initialAnswers: [{ questionId: 801, optionId: 8011 }, { questionId: 806, answer: "Hello" }] }) },
   // Selecting
-  { state: "one pro selected, the Continue button", options: withApi(DATA), steps: [selectMe(0), wait(1000)], allow: BUTTON },
-  { state: "both selected", options: withApi(DATA), steps: [selectMe(0), selectMe(0), wait(1000)], allow: BUTTON },
+  { state: "one pro selected, the Continue button, #522 card", options: withApi(DATA), steps: [selectMe(0), wait(1000)], allow: BUTTON },
+  { state: "both selected, #522 card", options: withApi(DATA), steps: [selectMe(0), selectMe(0), wait(1000)], allow: BUTTON },
   // The question flow
-  { state: "the flow opens by itself: the place step", options: withApi(RICH, NO_PLACE) , allow: BUTTON },
-  { state: "the flow, a place chosen", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location")] , allow: BUTTON },
-  { state: "the flow's second card", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600)] , allow: BUTTON },
-  { state: "the flow's answer picked", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600), option("Repair")] , allow: BUTTON },
-  { state: "the flow's last card, Done", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600)] , allow: BUTTON },
-  { state: "the flow done, the list narrowed", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000)] },
-  { state: "the flow with one plain question (no place step)", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }, NO_PLACE) , allow: BUTTON },
+  { state: "the flow opens by itself: the place step, #522 card", options: withApi(RICH, NO_PLACE) , allow: BUTTON },
+  { state: "the flow, a place chosen, #522 card", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location")] , allow: BUTTON },
+  { state: "the flow's second card, #522 card", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600)] , allow: BUTTON },
+  { state: "the flow's answer picked, #522 card", options: withApi(RICH, NO_PLACE), steps: [place("at_my_location"), next(0), wait(600), option("Repair")] , allow: BUTTON },
+  { state: "the flow's last card, Done, #522 card", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600)] , allow: BUTTON },
+  { state: "the flow done, the list narrowed, #522 card", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000)] },
+  { state: "the flow with one plain question (no place step), #522 card", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }, NO_PLACE) , allow: BUTTON },
   // The job-details editor
-  { state: "the job-details editor", options: withApi(RICH), steps: [jobBanner(1, 4)] , allow: BUTTON },
-  { state: "the editor, answers picked", options: withApi(RICH), steps: [jobBanner(1, 4), place("at_pro_location"), option("Repair"), option("The tap"), (root) => typeInto(root, 0, "Hello")] , allow: BUTTON },
-  { state: "the editor, See matches", options: withApi(RICH), steps: [jobBanner(1, 4), option("Repair"), seeMatches, wait(1000)] },
-  { state: "the editor with a single place", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }), steps: [jobBanner(1, 1)] , allow: BUTTON },
+  { state: "the job-details editor, #522 card", options: withApi(RICH), steps: [jobBanner(1, 4)] , allow: BUTTON },
+  { state: "the editor, answers picked, #522 card", options: withApi(RICH), steps: [jobBanner(1, 4), place("at_pro_location"), option("Repair"), option("The tap"), (root) => typeInto(root, 0, "Hello")] , allow: BUTTON },
+  { state: "the editor, See matches, #522 card", options: withApi(RICH), steps: [jobBanner(1, 4), option("Repair"), seeMatches, wait(1000)] },
+  { state: "the editor with a single place, #522 card", options: withApi({ ...DATA, getServiceById: { data: SERVICE_PLAIN } }), steps: [jobBanner(1, 1)] , allow: BUTTON },
   // The filters
-  { state: "the filters", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon] , allow: BUTTON },
-  { state: "the filters, online (no distance)", options: withApi(RICH), steps: [filtersIcon] , allow: BUTTON },
-  { state: "the filters, pro type and rating picked", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, chip("Individual"), chip("4+ ★")] , allow: BUTTON },
-  { state: "the filters, a budget typed", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 0, "250"), (root) => typeInto(root, 1, "700"), (root) => typeInto(root, 3, "40")] , allow: BUTTON },
-  { state: "the filters, a distance typed", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 4, "12")] , allow: BUTTON },
-  { state: "the filters, any brand picked", options: withApi(RICH), steps: [filtersIcon, chip("Any brand")] , allow: BUTTON },
-  { state: "the filters after the flow: the upfront pick chosen earlier", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000), filtersIcon] , allow: BUTTON },
-  { state: "the food filters", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon] , allow: BUTTON },
-  { state: "the food filters, delivery and a cuisine picked", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Delivery"), chip("Italian")] , allow: BUTTON },
-  { state: "the food filters applied: the pickup list", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Pickup"), showResults, wait(1000)] },
-  { state: "the filters applied: individuals only", options: withApi(RICH), steps: [filtersIcon, chip("Individual"), showResults, wait(1000)] },
-  { state: "the filters applied, the answer still on its way (the overlay)", options: withApi({ ...RICH, getProsForCategory: (args: unknown) => urlOf(args).includes("proType") ? "loading" : prosFor(PROS)(args) }), steps: [filtersIcon, chip("Individual"), showResults, wait(300)] },
-  { state: "a selection a filter drops: the shortlist notice", options: withApi(RICH), steps: [selectMe(0), selectMe(0), wait(500), filtersIcon, chip("Individual"), showResults, wait(1000)], allow: BUTTON },
+  { state: "the filters, #522 card", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon] , allow: BUTTON },
+  { state: "the filters, online (no distance), #522 card", options: withApi(RICH), steps: [filtersIcon] , allow: BUTTON },
+  { state: "the filters, pro type and rating picked, #522 card", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, chip("Individual"), chip("4+ ★")] , allow: BUTTON },
+  { state: "the filters, a budget typed, #522 card", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 0, "250"), (root) => typeInto(root, 1, "700"), (root) => typeInto(root, 3, "40")] , allow: BUTTON },
+  { state: "the filters, a distance typed, #522 card", options: withApi(RICH, { placeOfService: "proToCustomer" }), steps: [filtersIcon, (root) => typeInto(root, 4, "12")] , allow: BUTTON },
+  { state: "the filters, any brand picked, #522 card", options: withApi(RICH), steps: [filtersIcon, chip("Any brand")] , allow: BUTTON },
+  { state: "the filters after the flow: the upfront pick chosen earlier, #522 card", options: withApi(RICH, NO_PLACE), steps: [...FLOW_TO_DONE, wait(600), done(0), wait(1000), filtersIcon] , allow: BUTTON },
+  { state: "the food filters, #522 card", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon] , allow: BUTTON },
+  { state: "the food filters, delivery and a cuisine picked, #522 card", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Delivery"), chip("Italian")] , allow: BUTTON },
+  { state: "the food filters applied: the pickup list, #522 card", options: withApi(FOOD, FOOD_PARAMS), steps: [filtersIcon, chip("Pickup"), showResults, wait(1000)] },
+  { state: "the filters applied: individuals only, #522 card", options: withApi(RICH), steps: [filtersIcon, chip("Individual"), showResults, wait(1000)] },
+  { state: "the filters applied, the answer still on its way (the overlay), #522 card", options: withApi({ ...RICH, getProsForCategory: (args: unknown) => urlOf(args).includes("proType") ? "loading" : prosFor(PROS)(args) }), steps: [filtersIcon, chip("Individual"), showResults, wait(300)] },
+  { state: "a selection a filter drops: the shortlist notice, #522 card", options: withApi(RICH), steps: [selectMe(0), selectMe(0), wait(500), filtersIcon, chip("Individual"), showResults, wait(1000)], allow: BUTTON },
   // The rest
-  { state: "the search pill", options: withApi(DATA), steps: [(root) => pressText(root, "Plumbing • Dokki"), wait(600)] },
-  { state: "chat on its way (the overlay)", options: withApi({ ...DATA, openChat: "loading" }), steps: [(root) => pressIcon(root, { icon: "svg:messages-red", nth: 0 }), wait(600)] },
-  { state: "chat failed (the error card)", options: withApi({ ...DATA, openChat: SERVER_ERROR }), steps: [(root) => pressIcon(root, { icon: "svg:messages-red", nth: 0 }), wait(600)] },
+  { state: "the search pill, #522 card", options: withApi(DATA), steps: [(root) => pressText(root, "Plumbing • Dokki"), wait(600)] },
+  { state: "chat on its way (the overlay), #522 card", options: withApi({ ...DATA, openChat: "loading" }), steps: [(root) => pressIcon(root, { icon: "svg:messages-red", nth: 0 }), wait(600)] },
+  { state: "chat failed (the error card), #522 card", options: withApi({ ...DATA, openChat: SERVER_ERROR }), steps: [(root) => pressIcon(root, { icon: "svg:messages-red", nth: 0 }), wait(600)] },
 ]
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
@@ -414,25 +422,25 @@ describe("what the rows drew", () => {
   const hasNot = (tree: string, ...words: string[]) => words.forEach((w) => expect(tree).not.toContain(w))
 
   it("the sheets drew what their rows say", async () => {
-    has(await drawn("the flow opens by itself: the place step"), "How do you want this service?", "At the pro's location", "Next")
-    has(await drawn("the flow's last card, Done"), "Anything the pro should know?", "Done")
-    has(await drawn("the job-details editor"), "Job Details", "Anything else to fix?", "Reset all", "See matches", "Online / Remote")
-    has(await drawn("the filters"), "Filters", "Which brand do you use?", "Your budget", "Area in square metres", "Distance (km)", "Minimum rating", "Payment method")
-    hasNot(await drawn("the filters, online (no distance)"), "Distance (km)")
-    has(await drawn("the filters after the flow: the upfront pick chosen earlier"), "What kind of job is it?", "chosen earlier", "Repair", "Ideal Standard")
-    hasNot(await drawn("the filters"), "Ideal Standard")
-    has(await drawn("the food filters"), "Fulfillment", "Cuisines", "Egyptian", "Italian")
-    hasNot(await drawn("the food filters"), "No filter id", "I make food from")
+    has(await drawn("the flow opens by itself: the place step, #522 card"), "How do you want this service?", "At the pro's location", "Next")
+    has(await drawn("the flow's last card, Done, #522 card"), "Anything the pro should know?", "Done")
+    has(await drawn("the job-details editor, #522 card"), "Job Details", "Anything else to fix?", "Reset all", "See matches", "Online / Remote")
+    has(await drawn("the filters, #522 card"), "Filters", "Which brand do you use?", "Your budget", "Area in square metres", "Distance (km)", "Minimum rating", "Payment method")
+    hasNot(await drawn("the filters, online (no distance), #522 card"), "Distance (km)")
+    has(await drawn("the filters after the flow: the upfront pick chosen earlier, #522 card"), "What kind of job is it?", "chosen earlier", "Repair", "Ideal Standard")
+    hasNot(await drawn("the filters, #522 card"), "Ideal Standard")
+    has(await drawn("the food filters, #522 card"), "Fulfillment", "Cuisines", "Egyptian", "Italian")
+    hasNot(await drawn("the food filters, #522 card"), "No filter id", "I make food from")
   })
 
   it("the listing rows drew their lists, notices and overlays", async () => {
-    has(await drawn("a selection a filter drops: the shortlist notice"), "Shortlist updated", "1 matches based on your answers")
-    has(await drawn("the filters applied: individuals only"), "1 matches based on your answers")
-    hasNot(await drawn("the filters applied: individuals only"), "Hassan Home Services")
-    has(await drawn("both selected"), "Continue", "Selected")
-    has(await drawn("the service failed, place unknown (the gate's error)"), "An error occurred", "Try Again")
-    has(await drawn("a food listing"), "Food Menu", "Mama", "available")
-    has(await drawn("the flow done, the list narrowed"), "Plumbing", "4 of 4 job details added")
-    has(await drawn("the search pill"), "Plumbing")
+    has(await drawn("a selection a filter drops: the shortlist notice, #522 card"), "Shortlist updated", "1 matches based on your answers")
+    has(await drawn("the filters applied: individuals only, #522 card"), "1 matches based on your answers")
+    hasNot(await drawn("the filters applied: individuals only, #522 card"), "Hassan Home Services")
+    has(await drawn("both selected, #522 card"), "Continue", "Selected")
+    has(await drawn("the service failed, place unknown (the gate's error), #522 card"), "An error occurred", "Try Again")
+    has(await drawn("a food listing, #522 card"), "Food Menu", "Mama", "available")
+    has(await drawn("the flow done, the list narrowed, #522 card"), "Plumbing", "4 of 4 job details added")
+    has(await drawn("the search pill, #522 card"), "Plumbing")
   })
 })

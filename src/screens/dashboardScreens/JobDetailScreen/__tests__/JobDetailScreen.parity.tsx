@@ -55,6 +55,14 @@ import {
  */
 
 const NAME = "JobDetailScreen"
+/*
+ * #522 redrew the pro card (one red star and "x of 5 (N Reviews)" for a
+ * reviewed pro, "New on Tappler" kept for the rest; trust stickers in slots
+ * as tall as their art; the OFFERS box after the trust stickers in place of
+ * the pink footer band), so the states that draw one are drawn again under a
+ * "#522 card" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../JobDetailScreen")
 
 // None of the screen's own buttons is an ActionBtn (its modals' are ds Buttons
@@ -135,20 +143,20 @@ const CASES: Case[] = [
     job: JOB_OPPORTUNITIES,
   },
   {
-    state: "the Other Pros tab with offers",
+    state: "the Other Pros tab with offers, #522 card",
     job: JOB_OPPORTUNITIES,
     steps: [otherTab],
   },
   { state: "the Other Pros tab, no offers yet", steps: [otherTab] },
   {
-    state: "Select pressed: the moved banner",
+    state: "Select pressed: the moved banner, #522 card",
     job: JOB_OPPORTUNITIES,
     steps: [otherTab, selectFirst],
   },
   {
     // 100 ms later the offers count changed, which re-arms the new-offers
     // banner, and it replaces the moved one (noted for pass 2).
-    state: "Select pressed: the pro joined the selected ones",
+    state: "Select pressed: the pro joined the selected ones, #522 card",
     job: JOB_OPPORTUNITIES,
     steps: [
       otherTab,
@@ -163,7 +171,7 @@ const CASES: Case[] = [
     steps: [otherTab, selectFirst, wait(1500), selectedTab],
   },
   {
-    state: "Pass pressed on the second card: it goes",
+    state: "Pass pressed on the second card: it goes, #522 card",
     job: JOB_OPPORTUNITIES,
     steps: [
       otherTab,

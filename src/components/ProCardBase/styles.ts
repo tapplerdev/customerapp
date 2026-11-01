@@ -111,4 +111,12 @@ export default StyleSheet.create({
     top: 12,
     bottom: 0,
   },
+  // The trust stickers, from the start edge, 10pt apart, wrapping (#522).
+  trustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    columnGap: 10,
+    rowGap: 6,
+  },
 })

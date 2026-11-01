@@ -104,6 +104,14 @@ export default StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
+  // The trust stickers, from the start edge, 10pt apart, wrapping (#522).
+  trustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    columnGap: 10,
+    rowGap: 6,
+  },
 })
 
 export const tooltipComponentStyles = StyleSheet.create({

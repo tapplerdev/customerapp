@@ -48,6 +48,14 @@ import {
  *   yarn ds:parity:capture <this file> --force  recapture, on the old code only
  */
 
+/*
+ * #522 redrew the pro card (one red star and "x of 5 (N Reviews)" for a
+ * reviewed pro, "New on Tappler" kept for the rest; trust stickers in slots
+ * as tall as their art; the OFFERS box after the trust stickers in place of
+ * the pink footer band), so the states that draw one are drawn again under a
+ * "#522 card" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
@@ -100,7 +108,7 @@ const PROMO = {
 /** The data a card is handed (what JobDetail reads off the pro and the offer). */
 const DATA: { name: string; props: Record<string, unknown> }[] = [
   {
-    name: "bare individual",
+    name: "bare individual, #522 card",
     props: {
       displayName: "Omar Hassan",
       isCompany: false,
@@ -112,7 +120,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "company with everything",
+    name: "company with everything, #522 card",
     props: {
       displayName: "Nile Plumbing Co.",
       photoUrl: "https://example.com/parity/pro.jpg",
@@ -149,7 +157,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "offer with no amount",
+    name: "offer with no amount, #522 card",
     props: {
       displayName: "Mona Adel",
       isCompany: false,

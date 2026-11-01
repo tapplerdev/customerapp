@@ -37,6 +37,14 @@ import type { ProType } from "types/pro"
  * Food Menu, each once.
  */
 
+/*
+ * #522 redrew the pro card (one red star and "x of 5 (N Reviews)" for a
+ * reviewed pro, "New on Tappler" kept for the rest; trust stickers in slots
+ * as tall as their art; the OFFERS box after the trust stickers in place of
+ * the pink footer band), so the states that draw one are drawn again under a
+ * "#522 card" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => {
   const React = require("react") as typeof import("react")
   const ProCard = require("../ProCard").default
@@ -92,21 +100,21 @@ type Case = {
 }
 
 const BASE_CASES: Case[] = [
-  { state: "an individual", pro: proWith() },
-  { state: "a company", pro: PRO_COMPANY },
-  { state: "an individual, selected", pro: proWith(), props: { isSelected: true } },
-  { state: "featured", pro: proWith({}, undefined, true) },
-  { state: "no photo, no location, no description, no response time", pro: proWith({ ...PHOTOLESS, address: undefined, informationAbout: undefined, responseTimeHours: undefined }) },
-  { state: "only the full-size photo", pro: proWith({ profilePhoto150: undefined }) },
-  { state: "a city only", pro: proWith({ address: { address: { city: "Zamalek" } } }) },
-  { state: "a long name and description", pro: proWith({ businessName: "Al Salam International Plumbing, Heating and Electrical Maintenance Company", informationAbout: "We have been working across Greater Cairo for more than twenty years, with teams for every trade, a call centre and same-day visits for urgent jobs." }) },
-  { state: "responds in minutes", pro: proWith({ responseTimeHours: 0.25 }) },
-  { state: "responds in one hour", pro: proWith({ responseTimeHours: 1 }) },
-  { state: "responds in a day", pro: proWith({ responseTimeHours: 24 }) },
-  { state: "responds in days", pro: proWith({ responseTimeHours: 72 }) },
+  { state: "an individual, #522 card", pro: proWith() },
+  { state: "a company, #522 card", pro: PRO_COMPANY },
+  { state: "an individual, selected, #522 card", pro: proWith(), props: { isSelected: true } },
+  { state: "featured, #522 card", pro: proWith({}, undefined, true) },
+  { state: "no photo, no location, no description, no response time, #522 card", pro: proWith({ ...PHOTOLESS, address: undefined, informationAbout: undefined, responseTimeHours: undefined }) },
+  { state: "only the full-size photo, #522 card", pro: proWith({ profilePhoto150: undefined }) },
+  { state: "a city only, #522 card", pro: proWith({ address: { address: { city: "Zamalek" } } }) },
+  { state: "a long name and description, #522 card", pro: proWith({ businessName: "Al Salam International Plumbing, Heating and Electrical Maintenance Company", informationAbout: "We have been working across Greater Cairo for more than twenty years, with teams for every trade, a call centre and same-day visits for urgent jobs." }) },
+  { state: "responds in minutes, #522 card", pro: proWith({ responseTimeHours: 0.25 }) },
+  { state: "responds in one hour, #522 card", pro: proWith({ responseTimeHours: 1 }) },
+  { state: "responds in a day, #522 card", pro: proWith({ responseTimeHours: 24 }) },
+  { state: "responds in days, #522 card", pro: proWith({ responseTimeHours: 72 }) },
   { state: "no reviews", pro: proWith({ reviewScore: undefined }) },
   {
-    state: "trust badges: art, words and the fallback",
+    state: "trust badges: art, words and the fallback, #522 card",
     pro: proWith({
       documents: [
         trust(1, { pictureEn: "https://example.com/parity/trust-en.svg", pictureAr: "https://example.com/parity/trust-ar.svg" }),
@@ -116,16 +124,16 @@ const BASE_CASES: Case[] = [
       ] as never,
     }),
   },
-  { state: "a promo line", pro: proWith({}, [promoLine]) },
-  { state: "a promo line and stickers", pro: proWith({}, [promoLine, sticker(1), sticker(2)]) },
-  { state: "stickers only", pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]) },
-  { state: "the food card, both modes", pro: PRO_FOOD, props: { foodMode: true } },
-  { state: "the food card, a screen name and metres away", pro: { ...PRO_FOOD, screenName: "Laila", distanceKm: 0.35 }, props: { foodMode: true } },
-  { state: "the food card, pickup only", pro: { ...PRO_FOOD, isDeliveryEnabled: false, distanceKm: 12.34 }, props: { foodMode: true } },
-  { state: "the food card, delivery only", pro: { ...PRO_FOOD, isPickupEnabled: false, distanceKm: undefined }, props: { foodMode: true } },
-  { state: "the food card, neither mode", pro: { ...PRO_FOOD, isPickupEnabled: false, isDeliveryEnabled: false }, props: { foodMode: true } },
-  { state: "the food card with a promo line and a sticker", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as unknown as ProType, props: { foodMode: true } },
-  { state: "a non-food card is not a food card", pro: PRO_FOOD },
+  { state: "a promo line, #522 card", pro: proWith({}, [promoLine]) },
+  { state: "a promo line and stickers, #522 card", pro: proWith({}, [promoLine, sticker(1), sticker(2)]) },
+  { state: "stickers only, #522 card", pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]) },
+  { state: "the food card, both modes, #522 card", pro: PRO_FOOD, props: { foodMode: true } },
+  { state: "the food card, a screen name and metres away, #522 card", pro: { ...PRO_FOOD, screenName: "Laila", distanceKm: 0.35 }, props: { foodMode: true } },
+  { state: "the food card, pickup only, #522 card", pro: { ...PRO_FOOD, isDeliveryEnabled: false, distanceKm: 12.34 }, props: { foodMode: true } },
+  { state: "the food card, delivery only, #522 card", pro: { ...PRO_FOOD, isPickupEnabled: false, distanceKm: undefined }, props: { foodMode: true } },
+  { state: "the food card, neither mode, #522 card", pro: { ...PRO_FOOD, isPickupEnabled: false, isDeliveryEnabled: false }, props: { foodMode: true } },
+  { state: "the food card with a promo line and a sticker, #522 card", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as unknown as ProType, props: { foodMode: true } },
+  { state: "a non-food card is not a food card, #522 card", pro: PRO_FOOD },
 ]
 
 // No 390-wide rows: OffersSection reads the window as it loads, but its strip

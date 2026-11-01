@@ -1,12 +1,22 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { color } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   headerZIndex: { zIndex: 3 },
   heroZIndex: { zIndex: 5 },
-  // A view inside text sits ON the baseline; this drops the Featured
-  // sticker so it centres on the name's letters instead.
-  featuredAfterName: { transform: [{ translateY: 3 }] },
+  // The account type's grey pill (#522): its icon and label, 8 in from each
+  // side, 4 above and below.
+  typePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 8,
+    paddingRight: 8,
+    paddingTop: 4,
+    paddingBottom: 4,
+    borderRadius: 5,
+    backgroundColor: color.divider,
+  },
   fullSize: { width: "100%", height: "100%" },
   modalOverlay: { backgroundColor: "#000000A6" },
   thumbnailSize: { width: 60, height: 60 },

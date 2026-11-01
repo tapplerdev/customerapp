@@ -19,8 +19,6 @@ import { ProWorkPhotoType } from "types/pro"
 import { useGetProProfileQuery, useLazyOpenChatQuery } from "services/api"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import RateComponent from "components/RateComponent/RateComponent"
-import OffersSection from "components/OffersSection/OffersSection"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import FeaturedSticker from "components/FeaturedSticker/FeaturedSticker"
@@ -54,6 +52,11 @@ import CashIcon from "assets/icons/cash-icon.svg"
 import CreditCardIcon from "assets/icons/credit-card-icon.svg"
 import { AppFlatList, AppKeyboardAwareScrollView } from "components/scroll"
 import { Text, a } from "@tappler/shared/src/ds"
+import RatingSummary from "@tappler/shared/src/components/RatingSummary"
+import NoReviewsBox from "@tappler/shared/src/components/NoReviewsBox"
+import OffersBox, {
+  OFFER_STICKER_HEIGHT,
+} from "@tappler/shared/src/components/OffersBox"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -121,6 +124,9 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     subscriptions: proServiceCat?.subscriptions,
     documents: pro?.documents,
   })
+  const motivational = (proServiceCat?.subscriptions || []).filter(
+    (sub: any) => sub.product?.subType === "motivational"
+  )
   const featuredUri = isAr
     ? featureSubscription?.product?.pictureAr
     : featureSubscription?.product?.pictureEn
@@ -210,14 +216,16 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                   </DmView>
                 )}
               </DmView>
-              <DmView style={[a.flex_row, a.items_center]}>
-                <RateComponent
-                  rate={overallScore}
-                  reviewsCount={reviewsCount}
-                  itemSize={12}
-                  showFullReviewText
-                />
-              </DmView>
+              {/* The page's one-star rating, smaller (#522). */}
+              <RatingSummary
+                rate={overallScore}
+                reviewsCount={reviewsCount}
+                size={12}
+                iconSize={13}
+                scoreWeight="semibold"
+                countWeight="regular"
+                style={a.mt_2}
+              />
             </DmView>
           </DmView>
         </Animated.View>
@@ -260,43 +268,47 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Name + Type + Rating + Featured */}
         <DmView style={[a.px_12, a.py_16, { marginTop: 275 + (insets.top || 0), gap: 10 }]}>
-          {/* The sticker rides at the end of the name as part of its text,
-              so a name that wraps carries it onto its last line. The
-              no-break space keeps it with the last word. */}
+          {/* The name on its own line; Featured moved down beside the
+              account type (#522). KEEP IN SYNC with the pro app's preview
+              (AccountUpgradesViewMyProfileModal). */}
           <Text size={22} weight="bold">
-            {/* Trimmed: a trailing space would open a line break before the
-                no-break space that keeps the sticker with the last word. */}
             {displayName?.trim()}
-            {featuredUri && (
-              <>
-                {"\u00A0"}
-                <DmView style={styles.featuredAfterName}>
-                  <FeaturedSticker uri={featuredUri} height={18} />
-                </DmView>
-              </>
-            )}
           </Text>
 
-          {/* Type badge */}
-          <DmView style={[a.flex_row, a.items_end]}>
-            {isCompany ? (
-              <BusinessIcon width={16} height={16} />
-            ) : (
-              <IndividualIcon width={16} height={16} />
+          {/* The account type in a grey pill, the Featured sticker beside
+              it (#522). */}
+          <DmView style={[a.flex_row, a.items_center]}>
+            <DmView style={styles.typePill}>
+              {isCompany ? (
+                <BusinessIcon width={14} height={14} />
+              ) : (
+                <IndividualIcon width={14} height={14} />
+              )}
+              <Text size={13} weight="medium" leading="tight" style={a.ml_6}>
+                {t(isCompany ? "business" : "individual")}
+              </Text>
+            </DmView>
+            {featuredUri && (
+              <DmView style={a.ml_8}>
+                <FeaturedSticker uri={featuredUri} height={18} />
+              </DmView>
             )}
-            <Text size={14} style={a.ml_4}>
-              {t(isCompany ? "business" : "individual")}
-            </Text>
           </DmView>
 
-          <DmView style={[a.flex_row, a.items_center]}>
-            <RateComponent
+          {/* One star and "3.9 of 5 (10 Reviews)", or the no-reviews box
+              (#522; it was five stars). */}
+          {reviewsCount > 0 ? (
+            <RatingSummary
               rate={overallScore}
               reviewsCount={reviewsCount}
-              itemSize={14}
-              showFullReviewText
+              size={13}
+              iconSize={16}
+              scoreWeight="bold"
+              countWeight="regular"
             />
-          </DmView>
+          ) : (
+            <NoReviewsBox />
+          )}
 
           {/* Trust badges */}
           {trustDocs.length > 0 && (
@@ -319,8 +331,22 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             <PromoLine promoMessage={promoLine.promoStickerMessage} />
           )}
 
-          {/* OFFERS banner */}
-          <OffersSection subscriptions={proServiceCat?.subscriptions || []} />
+          {/* The OFFERS box (#522), the card's own: the red tab over a
+              white bordered box, the stickers spread evenly with thin
+              dividers. Each is the product's single picture, centred. */}
+          <OffersBox>
+            {motivational.map((sub: any, idx: number) => {
+              const uri = isAr ? sub.product?.pictureAr : sub.product?.pictureEn
+              return uri ? (
+                <SvgUriContainer
+                  key={sub.id || idx}
+                  width="100%"
+                  height={OFFER_STICKER_HEIGHT}
+                  uri={uri}
+                />
+              ) : null
+            })}
+          </OffersBox>
         </DmView>
 
         {/* About Me */}
