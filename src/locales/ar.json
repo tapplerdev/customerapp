@@ -470,6 +470,8 @@
   "current_location": "الموقع الحالي",
   "back": "رجوع",
   "food_menu": "قائمة الطعام",
+  "menu_sections": "أقسام القائمة",
+  "menu_free_delivery": "توصيل مجاني",
   "available_for_delivery": "متاح للتوصيل",
   "menu_unavailable": "القائمة غير متاحة حاليًا",
   "delivery_fee_egp": "التوصيل: {{fee}} جنيه",

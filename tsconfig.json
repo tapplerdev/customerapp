@@ -101,6 +101,9 @@
       "react-native-webview": [
         "node_modules/react-native-webview/index.d.ts"
       ],
+      "react-native-worklets": [
+        "node_modules/react-native-worklets/lib/typescript/index.d.ts"
+      ],
       "redux-persist": [
         "node_modules/redux-persist/types/index.d.ts"
       ],
