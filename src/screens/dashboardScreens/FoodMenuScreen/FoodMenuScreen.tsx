@@ -62,7 +62,10 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     proId,
     serviceCategoryId,
   })
-  const { data: pro } = useGetProProfileQuery({ proId, serviceCategoryId })
+  const { data: pro, isError: profileFailed } = useGetProProfileQuery({
+    proId,
+    serviceCategoryId,
+  })
 
   const dispatch = useDispatch()
   const cart = useTypedSelector((state) => state.cart)
@@ -112,6 +115,8 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
     scrollY,
     header,
     onHeaderLayout,
+    folded,
+    contentMinHeight,
   } = useSectionScrollSpy(sections.length)
 
   // The header: the card's name, else the kitchen's approved name, else
@@ -273,6 +278,7 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
           styles.listContent,
           {
             paddingTop: top + (hasMenu ? styles.listContent.paddingTop : 0),
+            minHeight: contentMinHeight,
             paddingBottom: 60 + insets.bottom + (basketVisible ? 70 : 0),
           },
         ]}
@@ -302,11 +308,15 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
       <MenuStoreHeader
         scrollY={scrollY}
         title={kitchenName}
-        // undefined while the profile loads (a plain cover), null for none.
-        photo={pro ? pro.profilePhoto || null : undefined}
+        // undefined while the profile loads (a plain cover); null for none,
+        // or when it failed to load (the kitchen's initial, not grey forever).
+        photo={
+          pro ? pro.profilePhoto || null : profileFailed ? null : undefined
+        }
         rating={rating}
         fulfilment={fulfilment}
         onBack={goBack}
+        folded={folded}
         onLayoutChange={onHeaderLayout}
       >
         {pills}

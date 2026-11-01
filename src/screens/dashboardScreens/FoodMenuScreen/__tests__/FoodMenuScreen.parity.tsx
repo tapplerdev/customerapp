@@ -49,7 +49,9 @@ import {
  * #523 pass 2 put the kitchen's collapsing header over the list (the pro's
  * profile photo as the cover, the name, rating and delivery terms, then the
  * pills with a sections button and a sliding highlight). Every state is
- * drawn again under ", hero" names beside the frozen ones, plus the header's
+ * drawn again under ", hero a11y" names (", hero" before the
+ * review: the folded bar now takes taps and the screen reader skips the
+ * text it hides) beside the frozen ones, plus the header's
  * own states: no photo and no reviews, pickup only, the profile still
  * loading, and the sections sheet open. The fold, the highlight's slide and
  * the stretch run on the UI thread and draw nothing here; the header's
@@ -59,7 +61,6 @@ import {
 
 const load = () => require("../FoodMenuScreen")
 const PARAMS = ROUTE_PARAMS.FoodMenuScreen!
-const route = { name: "FoodMenuScreen", params: PARAMS }
 
 const menu = (answer: BackendFixtures[string] = { data: RICH_MENU }) => ({
   ...DATA,
@@ -85,34 +86,34 @@ type Case = {
 }
 const NO_CART = screenState("data")
 const CASES: Case[] = [
-  { name: "menu, no basket, hero", base: NO_CART, api: menu() },
-  { name: "menu, basket, hero", base: withCart(DRAFT_RICH), api: menu() },
+  { name: "menu, no basket, hero a11y", base: NO_CART, api: menu() },
+  { name: "menu, basket, hero a11y", base: withCart(DRAFT_RICH), api: menu() },
   {
-    name: "basket, no bottom inset, hero",
+    name: "basket, no bottom inset, hero a11y",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 0 },
   },
   {
-    name: "basket, bottom inset 48, hero",
+    name: "basket, bottom inset 48, hero a11y",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 48 },
   },
-  { name: "loading, hero", base: NO_CART, api: {} },
+  { name: "loading, hero a11y", base: NO_CART, api: {} },
   {
-    name: "menu unavailable, hero",
+    name: "menu unavailable, hero a11y",
     base: NO_CART,
     api: menu({ data: { ...RICH_MENU, menuSections: [] } }),
   },
   {
-    name: "no kitchen name, hero",
+    name: "no kitchen name, hero a11y",
     base: NO_CART,
     api: menu(),
     params: { ...PARAMS, proName: "" },
   },
   {
-    name: "no photo, no reviews, hero",
+    name: "no photo, no reviews, hero a11y",
     base: NO_CART,
     api: {
       ...menu(),
@@ -122,14 +123,23 @@ const CASES: Case[] = [
     },
   },
   {
-    name: "pickup only, hero",
+    name: "pickup only, hero a11y",
     base: NO_CART,
     api: menu({
       data: { ...RICH_MENU, isDeliveryEnabled: false, isPickupEnabled: true },
     }),
   },
   {
-    name: "profile still loading, hero",
+    // The cover can't stay grey: the kitchen's initial instead.
+    name: "profile failed, hero a11y",
+    base: NO_CART,
+    api: {
+      ...menu(),
+      getProProfile: { error: { status: 500, data: {} } },
+    },
+  },
+  {
+    name: "profile still loading, hero a11y",
     base: NO_CART,
     // No answer for the profile: it stays loading.
     api: (() => {
@@ -272,7 +282,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         })
         expect(cartLines(session.store, PRO_FOOD.id)).toEqual([[412, 1]])
-        expectParity(parityName("quick add, hero", env), session.tree())
+        expectParity(parityName("quick add, hero a11y", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -300,7 +310,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           [411, 1],
           [431, 30],
         ])
-        expectParity(parityName("trash twice, hero", env), session.tree())
+        expectParity(parityName("trash twice, hero a11y", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -510,6 +520,10 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         await measureHeader(session)
         const list = await measured(session)
         expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingTop).toBe(HERO + PILLS + 24)
+        // Taller than its 600-pt view, so it can always scroll a whole fold.
+        expect(StyleSheet.flatten(list.props.contentContainerStyle).minHeight).toBe(
+          600 + HERO - (topInset(env) + 48)
+        )
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
         await session.act(() => {
@@ -574,7 +588,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
               .join("")
           )
         ).toEqual(["Mains", "Sides", "Desserts"])
-        expectParity(parityName("sections sheet, hero", env), session.tree())
+        expectParity(parityName("sections sheet, hero a11y", env), session.tree())
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
         // The row's own control (the pill shows the same title).
@@ -593,6 +607,64 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         expect(scrollTo).toHaveBeenCalledWith({ y: 1300, animated: true })
         expect(activePill(session.root)).toEqual(["Desserts"])
         expect(sheetOf(session.root).props.isVisible).toBe(false)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  // Folded, the white compact bar takes the taps over it, so a press there
+  // can't reach a menu row (an item, or its "+") scrolled under it. The test
+  // renderer has no hit-testing: what it can see is the bar's fill turning
+  // from see-through (pointerEvents none) to a touch target (auto), over the
+  // list. And the screen reader moves from the hero's info to the bar.
+  const barFill = (root: ReactTestInstance) =>
+    root.find((node) => {
+      if (typeof node.type !== "string") return false
+      const style = StyleSheet.flatten(node.props.style) ?? {}
+      return (
+        style.position === "absolute" &&
+        style.top === 0 &&
+        style.bottom === 0 &&
+        style.backgroundColor === "#FFFFFF" &&
+        (node.props.pointerEvents === "auto" || node.props.pointerEvents === "none")
+      )
+    })
+  // Every text the screen reader skips.
+  const hiddenTexts = (root: ReactTestInstance) =>
+    root
+      .findAll(
+        (node) =>
+          typeof node.type === "string" &&
+          node.props.importantForAccessibility === "no-hide-descendants"
+      )
+      .flatMap((node) =>
+        node
+          .findAll((n) => String(n.type) === "Text")
+          .map((n) => n.children.join(""))
+      )
+
+  it.each(envs)(
+    "the folded bar takes the taps over it, and the screen reader moves to it [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(CASES[0], env)
+      try {
+        await measureHeader(session)
+        const list = await measured(session)
+        const collapse = HERO - (topInset(env) + 48)
+        expect(barFill(session.root).props.pointerEvents).toBe("none")
+        // Open: only the bar's (invisible) title is skipped.
+        expect(hiddenTexts(session.root)).toEqual(["Laila's Kitchen"])
+        await session.act(() => scrollList(list, collapse + 100), 0, "fold")
+        expect(barFill(session.root).props.pointerEvents).toBe("auto")
+        // The bar's title speaks now; the hero's name, faded under it, doesn't.
+        const names = session.root
+          .findAll((n) => String(n.type) === "Text" && n.children.join("") === "Laila's Kitchen")
+        expect(names.length).toBe(2)
+        expect(hiddenTexts(session.root)).toContain("Laila's Kitchen")
+        expect(hiddenTexts(session.root).length).toBeGreaterThan(1)
+        await session.act(() => scrollList(list, 0), 0, "open")
+        expect(barFill(session.root).props.pointerEvents).toBe("none")
       } finally {
         session.unmount()
       }
