@@ -57,6 +57,12 @@ import {
  * the stretch run on the UI thread and draw nothing here; the header's
  * layout reaching the spy (a tapped section lands under the folded header)
  * and the sheet's rows are behaviour tests below.
+ *
+ * Shared 18bbeaa drew the pills as white chips with a soft shadow under the
+ * sliding red shape, the selected title turning white on it (the white copy
+ * of the titles inside the shape went). Every state that draws the pills is
+ * drawn again under ", white chips" names beside the frozen ", hero a11y"
+ * ones; loading and unavailable draw no pills and kept their names.
  */
 
 const load = () => require("../FoodMenuScreen")
@@ -86,16 +92,16 @@ type Case = {
 }
 const NO_CART = screenState("data")
 const CASES: Case[] = [
-  { name: "menu, no basket, hero a11y", base: NO_CART, api: menu() },
-  { name: "menu, basket, hero a11y", base: withCart(DRAFT_RICH), api: menu() },
+  { name: "menu, no basket, hero a11y, white chips", base: NO_CART, api: menu() },
+  { name: "menu, basket, hero a11y, white chips", base: withCart(DRAFT_RICH), api: menu() },
   {
-    name: "basket, no bottom inset, hero a11y",
+    name: "basket, no bottom inset, hero a11y, white chips",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 0 },
   },
   {
-    name: "basket, bottom inset 48, hero a11y",
+    name: "basket, bottom inset 48, hero a11y, white chips",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 48 },
@@ -107,13 +113,13 @@ const CASES: Case[] = [
     api: menu({ data: { ...RICH_MENU, menuSections: [] } }),
   },
   {
-    name: "no kitchen name, hero a11y",
+    name: "no kitchen name, hero a11y, white chips",
     base: NO_CART,
     api: menu(),
     params: { ...PARAMS, proName: "" },
   },
   {
-    name: "no photo, no reviews, hero a11y",
+    name: "no photo, no reviews, hero a11y, white chips",
     base: NO_CART,
     api: {
       ...menu(),
@@ -123,7 +129,7 @@ const CASES: Case[] = [
     },
   },
   {
-    name: "pickup only, hero a11y",
+    name: "pickup only, hero a11y, white chips",
     base: NO_CART,
     api: menu({
       data: { ...RICH_MENU, isDeliveryEnabled: false, isPickupEnabled: true },
@@ -131,7 +137,7 @@ const CASES: Case[] = [
   },
   {
     // The cover can't stay grey: the kitchen's initial instead.
-    name: "profile failed, hero a11y",
+    name: "profile failed, hero a11y, white chips",
     base: NO_CART,
     api: {
       ...menu(),
@@ -139,7 +145,7 @@ const CASES: Case[] = [
     },
   },
   {
-    name: "profile still loading, hero a11y",
+    name: "profile still loading, hero a11y, white chips",
     base: NO_CART,
     // No answer for the profile: it stays loading.
     api: (() => {
@@ -282,7 +288,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         })
         expect(cartLines(session.store, PRO_FOOD.id)).toEqual([[412, 1]])
-        expectParity(parityName("quick add, hero a11y", env), session.tree())
+        expectParity(parityName("quick add, hero a11y, white chips", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -310,7 +316,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           [411, 1],
           [431, 30],
         ])
-        expectParity(parityName("trash twice, hero a11y", env), session.tree())
+        expectParity(parityName("trash twice, hero a11y, white chips", env), session.tree())
       } finally {
         session.unmount()
       }
@@ -588,7 +594,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
               .join("")
           )
         ).toEqual(["Mains", "Sides", "Desserts"])
-        expectParity(parityName("sections sheet, hero a11y", env), session.tree())
+        expectParity(parityName("sections sheet, hero a11y, white chips", env), session.tree())
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
         // The row's own control (the pill shows the same title).
