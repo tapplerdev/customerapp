@@ -25,6 +25,13 @@ import {
  * "#522 card" name and captured beside the frozen ones, which no row draws
  * any more.
  */
+/*
+ * #525 enlarged the OFFERS box (the stickers' art 39 tall in a 59pt box) and
+ * gave every sticker a third of the row from the start edge, empty thirds
+ * filling a short row, so the states that draw the box are drawn again under
+ * a "#525 offers" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
@@ -59,7 +66,7 @@ const BASE = {
 const CASES = [
   { name: "promo line only, #522 card", props: { ...BASE, subscriptions: [promoLine] } },
   {
-    name: "promo line and stickers, #522 card",
+    name: "promo line and stickers, #522 card, #525 offers",
     props: { ...BASE, subscriptions: [promoLine, sticker(1), sticker(2)] },
   },
   {
@@ -71,7 +78,7 @@ const CASES = [
       offerAmount: 450,
     },
   },
-  { name: "no promo line, #522 card", props: { ...BASE, subscriptions: [sticker(1)] } },
+  { name: "no promo line, #522 card, #525 offers", props: { ...BASE, subscriptions: [sticker(1)] } },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

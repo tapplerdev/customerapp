@@ -238,12 +238,13 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
         </DmView>
       )}
 
-      {/* The OFFERS box (#522): the red tab over a white bordered box, the
-          stickers spread evenly with thin dividers, after the trust
-          stickers as on the pro's own card. It replaces the pink footer
-          band. Each is the product's single picture, centred, untrimmed:
-          the CMS template's group translate is what centres the drawing in
-          its box (see OffersSection's strip). */}
+      {/* The OFFERS box (#522): the red tab over a white bordered box, a
+          third of the row to each sticker from the start edge (#525), thin
+          dividers between them, after the trust stickers as on the pro's
+          own card. It replaces the pink footer band. Each is the
+          product's single picture, centred, untrimmed: the CMS template's
+          group translate is what centres the drawing in its box (see
+          OffersSection's strip). */}
       {motivational.length > 0 && (
         <OffersBox style={a.mt_12}>
           {motivational.map((sub: any, idx: number) => {

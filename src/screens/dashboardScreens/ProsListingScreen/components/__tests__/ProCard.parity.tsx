@@ -45,6 +45,13 @@ import type { ProType } from "types/pro"
  * "#522 card" name and captured beside the frozen ones, which no row draws
  * any more.
  */
+/*
+ * #525 enlarged the OFFERS box (the stickers' art 39 tall in a 59pt box) and
+ * gave every sticker a third of the row from the start edge, empty thirds
+ * filling a short row, so the states that draw the box are drawn again under
+ * a "#525 offers" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => {
   const React = require("react") as typeof import("react")
   const ProCard = require("../ProCard").default
@@ -125,14 +132,14 @@ const BASE_CASES: Case[] = [
     }),
   },
   { state: "a promo line, #522 card", pro: proWith({}, [promoLine]) },
-  { state: "a promo line and stickers, #522 card", pro: proWith({}, [promoLine, sticker(1), sticker(2)]) },
-  { state: "stickers only, #522 card", pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]) },
+  { state: "a promo line and stickers, #522 card, #525 offers", pro: proWith({}, [promoLine, sticker(1), sticker(2)]) },
+  { state: "stickers only, #522 card, #525 offers", pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]) },
   { state: "the food card, both modes, #522 card", pro: PRO_FOOD, props: { foodMode: true } },
   { state: "the food card, a screen name and metres away, #522 card", pro: { ...PRO_FOOD, screenName: "Laila", distanceKm: 0.35 }, props: { foodMode: true } },
   { state: "the food card, pickup only, #522 card", pro: { ...PRO_FOOD, isDeliveryEnabled: false, distanceKm: 12.34 }, props: { foodMode: true } },
   { state: "the food card, delivery only, #522 card", pro: { ...PRO_FOOD, isPickupEnabled: false, distanceKm: undefined }, props: { foodMode: true } },
   { state: "the food card, neither mode, #522 card", pro: { ...PRO_FOOD, isPickupEnabled: false, isDeliveryEnabled: false }, props: { foodMode: true } },
-  { state: "the food card with a promo line and a sticker, #522 card", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as unknown as ProType, props: { foodMode: true } },
+  { state: "the food card with a promo line and a sticker, #522 card, #525 offers", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as unknown as ProType, props: { foodMode: true } },
   { state: "a non-food card is not a food card, #522 card", pro: PRO_FOOD },
 ]
 

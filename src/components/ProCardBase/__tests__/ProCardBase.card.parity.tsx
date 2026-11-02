@@ -56,6 +56,13 @@ import {
  * "#522 card" name and captured beside the frozen ones, which no row draws
  * any more.
  */
+/*
+ * #525 enlarged the OFFERS box (the stickers' art 39 tall in a 59pt box) and
+ * gave every sticker a third of the row from the start edge, empty thirds
+ * filling a short row, so the states that draw the box are drawn again under
+ * a "#525 offers" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
@@ -120,7 +127,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "company with everything, #522 card",
+    name: "company with everything, #522 card, #525 offers",
     props: {
       displayName: "Nile Plumbing Co.",
       photoUrl: "https://example.com/parity/pro.jpg",
@@ -157,7 +164,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "offer with no amount, #522 card",
+    name: "offer with no amount, #522 card, #525 offers",
     props: {
       displayName: "Mona Adel",
       isCompany: false,

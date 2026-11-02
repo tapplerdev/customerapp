@@ -63,6 +63,13 @@ const NAME = "JobDetailScreen"
  * "#522 card" name and captured beside the frozen ones, which no row draws
  * any more.
  */
+/*
+ * #525 enlarged the OFFERS box (the stickers' art 39 tall in a 59pt box) and
+ * gave every sticker a third of the row from the start edge, empty thirds
+ * filling a short row, so the states that draw the box are drawn again under
+ * a "#525 offers" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => require("../JobDetailScreen")
 
 // None of the screen's own buttons is an ActionBtn (its modals' are ds Buttons
@@ -143,7 +150,7 @@ const CASES: Case[] = [
     job: JOB_OPPORTUNITIES,
   },
   {
-    state: "the Other Pros tab with offers, #522 card",
+    state: "the Other Pros tab with offers, #522 card, #525 offers",
     job: JOB_OPPORTUNITIES,
     steps: [otherTab],
   },
@@ -171,7 +178,7 @@ const CASES: Case[] = [
     steps: [otherTab, selectFirst, wait(1500), selectedTab],
   },
   {
-    state: "Pass pressed on the second card: it goes, #522 card",
+    state: "Pass pressed on the second card: it goes, #522 card, #525 offers",
     job: JOB_OPPORTUNITIES,
     steps: [
       otherTab,

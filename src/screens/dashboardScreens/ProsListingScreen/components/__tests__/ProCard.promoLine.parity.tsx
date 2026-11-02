@@ -20,6 +20,13 @@ import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
  * "#522 card" name and captured beside the frozen ones, which no row draws
  * any more.
  */
+/*
+ * #525 enlarged the OFFERS box (the stickers' art 39 tall in a 59pt box) and
+ * gave every sticker a third of the row from the start edge, empty thirds
+ * filling a short row, so the states that draw the box are drawn again under
+ * a "#525 offers" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => require("../ProCard")
 
 const promoLine = {
@@ -50,10 +57,10 @@ const proWith = (subscriptions: object[]) =>
 const CASES = [
   { name: "promo line only, #522 card", subscriptions: [promoLine] },
   {
-    name: "promo line and stickers, #522 card",
+    name: "promo line and stickers, #522 card, #525 offers",
     subscriptions: [promoLine, sticker(1), sticker(2)],
   },
-  { name: "stickers only, #522 card", subscriptions: [sticker(1)] },
+  { name: "stickers only, #522 card, #525 offers", subscriptions: [sticker(1)] },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
