@@ -5,6 +5,7 @@ import { API_URL } from "config"
 // the Messaging instance.
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging"
 import { chatReadRegistry } from "services/chatReadRegistry"
+import { withRetryAfter } from "utils/authErrors"
 import { RootState } from "store"
 import { setTokens, logout } from "store/auth/slice"
 import { PresetType, ServiceType, ServicesResponse } from "types/cms"
@@ -184,10 +185,13 @@ export const api = createApi({
 
     customerSignUp: builder.mutation<CustomerSignUpResponse, CustomerSignUpRequest>({
       query: (body) => ({ url: "/customers", method: "POST", body }),
+      // A 429's wait is in Retry-After, which the caller can't see otherwise.
+      transformErrorResponse: withRetryAfter,
     }),
 
     auth: builder.mutation<AuthResponse, AuthRequest>({
       query: (body) => ({ url: "/auth", method: "POST", body }),
+      transformErrorResponse: withRetryAfter,
     }),
 
     getCustomerMe: builder.query<CustomerMeResponse, void>({

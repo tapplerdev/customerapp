@@ -587,5 +587,17 @@
   "view": "عرض",
   "basket_at_pro": "لديك سلة عند {{pro}}",
   "baskets_count": "لديك {{count}} سلات أخرى",
-  "job_cancelled_descr": "تم إلغاء طلبك. المحترفين اللي كنت بتكلمهم اتبلغوا."
+  "job_cancelled_descr": "تم إلغاء طلبك. المحترفين اللي كنت بتكلمهم اتبلغوا.",
+  "no_internet_connection": "خطأ في الاتصال بالإنترنت",
+  "too_many_attempts": "محاولات كثيرة جدًا. يرجى المحاولة مرة أخرى لاحقًا.",
+  "too_many_attempts_wait": "محاولات كثيرة جدًا. يرجى المحاولة مرة أخرى بعد {{duration}}.",
+  "server_having_trouble": "يواجه تابلر مشكلة حاليًا. يرجى المحاولة مرة أخرى بعد قليل.",
+  "duration_minutes": "{{count}} دقيقة",
+  "duration_minutes_0": "{{count}} دقيقة",
+  "duration_minutes_1": "دقيقة واحدة",
+  "duration_minutes_2": "دقيقتين",
+  "duration_minutes_3": "{{count}} دقائق",
+  "duration_minutes_4": "{{count}} دقيقة",
+  "duration_minutes_5": "{{count}} دقيقة",
+  "duration_minutes_plural": "{{count}} دقيقة"
 }
