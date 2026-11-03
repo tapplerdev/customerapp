@@ -103,8 +103,12 @@ const baseQueryWithReauth: BaseQueryFn<
     }
 
     isRefreshing = true
+    // POST with the token in the body (backend #419): same answers as the
+    // old GET /auth/refresh/:token, without the token in a URL that access
+    // logs keep. Single-flight as before, and bounded by the base query's
+    // 20 s timeout.
     refreshPromise = baseQuery(
-      { url: `/auth/refresh/${refreshToken}`, method: "GET" },
+      { url: "/auth/refresh", method: "POST", body: { refreshToken } },
       apiBase,
       extraOptions,
     )
