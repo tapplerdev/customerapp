@@ -185,6 +185,10 @@ const cartSlice = createSlice({
     },
 
     // The first Submit of this basket stores the key it sends (see CartDraft).
+    // A Submit is activity: without the bump, a draft last touched nearly an
+    // hour ago could expire right after a submit that timed out, and the
+    // retry would start a new basket with a new key while the first order
+    // may have gone through.
     setSubmitKey: (
       state,
       action: PayloadAction<{ proId: number; key: string }>
@@ -193,6 +197,7 @@ const cartSlice = createSlice({
       if (!draft) return
       draft.submitKey = action.payload.key
       delete draft.submitKeyRefused
+      draft.lastUpdatedAt = Date.now()
     },
 
     // The server refused the attempt outright (a 4xx that is not a timeout or

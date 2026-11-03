@@ -1,6 +1,7 @@
-import { describe, expect, it } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 
 import reducer, {
+  CART_STALE_MS,
   addCartItem,
   clearCart,
   markSubmitKeyRefused,
@@ -8,6 +9,7 @@ import reducer, {
   replaceCartLines,
   setCartItemQuantity,
   setOrderNotes,
+  selectDraft,
   setSubmitKey,
   type CartState,
 } from "store/cart/slice"
@@ -111,6 +113,22 @@ describe("the order's Idempotency-Key on the draft", () => {
     const after = reducer(refused(), setSubmitKey({ proId: 7, key: "new" }))
     expect(after.carts[7].submitKey).toBe("new")
     expect(after.carts[7].submitKeyRefused).toBeUndefined()
+  })
+
+  it("counts as activity, so a draft holding a pending key doesn't expire right after", () => {
+    const now = jest.spyOn(Date, "now")
+    try {
+      now.mockReturnValue(1_000)
+      const basket = withBasket()
+      now.mockReturnValue(1_000 + CART_STALE_MS - 1)
+      const submitted = reducer(basket, setSubmitKey({ proId: 7, key: KEY }))
+      expect(submitted.carts[7].lastUpdatedAt).toBe(1_000 + CART_STALE_MS - 1)
+      expect(
+        selectDraft(submitted, 7, 1_000 + CART_STALE_MS + 60_000)?.submitKey
+      ).toBe(KEY)
+    } finally {
+      now.mockRestore()
+    }
   })
 
   it("goes with the draft on clearCart", () => {
