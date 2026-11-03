@@ -66,6 +66,13 @@ const CASES: Case[] = [
   { state: "an email nobody registered", api: refused({ validationErrors: { email: ["This email is not registered"] } }), steps: [...fill, login] },
   // (A refusal with no reasons draws the same card.)
   { state: "any other refusal", api: refused({ validationErrors: { email: ["must be an email"] } }), steps: [...fill, login] },
+  // Not about what was typed (backend #413's 429, the server failing, no
+  // answer): told before any validation text. retryAfterSeconds is what the
+  // auth endpoint's transformErrorResponse copies off Retry-After.
+  { state: "too many attempts card", api: { auth: { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } } }, steps: [...fill, login] },
+  { state: "too many attempts card, no wait given", api: { auth: { error: { status: 429, data: { validationErrors: { email: ["Too many attempts."] } } } } }, steps: [...fill, login] },
+  { state: "server trouble card", api: { auth: { error: { status: 500, data: {} } } }, steps: [...fill, login] },
+  { state: "no connection card", api: { auth: { error: { status: "FETCH_ERROR", error: "TypeError: Network request failed" } } }, steps: [...fill, login] },
 ]
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)

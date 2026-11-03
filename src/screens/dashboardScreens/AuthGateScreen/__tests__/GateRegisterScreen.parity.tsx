@@ -43,7 +43,11 @@ const ANSWERS = {
     },
   },
   message: { error: { status: 409, data: { message: "Account exists" } } },
-  "no message": { error: { status: 500, data: {} } },
+  // A 400 with nothing to say. It was a 500 until a 5xx got its own card
+  // (server trouble); the rendered card is the same, so the case kept its name.
+  "no message": { error: { status: 400, data: {} } },
+  "too many attempts": { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } },
+  "server failing": { error: { status: 500, data: {} } },
   accepted: { data: { id: 1 } },
 }
 
@@ -102,6 +106,8 @@ const CASES: Case[] = [
   { label: "refused with a validation error", answer: "validation", steps: [...FILLED, register] },
   { label: "refused with a message", answer: "message", steps: [...FILLED, register] },
   { label: "refused with neither", answer: "no message", steps: [...FILLED, register] },
+  { label: "too many attempts card", answer: "too many attempts", steps: [...FILLED, register] },
+  { label: "server trouble card", answer: "server failing", steps: [...FILLED, register] },
 ]
 
 describe("GateRegisterScreen", () => {

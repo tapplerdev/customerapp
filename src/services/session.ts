@@ -18,28 +18,38 @@ import { logout } from "store/auth/slice"
  *   1. Tell the backend to drop this token, while the auth token still works.
  *      The call names the token, so one that lands late (after a quick
  *      re-login registered under a NEW token) cannot delete the new row.
- *   2. Kill the token at Firebase, so pushes die even if step 1 never
- *      arrived. Errors ignored, like step 1 (and on Android without Firebase
- *      configured, messaging() throws — same outcome).
- *   Both steps are capped: an offline or black-holed phone must not hang the
+ *   2. End the session on the server (POST /auth/logout, backend #419): it
+ *      deletes this device's access and refresh tokens, so a copy of either
+ *      stops working, and closes the sockets opened with them. After step 1,
+ *      which needs the access token it revokes. It always answers 204, and
+ *      its result is never read. At the same time:
+ *   3. Kill the token at Firebase, so pushes die even if step 1 never
+ *      arrived. Errors ignored, like steps 1 and 2 (and on Android without
+ *      Firebase configured, messaging() throws — same outcome).
+ *   Every step is capped: an offline or black-holed phone must not hang the
  *   sign-out (Firebase's delete alone can sit on a 60 s request timeout).
- *   3. The local sign-out, in `finally`: always, and only after the network
+ *   Steps 2 and 3 run side by side, so the worst case is still two caps.
+ *   4. The local sign-out, in `finally`: always, and only after the network
  *      steps — the phone should be quiet before the isAuth flip drops the
  *      socket and forgets the registered token (usePushNotifications).
  *
  * Runs once even when several callers race. The base query's own 401 path
- * cannot import this module (it imports the api); it does steps 2 and 3
- * inline with no valid token for step 1.
+ * cannot import this module (it imports the api); it does steps 3 and 4
+ * inline with no valid token for steps 1 and 2 (the server already ended
+ * that session).
  *
  * If a DIFFERENT account signed in while the network steps were still
  * running (that 401 path ended the session mid-way, then a quick sign-in as
- * somebody else), step 3 is skipped: wiping the new session would strand it
+ * somebody else), step 4 is skipped: wiping the new session would strand it
  * on a signed-in screen with no token.
  *
- * Accepted: signed out while offline, both network steps fail and the phone
- * keeps its pushes until the next sign-in on it replaces the row.
+ * Accepted: signed out while offline, the network steps fail, the phone
+ * keeps its pushes until the next sign-in on it replaces the row, and the
+ * session's tokens live on server-side until they expire (no copy of them is
+ * left on the phone).
  */
 export const REMOVE_TOKEN_TIMEOUT_MS = 3000
+export const LOGOUT_TIMEOUT_MS = 3000
 
 let signingOut = false
 
@@ -72,10 +82,29 @@ export const signOut = async (): Promise<void> => {
         REMOVE_TOKEN_TIMEOUT_MS
       ).catch(() => undefined)
     }
-    await withTimeout(
-      Promise.resolve().then(() => deleteToken(getMessaging())),
-      REMOVE_TOKEN_TIMEOUT_MS
-    ).catch(() => undefined)
+    // Step 2 names the session by the access token (the Bearer header) and
+    // the refresh token (the body), whichever the server still knows.
+    const { token, refreshToken } = store.getState().auth
+    const endSession =
+      token || refreshToken
+        ? withTimeout(
+            Promise.resolve().then(() =>
+              dispatch(
+                api.endpoints.logout.initiate(
+                  refreshToken ? { refreshToken } : {}
+                )
+              ).unwrap()
+            ),
+            LOGOUT_TIMEOUT_MS
+          ).catch(() => undefined)
+        : Promise.resolve()
+    await Promise.all([
+      endSession,
+      withTimeout(
+        Promise.resolve().then(() => deleteToken(getMessaging())),
+        REMOVE_TOKEN_TIMEOUT_MS
+      ).catch(() => undefined),
+    ])
   } finally {
     if (store.getState().auth.user?.id === startedAs) {
       dispatch(logout())

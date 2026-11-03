@@ -55,6 +55,11 @@ export const authSlice = createSlice({
       state,
       action: PayloadAction<{ token: string; refreshToken: string }>
     ) => {
+      // Signed out: a refresh that was in flight when the customer signed out
+      // lands here after logout() and would put back a pair the server just
+      // revoked (POST /auth/logout). Every sign-in sets isAuth first (the
+      // auth matcher below runs before the screens dispatch this).
+      if (!state.isAuth) return
       state.token = action.payload.token
       state.refreshToken = action.payload.refreshToken
     },

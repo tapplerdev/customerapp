@@ -15,6 +15,9 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import ErrorModal from "components/ErrorModal"
 import { CreateJobRequest } from "types/job"
+import { uuidV4 } from "utils/uuid"
+import { replayedChanges } from "utils/jobReplay"
+import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import LocationIcon from "assets/icons/location-red.svg"
@@ -68,6 +71,14 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const [prosState, setProsState] = useState<SelectedProInfo[]>(selectedProsInfo || [])
+  // One Idempotency-Key per visit to this summary, made when it opens and
+  // sent with every Submit from it. A retry after a timeout or a dropped
+  // answer then gets the job the first attempt created (be#416 answers 201
+  // with it) instead of posting the request twice. A new visit is a new key.
+  const [idempotencyKey] = useState(uuidV4)
+  // Set when the answer was an earlier request (see utils/jobReplay): the
+  // pop-up closes onto that request.
+  const [replayedJobId, setReplayedJobId] = useState<number | null>(null)
 
   const handleGoBack = () => {
     navigation.goBack()
@@ -112,7 +123,16 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         ...(notes && { orderNotes: notes }),
       }
       console.log('[RequestSummary] Submitting job payload:', JSON.stringify(jobPayload, null, 2))
-      await createJob(jobPayload).unwrap()
+      const job = await createJob({ ...jobPayload, idempotencyKey }).unwrap()
+      // Sent again with this visit's key after a timeout or a 5xx, with a pro
+      // taken off in between, the first attempt having landed: the server
+      // answered with the earlier request, which went to every pro it named.
+      if (replayedChanges(jobPayload, job).length > 0) {
+        setReplayedJobId(job.id)
+        setErrorMessage(t("earlier_request_went_through"))
+        setErrorVisible(true)
+        return
+      }
       navigation.navigate("RequestSuccessScreen", { address })
     } catch (error: any) {
       console.log('[RequestSummary] Job creation error:', JSON.stringify(error?.data || error, null, 2))
@@ -475,6 +495,24 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         isVisible={isErrorVisible}
         onClose={() => setErrorVisible(false)}
         descr={errorMessage}
+        title={replayedJobId ? t("already_sent") : undefined}
+        Icon={replayedJobId ? <WarningTriangleIcon width={48} height={43} /> : undefined}
+        // After the pop-up has closed, never beside it: onto that request.
+        onModalHide={
+          replayedJobId
+            ? () => {
+                const jobId = replayedJobId
+                setReplayedJobId(null)
+                navigation.reset({
+                  index: 1,
+                  routes: [
+                    { name: "HomeTabs", params: { screen: "talabati" } },
+                    { name: "JobDetailScreen", params: { jobId } },
+                  ],
+                })
+              }
+            : undefined
+        }
       />
     </SafeAreaView>
   )

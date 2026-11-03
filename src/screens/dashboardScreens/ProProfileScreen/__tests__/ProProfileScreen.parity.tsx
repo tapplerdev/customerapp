@@ -15,6 +15,7 @@ import {
   type Step,
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
+import { asProfile } from "testing/screenKit/fixtures/proViews"
 import { DATA } from "testing/screenKit/fixtures/api"
 import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import { CATEGORY, PRO_COMPANY, PRO_INDIVIDUAL } from "testing/screenKit/fixtures/entities"
@@ -215,6 +216,48 @@ describe("ProProfileScreen, captured from the unconverted code", () => {
       steps
     )
     expectParity(parityName(state, env), tree)
+  })
+})
+
+/*
+ * The same rows from `?view=profile` (backend #423): each pro cut to the
+ * profile shape must draw exactly what the whole pro drew, which proves every
+ * field the screen reads is in the shape. The shape has no serviceCategories
+ * (the full GET /pros/:id never sent them either): the listing hands them over
+ * as the route param, so a row whose pro carried them gets them that way.
+ */
+const fromProfileView = (options: Case["options"]): Case["options"] => {
+  const answer = (options.api as Record<string, unknown> | undefined)?.getProProfile as
+    | { data?: ProType }
+    | undefined
+  const pro = answer?.data
+  if (!pro) return options
+  const route = options.route as { name: string; params: Record<string, unknown> }
+  const passed = route.params.serviceCategories ?? pro.serviceCategories
+  return {
+    ...options,
+    api: { ...options.api, getProProfile: { data: asProfile(pro) } },
+    route: {
+      ...route,
+      params: { ...route.params, ...(passed ? { serviceCategories: passed } : {}) },
+    },
+  }
+}
+
+// The carousel takes the work photos whole as a prop, so the tree shows each
+// photo's url150 although nothing reads it (tiles never use it, shared's
+// constants/workPhotoTile.ts). The profile shape leaves it out; that is the
+// only key let go.
+const withoutUnread = (tree: unknown) =>
+  JSON.stringify(tree, (key, value) => (key === "url150" ? undefined : value))
+
+describe("ProProfileScreen, drawn from the profile view", () => {
+  it.each(ordered)("$state [$env.language $env.platform]", async ({ options, steps, env }) => {
+    const draw = (from: Case["options"]) =>
+      treeAfter(load, { ...from, lang: env.language, platform: env.platform }, env, steps)
+    const whole = await draw(options)
+    const slim = await draw(fromProfileView(options))
+    expect(withoutUnread(slim)).toEqual(withoutUnread(whole))
   })
 })
 

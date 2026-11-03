@@ -15,6 +15,13 @@
  * 2. AuthSocketMiddleware validates token
  * 3. On success: socket.data.identifier set, user joined to room
  * 4. On failure: connection rejected with "Unauthorized"
+ *
+ * A copy of proapp's src/services/WebSocketService.ts (after pa#164). The
+ * only differences are this paragraph and three `(io as any).uri` casts
+ * (socket.io-client 4.8.3 here types `uri` private; proapp's 4.8.1 doesn't).
+ * The two copies had forked and the reconnect fixes landed in one app only;
+ * keep them aligned until the client moves to tappler-shared (API_URL would
+ * have to be passed in).
  */
 
 import { io, Socket } from 'socket.io-client'
@@ -23,9 +30,20 @@ import { API_URL } from '../config'
 
 interface WebSocketConfig {
   token: string
+  /**
+   * The token as it is NOW. Read on every connect attempt, the manager's
+   * own reconnects included, so a reconnect after the access token was
+   * refreshed (an outage longer than its life) doesn't present the token
+   * captured at connect() and get refused. When set it is the only source:
+   * no token from it means none is sent. `token` is used only without it.
+   */
+  getToken?: () => string | null | undefined
   userId?: number
   userType?: 'pro' | 'customer' | 'employee'
 }
+
+const bearer = (token: string) =>
+  token.startsWith('Bearer ') ? token : `Bearer ${token}`
 
 interface ConnectionState {
   status: 'disconnected' | 'connecting' | 'connected' | 'error'
@@ -52,6 +70,25 @@ class WebSocketServiceClass extends EventEmitter {
   private backgroundRetryInterval: ReturnType<typeof setInterval> | null = null
   private readonly backgroundRetryMs = 60000  // Retry every 60s after giving up
 
+  // A server-side disconnect ('io server disconnect') is the one the client
+  // never reconnects from by itself. Reconnect after a backoff: 1 s, 2 s,
+  // 4 s... capped at 60 s, plus up to half again at random so a whole fleet
+  // kicked at once doesn't come back at once. The backoff starts over only
+  // after a connection that lasted a minute, so a server that accepts and
+  // kicks again at once is retried ever more slowly, not every second.
+  private serverDisconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+  private serverDisconnects = 0
+
+  private readonly serverDisconnectBaseMs = 1000
+
+  private readonly serverDisconnectMaxMs = 60000
+
+  private readonly serverDisconnectStableMs = 60000
+
+  // reconnect()'s 500 ms delay, cancelled by a disconnect().
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
   constructor() {
     super()
     console.log('🔌 [WebSocketService] Initialized')
@@ -71,8 +108,17 @@ class WebSocketServiceClass extends EventEmitter {
       return
     }
 
+    // A socket that is down but still here (reconnecting, or waiting out a
+    // server disconnect's backoff) is replaced, not joined by a second one:
+    // two sockets meant every event twice.
+    if (this.socket) {
+      this.disconnect()
+    }
+
     this.config = config
     this.state.status = 'connecting'
+    // A new socket starts the server-disconnect backoff over.
+    this.serverDisconnects = 0
 
     // Socket.IO endpoint is at root level, not under /api
     // Remove /api from URL if present
@@ -108,8 +154,14 @@ class WebSocketServiceClass extends EventEmitter {
       this.socket = io(baseUrl, {
         path: '/socket', // ← Backend uses custom path /socket (not default /socket.io/)
         transports: ['websocket'], // ← Backend only supports WebSocket (no polling)
-        auth: {
-          token: config.token.startsWith('Bearer ') ? config.token : `Bearer ${config.token}`
+        // A callback, not an object: socket.io calls it on every connect
+        // attempt, so each reconnect presents the current token.
+        auth: (cb) => {
+          // With a getter, only the store's token: after a logout it has
+          // none, and the old one must not be presented again. The server
+          // refuses a handshake without one (auth_error, then disconnect).
+          const token = config.getToken ? config.getToken() : config.token
+          cb(token ? { token: bearer(token) } : {})
         },
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
@@ -257,9 +309,14 @@ class WebSocketServiceClass extends EventEmitter {
 
       // Handle different disconnect reasons
       if (reason === 'io server disconnect') {
-        // Server forced disconnect (auth revoked, user banned, etc.)
-        console.log('🚫 [WebSocketService] Server forced disconnect - not reconnecting')
+        // The server closed this socket on purpose (today nothing does; a
+        // drain with disconnectSockets() would). socket.io never reconnects
+        // from that by itself, which would strand the app until a restart or
+        // a new token. Reconnect after a backoff; the auth callback presents
+        // the current token, and a refused one ends in auth_error as usual.
+        console.log('🚫 [WebSocketService] Server forced disconnect - reconnecting after a backoff')
         this.emit('server_disconnect', { reason })
+        this.scheduleServerDisconnectRetry()
       } else if (reason === 'transport close' || reason === 'ping timeout') {
         // Network issues - Socket.IO will auto-reconnect.
         // Stale links surface here as 'ping timeout' via engine.io's built-in
@@ -320,7 +377,6 @@ class WebSocketServiceClass extends EventEmitter {
       })
       console.log('📬 [WebSocketService] ====================================================')
 
-      console.log('[DBG] >>> emitting on NOTIFICATION channel — event:', payload?.event || payload?.type)
       this.emit('notification', payload)
     })
 
@@ -366,10 +422,8 @@ class WebSocketServiceClass extends EventEmitter {
         }
 
         // Emit as notification so HeaderDashboard picks it up
-        console.log('[DBG] >>> onAny emitting on NOTIFICATION channel — event:', eventName)
       this.emit('notification', payload)
       } else {
-        console.log('[DBG] >>> onAny emitting on EVENT channel — eventName:', eventName)
         this.emit('event', { eventName, args })
       }
     })
@@ -385,8 +439,11 @@ class WebSocketServiceClass extends EventEmitter {
    * Disconnect from WebSocket server
    */
   disconnect(): void {
+    // Before the early return: reconnect() has no socket during its delay.
+    this.stopReconnectTimer()
+    this.stopServerDisconnectRetry()
+
     if (!this.socket) {
-      console.log('🔌 [WebSocketService] Already disconnected')
       return
     }
 
@@ -424,8 +481,11 @@ class WebSocketServiceClass extends EventEmitter {
     // Disconnect and reconnect
     this.disconnect()
 
-    // Small delay before reconnecting
-    setTimeout(() => {
+    // Small delay before reconnecting. Kept, so a disconnect() in the
+    // meantime (a logout, the app going to the background) cancels it
+    // instead of the socket coming back half a second later.
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null
       this.connect(currentConfig)
     }, 500)
   }
@@ -448,6 +508,43 @@ class WebSocketServiceClass extends EventEmitter {
       console.log('🔄 [WebSocketService] Background retry — attempting fresh connection...')
       this.reconnect()
     }, this.backgroundRetryMs)
+  }
+
+  private scheduleServerDisconnectRetry(): void {
+    this.stopServerDisconnectRetry()
+    if (Date.now() - (this.state.lastConnected ?? 0) >= this.serverDisconnectStableMs) {
+      this.serverDisconnects = 0
+    }
+    const base = Math.min(
+      this.serverDisconnectMaxMs,
+      this.serverDisconnectBaseMs * 2 ** this.serverDisconnects
+    )
+    const delay = base + Math.random() * base * 0.5
+    this.serverDisconnects += 1
+    const { socket } = this
+    this.serverDisconnectTimer = setTimeout(() => {
+      this.serverDisconnectTimer = null
+      // Only the socket that was kicked, and only if it is still down.
+      if (socket && this.socket === socket && !socket.connected) {
+        console.log('🔄 [WebSocketService] Reconnecting after a server disconnect')
+        this.state.status = 'connecting'
+        socket.connect()
+      }
+    }, delay)
+  }
+
+  private stopReconnectTimer(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+  }
+
+  private stopServerDisconnectRetry(): void {
+    if (this.serverDisconnectTimer) {
+      clearTimeout(this.serverDisconnectTimer)
+      this.serverDisconnectTimer = null
+    }
   }
 
   private stopBackgroundRetry(): void {

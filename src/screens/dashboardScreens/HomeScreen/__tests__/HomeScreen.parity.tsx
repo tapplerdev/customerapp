@@ -185,9 +185,13 @@ const unread = (count: number): NotificationsItemType[] =>
     createdAt: HOURS_AGO(index + 1),
   }))
 
+// The rows, and the bell's count of them (it asks the server for the count).
 const notifications = (rows: NotificationsItemType[]) => ({
   getNotifications: {
     data: { data: rows, page: 1, perPage: 100, total: rows.length },
+  },
+  getUnreadNotificationsCount: {
+    data: { count: rows.filter((row) => !row.readAt).length },
   },
 })
 
@@ -306,6 +310,36 @@ describe.each(PARITY_MATRIX)("HomeScreen presses [$language $platform]", (env: P
       ])
     } finally {
       plain.unmount()
+    }
+  })
+
+  it("the bell asks the server for its count, not for a page of rows (backend #423)", async () => {
+    const session = await open()
+    try {
+      const asked = session.requests().map((request) => request.endpoint)
+      expect(asked).toContain("getUnreadNotificationsCount")
+      expect(asked).not.toContain("getNotifications")
+      const count = session
+        .requests()
+        .find((request) => request.endpoint === "getUnreadNotificationsCount")
+      expect(count?.args).toBe(
+        "/notifications/unread-count?excludeEventPrefix=system.messages"
+      )
+    } finally {
+      session.unmount()
+    }
+  })
+
+  it("the badge shows the server's count, past 100 too", async () => {
+    const session = await open({
+      api: { ...DATA, getUnreadNotificationsCount: { data: { count: 140 } } },
+    })
+    try {
+      expect(JSON.stringify(session.tree())).toContain(
+        env.language === "ar" ? "٩٩+" : "99+"
+      )
+    } finally {
+      session.unmount()
     }
   })
 

@@ -17,6 +17,7 @@ import {
 } from "testing/screenKit"
 import { guestState, screenState } from "testing/screenKit/states"
 import { DATA } from "testing/screenKit/fixtures/api"
+import { withSlimPros } from "testing/screenKit/fixtures/proViews"
 import { ADDRESS, ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import {
   CATEGORY_FOOD,
@@ -228,6 +229,19 @@ describe("FoodCheckoutScreen, captured from the unconverted code", () => {
     expectParity(
       parityName(c.name, c.env),
       await renderScreen(load, options(c, c.env)),
+      { allow: c.allow }
+    )
+  })
+})
+
+// The pro from `?view=profile` (backend #423): payment methods, today's
+// hours, the pickup area and its map point, each row as the whole pro drew it.
+describe("FoodCheckoutScreen, the pro from the profile view", () => {
+  it.each(rows)("$name [$env.language $env.platform]", async (c) => {
+    const o = options(c, c.env)
+    expectParity(
+      parityName(c.name, c.env),
+      await renderScreen(load, { ...o, api: withSlimPros(o.api ?? {}) }),
       { allow: c.allow }
     )
   })

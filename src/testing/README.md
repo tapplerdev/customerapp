@@ -623,7 +623,7 @@ proxy answers it 503) and Home still draws.
 - A new native library a screen imports needs a stand-in in `nativeMocks.ts` and a line in
   `setup.ts`. A new ESM package needs a line in `jest.parity.config.js`'s allowlist.
 - **A 401 needs its refresh answered, or the row fails.** baseQueryWithReauth sends
-  `/auth/refresh/<token>` through the 401'd endpoint's own call; the kit answers it as
+  POST `/auth/refresh` (the token in the body) through the 401'd endpoint's own call; the kit answers it as
   `authRefresh` (`AUTH_REFRESH`): `{ data: { token, refreshToken } }` (the request is retried),
   `{ error: { status: 401 } }` (the app signs out), `REFRESH_TIMED_OUT` (unreachable: the session
   stays and the 401 stands) or `"loading"` (in flight). services/api.ts keeps `isRefreshing` and

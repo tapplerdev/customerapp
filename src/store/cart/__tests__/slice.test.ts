@@ -1,8 +1,16 @@
-import { describe, expect, it } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 
 import reducer, {
+  CART_STALE_MS,
   addCartItem,
+  clearCart,
+  markSubmitKeyRefused,
+  removeCartItem,
   replaceCartLines,
+  setCartItemQuantity,
+  setOrderNotes,
+  selectDraft,
+  setSubmitKey,
   type CartState,
 } from "store/cart/slice"
 import type { CartItemType } from "types/food"
@@ -51,5 +59,79 @@ describe("replaceCartLines", () => {
     expect(
       reducer(before, replaceCartLines({ proId: 99, lines: [line(5)] })).carts
     ).toEqual(before.carts)
+  })
+})
+
+describe("the order's Idempotency-Key on the draft", () => {
+  const KEY = "0b7f2d9e-5c1a-4e8b-9f3d-2a6c8e1b4d7f"
+  const keyed = () => reducer(withBasket(), setSubmitKey({ proId: 7, key: KEY }))
+  const refused = () => reducer(keyed(), markSubmitKeyRefused(7))
+
+  it("stores the key on that pro's draft only", () => {
+    const after = keyed()
+    expect(after.carts[7].submitKey).toBe(KEY)
+    expect(reducer(after, setSubmitKey({ proId: 99, key: "x" })).carts).toEqual(
+      after.carts
+    )
+  })
+
+  it("keeps the key through basket changes while no attempt was refused (one may have landed)", () => {
+    let state = keyed()
+    state = reducer(state, setCartItemQuantity({ proId: 7, uid: "1:", quantity: 3 }))
+    state = reducer(state, addCartItem({ context, item: line(3) }))
+    state = reducer(state, removeCartItem({ proId: 7, uid: "2:" }))
+    state = reducer(state, setOrderNotes({ proId: 7, notes: "Ring twice" }))
+    state = reducer(state, replaceCartLines({ proId: 7, lines: [line(4)] }))
+    expect(state.carts[7].submitKey).toBe(KEY)
+  })
+
+  it("a refusal alone keeps the key, marked spent", () => {
+    expect(refused().carts[7]).toMatchObject({
+      submitKey: KEY,
+      submitKeyRefused: true,
+    })
+  })
+
+  it.each([
+    ["a quantity change", setCartItemQuantity({ proId: 7, uid: "1:", quantity: 2 })],
+    ["an added dish", addCartItem({ context, item: line(3) })],
+    ["a removed dish", removeCartItem({ proId: 7, uid: "2:" })],
+    ["new notes", setOrderNotes({ proId: 7, notes: "Ring twice" })],
+    ["a menu repair", replaceCartLines({ proId: 7, lines: [line(4)] })],
+  ])("after a refusal, %s drops the key", (_name, action) => {
+    const draft = reducer(refused(), action).carts[7]
+    expect(draft.submitKey).toBeUndefined()
+    expect(draft.submitKeyRefused).toBeUndefined()
+  })
+
+  it("marking a draft with no key does nothing", () => {
+    const before = withBasket()
+    expect(reducer(before, markSubmitKeyRefused(7)).carts).toEqual(before.carts)
+  })
+
+  it("a new key clears the refusal mark", () => {
+    const after = reducer(refused(), setSubmitKey({ proId: 7, key: "new" }))
+    expect(after.carts[7].submitKey).toBe("new")
+    expect(after.carts[7].submitKeyRefused).toBeUndefined()
+  })
+
+  it("counts as activity, so a draft holding a pending key doesn't expire right after", () => {
+    const now = jest.spyOn(Date, "now")
+    try {
+      now.mockReturnValue(1_000)
+      const basket = withBasket()
+      now.mockReturnValue(1_000 + CART_STALE_MS - 1)
+      const submitted = reducer(basket, setSubmitKey({ proId: 7, key: KEY }))
+      expect(submitted.carts[7].lastUpdatedAt).toBe(1_000 + CART_STALE_MS - 1)
+      expect(
+        selectDraft(submitted, 7, 1_000 + CART_STALE_MS + 60_000)?.submitKey
+      ).toBe(KEY)
+    } finally {
+      now.mockRestore()
+    }
+  })
+
+  it("goes with the draft on clearCart", () => {
+    expect(reducer(keyed(), clearCart(7)).carts).toEqual({})
   })
 })

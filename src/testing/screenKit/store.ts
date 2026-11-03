@@ -71,7 +71,9 @@ export const createScreenStore = (state: ScreenState = {}) => {
         immutableCheck: false,
       }).concat(
         api.middleware,
-        createAppStateMiddleware(api, [...APP_STATE_TAGS])
+        createAppStateMiddleware(api, [...APP_STATE_TAGS], {
+          fromBackgroundOnly: true,
+        })
       ),
   })
 }

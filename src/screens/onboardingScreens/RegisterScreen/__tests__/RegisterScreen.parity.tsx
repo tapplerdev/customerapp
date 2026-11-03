@@ -76,6 +76,10 @@ const CASES: Case[] = [
   { state: "refused with a message", api: refused({ message: "Something went wrong." }), steps: [...FILLED, register] },
   // (A reason that is not text draws the same card as none.)
   { state: "refused with nothing to say", api: refused({}), steps: [...FILLED, register] },
+  // Backend #413 limits signups too: its 429, told in the app's language
+  // from Retry-After before any validation text, and a 5xx.
+  { state: "too many attempts card", api: { customerSignUp: { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } } }, steps: [...FILLED, register] },
+  { state: "server trouble card", api: { customerSignUp: { error: { status: 500, data: {} } } }, steps: [...FILLED, register] },
 ]
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)

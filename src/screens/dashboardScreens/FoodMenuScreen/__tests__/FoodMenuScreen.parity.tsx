@@ -15,6 +15,7 @@ import {
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
 import { DATA } from "testing/screenKit/fixtures/api"
+import { withSlimPros } from "testing/screenKit/fixtures/proViews"
 import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import { PRO_FOOD } from "testing/screenKit/fixtures/entities"
 import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
@@ -172,6 +173,18 @@ describe("FoodMenuScreen, captured from the unconverted code", () => {
     expectParity(
       parityName(c.name, c.env),
       await renderScreen(load, options(c, c.env))
+    )
+  })
+})
+
+// The pro from `?view=profile` (backend #423) draws every row as the whole
+// pro did: each field the screen reads is in the shape.
+describe("FoodMenuScreen, the pro from the profile view", () => {
+  it.each(rows)("$name [$env.language $env.platform]", async (c) => {
+    const o = options(c, c.env)
+    expectParity(
+      parityName(c.name, c.env),
+      await renderScreen(load, { ...o, api: withSlimPros(o.api ?? {}) })
     )
   })
 })

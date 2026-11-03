@@ -5,6 +5,7 @@ import { API_URL } from "config"
 // the Messaging instance.
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging"
 import { chatReadRegistry } from "services/chatReadRegistry"
+import { withRetryAfter } from "utils/authErrors"
 import { RootState } from "store"
 import { setTokens, logout } from "store/auth/slice"
 import { PresetType, ServiceType, ServicesResponse } from "types/cms"
@@ -48,6 +49,16 @@ const baseQuery = fetchBaseQuery({
     return headers
   },
 })
+
+// The Idempotency-Key header (be#416) on a create, when the caller has one.
+// A header, never a body field: an older API refuses unknown body fields
+// (forbidNonWhitelisted) but ignores a header.
+const idempotencyHeader = (key?: string) =>
+  key ? { headers: { "Idempotency-Key": key } } : {}
+
+// The pros listing's one page: the server's perPage cap (anything above is
+// clamped to 100). The screen loads no further pages.
+export const PROS_LIST_PER_PAGE = 100
 
 // Prevent multiple simultaneous refresh attempts
 let isRefreshing = false
@@ -96,8 +107,12 @@ const baseQueryWithReauth: BaseQueryFn<
     }
 
     isRefreshing = true
+    // POST with the token in the body (backend #419): same answers as the
+    // old GET /auth/refresh/:token, without the token in a URL that access
+    // logs keep. Single-flight as before, and bounded by the base query's
+    // 20 s timeout.
     refreshPromise = baseQuery(
-      { url: `/auth/refresh/${refreshToken}`, method: "GET" },
+      { url: "/auth/refresh", method: "POST", body: { refreshToken } },
       apiBase,
       extraOptions,
     )
@@ -178,10 +193,13 @@ export const api = createApi({
 
     customerSignUp: builder.mutation<CustomerSignUpResponse, CustomerSignUpRequest>({
       query: (body) => ({ url: "/customers", method: "POST", body }),
+      // A 429's wait is in Retry-After, which the caller can't see otherwise.
+      transformErrorResponse: withRetryAfter,
     }),
 
     auth: builder.mutation<AuthResponse, AuthRequest>({
       query: (body) => ({ url: "/auth", method: "POST", body }),
+      transformErrorResponse: withRetryAfter,
     }),
 
     getCustomerMe: builder.query<CustomerMeResponse, void>({
@@ -239,6 +257,14 @@ export const api = createApi({
         if (maxResponseTimeHours) params.append("maxResponseTimeHours", String(maxResponseTimeHours))
         if (creditCardPayment) params.append("creditCardPayment", "true")
         if (sortBy) params.append("sortBy", sortBy)
+        // The card view (backend #423): each pro as ProCard, its preloads and
+        // the profile it opens read it, paged by pro. Without it the list
+        // paged joined rows (a pro with stickers filled several of the 20)
+        // and a sorted list had no limit at all. The screen has no "load
+        // more", so it asks for one page of the most the server gives.
+        params.append("view", "card")
+        params.append("page", "1")
+        params.append("perPage", String(PROS_LIST_PER_PAGE))
         return `/pros/category/${categoryId}?${params.toString()}`
       },
     }),
@@ -253,8 +279,19 @@ export const api = createApi({
       invalidatesTags: ["Auth"],
     }),
 
-    createJob: builder.mutation<JobType, CreateJobRequest>({
-      query: (body) => ({ url: "/jobs", method: "POST", body }),
+    // Job posts and food orders. With an Idempotency-Key (be#416), a retry of
+    // an attempt that did land answers 201 with that job instead of creating
+    // a second one.
+    createJob: builder.mutation<
+      JobType,
+      CreateJobRequest & { idempotencyKey?: string }
+    >({
+      query: ({ idempotencyKey, ...body }) => ({
+        url: "/jobs",
+        method: "POST",
+        body,
+        ...idempotencyHeader(idempotencyKey),
+      }),
       invalidatesTags: ["Jobs"],
     }),
 
@@ -280,10 +317,14 @@ export const api = createApi({
       providesTags: ["Jobs"],
     }),
 
+    // The profile view (backend #423): what ProProfileScreen and the screens
+    // sharing this cache entry read (FoodMenu, FoodCheckout, RequestDetails,
+    // the listing's image preload), without the history, media, user and
+    // document chains the full pro loads.
     getProProfile: builder.query<ProType, { proId: number; serviceCategoryId?: number }>({
       query: ({ proId, serviceCategoryId }) => {
-        const url = `/pros/${proId}`
-        return serviceCategoryId ? `${url}?serviceCategoryId=${serviceCategoryId}` : url
+        const url = `/pros/${proId}?view=profile`
+        return serviceCategoryId ? `${url}&serviceCategoryId=${serviceCategoryId}` : url
       },
     }),
 
@@ -375,9 +416,9 @@ export const api = createApi({
     }),
 
     // Stored in-app notifications (same backend table + endpoints as proapp;
-    // the API filters to the authed customer). The HomeHeader bell subscribes
-    // with { page: 1, perPage: 100 } and the NotificationsScreen pages by 20 —
-    // two cache entries, both refreshed by the "Notifications" tag.
+    // the API filters to the authed customer). NotificationsScreen pages by
+    // 20; the HomeHeader bell reads getUnreadNotificationsCount below. Both
+    // are refreshed by the "Notifications" tag.
     getNotifications: builder.query<
       ListNotificationsResponse,
       ListNotificationsRequest
@@ -392,6 +433,21 @@ export const api = createApi({
         }
         return `/notifications?${params}`
       },
+      providesTags: ["Notifications"],
+    }),
+
+    // The bell's count (backend #423): one COUNT of the caller's unread rows,
+    // instead of a page of 100 rows reduced to a number (which also stopped
+    // counting at 100). Same tag, so a read or a socket event refreshes it.
+    getUnreadNotificationsCount: builder.query<
+      { count: number },
+      { excludeEventPrefix?: string }
+    >({
+      query: ({ excludeEventPrefix }) =>
+        "/notifications/unread-count" +
+        (excludeEventPrefix
+          ? `?excludeEventPrefix=${encodeURIComponent(excludeEventPrefix)}`
+          : ""),
       providesTags: ["Notifications"],
     }),
 
@@ -441,11 +497,12 @@ export const api = createApi({
         `/chats/${chatId}/messages?page=${page}&perPage=${perPage}`,
     }),
 
-    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[]; location?: { latitude: number; longitude: number } }>({
-      query: ({ chatId, ...body }) => ({
+    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[]; location?: { latitude: number; longitude: number }; idempotencyKey?: string }>({
+      query: ({ chatId, idempotencyKey, ...body }) => ({
         url: `/chats/${chatId}/messages`,
         method: "POST",
         body,
+        ...idempotencyHeader(idempotencyKey),
       }),
       invalidatesTags: ["Chats"],
     }),
@@ -519,6 +576,12 @@ export const api = createApi({
         body,
       }),
     }),
+    // Sign-out on this device (services/session), after the push token's
+    // removal below: ends the session server-side (backend #419). No guard,
+    // always 204, even for a token already gone, so it can't fail a sign-out.
+    logout: builder.mutation<void, { refreshToken?: string }>({
+      query: (body) => ({ url: "/auth/logout", method: "POST", body }),
+    }),
     // Sign-out on this device (services/session). Names the token so a call
     // landing after a quick re-login under a new token cannot delete it.
     removeNotificationsDevice: builder.mutation<
@@ -576,6 +639,7 @@ export const {
   useCreateReviewMutation,
   useGetNotificationsQuery,
   useLazyGetNotificationsQuery,
+  useGetUnreadNotificationsCountQuery,
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
 } = api

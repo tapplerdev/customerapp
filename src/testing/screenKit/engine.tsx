@@ -371,7 +371,7 @@ const awaitSettled = async (
 const unansweredRefreshError = (request: BackendRequest) =>
   new Error(
     `screenKit: this row's 401 sent the app's token refresh (${String(
-      (request.args as { url?: unknown } | null)?.url ?? "/auth/refresh/<token>"
+      (request.args as { url?: unknown } | null)?.url ?? "/auth/refresh"
     ).replace(/\/auth\/refresh\/.+$/, "/auth/refresh/<token>")}, baseQueryWithReauth in services/api.ts), and the row has no \`authRefresh\` answer.\n` +
       "Answer it in the row's `api`, with AUTH_REFRESH from testing/screenKit:\n" +
       "  { data: { token, refreshToken } }: the refresh works and the 401'd request is retried\n" +

@@ -46,7 +46,11 @@ const ANSWERS = {
       data: { validationErrors: { email: ["This email is not registered"] } },
     },
   },
-  "no validation": { error: { status: 500, data: {} } },
+  // A 400 with nothing to say. It was a 500 until a 5xx got its own card
+  // (server trouble); the rendered card is the same, so the case kept its name.
+  "no validation": { error: { status: 400, data: {} } },
+  "too many attempts": { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } },
+  "server failing": { error: { status: 500, data: {} } },
   accepted: { data: { token: "t", refreshToken: "r" } },
 }
 
@@ -87,6 +91,8 @@ const CASES: Case[] = [
   { label: "refused: wrong password", answer: "password mismatch", steps: [...FILLED, logIn] },
   { label: "refused: not registered", answer: "not registered", steps: [...FILLED, logIn] },
   { label: "refused: no validation errors", answer: "no validation", steps: [...FILLED, logIn] },
+  { label: "too many attempts card", answer: "too many attempts", steps: [...FILLED, logIn] },
+  { label: "server trouble card", answer: "server failing", steps: [...FILLED, logIn] },
 ]
 
 describe("GateSignInScreen", () => {

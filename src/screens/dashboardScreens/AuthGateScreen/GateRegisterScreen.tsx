@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux"
 
 import { DmAuthInput, DmView } from "@tappler/shared/src/components/UI"
 import ErrorModal from "components/ErrorModal"
+import { describeSignInFailure } from "utils/authErrors"
 import { useCustomerSignUpMutation, useAuthMutation, useLazyGetCustomerMeQuery } from "services/api"
 import { setTokens } from "store/auth/slice"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
@@ -89,8 +90,14 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
       // Dismiss the auth gate modal — returns to RequestSummaryScreen
       parentNav.goBack()
     } catch (error: any) {
+      // No answer, too many attempts (a 429 with Retry-After) or the server
+      // failing: never a verdict on what was typed, so before the validation
+      // errors (a 429 carries one on email too).
+      const failure = describeSignInFailure(error, t)
       const validationErrors = error?.data?.validationErrors
-      if (validationErrors) {
+      if (failure) {
+        setErrorMessage(failure)
+      } else if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
         const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
         setErrorMessage(typeof firstMsg === "string" ? firstMsg : t("invalid_credentials"))

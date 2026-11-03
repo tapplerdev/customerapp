@@ -45,6 +45,39 @@ import {
  * and a refusal opens the error sheet with the server's words.
  */
 
+/*
+ * What the server answers a new order with: the job it created from the body
+ * it got (same pros, dishes, payment, place and point). An answer that
+ * differs from the body is an earlier order replayed (utils/jobReplay).
+ */
+type SentBody = {
+  serviceCategoryId: number
+  prosIds: number[]
+  placeOfService?: string
+  paymentMethod?: string
+  address?: { location?: { lat: number; lng: number } }
+  foodOrderItems: { menuItemId: number; quantity: number }[]
+}
+const createdFrom = (args: unknown) => {
+  const body = (args as { body: SentBody }).body
+  return {
+    data: {
+      ...JOB_FOOD,
+      serviceCategoryId: body.serviceCategoryId,
+      pros: body.prosIds.map((proId) => ({ ...JOB_FOOD.pros![0], proId })),
+      placeOfService: body.placeOfService,
+      paymentMethod: body.paymentMethod,
+      address: { address: { location: body.address?.location } },
+      foodOrderItems: body.foodOrderItems.map((item, index) => ({
+        id: 7000 + index,
+        name: "",
+        price: 0,
+        ...item,
+      })),
+    },
+  }
+}
+
 // Submit Order was an ActionBtn: Button's listed deltas on every row that draws it
 // (in flight, refused, and the empty basket draw them as the others do).
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
@@ -185,7 +218,7 @@ describe("FoodOrderReviewScreen, the controls", () => {
     async ({ env }) => {
       const session = await openScreen(
         load,
-        options(CASES[0], env, { createJob: { data: JOB_FOOD } })
+        options(CASES[0], env, { createJob: createdFrom })
       )
       try {
         await session.act(() => {
@@ -470,8 +503,8 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
       const session = await openScreen(
         load,
         options({ ...CASES[2] }, env, {
-          createJob: () =>
-            sent++ === 0 ? { error: MENU_CHANGED } : { data: JOB_FOOD },
+          createJob: (args: unknown) =>
+            sent++ === 0 ? { error: MENU_CHANGED } : createdFrom(args),
           getProMenu: menuThenMenu(MENU_LARGE_DEARER),
         })
       )
@@ -609,6 +642,285 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
           pressTitled(session.root, copy(env, "OK"))
         }, 2500)
         expect(session.navigation.actions).toEqual([])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
+
+/*
+ * The order's Idempotency-Key (be#416): made at the first Submit, kept on the
+ * persisted draft, and sent on every retry of that basket, so an attempt that
+ * did land is answered with its order instead of placing a second one.
+ */
+type KeyedOrder = { args: { headers?: Record<string, string> } }
+const keyOf = (order: unknown) =>
+  (order as KeyedOrder).args.headers?.["Idempotency-Key"]
+const draftOf = (store: { getState: () => unknown }) =>
+  (
+    store.getState() as {
+      cart: {
+        carts: Record<number, { submitKey?: string; submitKeyRefused?: boolean }>
+      }
+    }
+  ).cart.carts[PRO_FOOD.id]
+const UUID_V4 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+
+describe("FoodOrderReviewScreen, the order's Idempotency-Key", () => {
+  it.each(envs)(
+    "a retry after a timeout sends the key the first attempt stored [$env.language $env.platform]",
+    async ({ env }) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, {
+          createJob: (args: unknown) =>
+            sent++ === 0
+              ? { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+              : createdFrom(args),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const stored = draftOf(session.store)?.submitKey
+        expect(stored).toMatch(UUID_V4)
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(2)
+        expect(keyOf(orders[0])).toBe(stored)
+        expect(keyOf(orders[1])).toBe(stored)
+        // Placed: the draft, and its key with it, are gone.
+        expect(draftOf(session.store)).toBeUndefined()
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a basket persisted with a key (the app was killed mid-request) sends that key [$env.language $env.platform]",
+    async ({ env }) => {
+      const killed = "0b7f2d9e-5c1a-4e8b-9f3d-2a6c8e1b4d7f"
+      const session = await openScreen(load, {
+        ...options(CASES[0], env, { createJob: createdFrom }),
+        state: cartState(
+          auth,
+          [{ ...DRAFT_ONE_LINE, submitKey: killed }],
+          ADDRESS
+        ),
+      })
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(keyOf(sentOrders(session)[0])).toBe(killed)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a refused order marks its key spent; the menu repair that follows drops it and the next Submit makes a new one [$env.language $env.platform]",
+    async ({ env }) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: (args: unknown) =>
+            sent++ === 0 ? { error: MENU_CHANGED } : createdFrom(args),
+          getProMenu: menuThenMenu(MENU_LARGE_DEARER),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(draftOf(session.store)?.submitKey).toBeUndefined()
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(2)
+        expect(keyOf(orders[0])).toMatch(UUID_V4)
+        expect(keyOf(orders[1])).toMatch(UUID_V4)
+        expect(keyOf(orders[1])).not.toBe(keyOf(orders[0]))
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "two presses before the next render send one order, with the key the draft holds [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, { createJob: "loading" })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(1)
+        expect(keyOf(orders[0])).toBe(draftOf(session.store)?.submitKey)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a refusal with the basket unchanged keeps the key, marked spent [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, {
+          createJob: {
+            error: {
+              status: 400,
+              data: { validationErrors: { items: ["Grilled chicken is sold out"] } },
+            },
+          },
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(draftOf(session.store)).toMatchObject({
+          submitKey: keyOf(sentOrders(session)[0]),
+          submitKeyRefused: true,
+        })
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
+
+/*
+ * A retry with the kept key after the customer changed the order is answered
+ * with the earlier order (the first attempt had landed). The basket goes, but
+ * the screen says the changes weren't added and opens that order instead of
+ * calling it sent.
+ */
+describe("FoodOrderReviewScreen, an earlier order answered for a changed one", () => {
+  // The first attempt times out (it landed); the second gets that order back.
+  const replayingFirst = () => {
+    let first: unknown
+    return (args: unknown) => {
+      if (first === undefined) {
+        first = args
+        return { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+      }
+      return createdFrom(first)
+    }
+  }
+  const submitTwiceWithAChange = async (
+    session: Awaited<ReturnType<typeof openScreen>>,
+    env: Env
+  ) => {
+    await session.act(() => {
+      pressTitled(session.root, copy(env, "submit_order"))
+    })
+    await session.act(() => {
+      pressTitled(session.root, copy(env, "OK"))
+    })
+    // A second portion, added while the first answer was lost.
+    await session.act(() => {
+      session.store.dispatch({
+        type: "cart/setCartItemQuantity",
+        payload: { proId: PRO_FOOD.id, uid: "411:bread", quantity: 2 },
+      })
+    })
+    await session.act(() => {
+      pressTitled(session.root, copy(env, "submit_order"))
+    })
+  }
+
+  it.each(envs)(
+    "says the changes weren't added, clears the basket, and OK opens that order [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, { createJob: replayingFirst() })
+      )
+      try {
+        await submitTwiceWithAChange(session, env)
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(2)
+        expect(keyOf(orders[1])).toBe(keyOf(orders[0]))
+        expect(draftOf(session.store)).toBeUndefined()
+        const text = JSON.stringify(session.tree())
+        expect(text).toContain(copy(env, "earlier_order_went_through"))
+        expect(text).toContain(copy(env, "already_sent"))
+        expect(session.navigation.actions).toEqual([])
+        expectParity(parityName("an earlier order answered for a changed one", env), session.tree(), {
+          allow: BUTTON,
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.settle(1000)
+        expect(session.navigation.actions).toMatchObject([
+          {
+            type: "RESET",
+            payload: {
+              index: 1,
+              routes: [
+                { name: "HomeTabs", params: { screen: "talabati" } },
+                { name: "JobDetailScreen", params: { jobId: JOB_FOOD.id } },
+              ],
+            },
+          },
+        ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "the same order after a timeout is a sent order [$env.language $env.platform]",
+    async ({ env }) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, {
+          createJob: (args: unknown) =>
+            sent++ === 0
+              ? { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+              : createdFrom(args),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(session.navigation.actions).toMatchObject([
+          { type: "NAVIGATE", payload: { name: "RequestSuccessScreen" } },
+        ])
       } finally {
         session.unmount()
       }

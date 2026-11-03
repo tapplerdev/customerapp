@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import { useDispatch } from "react-redux"
+import { useDispatch, useStore } from "react-redux"
 
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -14,17 +14,21 @@ import {
   useGetProMenuQuery,
   useLazyGetProMenuQuery,
 } from "services/api"
-import { useTypedSelector } from "store"
+import { RootState, useTypedSelector } from "store"
 import {
   cartLineTotal,
   clearCart,
   computeOrderTotals,
   emptyDraft,
   formatMoney,
+  markSubmitKeyRefused,
   replaceCartLines,
   selectDraft,
+  setSubmitKey,
 } from "store/cart/slice"
 import { buildFoodOrderItems, repairCart } from "utils/foodCartRepair"
+import { uuidV4 } from "utils/uuid"
+import { replayedChanges } from "utils/jobReplay"
 import ErrorModal from "components/ErrorModal"
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
@@ -41,6 +45,21 @@ type Props = RootStackScreenProps<"FoodOrderReviewScreen">
 const isMenuChangedRefusal = (error: any): boolean =>
   error?.data?.code === "FOOD_ORDER_MENU_CHANGED" ||
   error?.data?.validationErrors?.foodOrderItems != null
+
+// The server answered and said no, so the attempt created nothing: any 4xx
+// except a timeout (408), a conflict (409) or a rate limit (429). A replay of
+// an attempt that did land never gets here, it answers 201 with that order.
+const isDefinitiveRefusal = (error: any): boolean => {
+  const status = error?.status
+  return (
+    typeof status === "number" &&
+    status >= 400 &&
+    status < 500 &&
+    status !== 408 &&
+    status !== 409 &&
+    status !== 429
+  )
+}
 
 // Last look before committing. Checkout gathers and validates; this screen
 // confirms and commits. The built payload arrives as a param (plain JSON, so
@@ -63,12 +82,16 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
   const dispatch = useDispatch()
+  const store = useStore()
 
   const cartState = useTypedSelector((state) => state.cart)
   const cart = selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
 
   const [createJob] = useCreateJobMutation()
   const [isSubmitting, setSubmitting] = useState(false)
+  // isSubmitting is the render's copy: two presses handled before the next
+  // render both read false. This one is set in the handler itself.
+  const submittingRef = useRef(false)
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   // Set when the menu changed under the basket: the pop-up then has its own
@@ -79,6 +102,9 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const [backToMenu, setBackToMenu] = useState<
     RootStackParamList["FoodMenuScreen"] | null
   >(null)
+  // Set when the answer was an earlier order (see utils/jobReplay): the
+  // pop-up closes onto that order.
+  const [replayedJobId, setReplayedJobId] = useState<number | null>(null)
 
   const { data: menu } = useGetProMenuQuery(
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
@@ -145,20 +171,45 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   const handleSubmitOrder = async () => {
-    if (isSubmitting) return
+    if (isSubmitting || submittingRef.current) return
+    submittingRef.current = true
+
+    // The basket's key, or a new one stored on it first: persisted with the
+    // draft, so a retry (after a timeout, or after the app was killed
+    // mid-request) is answered with the order the first attempt placed.
+    // Read from the store, not this render's draft, so a second press from
+    // the same render finds the key the first one stored.
+    let idempotencyKey = (store.getState() as RootState).cart.carts[proId]
+      ?.submitKey
+    if (!idempotencyKey) {
+      idempotencyKey = uuidV4()
+      dispatch(setSubmitKey({ proId, key: idempotencyKey }))
+    }
 
     try {
       setSubmitting(true)
       // The lines come from the basket on screen, not from the payload checkout
       // built, so a repaired basket is what gets sent next time.
-      await createJob({
-        ...payload,
-        foodOrderItems: buildFoodOrderItems(cart.items),
-      }).unwrap()
+      const sent = { ...payload, foodOrderItems: buildFoodOrderItems(cart.items) }
+      const job = await createJob({ ...sent, idempotencyKey }).unwrap()
       const successAddress = cartState.address ?? undefined
       dispatch(clearCart(proId))
+      // The key outlived a timeout or a 5xx, the first attempt had landed,
+      // and the customer changed the order before trying again: the server
+      // answered with the earlier order. It is the one the restaurant has,
+      // so the basket goes, but this is no "order sent".
+      if (replayedChanges(sent, job).length > 0) {
+        setErrorTitle(t("already_sent"))
+        setBackToMenu(null)
+        setReplayedJobId(job.id)
+        setErrorMessage(t("earlier_order_went_through"))
+        setErrorVisible(true)
+        return
+      }
       navigation.navigate("RequestSuccessScreen", { address: successAddress })
     } catch (error: any) {
+      // Before the repair: its change to the basket is what drops the key.
+      if (isDefinitiveRefusal(error)) dispatch(markSubmitKeyRefused(proId))
       if (isMenuChangedRefusal(error) && (await repairBasket())) return
 
       const validationErrors = error?.data?.validationErrors
@@ -170,6 +221,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       setErrorMessage(String(message))
       setErrorVisible(true)
     } finally {
+      submittingRef.current = false
       setSubmitting(false)
     }
   }
@@ -330,6 +382,18 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setErrorVisible(false)}
         // After the pop-up has closed, never beside it (CLAUDE.local.md)
         onModalHide={() => {
+          if (replayedJobId) {
+            const jobId = replayedJobId
+            setReplayedJobId(null)
+            navigation.reset({
+              index: 1,
+              routes: [
+                { name: "HomeTabs", params: { screen: "talabati" } },
+                { name: "JobDetailScreen", params: { jobId } },
+              ],
+            })
+            return
+          }
           if (!backToMenu) return
           const params = backToMenu
           setBackToMenu(null)

@@ -267,7 +267,7 @@ describe("what a render sets up", () => {
         .readFileSync(file, "utf8")
         .matchAll(/^ {4}(\w+): builder\.query</gm),
     ].map((match) => match[1])
-    expect(queries).toHaveLength(18)
+    expect(queries).toHaveLength(19)
     expect(QUERY_ENDPOINTS).toEqual([...queries].sort())
   })
 
@@ -322,6 +322,13 @@ describe("what a render sets up", () => {
       expect(
         session.requests().map((r) => r.endpoint).filter((e) => e !== "getNotifications")
       ).toEqual(["getChats", AUTH_REFRESH, "getChats"])
+      // POST with the token in the body (backend #419), never in the URL.
+      const refresh = session.requests().find((r) => r.endpoint === AUTH_REFRESH)
+      expect(refresh?.args).toMatchObject({
+        url: "/auth/refresh",
+        method: "POST",
+        body: { refreshToken: screenState("data").state.auth!.refreshToken },
+      })
       expect(session.store.getState().auth.token).toBe("parity-token-2")
     } finally {
       session.unmount()

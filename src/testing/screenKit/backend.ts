@@ -18,7 +18,8 @@
  * request log, so a test can see what a screen asked for that nothing
  * answered). Mutations default to "loading" as well: a write on mount stays
  * in flight, and the log shows it. The refresh baseQueryWithReauth sends
- * after a 401 (`/auth/refresh/<token>`, through the 401'd endpoint's own
+ * after a 401 (POST `/auth/refresh`, or the older GET `/auth/refresh/<token>`,
+ * through the 401'd endpoint's own
  * baseQuery call) is answered by the `authRefresh` fixture, not the
  * endpoint's.
  *
@@ -193,7 +194,9 @@ const pathOf = (args: unknown) =>
 export const fetchBaseQuery =
   (_options?: unknown) =>
   async (args: unknown, api: BaseQueryApi): Promise<unknown> => {
-    const endpoint = pathOf(args).startsWith("/auth/refresh/")
+    const path = pathOf(args)
+    const endpoint =
+      path === "/auth/refresh" || path.startsWith("/auth/refresh/")
       ? AUTH_REFRESH
       : api.endpoint
     const fixture = fixtures[endpoint]
