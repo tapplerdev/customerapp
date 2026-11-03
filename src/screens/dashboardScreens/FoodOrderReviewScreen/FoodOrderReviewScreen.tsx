@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import { useDispatch } from "react-redux"
+import { useDispatch, useStore } from "react-redux"
 
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -14,7 +14,7 @@ import {
   useGetProMenuQuery,
   useLazyGetProMenuQuery,
 } from "services/api"
-import { useTypedSelector } from "store"
+import { RootState, useTypedSelector } from "store"
 import {
   cartLineTotal,
   clearCart,
@@ -81,12 +81,16 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
   const dispatch = useDispatch()
+  const store = useStore()
 
   const cartState = useTypedSelector((state) => state.cart)
   const cart = selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
 
   const [createJob] = useCreateJobMutation()
   const [isSubmitting, setSubmitting] = useState(false)
+  // isSubmitting is the render's copy: two presses handled before the next
+  // render both read false. This one is set in the handler itself.
+  const submittingRef = useRef(false)
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   // Set when the menu changed under the basket: the pop-up then has its own
@@ -163,12 +167,16 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   const handleSubmitOrder = async () => {
-    if (isSubmitting) return
+    if (isSubmitting || submittingRef.current) return
+    submittingRef.current = true
 
     // The basket's key, or a new one stored on it first: persisted with the
     // draft, so a retry (after a timeout, or after the app was killed
     // mid-request) is answered with the order the first attempt placed.
-    let idempotencyKey = cart.submitKey
+    // Read from the store, not this render's draft, so a second press from
+    // the same render finds the key the first one stored.
+    let idempotencyKey = (store.getState() as RootState).cart.carts[proId]
+      ?.submitKey
     if (!idempotencyKey) {
       idempotencyKey = uuidV4()
       dispatch(setSubmitKey({ proId, key: idempotencyKey }))
@@ -200,6 +208,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       setErrorMessage(String(message))
       setErrorVisible(true)
     } finally {
+      submittingRef.current = false
       setSubmitting(false)
     }
   }

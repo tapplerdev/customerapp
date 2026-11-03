@@ -731,6 +731,27 @@ describe("FoodOrderReviewScreen, the order's Idempotency-Key", () => {
   )
 
   it.each(envs)(
+    "two presses before the next render send one order, with the key the draft holds [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, { createJob: "loading" })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(1)
+        expect(keyOf(orders[0])).toBe(draftOf(session.store)?.submitKey)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
     "a refusal with the basket unchanged keeps the key, marked spent [$env.language $env.platform]",
     async ({ env }) => {
       const session = await openScreen(
