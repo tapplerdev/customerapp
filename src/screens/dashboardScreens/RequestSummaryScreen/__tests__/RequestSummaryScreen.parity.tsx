@@ -474,3 +474,131 @@ describe("RequestSummaryScreen: the Idempotency-Key", () => {
     }
   )
 })
+
+/*
+ * Sent again with this visit's key after a timeout, with a pro taken off in
+ * between, the first attempt having landed: the server answers with the
+ * earlier request (to both pros). The screen says the change wasn't made and
+ * opens that request instead of calling it sent.
+ */
+describe("RequestSummaryScreen: an earlier request answered for a changed one", () => {
+  const replayingFirst = () => {
+    let first: { body: { prosIds: number[]; serviceCategoryId: number } } | undefined
+    return (args: unknown) => {
+      if (first === undefined) {
+        first = args as typeof first
+        return { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+      }
+      return {
+        data: {
+          id: 8301,
+          serviceCategoryId: first!.body.serviceCategoryId,
+          pros: first!.body.prosIds.map((proId) => ({ proId })),
+        },
+      }
+    }
+  }
+
+  it.each(PARITY_MATRIX)(
+    "says the change wasn't made, and OK opens that request [$language $platform]",
+    async (env) => {
+      const session = await openScreen(
+        load,
+        options(
+          {
+            state: "replayed",
+            params: params({ selectedProsInfo: [PRO_PHOTO, PRO_BUSINESS] }),
+            api: { createJob: replayingFirst() },
+          },
+          env
+        )
+      )
+      try {
+        await session.act(() => {
+          send(env)(session.root, env)
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          removePro(0)(session.root, env)
+        })
+        await session.act(() => {
+          send(env)(session.root, env)
+        })
+        const text = JSON.stringify(session.tree())
+        expect(text).toContain(copy(env, "earlier_request_went_through"))
+        expect(text).toContain(copy(env, "already_sent"))
+        expect(
+          (session.navigation.actions as { type: string }[]).map((a) => a.type)
+        ).not.toContain("NAVIGATE")
+        expectParity(parityName("an earlier request answered for a changed one", env), session.tree(), {
+          allow: BUTTON,
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.settle(1000)
+        expect(session.navigation.actions.at(-1)).toMatchObject({
+          type: "RESET",
+          payload: {
+            index: 1,
+            routes: [
+              { name: "HomeTabs", params: { screen: "talabati" } },
+              { name: "JobDetailScreen", params: { jobId: 8301 } },
+            ],
+          },
+        })
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "the same request after a timeout is a sent request [$language $platform]",
+    async (env) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options(
+          {
+            state: "same",
+            api: {
+              createJob: (args: unknown) => {
+                const body = (args as { body: { prosIds: number[]; serviceCategoryId: number } }).body
+                return sent++ === 0
+                  ? { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+                  : {
+                      data: {
+                        id: 8301,
+                        serviceCategoryId: body.serviceCategoryId,
+                        pros: body.prosIds.map((proId) => ({ proId })),
+                      },
+                    }
+              },
+            },
+          },
+          env
+        )
+      )
+      try {
+        await session.act(() => {
+          send(env)(session.root, env)
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          send(env)(session.root, env)
+        })
+        expect(session.navigation.actions.at(-1)).toMatchObject({
+          type: "NAVIGATE",
+          payload: { name: "RequestSuccessScreen" },
+        })
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})

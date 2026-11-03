@@ -593,5 +593,8 @@
   "too_many_attempts_wait": "Too many attempts. Please try again in {{duration}}.",
   "server_having_trouble": "Tappler is having trouble right now. Please try again in a moment.",
   "duration_minutes": "{{count}} minute",
-  "duration_minutes_plural": "{{count}} minutes"
+  "duration_minutes_plural": "{{count}} minutes",
+  "already_sent": "Already sent",
+  "earlier_order_went_through": "Your earlier order already went through; your latest changes weren't added.",
+  "earlier_request_went_through": "Your earlier request already went through; your latest changes weren't added."
 }

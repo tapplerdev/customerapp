@@ -599,5 +599,8 @@
   "duration_minutes_3": "{{count}} دقائق",
   "duration_minutes_4": "{{count}} دقيقة",
   "duration_minutes_5": "{{count}} دقيقة",
-  "duration_minutes_plural": "{{count}} دقيقة"
+  "duration_minutes_plural": "{{count}} دقيقة",
+  "already_sent": "تم الإرسال بالفعل",
+  "earlier_order_went_through": "طلبك السابق تم إرساله بالفعل، ولم تتم إضافة آخر تعديلاتك.",
+  "earlier_request_went_through": "طلبك السابق تم إرساله بالفعل، ولم تتم إضافة آخر تعديلاتك."
 }

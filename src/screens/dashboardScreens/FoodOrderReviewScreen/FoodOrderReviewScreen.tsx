@@ -28,6 +28,7 @@ import {
 } from "store/cart/slice"
 import { buildFoodOrderItems, repairCart } from "utils/foodCartRepair"
 import { uuidV4 } from "utils/uuid"
+import { replayedChanges } from "utils/jobReplay"
 import ErrorModal from "components/ErrorModal"
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
@@ -101,6 +102,9 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const [backToMenu, setBackToMenu] = useState<
     RootStackParamList["FoodMenuScreen"] | null
   >(null)
+  // Set when the answer was an earlier order (see utils/jobReplay): the
+  // pop-up closes onto that order.
+  const [replayedJobId, setReplayedJobId] = useState<number | null>(null)
 
   const { data: menu } = useGetProMenuQuery(
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
@@ -186,13 +190,22 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       setSubmitting(true)
       // The lines come from the basket on screen, not from the payload checkout
       // built, so a repaired basket is what gets sent next time.
-      await createJob({
-        ...payload,
-        foodOrderItems: buildFoodOrderItems(cart.items),
-        idempotencyKey,
-      }).unwrap()
+      const sent = { ...payload, foodOrderItems: buildFoodOrderItems(cart.items) }
+      const job = await createJob({ ...sent, idempotencyKey }).unwrap()
       const successAddress = cartState.address ?? undefined
       dispatch(clearCart(proId))
+      // The key outlived a timeout or a 5xx, the first attempt had landed,
+      // and the customer changed the order before trying again: the server
+      // answered with the earlier order. It is the one the restaurant has,
+      // so the basket goes, but this is no "order sent".
+      if (replayedChanges(sent, job).length > 0) {
+        setErrorTitle(t("already_sent"))
+        setBackToMenu(null)
+        setReplayedJobId(job.id)
+        setErrorMessage(t("earlier_order_went_through"))
+        setErrorVisible(true)
+        return
+      }
       navigation.navigate("RequestSuccessScreen", { address: successAddress })
     } catch (error: any) {
       // Before the repair: its change to the basket is what drops the key.
@@ -369,6 +382,18 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setErrorVisible(false)}
         // After the pop-up has closed, never beside it (CLAUDE.local.md)
         onModalHide={() => {
+          if (replayedJobId) {
+            const jobId = replayedJobId
+            setReplayedJobId(null)
+            navigation.reset({
+              index: 1,
+              routes: [
+                { name: "HomeTabs", params: { screen: "talabati" } },
+                { name: "JobDetailScreen", params: { jobId } },
+              ],
+            })
+            return
+          }
           if (!backToMenu) return
           const params = backToMenu
           setBackToMenu(null)
