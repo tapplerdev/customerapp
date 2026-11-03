@@ -58,7 +58,13 @@ const reducers = combineReducers({
 
 const persistedReducer = persistReducer(persistConfig, reducers)
 
-const appStateMiddleware = createAppStateMiddleware(api, ["Auth"])
+// From the background only: the iOS `inactive` round trip (Face ID, Control
+// Center, a permission alert, the 3DS sheet) leaves the app where it was and
+// must not refetch the account each time. The chat socket does the same
+// (utils/socketAppState).
+const appStateMiddleware = createAppStateMiddleware(api, ["Auth"], {
+  fromBackgroundOnly: true,
+})
 
 export const store = configureStore({
   reducer: persistedReducer,
