@@ -107,6 +107,8 @@ export const DATA: BackendFixtures = {
     [NOTIFICATION_UNREAD, NOTIFICATION_READ],
     (rows) => page(rows) satisfies ListNotificationsResponse
   ),
+  // The bell's count: the one unread row above.
+  getUnreadNotificationsCount: data({ count: 1 }),
   openChat: data(CHAT),
   getChats: data<ListChatsResponse>({ data: [CHAT_PREVIEW] }),
   getChatMessages: firstPageOnly(CHAT_MESSAGES, (rows) =>
@@ -122,6 +124,7 @@ export const EMPTY: BackendFixtures = {
   getProsForCategory: data(page([])),
   getCustomerJobs: data(page([])),
   getNotifications: data(page([])),
+  getUnreadNotificationsCount: data({ count: 0 }),
   getChats: data<ListChatsResponse>({ data: [] }),
   getChatMessages: data(page([])),
   getOfferHistory: data({ data: [] }),
@@ -138,5 +141,5 @@ export const ERROR: BackendFixtures = Object.fromEntries(
   Object.keys(DATA).map((endpoint) => [endpoint, SERVER_ERROR])
 )
 
-/** The 18 queries in services/api.ts (pinned by screenKit.parity.tsx). */
+/** The 19 queries in services/api.ts (pinned by screenKit.parity.tsx). */
 export const QUERY_ENDPOINTS = Object.keys(DATA).sort()

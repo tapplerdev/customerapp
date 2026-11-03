@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 
-import { useGetNotificationsQuery } from "services/api"
+import { useGetUnreadNotificationsCountQuery } from "services/api"
 import { useTypedSelector } from "store"
 import { toArabicDigits } from "helpers/digits"
 import { RootStackParamList } from "navigation/types"
@@ -32,16 +32,14 @@ const HomeHeader: React.FC = () => {
   // lives on the Messages tab badge, and nothing ever marks system.messages
   // read — counting them freezes the badge, the proapp "91" lesson).
   // Socket events invalidate the Notifications tag for live updates; the 60s
-  // poll is the fallback for a flaky socket.
-  const { data } = useGetNotificationsQuery(
-    { page: 1, perPage: 100, excludeEventPrefix: "system.messages" },
+  // poll is the fallback for a flaky socket. The server counts (backend #423)
+  // rather than the app fetching 100 rows to count them.
+  const { data } = useGetUnreadNotificationsCountQuery(
+    { excludeEventPrefix: "system.messages" },
     { skip: !isAuth, pollingInterval: 60000 }
   )
 
-  const unreaded = useMemo(
-    () => data?.data?.reduce((sum, n) => sum + (!n.readAt ? 1 : 0), 0) || 0,
-    [data]
-  )
+  const unreaded = data?.count ?? 0
 
   const badgeLabel = useMemo(() => {
     const label = unreaded > 99 ? "99+" : String(unreaded)

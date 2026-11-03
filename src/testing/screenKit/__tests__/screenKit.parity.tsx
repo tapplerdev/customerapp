@@ -267,7 +267,7 @@ describe("what a render sets up", () => {
         .readFileSync(file, "utf8")
         .matchAll(/^ {4}(\w+): builder\.query</gm),
     ].map((match) => match[1])
-    expect(queries).toHaveLength(18)
+    expect(queries).toHaveLength(19)
     expect(QUERY_ENDPOINTS).toEqual([...queries].sort())
   })
 

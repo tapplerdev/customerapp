@@ -416,9 +416,9 @@ export const api = createApi({
     }),
 
     // Stored in-app notifications (same backend table + endpoints as proapp;
-    // the API filters to the authed customer). The HomeHeader bell subscribes
-    // with { page: 1, perPage: 100 } and the NotificationsScreen pages by 20 —
-    // two cache entries, both refreshed by the "Notifications" tag.
+    // the API filters to the authed customer). NotificationsScreen pages by
+    // 20; the HomeHeader bell reads getUnreadNotificationsCount below. Both
+    // are refreshed by the "Notifications" tag.
     getNotifications: builder.query<
       ListNotificationsResponse,
       ListNotificationsRequest
@@ -433,6 +433,21 @@ export const api = createApi({
         }
         return `/notifications?${params}`
       },
+      providesTags: ["Notifications"],
+    }),
+
+    // The bell's count (backend #423): one COUNT of the caller's unread rows,
+    // instead of a page of 100 rows reduced to a number (which also stopped
+    // counting at 100). Same tag, so a read or a socket event refreshes it.
+    getUnreadNotificationsCount: builder.query<
+      { count: number },
+      { excludeEventPrefix?: string }
+    >({
+      query: ({ excludeEventPrefix }) =>
+        "/notifications/unread-count" +
+        (excludeEventPrefix
+          ? `?excludeEventPrefix=${encodeURIComponent(excludeEventPrefix)}`
+          : ""),
       providesTags: ["Notifications"],
     }),
 
@@ -624,6 +639,7 @@ export const {
   useCreateReviewMutation,
   useGetNotificationsQuery,
   useLazyGetNotificationsQuery,
+  useGetUnreadNotificationsCountQuery,
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
 } = api
