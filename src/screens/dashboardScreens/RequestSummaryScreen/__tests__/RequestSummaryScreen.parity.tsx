@@ -390,3 +390,87 @@ describe("RequestSummaryScreen: presses", () => {
     }
   )
 })
+
+/*
+ * The job post's Idempotency-Key (be#416): made when the summary opens and
+ * sent with every Send from it, so a retry after a timeout gets the job the
+ * first attempt created instead of posting the request twice.
+ */
+describe("RequestSummaryScreen: the Idempotency-Key", () => {
+  const keysSent = (session: Awaited<ReturnType<typeof openScreen>>) =>
+    session
+      .requests()
+      .filter((request) => request.endpoint === "createJob")
+      .map(
+        (request) =>
+          (request.args as { headers?: Record<string, string> }).headers?.[
+            "Idempotency-Key"
+          ]
+      )
+
+  it.each(PARITY_MATRIX)(
+    "a second Send from the same summary reuses the key [$language $platform]",
+    async (env) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options(
+          {
+            state: "retry",
+            api: {
+              createJob: () =>
+                sent++ === 0
+                  ? { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+                  : { data: { id: 8301 } },
+            },
+          },
+          env
+        )
+      )
+      try {
+        await session.act(() => {
+          send(env)(session.root, env)
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          send(env)(session.root, env)
+        })
+        const keys = keysSent(session)
+        expect(keys).toHaveLength(2)
+        expect(keys[0]).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+        )
+        expect(keys[1]).toBe(keys[0])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a new visit to the summary makes a new key [$language $platform]",
+    async (env) => {
+      const keys: (string | undefined)[] = []
+      for (let visit = 0; visit < 2; visit += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const session = await openScreen(
+          load,
+          options({ state: "visit", api: { createJob: { data: { id: 8301 } } } }, env)
+        )
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await session.act(() => {
+            send(env)(session.root, env)
+          })
+          keys.push(...keysSent(session))
+        } finally {
+          session.unmount()
+        }
+      }
+      expect(keys).toHaveLength(2)
+      expect(keys[1]).not.toBe(keys[0])
+    }
+  )
+})

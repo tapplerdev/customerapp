@@ -49,6 +49,12 @@ const baseQuery = fetchBaseQuery({
   },
 })
 
+// The Idempotency-Key header (be#416) on a create, when the caller has one.
+// A header, never a body field: an older API refuses unknown body fields
+// (forbidNonWhitelisted) but ignores a header.
+const idempotencyHeader = (key?: string) =>
+  key ? { headers: { "Idempotency-Key": key } } : {}
+
 // Prevent multiple simultaneous refresh attempts
 let isRefreshing = false
 let refreshPromise: Promise<any> | null = null
@@ -253,8 +259,19 @@ export const api = createApi({
       invalidatesTags: ["Auth"],
     }),
 
-    createJob: builder.mutation<JobType, CreateJobRequest>({
-      query: (body) => ({ url: "/jobs", method: "POST", body }),
+    // Job posts and food orders. With an Idempotency-Key (be#416), a retry of
+    // an attempt that did land answers 201 with that job instead of creating
+    // a second one.
+    createJob: builder.mutation<
+      JobType,
+      CreateJobRequest & { idempotencyKey?: string }
+    >({
+      query: ({ idempotencyKey, ...body }) => ({
+        url: "/jobs",
+        method: "POST",
+        body,
+        ...idempotencyHeader(idempotencyKey),
+      }),
       invalidatesTags: ["Jobs"],
     }),
 
@@ -441,11 +458,12 @@ export const api = createApi({
         `/chats/${chatId}/messages?page=${page}&perPage=${perPage}`,
     }),
 
-    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[]; location?: { latitude: number; longitude: number } }>({
-      query: ({ chatId, ...body }) => ({
+    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[]; location?: { latitude: number; longitude: number }; idempotencyKey?: string }>({
+      query: ({ chatId, idempotencyKey, ...body }) => ({
         url: `/chats/${chatId}/messages`,
         method: "POST",
         body,
+        ...idempotencyHeader(idempotencyKey),
       }),
       invalidatesTags: ["Chats"],
     }),

@@ -18,6 +18,24 @@ export interface CartDraft {
   fulfillmentMode: "delivery" | "pickup"
   // ms epoch of the last activity on THIS draft — drives per-draft expiry
   lastUpdatedAt: number
+  // The order's Idempotency-Key (be#416), made at the first Submit and kept
+  // here, persisted, so a retry reuses it even after the app was killed
+  // mid-request: an attempt that did land answers 201 with that order
+  // instead of placing a second one. It goes with the draft on clearCart.
+  submitKey?: string
+  // The server refused an attempt with this key (a definitive 4xx), so no
+  // order holds it. The next change to the basket then drops the key and
+  // the following Submit makes a new one; an unchanged basket keeps it.
+  submitKeyRefused?: boolean
+}
+
+// A change to what the order would contain, after the server refused the
+// last attempt: that key is spent, the next Submit gets a fresh one. Without
+// a refusal the key stays, because an attempt that timed out may have landed.
+const dropRefusedKey = (draft: CartDraft) => {
+  if (!draft.submitKeyRefused) return
+  delete draft.submitKey
+  delete draft.submitKeyRefused
 }
 
 export interface CartState {
@@ -80,6 +98,7 @@ const cartSlice = createSlice({
       } else {
         draft.items.push(item)
       }
+      dropRefusedKey(draft)
       draft.lastUpdatedAt = Date.now()
     },
 
@@ -99,6 +118,7 @@ const cartSlice = createSlice({
       } else {
         line.quantity = quantity
       }
+      dropRefusedKey(draft)
 
       // Emptied → drop the draft entirely (no zombie pro identity left behind)
       if (!draft.items.length) {
@@ -121,6 +141,7 @@ const cartSlice = createSlice({
         delete state.carts[proId]
         return
       }
+      dropRefusedKey(draft)
       draft.lastUpdatedAt = Date.now()
     },
 
@@ -141,6 +162,7 @@ const cartSlice = createSlice({
         return
       }
       draft.items = lines
+      dropRefusedKey(draft)
       draft.lastUpdatedAt = Date.now()
     },
 
@@ -158,7 +180,27 @@ const cartSlice = createSlice({
       const draft = state.carts[action.payload.proId]
       if (!draft) return
       draft.orderNotes = action.payload.notes
+      dropRefusedKey(draft)
       draft.lastUpdatedAt = Date.now()
+    },
+
+    // The first Submit of this basket stores the key it sends (see CartDraft).
+    setSubmitKey: (
+      state,
+      action: PayloadAction<{ proId: number; key: string }>
+    ) => {
+      const draft = state.carts[action.payload.proId]
+      if (!draft) return
+      draft.submitKey = action.payload.key
+      delete draft.submitKeyRefused
+    },
+
+    // The server refused the attempt outright (a 4xx that is not a timeout or
+    // a rate limit), so no order holds the key.
+    markSubmitKeyRefused: (state, action: PayloadAction<number>) => {
+      const draft = state.carts[action.payload]
+      if (!draft?.submitKey) return
+      draft.submitKeyRefused = true
     },
 
     // After a successful order (or an explicit discard) — drops ONLY that pro's
@@ -188,6 +230,8 @@ export const {
   replaceCartLines,
   setBrowsingAddress,
   setOrderNotes,
+  setSubmitKey,
+  markSubmitKeyRefused,
   clearCart,
   sweepStaleCarts,
 } = cartSlice.actions

@@ -808,3 +808,77 @@ describe("MessagesDetailsScreen: the order's mode and kind in its system lines",
     }
   )
 })
+
+/*
+ * The Idempotency-Key on a text send (be#416): one per attempt, reused when
+ * the customer sends the failed text again unchanged (the composer gives it
+ * back), so an attempt that did land is answered with the saved message.
+ */
+describe("MessagesDetailsScreen, the send's Idempotency-Key", () => {
+  const keyOf = (request: { args: unknown }) =>
+    (request.args as { headers?: Record<string, string> }).headers?.[
+      "Idempotency-Key"
+    ]
+  const sendAgain = async (
+    session: Awaited<ReturnType<typeof open>>,
+    text?: string
+  ) => {
+    if (text !== undefined) {
+      await session.act(() => {
+        typeInto(session.root, 0, text)
+      })
+    }
+    await session.act(() => {
+      pressIcon(session.root, { icon: "svg:sendArrow" })
+    })
+  }
+
+  it.each(envs)(
+    "sending the failed text again reuses its key; edited text gets a new one [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(
+        {
+          ...WITH_OFFER_CASE,
+          api: apiFor(WITH_OFFER, THREAD, { sendMessage: SERVER_ERROR }),
+        },
+        env
+      )
+      try {
+        await sendAgain(session, "On my way")
+        // The composer has the text back: Send again as it is.
+        await sendAgain(session)
+        await sendAgain(session, "On my way, 5 minutes")
+        const sent = requests(session, "sendMessage")
+        expect(sent).toHaveLength(3)
+        expect(sent.map((r) => (r.args as { body: { text: string } }).body.text)).toEqual([
+          "On my way",
+          "On my way",
+          "On my way, 5 minutes",
+        ])
+        expect(keyOf(sent[0])).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+        )
+        expect(keyOf(sent[1])).toBe(keyOf(sent[0]))
+        expect(keyOf(sent[2])).not.toBe(keyOf(sent[0]))
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "each new message gets its own key [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(WITH_OFFER_CASE, env)
+      try {
+        await sendAgain(session, "On my way")
+        await sendAgain(session, "On my way")
+        const sent = requests(session, "sendMessage")
+        expect(sent).toHaveLength(2)
+        expect(keyOf(sent[1])).not.toBe(keyOf(sent[0]))
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})

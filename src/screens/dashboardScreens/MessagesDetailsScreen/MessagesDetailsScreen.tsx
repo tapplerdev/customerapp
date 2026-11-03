@@ -48,6 +48,7 @@ import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 import { checkProfanity } from "@tappler/shared/src/profanity"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
+import { uuidV4 } from "utils/uuid"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import SendArrow from "assets/icons/sendArrow.svg"
@@ -250,6 +251,11 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [requestSheetOpened, setRequestSheetOpened] = useState(false)
   const flatListRef = useRef<FlatList>(null)
   const [sendMessage] = useSendMessageMutation()
+  // The last text send that failed and the Idempotency-Key it went with.
+  // Sending exactly that text again (the composer gets it back) reuses the
+  // key, so an attempt that did land is answered with the saved message
+  // instead of a second copy (be#416). Edited text is a new attempt.
+  const failedSendRef = useRef<{ text: string; key: string } | null>(null)
   const [getProProfile] = useLazyGetProProfileQuery()
   // Full job for the More sheet's at-a-glance rows — chat-list jobs are slim
   // (no address/dates). Cached by RTK, shared with the card's prefetch.
@@ -519,10 +525,14 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         text,
         createdAt: new Date().toISOString(),
       } as ChatMessageType)
+      const idempotencyKey =
+        failedSendRef.current?.text === text ? failedSendRef.current.key : uuidV4()
+      failedSendRef.current = null
       try {
-        const newMsg = await sendMessage({ chatId: context.chatId, text }).unwrap()
+        const newMsg = await sendMessage({ chatId: context.chatId, text, idempotencyKey }).unwrap()
         pagination.replaceOptimisticMessage(optimisticId, newMsg)
       } catch (e: any) {
+        failedSendRef.current = { text, key: idempotencyKey }
         pagination.removeOptimisticMessage(optimisticId)
         setMessageText(text)
         handleSendFailure(e)
@@ -560,9 +570,11 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     pagination.addOptimisticMessage(optimisticMsg)
 
     try {
+      // A key per attempt: a new pick is a new location message.
       const realMsg = await sendMessage({
         chatId: context.chatId,
         location: { latitude: coords.lat, longitude: coords.lon },
+        idempotencyKey: uuidV4(),
       }).unwrap()
 
       pagination.replaceOptimisticMessage(optimisticId, realMsg)

@@ -21,10 +21,13 @@ import {
   computeOrderTotals,
   emptyDraft,
   formatMoney,
+  markSubmitKeyRefused,
   replaceCartLines,
   selectDraft,
+  setSubmitKey,
 } from "store/cart/slice"
 import { buildFoodOrderItems, repairCart } from "utils/foodCartRepair"
+import { uuidV4 } from "utils/uuid"
 import ErrorModal from "components/ErrorModal"
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
@@ -41,6 +44,21 @@ type Props = RootStackScreenProps<"FoodOrderReviewScreen">
 const isMenuChangedRefusal = (error: any): boolean =>
   error?.data?.code === "FOOD_ORDER_MENU_CHANGED" ||
   error?.data?.validationErrors?.foodOrderItems != null
+
+// The server answered and said no, so the attempt created nothing: any 4xx
+// except a timeout (408), a conflict (409) or a rate limit (429). A replay of
+// an attempt that did land never gets here, it answers 201 with that order.
+const isDefinitiveRefusal = (error: any): boolean => {
+  const status = error?.status
+  return (
+    typeof status === "number" &&
+    status >= 400 &&
+    status < 500 &&
+    status !== 408 &&
+    status !== 409 &&
+    status !== 429
+  )
+}
 
 // Last look before committing. Checkout gathers and validates; this screen
 // confirms and commits. The built payload arrives as a param (plain JSON, so
@@ -147,6 +165,15 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleSubmitOrder = async () => {
     if (isSubmitting) return
 
+    // The basket's key, or a new one stored on it first: persisted with the
+    // draft, so a retry (after a timeout, or after the app was killed
+    // mid-request) is answered with the order the first attempt placed.
+    let idempotencyKey = cart.submitKey
+    if (!idempotencyKey) {
+      idempotencyKey = uuidV4()
+      dispatch(setSubmitKey({ proId, key: idempotencyKey }))
+    }
+
     try {
       setSubmitting(true)
       // The lines come from the basket on screen, not from the payload checkout
@@ -154,11 +181,14 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       await createJob({
         ...payload,
         foodOrderItems: buildFoodOrderItems(cart.items),
+        idempotencyKey,
       }).unwrap()
       const successAddress = cartState.address ?? undefined
       dispatch(clearCart(proId))
       navigation.navigate("RequestSuccessScreen", { address: successAddress })
     } catch (error: any) {
+      // Before the repair: its change to the basket is what drops the key.
+      if (isDefinitiveRefusal(error)) dispatch(markSubmitKeyRefused(proId))
       if (isMenuChangedRefusal(error) && (await repairBasket())) return
 
       const validationErrors = error?.data?.validationErrors

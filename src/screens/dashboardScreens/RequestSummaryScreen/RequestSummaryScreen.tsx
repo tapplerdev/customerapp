@@ -15,6 +15,7 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import ErrorModal from "components/ErrorModal"
 import { CreateJobRequest } from "types/job"
+import { uuidV4 } from "utils/uuid"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import LocationIcon from "assets/icons/location-red.svg"
@@ -68,6 +69,11 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const [prosState, setProsState] = useState<SelectedProInfo[]>(selectedProsInfo || [])
+  // One Idempotency-Key per visit to this summary, made when it opens and
+  // sent with every Submit from it. A retry after a timeout or a dropped
+  // answer then gets the job the first attempt created (be#416 answers 201
+  // with it) instead of posting the request twice. A new visit is a new key.
+  const [idempotencyKey] = useState(uuidV4)
 
   const handleGoBack = () => {
     navigation.goBack()
@@ -112,7 +118,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         ...(notes && { orderNotes: notes }),
       }
       console.log('[RequestSummary] Submitting job payload:', JSON.stringify(jobPayload, null, 2))
-      await createJob(jobPayload).unwrap()
+      await createJob({ ...jobPayload, idempotencyKey }).unwrap()
       navigation.navigate("RequestSuccessScreen", { address })
     } catch (error: any) {
       console.log('[RequestSummary] Job creation error:', JSON.stringify(error?.data || error, null, 2))

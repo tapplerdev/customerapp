@@ -615,3 +615,146 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
     }
   )
 })
+
+/*
+ * The order's Idempotency-Key (be#416): made at the first Submit, kept on the
+ * persisted draft, and sent on every retry of that basket, so an attempt that
+ * did land is answered with its order instead of placing a second one.
+ */
+type KeyedOrder = { args: { headers?: Record<string, string> } }
+const keyOf = (order: unknown) =>
+  (order as KeyedOrder).args.headers?.["Idempotency-Key"]
+const draftOf = (store: { getState: () => unknown }) =>
+  (
+    store.getState() as {
+      cart: {
+        carts: Record<number, { submitKey?: string; submitKeyRefused?: boolean }>
+      }
+    }
+  ).cart.carts[PRO_FOOD.id]
+const UUID_V4 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+
+describe("FoodOrderReviewScreen, the order's Idempotency-Key", () => {
+  it.each(envs)(
+    "a retry after a timeout sends the key the first attempt stored [$env.language $env.platform]",
+    async ({ env }) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, {
+          createJob: () =>
+            sent++ === 0
+              ? { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
+              : { data: JOB_FOOD },
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const stored = draftOf(session.store)?.submitKey
+        expect(stored).toMatch(UUID_V4)
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(2)
+        expect(keyOf(orders[0])).toBe(stored)
+        expect(keyOf(orders[1])).toBe(stored)
+        // Placed: the draft, and its key with it, are gone.
+        expect(draftOf(session.store)).toBeUndefined()
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a basket persisted with a key (the app was killed mid-request) sends that key [$env.language $env.platform]",
+    async ({ env }) => {
+      const killed = "0b7f2d9e-5c1a-4e8b-9f3d-2a6c8e1b4d7f"
+      const session = await openScreen(load, {
+        ...options(CASES[0], env, { createJob: { data: JOB_FOOD } }),
+        state: cartState(
+          auth,
+          [{ ...DRAFT_ONE_LINE, submitKey: killed }],
+          ADDRESS
+        ),
+      })
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(keyOf(sentOrders(session)[0])).toBe(killed)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a refused order marks its key spent; the menu repair that follows drops it and the next Submit makes a new one [$env.language $env.platform]",
+    async ({ env }) => {
+      let sent = 0
+      const session = await openScreen(
+        load,
+        options({ ...CASES[2] }, env, {
+          createJob: () =>
+            sent++ === 0 ? { error: MENU_CHANGED } : { data: JOB_FOOD },
+          getProMenu: menuThenMenu(MENU_LARGE_DEARER),
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(draftOf(session.store)?.submitKey).toBeUndefined()
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "OK"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const orders = sentOrders(session)
+        expect(orders).toHaveLength(2)
+        expect(keyOf(orders[0])).toMatch(UUID_V4)
+        expect(keyOf(orders[1])).toMatch(UUID_V4)
+        expect(keyOf(orders[1])).not.toBe(keyOf(orders[0]))
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "a refusal with the basket unchanged keeps the key, marked spent [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, {
+          createJob: {
+            error: {
+              status: 400,
+              data: { validationErrors: { items: ["Grilled chicken is sold out"] } },
+            },
+          },
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        expect(draftOf(session.store)).toMatchObject({
+          submitKey: keyOf(sentOrders(session)[0]),
+          submitKeyRefused: true,
+        })
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
