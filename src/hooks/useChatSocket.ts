@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { AppState } from "react-native"
 import { useDispatch, useStore } from "react-redux"
 
@@ -6,7 +6,7 @@ import { api } from "services/api"
 import { applyIncomingMessage, getActiveChat } from "services/chatCache"
 import { messageBannerEventBus } from "events/messageBannerEventBus"
 import { WebSocketService } from "services/WebSocketService"
-import { useTypedSelector } from "store"
+import { RootState, useTypedSelector } from "store"
 
 /**
  * Live chat over WebSockets for the customer app — the lean twin of the
@@ -25,16 +25,23 @@ export const useChatSocket = () => {
   const store = useStore()
   const { isAuth, token, user } = useTypedSelector((store) => store.auth)
   const appState = useRef(AppState.currentState)
+  // The token as it is now, read on every connect attempt (the manager's own
+  // reconnects too), so a reconnect after a refresh presents the new token
+  // and one after a logout presents none rather than the old one.
+  const getToken = useCallback(
+    () => (store.getState() as RootState).auth.token,
+    [store]
+  )
 
   // --- Connection lifecycle (auth-driven) ---------------------------------
   useEffect(() => {
     if (isAuth && token && user?.id) {
-      WebSocketService.connect({ token, userId: user.id, userType: "customer" })
+      WebSocketService.connect({ token, getToken, userId: user.id, userType: "customer" })
     } else {
       WebSocketService.disconnect()
     }
     return () => WebSocketService.disconnect()
-  }, [isAuth, token, user?.id])
+  }, [isAuth, token, user?.id, getToken])
 
   // --- Foreground/background: disconnect on background (battery), reconnect
   //     on foreground, and reconcile the chat list for anything missed while
@@ -43,7 +50,7 @@ export const useChatSocket = () => {
     const sub = AppState.addEventListener("change", (next) => {
       if (appState.current.match(/inactive|background/) && next === "active") {
         if (isAuth && token && user?.id && !WebSocketService.isConnected()) {
-          WebSocketService.connect({ token, userId: user.id, userType: "customer" })
+          WebSocketService.connect({ token, getToken, userId: user.id, userType: "customer" })
         }
         dispatch(api.util.invalidateTags(["Chats", "Notifications"]))
       } else if (next.match(/inactive|background/)) {
@@ -52,7 +59,7 @@ export const useChatSocket = () => {
       appState.current = next
     })
     return () => sub.remove()
-  }, [isAuth, token, user?.id, dispatch])
+  }, [isAuth, token, user?.id, dispatch, getToken])
 
   // --- Message events (the 'event' channel carries message.* with full body)
   useEffect(() => {
