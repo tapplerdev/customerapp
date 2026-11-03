@@ -10,6 +10,7 @@ import {
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
 import { DATA, SERVER_ERROR } from "testing/screenKit/fixtures/api"
+import { withSlimPros } from "testing/screenKit/fixtures/proViews"
 import { JOB, JOB_FOOD } from "testing/screenKit/fixtures/entities"
 import {
   PARITY_MATRIX,
@@ -127,6 +128,19 @@ const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 describe("RequestDetailsScreen, captured from the unconverted code", () => {
   it.each(rows)("$state [$env.language $env.platform]", async (entry) => {
     const tree = await treeAfter(load, options(entry, entry.env), entry.env)
+    expectParity(parityName(entry.state, entry.env), tree)
+  })
+})
+
+// The pro from `?view=profile` (backend #423): the pickup map's point.
+describe("RequestDetailsScreen, the pro from the profile view", () => {
+  it.each(rows)("$state [$env.language $env.platform]", async (entry) => {
+    const o = options(entry, entry.env)
+    const tree = await treeAfter(
+      load,
+      { ...o, api: withSlimPros((o.api ?? {}) as Record<string, unknown>) as typeof o.api },
+      entry.env
+    )
     expectParity(parityName(entry.state, entry.env), tree)
   })
 })

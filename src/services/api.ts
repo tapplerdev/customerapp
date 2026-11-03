@@ -56,6 +56,10 @@ const baseQuery = fetchBaseQuery({
 const idempotencyHeader = (key?: string) =>
   key ? { headers: { "Idempotency-Key": key } } : {}
 
+// The pros listing's one page: the server's perPage cap (anything above is
+// clamped to 100). The screen loads no further pages.
+export const PROS_LIST_PER_PAGE = 100
+
 // Prevent multiple simultaneous refresh attempts
 let isRefreshing = false
 let refreshPromise: Promise<any> | null = null
@@ -253,6 +257,14 @@ export const api = createApi({
         if (maxResponseTimeHours) params.append("maxResponseTimeHours", String(maxResponseTimeHours))
         if (creditCardPayment) params.append("creditCardPayment", "true")
         if (sortBy) params.append("sortBy", sortBy)
+        // The card view (backend #423): each pro as ProCard, its preloads and
+        // the profile it opens read it, paged by pro. Without it the list
+        // paged joined rows (a pro with stickers filled several of the 20)
+        // and a sorted list had no limit at all. The screen has no "load
+        // more", so it asks for one page of the most the server gives.
+        params.append("view", "card")
+        params.append("page", "1")
+        params.append("perPage", String(PROS_LIST_PER_PAGE))
         return `/pros/category/${categoryId}?${params.toString()}`
       },
     }),
@@ -305,10 +317,14 @@ export const api = createApi({
       providesTags: ["Jobs"],
     }),
 
+    // The profile view (backend #423): what ProProfileScreen and the screens
+    // sharing this cache entry read (FoodMenu, FoodCheckout, RequestDetails,
+    // the listing's image preload), without the history, media, user and
+    // document chains the full pro loads.
     getProProfile: builder.query<ProType, { proId: number; serviceCategoryId?: number }>({
       query: ({ proId, serviceCategoryId }) => {
-        const url = `/pros/${proId}`
-        return serviceCategoryId ? `${url}?serviceCategoryId=${serviceCategoryId}` : url
+        const url = `/pros/${proId}?view=profile`
+        return serviceCategoryId ? `${url}&serviceCategoryId=${serviceCategoryId}` : url
       },
     }),
 

@@ -16,6 +16,7 @@ import {
   type Step,
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
+import { withSlimPros } from "testing/screenKit/fixtures/proViews"
 import { DATA, ERROR, SERVER_ERROR, urlOf } from "testing/screenKit/fixtures/api"
 import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import {
@@ -267,6 +268,25 @@ describe("ProsListingScreen, captured from the unconverted code", () => {
   })
 })
 
+/*
+ * The same rows from `?view=card` and `?view=profile` (backend #423): the
+ * listing's rows cut to the card shape, and the profiles it prefetches cut to
+ * the profile shape, must draw exactly what the whole pros drew, which proves
+ * every field the card and the screen read is in the shapes.
+ */
+describe("ProsListingScreen, drawn from the card view", () => {
+  it.each(rows)("$state [$env.language $env.platform]", async ({ options, steps, env }) => {
+    const draw = (from: typeof options) =>
+      treeAfter(load, { ...from, lang: env.language, platform: env.platform }, env, steps)
+    const whole = await draw(options)
+    const slim = await draw({
+      ...options,
+      api: withSlimPros((options.api ?? {}) as Record<string, unknown>) as typeof options.api,
+    })
+    expect(JSON.stringify(slim)).toEqual(JSON.stringify(whole))
+  })
+})
+
 describe.each(PARITY_MATRIX)("ProsListingScreen presses [$language $platform]", (env: ParityEnv) => {
   const open = (options: object = withApi(DATA)) =>
     openScreen(load, { ...options, lang: env.language, platform: env.platform } as RenderScreenOptions)
@@ -374,6 +394,37 @@ describe.each(PARITY_MATRIX)("ProsListingScreen presses [$language $platform]", 
       expect(lists.length).toBeGreaterThanOrEqual(2)
       expect(lists[lists.length - 1]).toContain("filterOptionsIds[]=9011")
       expect(lists[lists.length - 1]).toContain("placeOfService=proToCustomer")
+    } finally {
+      session.unmount()
+    }
+  })
+
+  it("asks for the card view, one page of 100, and prefetches profiles in the profile view (backend #423)", async () => {
+    const session = await open(withApi(RICH, NO_PLACE))
+    try {
+      for (const step of [...FLOW_TO_DONE, wait(600), done(0)]) {
+        // eslint-disable-next-line no-await-in-loop
+        await session.act(() => step(session.root, env), step.settleMs)
+      }
+      await session.settle(1000)
+      const urls = (endpoint: string) =>
+        session
+          .requests()
+          .filter((request) => request.endpoint === endpoint)
+          .map((request) => urlOf(request.args))
+      const lists = urls("getProsForCategory")
+      expect(lists.length).toBeGreaterThanOrEqual(2)
+      lists.forEach((url) => {
+        const query = new URLSearchParams(url.split("?")[1])
+        expect(query.get("view")).toBe("card")
+        expect(query.get("page")).toBe("1")
+        expect(query.get("perPage")).toBe("100")
+      })
+      const profiles = urls("getProProfile")
+      expect(profiles.length).toBeGreaterThan(0)
+      profiles.forEach((url) => {
+        expect(url).toMatch(/^\/pros\/\d+\?view=profile&serviceCategoryId=\d+$/)
+      })
     } finally {
       session.unmount()
     }
