@@ -541,6 +541,12 @@ export const api = createApi({
         body,
       }),
     }),
+    // Sign-out on this device (services/session), after the push token's
+    // removal below: ends the session server-side (backend #419). No guard,
+    // always 204, even for a token already gone, so it can't fail a sign-out.
+    logout: builder.mutation<void, { refreshToken?: string }>({
+      query: (body) => ({ url: "/auth/logout", method: "POST", body }),
+    }),
     // Sign-out on this device (services/session). Names the token so a call
     // landing after a quick re-login under a new token cannot delete it.
     removeNotificationsDevice: builder.mutation<

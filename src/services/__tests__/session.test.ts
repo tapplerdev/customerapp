@@ -17,11 +17,15 @@ jest.mock("@react-native-firebase/messaging", () => ({
 }))
 
 const mockRemove = jest.fn<() => Promise<void>>()
+const mockLogout = jest.fn<() => Promise<void>>()
 jest.mock("services/api", () => ({
   api: {
     endpoints: {
       removeNotificationsDevice: {
         initiate: (body: unknown) => ({ type: "remove", body }),
+      },
+      logout: {
+        initiate: (body: unknown) => ({ type: "logout", body }),
       },
     },
     util: { resetApiState: () => ({ type: "api/resetApiState" }) },
@@ -36,7 +40,9 @@ jest.mock("services/PushNotificationService", () => ({
 const mockDispatch = jest.fn((action: any) => {
   mockOrder.push(action?.type)
 
-  return action?.type === "remove" ? { unwrap: () => mockRemove() } : action
+  if (action?.type === "remove") return { unwrap: () => mockRemove() }
+  if (action?.type === "logout") return { unwrap: () => mockLogout() }
+  return action
 })
 // Lazy wrapper: the factory runs when `services/session` is first required,
 // which babel hoists above these `const`s (transpiled to `var`, so they are
@@ -44,6 +50,7 @@ const mockDispatch = jest.fn((action: any) => {
 const mockState = {
   auth: {
     token: "jwt" as string | undefined,
+    refreshToken: "refresh-1" as string | undefined,
     user: { id: 7 } as { id: number } | undefined,
   },
 }
@@ -57,7 +64,11 @@ jest.mock("store/auth/slice", () => ({
   logout: () => ({ type: "auth/logout" }),
 }))
 
-import { signOut, REMOVE_TOKEN_TIMEOUT_MS } from "services/session"
+import {
+  signOut,
+  LOGOUT_TIMEOUT_MS,
+  REMOVE_TOKEN_TIMEOUT_MS,
+} from "services/session"
 
 const dispatchedTypes = () =>
   mockDispatch.mock.calls.map(([action]) => (action as any)?.type)
@@ -68,6 +79,8 @@ describe("signOut", () => {
     jest.useFakeTimers()
     mockDispatch.mockClear()
     mockRemove.mockReset()
+    mockLogout.mockReset()
+    mockLogout.mockResolvedValue(undefined)
     mockDeleteToken.mockReset()
     mockOrder.length = 0
     mockRemove.mockResolvedValue(undefined)
@@ -76,6 +89,7 @@ describe("signOut", () => {
     })
     mockRegistered.token = "tok-A"
     mockState.auth.token = "jwt"
+    mockState.auth.refreshToken = "refresh-1"
     mockState.auth.user = { id: 7 }
   })
   afterEach(() => {
@@ -84,9 +98,12 @@ describe("signOut", () => {
 
   it("removes the token on the backend, deletes it at Firebase, then signs out locally", async () => {
     await signOut()
-    expect(mockOrder).toEqual(["remove", "deleteToken", ...LOCAL])
+    expect(mockOrder).toEqual(["remove", "logout", "deleteToken", ...LOCAL])
     expect((mockDispatch.mock.calls[0][0] as any).body).toEqual({
       registrationToken: "tok-A",
+    })
+    expect((mockDispatch.mock.calls[1][0] as any).body).toEqual({
+      refreshToken: "refresh-1",
     })
   })
 
@@ -101,7 +118,7 @@ describe("signOut", () => {
     expect(dispatchedTypes()).toEqual(["remove"])
     await jest.advanceTimersByTimeAsync(2)
     await done
-    expect(mockOrder).toEqual(["remove", "deleteToken", ...LOCAL])
+    expect(mockOrder).toEqual(["remove", "logout", "deleteToken", ...LOCAL])
   })
 
   it("gives Firebase's delete the same bound", async () => {
@@ -113,27 +130,29 @@ describe("signOut", () => {
     )
     const done = signOut()
     await jest.advanceTimersByTimeAsync(REMOVE_TOKEN_TIMEOUT_MS - 1)
-    expect(dispatchedTypes()).toEqual(["remove"])
+    expect(dispatchedTypes()).toEqual(["remove", "logout"])
     await jest.advanceTimersByTimeAsync(2)
     await done
-    expect(dispatchedTypes()).toEqual(["remove", ...LOCAL])
+    expect(dispatchedTypes()).toEqual(["remove", "logout", ...LOCAL])
   })
 
   it("still signs out when the backend call and Firebase both fail", async () => {
     mockRemove.mockRejectedValue(new Error("401"))
+    mockLogout.mockRejectedValue(new Error("no network"))
     mockDeleteToken.mockRejectedValue(new Error("no network"))
     await signOut()
-    expect(dispatchedTypes()).toEqual(["remove", ...LOCAL])
+    expect(dispatchedTypes()).toEqual(["remove", "logout", ...LOCAL])
   })
 
   it("skips the backend call when no token was registered this session", async () => {
     mockRegistered.token = null
     await signOut()
-    expect(mockOrder).toEqual(["deleteToken", ...LOCAL])
+    expect(mockOrder).toEqual(["logout", "deleteToken", ...LOCAL])
   })
 
   it("skips the backend call when there is no session to speak for", async () => {
     mockState.auth.token = undefined
+    mockState.auth.refreshToken = undefined
     await signOut()
     expect(mockOrder).toEqual(["deleteToken", ...LOCAL])
   })
@@ -143,13 +162,59 @@ describe("signOut", () => {
       mockState.auth.user = { id: 8 }
     })
     await signOut()
-    expect(mockOrder).toEqual(["remove", "deleteToken"])
+    expect(mockOrder).toEqual(["remove", "logout", "deleteToken"])
   })
 
   it("runs once when called twice before the first finishes, then again", async () => {
     await Promise.all([signOut(), signOut()])
-    expect(dispatchedTypes()).toEqual(["remove", ...LOCAL])
+    expect(dispatchedTypes()).toEqual(["remove", "logout", ...LOCAL])
     await signOut()
-    expect(dispatchedTypes()).toEqual(["remove", ...LOCAL, "remove", ...LOCAL])
+    expect(dispatchedTypes()).toEqual([
+      "remove",
+      "logout",
+      ...LOCAL,
+      "remove",
+      "logout",
+      ...LOCAL,
+    ])
+  })
+
+  it("ends the session on the server after the push token's removal, with a bounded wait", async () => {
+    mockLogout.mockReturnValue(
+      new Promise(() => {
+        // never settles: the server is unreachable
+      })
+    )
+    const done = signOut()
+    await jest.advanceTimersByTimeAsync(LOGOUT_TIMEOUT_MS - 1)
+    expect(dispatchedTypes()).toEqual(["remove", "logout"])
+    await jest.advanceTimersByTimeAsync(2)
+    await done
+    expect(dispatchedTypes()).toEqual(["remove", "logout", ...LOCAL])
+  })
+
+  it("runs the server logout and Firebase's delete side by side, so offline is still two caps", async () => {
+    const never = () =>
+      new Promise<void>(() => {
+        // offline
+      })
+    mockRemove.mockImplementation(never)
+    mockLogout.mockImplementation(never)
+    mockDeleteToken.mockImplementation(never)
+    const done = signOut()
+    await jest.advanceTimersByTimeAsync(
+      REMOVE_TOKEN_TIMEOUT_MS + Math.max(LOGOUT_TIMEOUT_MS, REMOVE_TOKEN_TIMEOUT_MS) + 1
+    )
+    await done
+    expect(dispatchedTypes()).toEqual(["remove", "logout", ...LOCAL])
+  })
+
+  it("names the session by the access token alone when there is no refresh token", async () => {
+    mockState.auth.refreshToken = undefined
+    await signOut()
+    const logout = mockDispatch.mock.calls.find(
+      ([action]) => (action as any)?.type === "logout"
+    )
+    expect((logout?.[0] as any).body).toEqual({})
   })
 })
