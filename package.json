@@ -17,6 +17,8 @@
     "doctor": "react-native doctor",
     "clean": "react-native clean",
     "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js}\" \"*.{js,ts,tsx}\" \".*.js\" \"__tests__/**/*.{js,ts,tsx}\" \"scripts/**/*.{js,ts}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js}\" \"*.{js,ts,tsx}\" \".*.js\" \"__tests__/**/*.{js,ts,tsx}\" \"scripts/**/*.{js,ts}\"",
     "ds:paths": "node scripts/shared-tsconfig-paths.js",
     "ds:ratchet": "node scripts/style-ratchet.js",
     "test": "jest",
