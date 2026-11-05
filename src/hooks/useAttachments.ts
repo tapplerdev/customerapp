@@ -185,8 +185,14 @@ const useAttachments = (params: {
         .map((f: any) => f.url720 || f.url)
         .filter((url: string) => url?.length > 0) ?? []
 
+      // A warm-up only: the send already went, so a preload that throws must
+      // not reach the catch below and take a delivered message's bubble down.
       if (imageUrls.length > 0) {
-        FastImage.preload(imageUrls.map((uri: string) => ({ uri })))
+        try {
+          FastImage.preload(imageUrls.map((uri: string) => ({ uri })))
+        } catch {
+          // nothing to undo
+        }
       }
 
       // 6. Replace optimistic with real message

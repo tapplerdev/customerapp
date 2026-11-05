@@ -64,7 +64,7 @@ const open = async () => {
 describe("a photo send", () => {
   it("takes the bubble down when the server refuses it", async () => {
     mockUpload.mockResolvedValue({ storageKey: "k" })
-    mockSend.mockRejectedValue({ status: 400, data: { validationErrors: { text: ["CHAT_BLOCK_PHONE"] } } })
+    mockSend.mockRejectedValue({ status: 400, data: { validationErrors: { text: ["CHAT_BLOCK_CONTACT_INFO"] } } })
     const chat = await open()
 
     const error = await chat.send("call me 0100")
