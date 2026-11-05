@@ -32,7 +32,9 @@ export const useServiceAddressFlow = () => {
   const [isAddressModalVisible, setAddressModalVisible] = useState(false)
   const [selectedCategory, setSelectedCategory] =
     useState<ServiceCategoryType | null>(null)
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(null)
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(
+    null
+  )
 
   const goToResults = useCallback(
     (

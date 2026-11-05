@@ -41,11 +41,13 @@ const MessagesComponent: React.FC<Props> = React.memo(
 
     const lastMsg = lastMessage
     const imageFiles = useMemo(
-      () => (lastMsg?.files || []).filter((f) => f.mimeType?.startsWith("image/")),
+      () =>
+        (lastMsg?.files || []).filter((f) => f.mimeType?.startsWith("image/")),
       [lastMsg?.files]
     )
     const docFiles = useMemo(
-      () => (lastMsg?.files || []).filter((f) => !f.mimeType?.startsWith("image/")),
+      () =>
+        (lastMsg?.files || []).filter((f) => !f.mimeType?.startsWith("image/")),
       [lastMsg?.files]
     )
     const hasLocation = !!lastMsg?.location
@@ -67,7 +69,7 @@ const MessagesComponent: React.FC<Props> = React.memo(
           ? localizeDateString(format(date, "yyyy/MM/dd"), true)
           : format(date, "dd/MM/yyyy")
       },
-      [isAr, t],
+      [isAr, t]
     )
 
     const handleArchive = useCallback(() => {
@@ -91,7 +93,12 @@ const MessagesComponent: React.FC<Props> = React.memo(
     const renderArchiveAction = () => (
       <DmView
         onPress={handleArchive}
-        style={[styles.container, a.justify_center, a.items_center, styles.archiveAction]}
+        style={[
+          styles.container,
+          a.justify_center,
+          a.items_center,
+          styles.archiveAction,
+        ]}
       >
         <Text size={13} weight="semibold" leading="legacy" color="inverse">
           {t("archive")}
@@ -113,8 +120,20 @@ const MessagesComponent: React.FC<Props> = React.memo(
                 />
               </DmView>
             ) : (
-              <DmView style={[styles.textWrap, a.items_center, a.justify_center, a.mr_10]}>
-                <Text size={16} weight="semibold" leading="legacy" color="inverse">
+              <DmView
+                style={[
+                  styles.textWrap,
+                  a.items_center,
+                  a.justify_center,
+                  a.mr_10,
+                ]}
+              >
+                <Text
+                  size={16}
+                  weight="semibold"
+                  leading="legacy"
+                  color="inverse"
+                >
                   {proName.charAt(0)}
                 </Text>
               </DmView>
@@ -131,12 +150,19 @@ const MessagesComponent: React.FC<Props> = React.memo(
                 >
                   {proName}
                 </Text>
-                <Text size={11} leading="legacy" color="tertiary" style={styles.text}>
+                <Text
+                  size={11}
+                  leading="legacy"
+                  color="tertiary"
+                  style={styles.text}
+                >
                   {formatTime(lastMessage?.createdAt || chat.createdAt)}
                 </Text>
               </DmView>
               {/* Service name + unread badge */}
-              <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_2]}>
+              <DmView
+                style={[a.flex_row, a.items_center, a.justify_between, a.mt_2]}
+              >
                 <Text
                   size={13}
                   weight="medium"
@@ -147,8 +173,15 @@ const MessagesComponent: React.FC<Props> = React.memo(
                   {serviceName}
                 </Text>
                 {notReadMessages > 0 && (
-                  <DmView style={[styles.textWrap2, a.items_center, a.justify_center]}>
-                    <Text size={13} weight="bold" leading="legacy" color="inverse">
+                  <DmView
+                    style={[styles.textWrap2, a.items_center, a.justify_center]}
+                  >
+                    <Text
+                      size={13}
+                      weight="bold"
+                      leading="legacy"
+                      color="inverse"
+                    >
                       {notReadMessages > 99 ? "99+" : notReadMessages}
                     </Text>
                   </DmView>
@@ -195,23 +228,28 @@ const MessagesComponent: React.FC<Props> = React.memo(
                         // hit t() raw (":" is i18next's ns separator → mangled "50.60");
                         // show the event + the new price instead.
                         const offerUpdate =
-                          lastMsg.ownerType === "system" ? parseOfferUpdate(lastMsg.text) : null
+                          lastMsg.ownerType === "system"
+                            ? parseOfferUpdate(lastMsg.text)
+                            : null
                         const displayText = offerUpdate
                           ? `${t("offer_updated")} · ${offerUpdate.next} ${t("EGP")}`
-                          : lastMsg.ownerType === "system" ? t(lastMsg.text) : lastMsg.text
+                          : lastMsg.ownerType === "system"
+                            ? t(lastMsg.text)
+                            : lastMsg.text
                         return displayText.length > 40
                           ? displayText.substring(0, 40) + "..."
                           : displayText
                       })()
                     : hasDocs
-                    ? docFiles[0].originalName || docFiles[0].fileName
-                    : hasLocation
-                    ? t("location")
-                    : hasImages
-                    ? imageFiles.length === 1
-                      ? t("photo")
-                      : `${imageFiles.length} ${t("photos")}`
-                    : ""}{!lastMsg && (
+                      ? docFiles[0].originalName || docFiles[0].fileName
+                      : hasLocation
+                        ? t("location")
+                        : hasImages
+                          ? imageFiles.length === 1
+                            ? t("photo")
+                            : `${imageFiles.length} ${t("photos")}`
+                          : ""}
+                  {!lastMsg && (
                     <Text
                       size={11}
                       leading="legacy"
@@ -258,7 +296,7 @@ const MessagesComponent: React.FC<Props> = React.memo(
         </Swipeable>
       </Animated.View>
     )
-  },
+  }
 )
 
 export default MessagesComponent

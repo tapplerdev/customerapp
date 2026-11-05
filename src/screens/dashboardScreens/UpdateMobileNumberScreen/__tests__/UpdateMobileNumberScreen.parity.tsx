@@ -62,7 +62,10 @@ const optionsFor = (
   route: { name: "UpdateMobileNumberScreen" },
 })
 
-const type = (text: string): Step => (root) => typeInto(root, 0, text)
+const type =
+  (text: string): Step =>
+  (root) =>
+    typeInto(root, 0, text)
 const send: Step = (root, env) =>
   pressTitled(root, copy(env, "send_verification_code"))
 const ok: Step = (root, env) => pressTitled(root, copy(env, "OK"))
@@ -86,10 +89,26 @@ const CASES: Case[] = [
   { label: "01 and too short", steps: [type("01012")] },
   { label: "valid number", steps: [type(VALID)] },
   { label: "sent, pending", steps: [type(VALID), send] },
-  { label: "refused with a validation error", answer: "validation", steps: [type(VALID), send] },
-  { label: "refused with a message", answer: "message", steps: [type(VALID), send] },
-  { label: "refused with neither", answer: "no message", steps: [type(VALID), send] },
-  { label: "accepted: the field clears and the success card shows", answer: "accepted", steps: [type(VALID), send] },
+  {
+    label: "refused with a validation error",
+    answer: "validation",
+    steps: [type(VALID), send],
+  },
+  {
+    label: "refused with a message",
+    answer: "message",
+    steps: [type(VALID), send],
+  },
+  {
+    label: "refused with neither",
+    answer: "no message",
+    steps: [type(VALID), send],
+  },
+  {
+    label: "accepted: the field clears and the success card shows",
+    answer: "accepted",
+    steps: [type(VALID), send],
+  },
 ]
 
 describe("UpdateMobileNumberScreen", () => {
@@ -120,57 +139,74 @@ describe("UpdateMobileNumberScreen presses", () => {
     }
   }
 
-  it.each(envs)("Send is refused until the number is valid [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      expect(() => pressTitled(session.root, copy(env, "send_verification_code"))).toThrow()
-      await run(session, env, [type("01012")])
-      expect(() => pressTitled(session.root, copy(env, "send_verification_code"))).toThrow()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Send is refused until the number is valid [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        expect(() =>
+          pressTitled(session.root, copy(env, "send_verification_code"))
+        ).toThrow()
+        await run(session, env, [type("01012")])
+        expect(() =>
+          pressTitled(session.root, copy(env, "send_verification_code"))
+        ).toThrow()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Send sends the number; OK on the success card goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, "accepted"))
-    try {
-      await run(session, env, [type(VALID), send])
-      const sent = session.requests().filter((r) => r.endpoint === "updateCustomer")
-      expect(sent).toHaveLength(1)
-      expect(JSON.stringify(sent[0].args)).toContain(`"mobileNumber":"${VALID}"`)
-      expect(session.navigation.actions).toEqual([])
-      await run(session, env, [ok])
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Send sends the number; OK on the success card goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, "accepted"))
+      try {
+        await run(session, env, [type(VALID), send])
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          `"mobileNumber":"${VALID}"`
+        )
+        expect(session.navigation.actions).toEqual([])
+        await run(session, env, [ok])
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("OK closes the error card; the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, "message"))
-    try {
-      await run(session, env, [type(VALID), send])
-      const card = () =>
-        session.root.findAll(
-          (node) =>
-            typeof node.type !== "string" &&
-            "isVisible" in node.props &&
-            "descr" in node.props
-        )[0].props
-      expect(JSON.stringify(session.tree())).toContain("Number is taken")
-      expect(card().isVisible).toBe(true)
-      await run(session, env, [ok])
-      expect(card().isVisible).toBe(false)
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "OK closes the error card; the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, "message"))
+      try {
+        await run(session, env, [type(VALID), send])
+        const card = () =>
+          session.root.findAll(
+            (node) =>
+              typeof node.type !== "string" &&
+              "isVisible" in node.props &&
+              "descr" in node.props
+          )[0].props
+        expect(JSON.stringify(session.tree())).toContain("Number is taken")
+        expect(card().isVisible).toBe(true)
+        await run(session, env, [ok])
+        expect(card().isVisible).toBe(false)
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

@@ -70,7 +70,7 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
     if (shouldPromptSave) {
       saveSheetTimer.current = setTimeout(
         () => navigation.navigate("SaveAddressSheetScreen", { address }),
-        3000,
+        3000
       )
       return () => {
         if (saveSheetTimer.current) clearTimeout(saveSheetTimer.current)
@@ -132,12 +132,27 @@ const RequestSuccessScreen: React.FC<Props> = ({ route, navigation }) => {
           loop
           style={styles.lottieSize}
         />
-        <Text size={20} weight="semibold" leading="legacy" align="center" style={a.mt_24}>
+        <Text
+          size={20}
+          weight="semibold"
+          leading="legacy"
+          align="center"
+          style={a.mt_24}
+        >
           {t("we_received_your_request_v2")}
         </Text>
-        <Text size={14} leading="legacy" color="tertiary" align="center" style={a.mt_12}>
-          {t("check_request_status_prefix")}{"\n"}
-          "<Text size={14} weight="semibold" leading="legacy" color="brand">{t("talabati")}</Text>
+        <Text
+          size={14}
+          leading="legacy"
+          color="tertiary"
+          align="center"
+          style={a.mt_12}
+        >
+          {t("check_request_status_prefix")}
+          {"\n"}"
+          <Text size={14} weight="semibold" leading="legacy" color="brand">
+            {t("talabati")}
+          </Text>
           " {t("section")}
         </Text>
       </DmView>

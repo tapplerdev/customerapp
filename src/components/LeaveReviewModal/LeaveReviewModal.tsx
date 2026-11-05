@@ -27,7 +27,9 @@ const LeaveReviewModal: React.FC<Props> = ({
     <DmView style={[styles.box, a.px_24, a.pt_16, a.pb_40]}>
       {/* Close */}
       <DmView onPress={onClose} style={[a.mb_16, a.self_start]}>
-        <Text size={20} weight="semibold" leading="legacy">✕</Text>
+        <Text size={20} weight="semibold" leading="legacy">
+          ✕
+        </Text>
       </DmView>
 
       {/* Review icon */}
@@ -40,7 +42,14 @@ const LeaveReviewModal: React.FC<Props> = ({
         <Text size={18} weight="semibold" leading="legacy" align="center">
           {t("how_was_your_service_for")}
         </Text>
-        <Text size={18} weight="semibold" leading="legacy" color="brand" align="center" style={a.mt_4}>
+        <Text
+          size={18}
+          weight="semibold"
+          leading="legacy"
+          color="brand"
+          align="center"
+          style={a.mt_4}
+        >
           {categoryName}?
         </Text>
       </DmView>

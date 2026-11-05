@@ -50,8 +50,12 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
   const keyboardInset = useKeyboardInset()
   const { t } = useTranslation()
 
-  const [answers, setAnswers] = useState<QuestionAnswerType[]>(initialAnswers || [])
-  const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
+  const [answers, setAnswers] = useState<QuestionAnswerType[]>(
+    initialAnswers || []
+  )
+  const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<
+    string | undefined
+  >(initialPlaceOfService)
   const [filtersChanged, setFiltersChanged] = useState(false)
   const [resetKey, setResetKey] = useState(0)
 
@@ -106,12 +110,14 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
         const options = question.options || []
         if (ans.optionId) {
           const opt = options.find((o) => o.id === ans.optionId)
-          if (opt?.serviceCategoryFilterOptionId) filterOptionIds.push(opt.serviceCategoryFilterOptionId)
+          if (opt?.serviceCategoryFilterOptionId)
+            filterOptionIds.push(opt.serviceCategoryFilterOptionId)
         }
         if (ans.optionsIds) {
           ans.optionsIds.forEach((oid) => {
             const opt = options.find((o) => o.id === oid)
-            if (opt?.serviceCategoryFilterOptionId) filterOptionIds.push(opt.serviceCategoryFilterOptionId)
+            if (opt?.serviceCategoryFilterOptionId)
+              filterOptionIds.push(opt.serviceCategoryFilterOptionId)
           })
         }
       } else {
@@ -152,11 +158,24 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
     */
     <SafeAreaView
       edges={[]}
-      style={[atoms.flex_1, dsStyles.safeArea, { paddingBottom: keyboardInset }]}
+      style={[
+        atoms.flex_1,
+        dsStyles.safeArea,
+        { paddingBottom: keyboardInset },
+      ]}
     >
       {/* Header */}
-      <DmView style={[atoms.items_center, atoms.pt_16, atoms.pb_12, atoms.px_20]}>
-        <DmView style={[atoms.flex_row, atoms.items_center, atoms.justify_center, atoms.w_full]}>
+      <DmView
+        style={[atoms.items_center, atoms.pt_16, atoms.pb_12, atoms.px_20]}
+      >
+        <DmView
+          style={[
+            atoms.flex_row,
+            atoms.items_center,
+            atoms.justify_center,
+            atoms.w_full,
+          ]}
+        >
           <DmView style={atoms.flex_1} />
           <Text size={16} weight="bold">
             {t("job_details")}
@@ -226,7 +245,9 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
                         dsStyles.box2,
                         atoms.items_center,
                         atoms.justify_center,
-                        isSelected ? dsStyles.boxSelected : dsStyles.boxNotSelected,
+                        isSelected
+                          ? dsStyles.boxSelected
+                          : dsStyles.boxNotSelected,
                       ]}
                     >
                       {isSelected && <DmView style={dsStyles.box3} />}
@@ -268,7 +289,12 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
 
       {/* Bottom button */}
       <DmView
-        style={[atoms.px_16, dsStyles.buttonWrap, styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
+        style={[
+          atoms.px_16,
+          dsStyles.buttonWrap,
+          styles.buttonShadow,
+          { paddingBottom: insets.bottom + 16 },
+        ]}
       >
         <Button
           title={t("see_matches")}
@@ -304,7 +330,11 @@ const styles = StyleSheet.create({
  * name; nothing here is a screen.
  */
 export const AllQuestionsSheet: React.FC<
-  AllQuestionsParams & { visible: boolean; contentKey: number; onClose: () => void }
+  AllQuestionsParams & {
+    visible: boolean
+    contentKey: number
+    onClose: () => void
+  }
 > = ({ visible, contentKey, onClose, ...contentProps }) => {
   const scrollRef = useRef<ScrollView>(null)
   const commitRef = React.useRef<() => void>(() => {})

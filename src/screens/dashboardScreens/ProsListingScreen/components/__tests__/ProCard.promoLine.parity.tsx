@@ -50,7 +50,12 @@ const proWith = (subscriptions: object[]) =>
   ({
     ...PRO_INDIVIDUAL,
     serviceCategories: [
-      { serviceCategoryId: 301, status: "active", isFeatured: false, subscriptions },
+      {
+        serviceCategoryId: 301,
+        status: "active",
+        isFeatured: false,
+        subscriptions,
+      },
     ],
   }) as never
 
@@ -60,7 +65,10 @@ const CASES = [
     name: "promo line and stickers, #522 card, #525 offers",
     subscriptions: [promoLine, sticker(1), sticker(2)],
   },
-  { name: "stickers only, #522 card, #525 offers", subscriptions: [sticker(1)] },
+  {
+    name: "stickers only, #522 card, #525 offers",
+    subscriptions: [sticker(1)],
+  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

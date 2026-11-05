@@ -39,13 +39,15 @@ import { Text, Button, a } from "@tappler/shared/src/ds"
 const TalabatiScreen: React.FC = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { isAuth } = useTypedSelector((store) => store.auth)
 
-  const { data, isLoading, refetch, isFetching, isError } = useGetCustomerJobsQuery(undefined, {
-    skip: !isAuth,
-    pollingInterval: 30000, // Poll every 30s for new pro responses
-  })
+  const { data, isLoading, refetch, isFetching, isError } =
+    useGetCustomerJobsQuery(undefined, {
+      skip: !isAuth,
+      pollingInterval: 30000, // Poll every 30s for new pro responses
+    })
 
   const jobs = data?.data || []
 
@@ -102,15 +104,18 @@ const TalabatiScreen: React.FC = () => {
     itemVisiblePercentThreshold: 50,
   }).current
 
-  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-    viewableItems.forEach((token) => {
-      const job = token.item as JobType
-      if (job?.id && !prefetchedIds.current.has(job.id)) {
-        prefetchedIds.current.add(job.id)
-        prefetchJobById(job.id, { ifOlderThan: 60 })
-      }
-    })
-  }, [prefetchJobById])
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      viewableItems.forEach((token) => {
+        const job = token.item as JobType
+        if (job?.id && !prefetchedIds.current.has(job.id)) {
+          prefetchedIds.current.add(job.id)
+          prefetchJobById(job.id, { ifOlderThan: 60 })
+        }
+      })
+    },
+    [prefetchJobById]
+  )
 
   // A food order's real state lives on jobPro, not on job.status, and this
   // list has to say the same thing the order screen says about the same order.
@@ -195,10 +200,15 @@ const TalabatiScreen: React.FC = () => {
   }
 
   const getOffersCount = (job: JobType) => {
-    return job.pros?.filter((p) =>
-      p.selectionStatus === "opportunity" ||
-      (p.selectionStatus === "offer" && !!p.proOpportunityOfferSentAt && !p.opportunityAcceptedAt)
-    ).length || 0
+    return (
+      job.pros?.filter(
+        (p) =>
+          p.selectionStatus === "opportunity" ||
+          (p.selectionStatus === "offer" &&
+            !!p.proOpportunityOfferSentAt &&
+            !p.opportunityAcceptedAt)
+      ).length || 0
+    )
   }
 
   // A service request is reviewable once an offer is accepted; a food order
@@ -222,16 +232,22 @@ const TalabatiScreen: React.FC = () => {
     if (!reviewModalJob) return
     setReviewModalJob(null)
 
-    const reviewablePros = reviewModalJob.pros?.filter((p) =>
-      isReviewableJobPro(reviewModalJob, p)
-    ) || []
+    const reviewablePros =
+      reviewModalJob.pros?.filter((p) =>
+        isReviewableJobPro(reviewModalJob, p)
+      ) || []
 
     if (reviewablePros.length === 1) {
       // Single pro — skip selection, go to form
-      navigation.navigate("ReviewFormScreen", { jobId: reviewModalJob.id, proId: reviewablePros[0].proId })
+      navigation.navigate("ReviewFormScreen", {
+        jobId: reviewModalJob.id,
+        proId: reviewablePros[0].proId,
+      })
     } else {
       // Multiple pros — show selection screen
-      navigation.navigate("ReviewProSelectionScreen", { jobId: reviewModalJob.id })
+      navigation.navigate("ReviewProSelectionScreen", {
+        jobId: reviewModalJob.id,
+      })
     }
   }
 
@@ -242,10 +258,7 @@ const TalabatiScreen: React.FC = () => {
       const pendingReview = hasPendingReview(item)
 
       return (
-        <DmView
-          style={[a.px_16, a.py_14]}
-          onPress={() => handleJobPress(item)}
-        >
+        <DmView style={[a.px_16, a.py_14]} onPress={() => handleJobPress(item)}>
           {/* Service name */}
           <Text size={15} weight="bold" leading="legacy">
             {getCategoryName(item)}
@@ -255,7 +268,12 @@ const TalabatiScreen: React.FC = () => {
           <DmView style={styles.rowContainer}>
             <Text size={12} leading="legacy">
               {t("status")}:{" "}
-              <Text size={12} weight="medium" leading="legacy" style={{ color: getStatusColor(item) }}>
+              <Text
+                size={12}
+                weight="medium"
+                leading="legacy"
+                style={{ color: getStatusColor(item) }}
+              >
                 {getStatusLabel(item)}
               </Text>
             </Text>
@@ -273,17 +291,35 @@ const TalabatiScreen: React.FC = () => {
           {/* Posted date + Offers badge */}
           <DmView style={styles.postedRow}>
             <Text size={12} leading="legacy">
-              {t("posted")}: {format(new Date(item.requestedOn), "dd MMMM yyyy h:mma")}
+              {t("posted")}:{" "}
+              {format(new Date(item.requestedOn), "dd MMMM yyyy h:mma")}
             </Text>
             {offersCount > 0 && (
               <DmView
-                style={[a.flex_row, a.items_center, styles.row, styles.offersBadge]}
+                style={[
+                  a.flex_row,
+                  a.items_center,
+                  styles.row,
+                  styles.offersBadge,
+                ]}
               >
-                <Text size={11} weight="semibold" leading="legacy" style={styles.offers}>
+                <Text
+                  size={11}
+                  weight="semibold"
+                  leading="legacy"
+                  style={styles.offers}
+                >
                   {t("offers")}
                 </Text>
-                <DmView style={[styles.textWrap, a.items_center, a.justify_center]}>
-                  <Text size={10} weight="bold" leading="legacy" color="inverse">
+                <DmView
+                  style={[styles.textWrap, a.items_center, a.justify_center]}
+                >
+                  <Text
+                    size={10}
+                    weight="bold"
+                    leading="legacy"
+                    color="inverse"
+                  >
                     {offersCount}
                   </Text>
                 </DmView>
@@ -295,15 +331,36 @@ const TalabatiScreen: React.FC = () => {
           {pendingReview && (
             <DmView style={[a.mt_10, a.flex_row, a.items_center]}>
               <DmView
-                style={[a.flex_row, a.items_center, styles.row2, a.overflow_hidden, { borderWidth: 0.75, borderColor: "#000" }]}
+                style={[
+                  a.flex_row,
+                  a.items_center,
+                  styles.row2,
+                  a.overflow_hidden,
+                  { borderWidth: 0.75, borderColor: "#000" },
+                ]}
                 onPress={() => handleLeaveReview(item)}
               >
-                <DmView style={[a.px_10, styles.leaveReviewWrap, { backgroundColor: "#FFEBEBB2" }]}>
+                <DmView
+                  style={[
+                    a.px_10,
+                    styles.leaveReviewWrap,
+                    { backgroundColor: "#FFEBEBB2" },
+                  ]}
+                >
                   <Text size={11} weight="semibold" leading="legacy">
                     {t("leave_review")}
                   </Text>
                 </DmView>
-                <DmView style={[a.px_8, styles.leaveReviewWrap, a.overflow_hidden, a.items_center, a.justify_center, { width: 32, height: 26 }]}>
+                <DmView
+                  style={[
+                    a.px_8,
+                    styles.leaveReviewWrap,
+                    a.overflow_hidden,
+                    a.items_center,
+                    a.justify_center,
+                    { width: 32, height: 26 },
+                  ]}
+                >
                   <AnimatedLottieView
                     source={leaveReviewAnimation}
                     progress={starProgress}
@@ -334,10 +391,22 @@ const TalabatiScreen: React.FC = () => {
 
       {!isAuth ? (
         <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+          <Text
+            size={16}
+            weight="semibold"
+            leading="legacy"
+            color="tertiary"
+            align="center"
+          >
             {t("login_to_view_requests")}
           </Text>
-          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
+          <Text
+            size={12}
+            leading="legacy"
+            color="tertiary"
+            align="center"
+            style={a.mt_8}
+          >
             {t("login_to_view_requests_descr")}
           </Text>
           <DmView style={[a.mt_20, a.px_20, a.w_full]}>
@@ -355,10 +424,22 @@ const TalabatiScreen: React.FC = () => {
       ) : isError && !data ? (
         // Fetch failed with nothing cached — a timeout is not "no requests"
         <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+          <Text
+            size={16}
+            weight="semibold"
+            leading="legacy"
+            color="tertiary"
+            align="center"
+          >
             {t("requests_load_error")}
           </Text>
-          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
+          <Text
+            size={12}
+            leading="legacy"
+            color="tertiary"
+            align="center"
+            style={a.mt_8}
+          >
             {t("requests_load_error_descr")}
           </Text>
           <DmView style={[a.mt_20, a.px_20, a.w_full]}>
@@ -374,37 +455,49 @@ const TalabatiScreen: React.FC = () => {
         </DmView>
       ) : jobs.length === 0 ? (
         <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+          <Text
+            size={16}
+            weight="semibold"
+            leading="legacy"
+            color="tertiary"
+            align="center"
+          >
             {t("no_requests_yet")}
           </Text>
-          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
+          <Text
+            size={12}
+            leading="legacy"
+            color="tertiary"
+            align="center"
+            style={a.mt_8}
+          >
             {t("no_requests_yet_descr")}
           </Text>
         </DmView>
       ) : (
         <Animated.View entering={FadeIn.duration(400)} style={a.flex_1}>
-        <AppFlatList
-          data={jobs}
-          renderItem={renderItem}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-          // Opts back OUT of the app-wide alwaysBounceVertical:false default
-          // (components/scroll). Pull-to-refresh works by pulling PAST the
-          // top, so with the bounce suppressed a customer with only one or two orders —
-          // a list short enough to fit the screen — would have nothing to pull
-          // and no way to refresh at all.
-          alwaysBounceVertical
-          viewabilityConfig={viewabilityConfig}
-          onViewableItemsChanged={onViewableItemsChanged}
-          refreshControl={
-            <RefreshControl
-              refreshing={isPullRefreshing}
-              onRefresh={handlePullRefresh}
-              tintColor={colors.red}
-            />
-          }
-        />
+          <AppFlatList
+            data={jobs}
+            renderItem={renderItem}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+            // Opts back OUT of the app-wide alwaysBounceVertical:false default
+            // (components/scroll). Pull-to-refresh works by pulling PAST the
+            // top, so with the bounce suppressed a customer with only one or two orders —
+            // a list short enough to fit the screen — would have nothing to pull
+            // and no way to refresh at all.
+            alwaysBounceVertical
+            viewabilityConfig={viewabilityConfig}
+            onViewableItemsChanged={onViewableItemsChanged}
+            refreshControl={
+              <RefreshControl
+                refreshing={isPullRefreshing}
+                onRefresh={handlePullRefresh}
+                tintColor={colors.red}
+              />
+            }
+          />
         </Animated.View>
       )}
 
@@ -415,7 +508,9 @@ const TalabatiScreen: React.FC = () => {
         onLeaveReview={handleReviewModalConfirm}
         categoryName={
           reviewModalJob?.serviceCategory
-            ? isAr ? reviewModalJob.serviceCategory.nameAr : reviewModalJob.serviceCategory.nameEn
+            ? isAr
+              ? reviewModalJob.serviceCategory.nameAr
+              : reviewModalJob.serviceCategory.nameEn
             : ""
         }
       />

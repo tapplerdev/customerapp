@@ -19,7 +19,8 @@ type Props = RootStackScreenProps<"ViewAddressScreen">
 const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const { addressId, name, streetAddress, city, governorate, type } = route.params
+  const { addressId, name, streetAddress, city, governorate, type } =
+    route.params
 
   const [deleteAddress] = useDeleteCustomerAddressMutation()
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false)
@@ -44,7 +45,10 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -72,7 +76,12 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {/* Place Nick Name */}
         <DmView style={a.mb_20}>
-          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
+          <Text
+            size={11}
+            weight="bold"
+            leading="legacy"
+            style={[a.mb_6, a.px_24]}
+          >
             {t("place_nick_name")}
           </Text>
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
@@ -83,7 +92,12 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Address */}
         <DmView style={a.mb_20}>
-          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
+          <Text
+            size={11}
+            weight="bold"
+            leading="legacy"
+            style={[a.mb_6, a.px_24]}
+          >
             {t("address")}
           </Text>
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
@@ -94,7 +108,12 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* City */}
         <DmView style={a.mb_20}>
-          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
+          <Text
+            size={11}
+            weight="bold"
+            leading="legacy"
+            style={[a.mb_6, a.px_24]}
+          >
             {t("city")}
           </Text>
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
@@ -105,7 +124,12 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Governorate */}
         <DmView style={a.mb_20}>
-          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
+          <Text
+            size={11}
+            weight="bold"
+            leading="legacy"
+            style={[a.mb_6, a.px_24]}
+          >
             {t("governorate")}
           </Text>
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
@@ -116,7 +140,12 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Place Type */}
         <DmView style={a.mb_20}>
-          <Text size={11} weight="bold" leading="legacy" style={[a.mb_6, a.px_24]}>
+          <Text
+            size={11}
+            weight="bold"
+            leading="legacy"
+            style={[a.mb_6, a.px_24]}
+          >
             {t("place_type")}
           </Text>
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>

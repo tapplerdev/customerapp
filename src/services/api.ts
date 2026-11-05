@@ -1,5 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query"
 import { API_URL } from "config"
 // Firebase 26 deleted the namespaced API; deleteToken is now modular and takes
 // the Messaging instance.
@@ -25,8 +29,18 @@ import {
   FoodMenuType,
   PointAreasResponse,
 } from "types/food"
-import { ChatType, ChatMessageType, ListChatsResponse, ListMessagesResponse } from "types/chat"
-import { CreateJobRequest, JobProType, JobType, ListJobsResponse } from "types/job"
+import {
+  ChatType,
+  ChatMessageType,
+  ListChatsResponse,
+  ListMessagesResponse,
+} from "types/chat"
+import {
+  CreateJobRequest,
+  JobProType,
+  JobType,
+  ListJobsResponse,
+} from "types/job"
 import { CreateReviewRequest, ReviewType } from "types/review"
 import {
   ListNotificationsRequest,
@@ -75,7 +89,10 @@ const devLog = (line: () => unknown[]) => {
 // Whether the store still holds the account a request was sent as. Logout
 // only clears the store, so a late answer for account A can land after B has
 // signed in, and nothing it carries may be applied to B's session.
-const stillSignedInAs = (apiBase: { getState: () => unknown }, userId?: number) => {
+const stillSignedInAs = (
+  apiBase: { getState: () => unknown },
+  userId?: number
+) => {
   const { auth } = apiBase.getState() as RootState
   return !!auth.token && auth.user?.id === userId
 }
@@ -86,7 +103,9 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, apiBase, extraOptions) => {
   const url = typeof args === "string" ? args : args.url
-  devLog(() => [`[API] ${typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"} ${API_URL}${url}`])
+  devLog(() => [
+    `[API] ${typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"} ${API_URL}${url}`,
+  ])
 
   // The token and account this request goes out with, compared with the
   // store when a 401 comes back.
@@ -97,9 +116,15 @@ const baseQueryWithReauth: BaseQueryFn<
   const result = await baseQuery(args, apiBase, extraOptions)
 
   if (result?.error) {
-    devLog(() => [`[API] ❌ Error:`, result.error!.status, JSON.stringify(result.error!.data || result.error).substring(0, 200)])
+    devLog(() => [
+      `[API] ❌ Error:`,
+      result.error!.status,
+      JSON.stringify(result.error!.data || result.error).substring(0, 200),
+    ])
   } else {
-    devLog(() => [`[API] ✅ Success: ${JSON.stringify(result.data).substring(0, 100)}...`])
+    devLog(() => [
+      `[API] ✅ Success: ${JSON.stringify(result.data).substring(0, 100)}...`,
+    ])
   }
 
   if (result?.error?.status !== 401) {
@@ -129,7 +154,9 @@ const baseQueryWithReauth: BaseQueryFn<
   }
 
   if (!refreshToken || !isAuth) {
-    devLog(() => [`[API] 🔒 No refresh token or not auth — returning 401 silently`])
+    devLog(() => [
+      `[API] 🔒 No refresh token or not auth — returning 401 silently`,
+    ])
     return result
   }
 
@@ -152,7 +179,7 @@ const baseQueryWithReauth: BaseQueryFn<
     refreshPromise = baseQuery(
       { url: "/auth/refresh", method: "POST", body: { refreshToken } },
       apiBase,
-      extraOptions,
+      extraOptions
     )
 
     const refreshResult = await refreshPromise
@@ -173,8 +200,12 @@ const baseQueryWithReauth: BaseQueryFn<
 
     if (refreshResult.data) {
       const data = refreshResult.data as { token: string; refreshToken: string }
-      devLog(() => [`[API] 🔒 Token refresh SUCCESS — retrying original request`])
-      apiBase.dispatch(setTokens({ token: data.token, refreshToken: data.refreshToken }))
+      devLog(() => [
+        `[API] 🔒 Token refresh SUCCESS — retrying original request`,
+      ])
+      apiBase.dispatch(
+        setTokens({ token: data.token, refreshToken: data.refreshToken })
+      )
 
       isRefreshing = false
       refreshPromise = null
@@ -182,7 +213,12 @@ const baseQueryWithReauth: BaseQueryFn<
       // Retry original request with new token
       return await baseQuery(args, apiBase, extraOptions)
     } else {
-      devLog(() => [`[API] 🔒 Token refresh FAILED:`, JSON.stringify(refreshResult.error?.data || refreshResult.error).substring(0, 200)])
+      devLog(() => [
+        `[API] 🔒 Token refresh FAILED:`,
+        JSON.stringify(
+          refreshResult.error?.data || refreshResult.error
+        ).substring(0, 200),
+      ])
       isRefreshing = false
       refreshPromise = null
       // Only a definitive rejection from a live server means the session is
@@ -197,7 +233,9 @@ const baseQueryWithReauth: BaseQueryFn<
         refreshStatus === 403 ||
         refreshStatus === 404
       ) {
-        devLog(() => [`[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`])
+        devLog(() => [
+          `[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`,
+        ])
         // Kill the push token at Firebase too (services/session does the same,
         // plus the backend call this dead session cannot make): a signed-out
         // phone must not keep receiving the account's pushes.
@@ -207,14 +245,19 @@ const baseQueryWithReauth: BaseQueryFn<
         apiBase.dispatch(logout())
         apiBase.dispatch(api.util.resetApiState())
       } else {
-        devLog(() => [`[API] 🔒 Refresh unreachable (${String(refreshStatus)}) — keeping session`])
+        devLog(() => [
+          `[API] 🔒 Refresh unreachable (${String(refreshStatus)}) — keeping session`,
+        ])
       }
       return result
     }
   } catch (e: any) {
     // Exceptions here are code/network failures, never an auth verdict —
     // keep the session.
-    devLog(() => [`[API] 🔒 Token refresh EXCEPTION (keeping session):`, e?.message || e])
+    devLog(() => [
+      `[API] 🔒 Token refresh EXCEPTION (keeping session):`,
+      e?.message || e,
+    ])
     isRefreshing = false
     refreshPromise = null
     return result
@@ -224,7 +267,14 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Auth", "Preset", "Jobs", "Chats", "Notifications", "OfferHistory"],
+  tagTypes: [
+    "Auth",
+    "Preset",
+    "Jobs",
+    "Chats",
+    "Notifications",
+    "OfferHistory",
+  ],
   endpoints: (builder) => ({
     getActivePreset: builder.query<PresetType, void>({
       query: () => "/cms/presets/active",
@@ -236,14 +286,19 @@ export const api = createApi({
       // names/keywords (same contract the pro app uses)
       query: (search) =>
         "/services?page=1&perPage=100&sort=ASC" +
-        (typeof search === "string" && search ? `&search=${encodeURIComponent(search)}` : ""),
+        (typeof search === "string" && search
+          ? `&search=${encodeURIComponent(search)}`
+          : ""),
     }),
 
     getServiceById: builder.query<ServiceType, number>({
       query: (id) => `/services/${id}`,
     }),
 
-    customerSignUp: builder.mutation<CustomerSignUpResponse, CustomerSignUpRequest>({
+    customerSignUp: builder.mutation<
+      CustomerSignUpResponse,
+      CustomerSignUpRequest
+    >({
       query: (body) => ({ url: "/customers", method: "POST", body }),
       // A 429's wait is in Retry-After, which the caller can't see otherwise.
       transformErrorResponse: withRetryAfter,
@@ -259,16 +314,18 @@ export const api = createApi({
       providesTags: ["Auth"],
     }),
 
-    updateCustomer: builder.mutation<CustomerMeResponse, UpdateCustomerRequest>({
-      query: (body) => ({ url: "/customers", method: "PATCH", body }),
-      // Only on success. RTK Query invalidates on isRejectedWithValue too, so a
-      // FAILED update refetched Auth as well — harmless for a form the user
-      // resubmits by hand, but BootstrapScreen PATCHes automatically whenever
-      // the server's language differs from the app's, and the refetch handed it
-      // a new object that still differed. A 400 became an unbounded PATCH/GET
-      // loop for the rest of the session.
-      invalidatesTags: (_result, error) => (error ? [] : ["Auth"]),
-    }),
+    updateCustomer: builder.mutation<CustomerMeResponse, UpdateCustomerRequest>(
+      {
+        query: (body) => ({ url: "/customers", method: "PATCH", body }),
+        // Only on success. RTK Query invalidates on isRejectedWithValue too, so a
+        // FAILED update refetched Auth as well — harmless for a form the user
+        // resubmits by hand, but BootstrapScreen PATCHes automatically whenever
+        // the server's language differs from the app's, and the refetch handed it
+        // a new object that still differed. A 400 became an unbounded PATCH/GET
+        // loop for the rest of the session.
+        invalidatesTags: (_result, error) => (error ? [] : ["Auth"]),
+      }
+    ),
 
     getProsForCategory: builder.query<
       ListProsResponse,
@@ -286,27 +343,51 @@ export const api = createApi({
         sortBy?: "distance" | "rating" | "responseTime"
       }
     >({
-      query: ({ categoryId, placeOfService, customerAddress, filterOptionsIds, filterRanges, proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, sortBy }) => {
+      query: ({
+        categoryId,
+        placeOfService,
+        customerAddress,
+        filterOptionsIds,
+        filterRanges,
+        proType,
+        distanceKm,
+        minRating,
+        maxResponseTimeHours,
+        creditCardPayment,
+        sortBy,
+      }) => {
         const params = new URLSearchParams()
         if (placeOfService) {
           params.append("placeOfService", placeOfService)
         }
         params.append("distanceKmFromCustomer", String(distanceKm ?? 50))
         if (customerAddress) {
-          params.append("customerAddress[latitude]", String(customerAddress.latitude))
-          params.append("customerAddress[longitude]", String(customerAddress.longitude))
+          params.append(
+            "customerAddress[latitude]",
+            String(customerAddress.latitude)
+          )
+          params.append(
+            "customerAddress[longitude]",
+            String(customerAddress.longitude)
+          )
         }
         if (filterOptionsIds?.length) {
-          filterOptionsIds.forEach((id) => params.append("filterOptionsIds[]", String(id)))
+          filterOptionsIds.forEach((id) =>
+            params.append("filterOptionsIds[]", String(id))
+          )
         }
         if (filterRanges?.length) {
           filterRanges.forEach(({ filterId, min, max }) =>
-            params.append("filterRanges[]", `${filterId}:${min ?? ""}:${max ?? ""}`)
+            params.append(
+              "filterRanges[]",
+              `${filterId}:${min ?? ""}:${max ?? ""}`
+            )
           )
         }
         if (proType) params.append("proType", proType)
         if (minRating) params.append("minRating", String(minRating))
-        if (maxResponseTimeHours) params.append("maxResponseTimeHours", String(maxResponseTimeHours))
+        if (maxResponseTimeHours)
+          params.append("maxResponseTimeHours", String(maxResponseTimeHours))
         if (creditCardPayment) params.append("creditCardPayment", "true")
         if (sortBy) params.append("sortBy", sortBy)
         // The card view (backend #423): each pro as ProCard, its preloads and
@@ -321,7 +402,10 @@ export const api = createApi({
       },
     }),
 
-    createCustomerAddress: builder.mutation<CustomerSavedAddress, CreateCustomerAddressRequest>({
+    createCustomerAddress: builder.mutation<
+      CustomerSavedAddress,
+      CreateCustomerAddressRequest
+    >({
       query: (body) => ({ url: "/customers/addresses", method: "POST", body }),
       invalidatesTags: ["Auth"],
     }),
@@ -347,7 +431,10 @@ export const api = createApi({
       invalidatesTags: ["Jobs"],
     }),
 
-    getCustomerJobs: builder.query<ListJobsResponse, { page?: number; perPage?: number } | void>({
+    getCustomerJobs: builder.query<
+      ListJobsResponse,
+      { page?: number; perPage?: number } | void
+    >({
       query: (params) => {
         const p = params || {}
         const qp = new URLSearchParams()
@@ -373,17 +460,25 @@ export const api = createApi({
     // sharing this cache entry read (FoodMenu, FoodCheckout, RequestDetails,
     // the listing's image preload), without the history, media, user and
     // document chains the full pro loads.
-    getProProfile: builder.query<ProType, { proId: number; serviceCategoryId?: number }>({
+    getProProfile: builder.query<
+      ProType,
+      { proId: number; serviceCategoryId?: number }
+    >({
       query: ({ proId, serviceCategoryId }) => {
         const url = `/pros/${proId}?view=profile`
-        return serviceCategoryId ? `${url}&serviceCategoryId=${serviceCategoryId}` : url
+        return serviceCategoryId
+          ? `${url}&serviceCategoryId=${serviceCategoryId}`
+          : url
       },
     }),
 
     // hasMenu categories: the pro's latest APPROVED menu snapshot + delivery
     // zone info. Item ids/prices here are exactly what job submission is
     // validated against, so order lines are built from this response only.
-    getProMenu: builder.query<FoodMenuType, { proId: number; serviceCategoryId: number }>({
+    getProMenu: builder.query<
+      FoodMenuType,
+      { proId: number; serviceCategoryId: number }
+    >({
       query: ({ proId, serviceCategoryId }) =>
         `/pros/category/${serviceCategoryId}/${proId}/menu`,
     }),
@@ -401,7 +496,12 @@ export const api = createApi({
         pickupReachable: boolean
         pickupRadius: number | null
       },
-      { proId: number; serviceCategoryId: number; latitude: number; longitude: number }
+      {
+        proId: number
+        serviceCategoryId: number
+        latitude: number
+        longitude: number
+      }
     >({
       query: ({ proId, serviceCategoryId, latitude, longitude }) => ({
         url: `/pros/category/${serviceCategoryId}/${proId}/delivery-check`,
@@ -423,7 +523,10 @@ export const api = createApi({
 
     // Server-simplified area outline (GeoJSON, [lng, lat] order) — the same
     // endpoint the pro app's opportunity map uses.
-    getAreaGeometry: builder.query<AreaGeometryResponse, { type: string; id: string }>({
+    getAreaGeometry: builder.query<
+      AreaGeometryResponse,
+      { type: string; id: string }
+    >({
       query: ({ type, id }) => `/service-areas/geometry?type=${type}&id=${id}`,
     }),
 
@@ -441,7 +544,14 @@ export const api = createApi({
       invalidatesTags: ["Jobs"],
     }),
 
-    respondToOpportunity: builder.mutation<JobProType, { jobId: number; proId: number; selectionStatus: "offer" | "customerRejected" }>({
+    respondToOpportunity: builder.mutation<
+      JobProType,
+      {
+        jobId: number
+        proId: number
+        selectionStatus: "offer" | "customerRejected"
+      }
+    >({
       query: ({ jobId, proId, selectionStatus }) => ({
         url: `/jobs/${jobId}/pros/${proId}`,
         method: "PATCH",
@@ -458,8 +568,7 @@ export const api = createApi({
       { data: Array<{ id: number; ratePerHour: number; createdAt: string }> },
       { jobId: number; proId: number }
     >({
-      query: ({ jobId, proId }) =>
-        `/jobs/${jobId}/pros/${proId}/offer-history`,
+      query: ({ jobId, proId }) => `/jobs/${jobId}/pros/${proId}/offer-history`,
       // The customer never revises an offer, so nothing on this side could
       // invalidate it — the socket does, when the pro's revision lands (see
       // useChatSocket). Without that the history sheet showed whatever was true
@@ -511,15 +620,20 @@ export const api = createApi({
       invalidatesTags: ["Notifications"],
     }),
 
-    markAllNotificationsAsRead: builder.mutation<NotificationsItemType[], void>({
-      query: () => ({
-        url: "/notifications/mark-all-as-read",
-        method: "PATCH",
-      }),
-      invalidatesTags: ["Notifications"],
-    }),
+    markAllNotificationsAsRead: builder.mutation<NotificationsItemType[], void>(
+      {
+        query: () => ({
+          url: "/notifications/mark-all-as-read",
+          method: "PATCH",
+        }),
+        invalidatesTags: ["Notifications"],
+      }
+    ),
 
-    openChat: builder.query<ChatType, { categoryId: number; recipientId: number; jobId?: number }>({
+    openChat: builder.query<
+      ChatType,
+      { categoryId: number; recipientId: number; jobId?: number }
+    >({
       query: ({ categoryId, recipientId, jobId }) => {
         const url = `/chats/open/service-categories/${categoryId}/recipient/${recipientId}`
         return jobId ? `${url}?jobId=${jobId}` : url
@@ -535,7 +649,10 @@ export const api = createApi({
       // proapp pattern.)
       transformResponse: (response: ListChatsResponse) => {
         response?.data?.forEach((preview) => {
-          if (preview.notReadMessages > 0 && chatReadRegistry.has(preview.chat.id)) {
+          if (
+            preview.notReadMessages > 0 &&
+            chatReadRegistry.has(preview.chat.id)
+          ) {
             preview.notReadMessages = 0
           }
         })
@@ -544,12 +661,24 @@ export const api = createApi({
       providesTags: ["Chats"],
     }),
 
-    getChatMessages: builder.query<ListMessagesResponse, { chatId: number; page?: number; perPage?: number }>({
+    getChatMessages: builder.query<
+      ListMessagesResponse,
+      { chatId: number; page?: number; perPage?: number }
+    >({
       query: ({ chatId, page = 1, perPage = 20 }) =>
         `/chats/${chatId}/messages?page=${page}&perPage=${perPage}`,
     }),
 
-    sendMessage: builder.mutation<ChatMessageType, { chatId: number; text?: string; files?: string[]; location?: { latitude: number; longitude: number }; idempotencyKey?: string }>({
+    sendMessage: builder.mutation<
+      ChatMessageType,
+      {
+        chatId: number
+        text?: string
+        files?: string[]
+        location?: { latitude: number; longitude: number }
+        idempotencyKey?: string
+      }
+    >({
       query: ({ chatId, idempotencyKey, ...body }) => ({
         url: `/chats/${chatId}/messages`,
         method: "POST",
@@ -559,7 +688,10 @@ export const api = createApi({
       invalidatesTags: ["Chats"],
     }),
 
-    uploadFile: builder.mutation<{ storageKey: string }, { path: string; mime?: string; filename?: string }>({
+    uploadFile: builder.mutation<
+      { storageKey: string },
+      { path: string; mime?: string; filename?: string }
+    >({
       query: (file) => {
         const formData = new FormData()
         formData.append("file", {

@@ -35,7 +35,11 @@ interface SearchLocationModalProps {
   isVisible: boolean
   currentCategoryName: string
   currentAddress?: AddressInfo
-  onSelectService: (categoryId: number, categoryName: string, serviceId: number) => void
+  onSelectService: (
+    categoryId: number,
+    categoryName: string,
+    serviceId: number
+  ) => void
   onChangeLocation: () => void
   onClose: () => void
 }
@@ -51,7 +55,6 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const inputRef = useRef<TextInput>(null)
-
 
   const [searchText, setSearchText] = useState(currentCategoryName)
   const [debouncedSearch, setDebouncedSearch] = useState(currentCategoryName)
@@ -176,7 +179,10 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
     onClose()
   }, [onClose])
 
-  const addressParts = [currentAddress?.address, currentAddress?.city || currentAddress?.governorate].filter(Boolean)
+  const addressParts = [
+    currentAddress?.address,
+    currentAddress?.city || currentAddress?.governorate,
+  ].filter(Boolean)
   const locationDisplay = addressParts.join(" • ") || ""
 
   const renderItem = ({ item }: { item: FlatCategory }) => {
@@ -211,10 +217,27 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
 
   const content = (
     <DmView
-      style={[a.flex_1, styles.list, { borderTopLeftRadius: 10, borderTopRightRadius: 10, overflow: "hidden" }]}
+      style={[
+        a.flex_1,
+        styles.list,
+        {
+          borderTopLeftRadius: 10,
+          borderTopRightRadius: 10,
+          overflow: "hidden",
+        },
+      ]}
     >
       {/* Header */}
-      <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_20, a.pt_16, a.pb_12]}>
+      <DmView
+        style={[
+          a.flex_row,
+          a.items_center,
+          a.justify_between,
+          a.px_20,
+          a.pt_16,
+          a.pb_12,
+        ]}
+      >
         <DmView onPress={handleClose} hitSlop={HIT_SLOP_DEFAULT}>
           <Text size={14} weight="medium" color="brand">
             {t("cancel")}
@@ -231,7 +254,17 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
           modalStyles.inputsContainer for why that is per-platform. */}
       <DmView style={[a.pb_12, styles.list, modalStyles.inputsContainer]}>
         {/* Service search input */}
-        <DmView style={[a.mx_20, a.mb_8, a.flex_row, a.items_center, styles.row, a.px_14, modalStyles.inputBorder]}>
+        <DmView
+          style={[
+            a.mx_20,
+            a.mb_8,
+            a.flex_row,
+            a.items_center,
+            styles.row,
+            a.px_14,
+            modalStyles.inputBorder,
+          ]}
+        >
           <SearchIcon width={16} height={16} />
           <TextInput
             ref={inputRef}
@@ -250,7 +283,10 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
             returnKeyType="search"
           />
           {searchText.length > 0 && (
-            <DmView onPress={() => setSearchText("")} hitSlop={HIT_SLOP_DEFAULT}>
+            <DmView
+              onPress={() => setSearchText("")}
+              hitSlop={HIT_SLOP_DEFAULT}
+            >
               <CloseIcon width={12} height={12} color={colors.grey3} />
             </DmView>
           )}
@@ -259,10 +295,22 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
         {/* Location field */}
         <DmView
           onPress={handleLocationPress}
-          style={[a.mx_20, a.flex_row, a.items_center, styles.row2, a.px_14, modalStyles.inputBorder]}
+          style={[
+            a.mx_20,
+            a.flex_row,
+            a.items_center,
+            styles.row2,
+            a.px_14,
+            modalStyles.inputBorder,
+          ]}
         >
           <LocationRedIcon width={16} height={16} />
-          <Text size={13} leading="tight" style={[a.ml_8, a.flex_1]} numberOfLines={1}>
+          <Text
+            size={13}
+            leading="tight"
+            style={[a.ml_8, a.flex_1]}
+            numberOfLines={1}
+          >
             {locationDisplay}
           </Text>
         </DmView>
@@ -276,7 +324,11 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
             <DmView key={i} style={[a.px_24, a.py_14, styles.container]}>
               <SkeletonLoader width={`${w}%`} height={15} borderRadius={4} />
               <DmView style={a.mt_6}>
-                <SkeletonLoader width={`${Math.max(24, w - 25)}%`} height={11} borderRadius={4} />
+                <SkeletonLoader
+                  width={`${Math.max(24, w - 25)}%`}
+                  height={11}
+                  borderRadius={4}
+                />
               </DmView>
             </DmView>
           ))}

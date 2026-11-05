@@ -993,8 +993,14 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
   // busy while the spinner shows. The allowance requires those values, not
   // any (review M4). The mutants are the review's (B's mutants.py: A1-A3,
   // R3), on the host tree such a Button draws.
-  const ALLOW_BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
-  const saying = (tree: HostNode, props: Record<string, unknown>): HostNode => ({
+  const ALLOW_BUTTON: ParityAllowance[] = [
+    "buttonHeight",
+    "buttonAccessibility",
+  ]
+  const saying = (
+    tree: HostNode,
+    props: Record<string, unknown>
+  ): HostNode => ({
     ...tree,
     props: { ...tree.props, ...props },
   })
@@ -1019,7 +1025,9 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
           allow: ALLOW_BUTTON,
         }
       )
-      expect([disabled, loading].map(({ accepted }) => accepted[1].what)).toEqual([
+      expect(
+        [disabled, loading].map(({ accepted }) => accepted[1].what)
+      ).toEqual([
         "accessibilityLabel, accessibilityRole (Button)",
         "accessibilityLabel, accessibilityRole, accessibilityState (Button)",
       ])
@@ -1075,9 +1083,9 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
       const tree = saying(hostTree(after, env)!, says)
       // `before` names the ActionBtn tree the fixture holds
       const file = captured(stored(parityName(before as string, env)))
-      expect(() => expectParity("it", tree, { file, allow: ALLOW_BUTTON })).toThrow(
-        message
-      )
+      expect(() =>
+        expectParity("it", tree, { file, allow: ALLOW_BUTTON })
+      ).toThrow(message)
     }
   )
 
@@ -1100,9 +1108,13 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
     ])
     const file = captured({ ...tree, props: actionBtn })
     expect(
-      expectParity("it", tree, { file, allow: ["buttonAccessibility"] }).accepted
+      expectParity("it", tree, { file, allow: ["buttonAccessibility"] })
+        .accepted
     ).toEqual([
-      { path: "root<View>", what: "accessibilityLabel, accessibilityRole (Button)" },
+      {
+        path: "root<View>",
+        what: "accessibilityLabel, accessibilityRole (Button)",
+      },
     ])
     expect(() =>
       expectParity("it", saying(tree, { accessibilityLabel: "Save" }), {

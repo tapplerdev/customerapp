@@ -85,11 +85,18 @@ export type ScreenStore = ReturnType<typeof createScreenStore>
  * RTK 2.2.1 has no upsertQueryEntries (proapp's 2.12 does): each entry is an
  * upsertQueryData, which lands through its own thunk.
  */
-export const seedCache = async (store: ScreenStore, cache: CacheSeed[] = []) => {
+export const seedCache = async (
+  store: ScreenStore,
+  cache: CacheSeed[] = []
+) => {
   await Promise.all(
     cache.map(({ endpoint, args, data }) =>
       store.dispatch(
-        api.util.upsertQueryData(endpoint as never, args as never, data as never)
+        api.util.upsertQueryData(
+          endpoint as never,
+          args as never,
+          data as never
+        )
       )
     )
   )

@@ -2,12 +2,7 @@
    the kit loads each render's modules in the render's registry. */
 import { describe, it } from "@jest/globals"
 
-import {
-  copy,
-  openScreen,
-  pressText,
-  rowsByPlatform,
-} from "testing/screenKit"
+import { copy, openScreen, pressText, rowsByPlatform } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
 import {
   CHAT,

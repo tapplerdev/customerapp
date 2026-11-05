@@ -31,11 +31,7 @@ const NotificationItem: React.FC<Props> = ({ item, onPress }) => {
   return (
     <DmView onPress={() => onPress(item)}>
       <DmView style={[a.px_16, a.py_18]}>
-        <Text
-          size={12}
-          weight={isUnread ? "bold" : "regular"}
-          leading="tight"
-        >
+        <Text size={12} weight={isUnread ? "bold" : "regular"} leading="tight">
           {formatDate(item.createdAt)}
         </Text>
         <Text

@@ -17,34 +17,37 @@ const CASES = [
   { name: "compact", isSelected: false, compact: true },
 ]
 
-describe.each(PARITY_MATRIX)("ChipButton's press [$language $platform]", (env) => {
-  it.each(CASES)("calls onPress once, $name", async (row) => {
-    const onPress = jest.fn()
-    const load = () => {
-      const React = require("react") as typeof import("react")
-      const ChipButton = require("../ChipButton").default
-      const Harness = () =>
-        React.createElement(ChipButton, {
-          label: "Yes, please",
-          isSelected: row.isSelected,
-          compact: row.compact,
-          onPress,
-        })
-      return { default: Harness }
-    }
-    const session = await openScreen(load, {
-      lang: env.language,
-      platform: env.platform,
-      navigation: "none",
-    })
-    try {
-      expect(onPress).not.toHaveBeenCalled()
-      await session.act(() => {
-        pressText(session.root, "Yes, please")
+describe.each(PARITY_MATRIX)(
+  "ChipButton's press [$language $platform]",
+  (env) => {
+    it.each(CASES)("calls onPress once, $name", async (row) => {
+      const onPress = jest.fn()
+      const load = () => {
+        const React = require("react") as typeof import("react")
+        const ChipButton = require("../ChipButton").default
+        const Harness = () =>
+          React.createElement(ChipButton, {
+            label: "Yes, please",
+            isSelected: row.isSelected,
+            compact: row.compact,
+            onPress,
+          })
+        return { default: Harness }
+      }
+      const session = await openScreen(load, {
+        lang: env.language,
+        platform: env.platform,
+        navigation: "none",
       })
-      expect(onPress).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
-    }
-  })
-})
+      try {
+        expect(onPress).not.toHaveBeenCalled()
+        await session.act(() => {
+          pressText(session.root, "Yes, please")
+        })
+        expect(onPress).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

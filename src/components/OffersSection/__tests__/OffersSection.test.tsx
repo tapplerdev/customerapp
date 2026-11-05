@@ -116,7 +116,9 @@ describe("OffersSection's strip: the OFFERS tab", () => {
 
   it("draws the same tab as the profile page's banner", () => {
     const subscriptions = [sticker(1), sticker(2)]
-    const banner = render(<OffersSection subscriptions={subscriptions} />) as Node
+    const banner = render(
+      <OffersSection subscriptions={subscriptions} />
+    ) as Node
     const strip = render(
       <OffersSection subscriptions={subscriptions} variant="strip" />
     ) as Node
@@ -142,12 +144,17 @@ describe("OffersSection's strip: the OFFERS tab", () => {
   })
 
   it("has no band and no tab for a pro without stickers", () => {
-    expect(render(<OffersSection subscriptions={[]} variant="strip" />)).toBeNull()
+    expect(
+      render(<OffersSection subscriptions={[]} variant="strip" />)
+    ).toBeNull()
     // A promo line has its own OFFER banner (PromoLine), so on its own it
     // gets no OFFERS tab here, as on the profile page.
     expect(
       render(
-        <OffersSection subscriptions={[promoLine, featuredPro]} variant="strip" />
+        <OffersSection
+          subscriptions={[promoLine, featuredPro]}
+          variant="strip"
+        />
       )
     ).toBeNull()
   })

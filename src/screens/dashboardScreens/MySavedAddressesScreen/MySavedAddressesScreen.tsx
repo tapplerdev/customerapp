@@ -63,7 +63,10 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -92,7 +95,10 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
                   address: item.address.streetAddress || "",
                   city: item.address.city || "",
                   governorate: item.address.governorate || "",
-                  coords: { lat: item.address.location.lat, lon: item.address.location.lng },
+                  coords: {
+                    lat: item.address.location.lat,
+                    lon: item.address.location.lng,
+                  },
                   // Carries the origin forward so nothing downstream has to
                   // guess it. RequestSuccessScreen used to decide whether to
                   // offer "save this address" by comparing coordinates, which
@@ -128,7 +134,9 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
                   </Text>
                 )}
               </DmView>
-              <DmView style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}>
+              <DmView
+                style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
+              >
                 <ChevronRightIcon width={18} height={18} color={colors.red} />
               </DmView>
             </DmView>
@@ -146,8 +154,17 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
         )}
 
         {/* Add New Address */}
-        <DmView onPress={handleAddNewAddress} style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-          <Text size={16} weight="bold" leading="legacy" color="brand" style={{ marginEnd: 6 }}>
+        <DmView
+          onPress={handleAddNewAddress}
+          style={[a.flex_row, a.items_center, a.px_16, a.py_12]}
+        >
+          <Text
+            size={16}
+            weight="bold"
+            leading="legacy"
+            color="brand"
+            style={{ marginEnd: 6 }}
+          >
             +
           </Text>
           <Text size={13} weight="bold" leading="legacy">

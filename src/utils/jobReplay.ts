@@ -32,7 +32,9 @@ const sortedIds = (values: unknown[]): string =>
     .sort((a, b) => a - b)
     .join(",")
 
-const dishes = (items: { menuItemId?: unknown; quantity?: unknown }[]): string =>
+const dishes = (
+  items: { menuItemId?: unknown; quantity?: unknown }[]
+): string =>
   items
     .map((item) => `${Number(item?.menuItemId)}x${Number(item?.quantity)}`)
     .sort()
@@ -46,11 +48,16 @@ const pointOf = (job: JobType): { lat: number; lng: number } | undefined => {
   const location = job.address?.address?.location ?? job.address?.location
   const lat = location?.lat ?? (location as { latitude?: number })?.latitude
   const lng = location?.lng ?? (location as { longitude?: number })?.longitude
-  return typeof lat === "number" && typeof lng === "number" ? { lat, lng } : undefined
+  return typeof lat === "number" && typeof lng === "number"
+    ? { lat, lng }
+    : undefined
 }
 
 /** The fields where the job answered differs from what was sent; [] when it's the same job. */
-export const replayedChanges = (sent: Sent, job: JobType | undefined | null): string[] => {
+export const replayedChanges = (
+  sent: Sent,
+  job: JobType | undefined | null
+): string[] => {
   if (!job) return []
   const changed: string[] = []
 
@@ -62,7 +69,8 @@ export const replayedChanges = (sent: Sent, job: JobType | undefined | null): st
   }
   if (
     Array.isArray(job.pros) &&
-    sortedIds(sent.prosIds ?? []) !== sortedIds(job.pros.map(({ proId }) => proId))
+    sortedIds(sent.prosIds ?? []) !==
+      sortedIds(job.pros.map(({ proId }) => proId))
   ) {
     changed.push("prosIds")
   }

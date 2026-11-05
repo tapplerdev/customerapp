@@ -88,10 +88,10 @@ const kindOf = (file: string) =>
   file.endsWith(".tsx")
     ? ts.ScriptKind.TSX
     : file.endsWith(".ts")
-    ? ts.ScriptKind.TS
-    : file.endsWith(".jsx")
-    ? ts.ScriptKind.JSX
-    : ts.ScriptKind.JS
+      ? ts.ScriptKind.TS
+      : file.endsWith(".jsx")
+        ? ts.ScriptKind.JSX
+        : ts.ScriptKind.JS
 
 /** A string made of string literals joined with `+`, or undefined. */
 const folded = (node: ts.Node): string | undefined => {
@@ -224,7 +224,8 @@ export const findLegacyPrimitives = (source: string, file = "x.tsx") => {
               !parent.name.elements.some(
                 (el) =>
                   el.dotDotDotToken ||
-                  (el.propertyName && ts.isComputedPropertyName(el.propertyName))
+                  (el.propertyName &&
+                    ts.isComputedPropertyName(el.propertyName))
               )))
         if (!named) hit(node, `the barrel "${from}" taken whole`)
       }

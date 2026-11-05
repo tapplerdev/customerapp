@@ -139,10 +139,16 @@ describe("pressing and typing by what the customer sees", () => {
       const { root } = session
       const refused = (what: string) =>
         `press "${what}": it is disabled, so a tap does nothing`
-      expect(() => pressText(root, "Disabled link")).toThrow(refused("Disabled link"))
-      expect(() => pressText(root, "Disabled touch")).toThrow(refused("Disabled touch"))
+      expect(() => pressText(root, "Disabled link")).toThrow(
+        refused("Disabled link")
+      )
+      expect(() => pressText(root, "Disabled touch")).toThrow(
+        refused("Disabled touch")
+      )
       // the row says nothing of `disabled`; the touchable under its wrapper does
-      expect(() => pressTitled(root, "Locked row")).toThrow(refused("Locked row"))
+      expect(() => pressTitled(root, "Locked row")).toThrow(
+        refused("Locked row")
+      )
       // asked for, the handlers run
       await session.act(() => {
         pressText(root, "Disabled link", { allowDisabled: true })
@@ -199,7 +205,11 @@ describe("pressing and typing by what the customer sees", () => {
         'press "Nowhere": no match'
       )
       expect(() =>
-        only(root, (node) => typeof node.props.onChangeText === "function", "a field")
+        only(
+          root,
+          (node) => typeof node.props.onChangeText === "function",
+          "a field"
+        )
       ).toThrow("a field: 5 matches, expected 1")
     } finally {
       session.unmount()
@@ -272,12 +282,16 @@ describe("pressing an icon-only control", () => {
     "opens JobDetail's ••• menu [$env.language $env.platform]",
     async ({ env: rowEnv }) => {
       const session = await openScreen(
-        () => require("screens/dashboardScreens/JobDetailScreen/JobDetailScreen"),
+        () =>
+          require("screens/dashboardScreens/JobDetailScreen/JobDetailScreen"),
         {
           ...screenState("data"),
           lang: rowEnv.language,
           platform: rowEnv.platform,
-          route: { name: "JobDetailScreen", params: ROUTE_PARAMS.JobDetailScreen },
+          route: {
+            name: "JobDetailScreen",
+            params: ROUTE_PARAMS.JobDetailScreen,
+          },
         }
       )
       try {

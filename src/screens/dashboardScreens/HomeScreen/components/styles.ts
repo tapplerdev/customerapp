@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   row: {
@@ -16,7 +16,7 @@ export default StyleSheet.create({
     width: 20,
     height: 20,
   },
-});
+})
 
 export const presetCardStyles = StyleSheet.create({
   container: {
@@ -77,4 +77,4 @@ export const presetCardStyles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-});
+})

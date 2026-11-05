@@ -44,13 +44,21 @@ const options = (name: StateName, env: ParityEnv) => ({
 })
 
 const openLanguage: Step = (root, env) =>
-  pressText(root, copy(env, "language") + copy(env, env.language === "ar" ? "arabic" : "english"))
+  pressText(
+    root,
+    copy(env, "language") +
+      copy(env, env.language === "ar" ? "arabic" : "english")
+  )
 
 describe("AccountScreen language picker", () => {
   it.each(
     rowsByPlatform(
       [
-        { state: "signed in" as const, label: "language picker open, signed in", allow: [] as ParityAllowance[] },
+        {
+          state: "signed in" as const,
+          label: "language picker open, signed in",
+          allow: [] as ParityAllowance[],
+        },
         // The guest card behind the picker draws Create account and Log in,
         // ActionBtns turned into ds Buttons.
         {
@@ -61,17 +69,25 @@ describe("AccountScreen language picker", () => {
       ],
       PARITY_MATRIX
     )
-  )("$label [$env.language $env.platform]", async ({ state, label, allow, env }) => {
-    expectParity(
-      parityName(label, env),
-      await treeAfter(load, options(state, env), env, [openLanguage]),
-      { allow }
-    )
-  })
+  )(
+    "$label [$env.language $env.platform]",
+    async ({ state, label, allow, env }) => {
+      expectParity(
+        parityName(label, env),
+        await treeAfter(load, options(state, env), env, [openLanguage]),
+        { allow }
+      )
+    }
+  )
 })
 
 describe("AccountScreen language picker presses", () => {
-  it.each(rowsByPlatform([{ state: "signed in" as const }, { state: "guest" as const }], PARITY_MATRIX))(
+  it.each(
+    rowsByPlatform(
+      [{ state: "signed in" as const }, { state: "guest" as const }],
+      PARITY_MATRIX
+    )
+  )(
     "the other language's checkbox switches the language; the current one only closes [$state] [$env.language $env.platform]",
     async ({ state, env }) => {
       const other = env.language === "ar" ? "en" : "ar"
@@ -86,7 +102,10 @@ describe("AccountScreen language picker presses", () => {
       const switching = await open()
       try {
         await switching.act(() => {
-          pressTitled(switching.root, copy(env, other === "ar" ? "arabic" : "english"))
+          pressTitled(
+            switching.root,
+            copy(env, other === "ar" ? "arabic" : "english")
+          )
         })
         const auth = (switching.store.getState() as any).auth
         expect(auth.language).toBe(other)
@@ -98,7 +117,10 @@ describe("AccountScreen language picker presses", () => {
       const staying = await open()
       try {
         await staying.act(() => {
-          pressTitled(staying.root, copy(env, env.language === "ar" ? "arabic" : "english"))
+          pressTitled(
+            staying.root,
+            copy(env, env.language === "ar" ? "arabic" : "english")
+          )
         })
         const auth = (staying.store.getState() as any).auth
         expect(auth.language).toBe(env.language)

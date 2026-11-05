@@ -9,10 +9,7 @@ import Animated, {
 
 import { DmView } from "@tappler/shared/src/components/UI"
 
-import {
-  PresetSectionItemType,
-  PresetSectionShapeType,
-} from "types/cms"
+import { PresetSectionItemType, PresetSectionShapeType } from "types/cms"
 import { Text, a, px } from "@tappler/shared/src/ds"
 import { presetCardStyles } from "./styles"
 
@@ -55,10 +52,22 @@ const FadeInImage: React.FC<FastImageProps> = (props) => {
   const onLoad = useCallback(() => {
     opacity.value = withTiming(1, { duration: 300 })
   }, [])
-  return <AnimatedFastImage {...props} onLoad={onLoad} style={[props.style, animStyle]} />
+  return (
+    <AnimatedFastImage
+      {...props}
+      onLoad={onLoad}
+      style={[props.style, animStyle]}
+    />
+  )
 }
 
-const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPress }) => {
+const PresetCard: React.FC<Props> = ({
+  item,
+  shapeType,
+  isAr,
+  noEndMargin,
+  onPress,
+}) => {
   const title = getTitle(item, isAr)
   const picture = isAr ? item.pictureAr : item.pictureEn
   const imgUrl = picture?.url720 || picture?.url
@@ -67,7 +76,11 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
     case "squareWithOverlay":
       return (
         <DmView
-          style={[!noEndMargin && a.mr_10, presetCardStyles.container, cardShadow]}
+          style={[
+            !noEndMargin && a.mr_10,
+            presetCardStyles.container,
+            cardShadow,
+          ]}
           onPress={onPress}
         >
           <DmView style={[a.flex_1, presetCardStyles.box, a.overflow_hidden]}>
@@ -90,7 +103,11 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
     case "rectangleWithOverlay":
       return (
         <DmView
-          style={[!noEndMargin && a.mr_10, presetCardStyles.container2, cardShadow]}
+          style={[
+            !noEndMargin && a.mr_10,
+            presetCardStyles.container2,
+            cardShadow,
+          ]}
           onPress={onPress}
         >
           <DmView style={[a.flex_1, presetCardStyles.box, a.overflow_hidden]}>
@@ -112,11 +129,14 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
 
     case "doubleRectangles":
       return (
-        <DmView style={[!noEndMargin && a.mr_10, presetCardStyles.container3]} onPress={onPress}>
-          <DmView
-            style={[a.w_full, presetCardStyles.boxWrap, cardShadow]}
-          >
-            <DmView style={[a.flex_1, presetCardStyles.box2, a.overflow_hidden]}>
+        <DmView
+          style={[!noEndMargin && a.mr_10, presetCardStyles.container3]}
+          onPress={onPress}
+        >
+          <DmView style={[a.w_full, presetCardStyles.boxWrap, cardShadow]}>
+            <DmView
+              style={[a.flex_1, presetCardStyles.box2, a.overflow_hidden]}
+            >
               {!!imgUrl && (
                 <FadeInImage
                   source={{ uri: imgUrl }}
@@ -134,10 +154,11 @@ const PresetCard: React.FC<Props> = ({ item, shapeType, isAr, noEndMargin, onPre
 
     case "rectangleWithText":
       return (
-        <DmView style={[!noEndMargin && a.mr_10, presetCardStyles.container4]} onPress={onPress}>
-          <DmView
-            style={[a.w_full, presetCardStyles.boxWrap2, cardShadow]}
-          >
+        <DmView
+          style={[!noEndMargin && a.mr_10, presetCardStyles.container4]}
+          onPress={onPress}
+        >
+          <DmView style={[a.w_full, presetCardStyles.boxWrap2, cardShadow]}>
             <DmView style={[a.flex_1, presetCardStyles.box, a.overflow_hidden]}>
               {!!imgUrl && (
                 <FadeInImage

@@ -17,7 +17,9 @@ jest.mock("@tappler/shared/src/hooks/permissionHooks", () => ({
   requestCameraPermission: () => Promise.resolve(true),
   requestGalleryPermission: () => Promise.resolve(true),
 }))
-jest.mock("utils/openPermissionAlert", () => ({ openPermissionAlert: () => undefined }))
+jest.mock("utils/openPermissionAlert", () => ({
+  openPermissionAlert: () => undefined,
+}))
 
 const mockUpload = jest.fn<() => Promise<{ storageKey: string }>>()
 const mockSend = jest.fn<() => Promise<unknown>>()
@@ -47,7 +49,11 @@ const open = async () => {
     TestRenderer.create(<Harness />)
   })
   await act(async () => {
-    latest.current.add({ path: "file:///photo.jpg", mime: "image/jpeg", filename: "photo.jpg" })
+    latest.current.add({
+      path: "file:///photo.jpg",
+      mime: "image/jpeg",
+      filename: "photo.jpg",
+    })
   })
   const send = async (text: string) => {
     let error: unknown
@@ -64,7 +70,10 @@ const open = async () => {
 describe("a photo send", () => {
   it("takes the bubble down when the server refuses it", async () => {
     mockUpload.mockResolvedValue({ storageKey: "k" })
-    mockSend.mockRejectedValue({ status: 400, data: { validationErrors: { text: ["CHAT_BLOCK_CONTACT_INFO"] } } })
+    mockSend.mockRejectedValue({
+      status: 400,
+      data: { validationErrors: { text: ["CHAT_BLOCK_CONTACT_INFO"] } },
+    })
     const chat = await open()
 
     const error = await chat.send("call me 0100")

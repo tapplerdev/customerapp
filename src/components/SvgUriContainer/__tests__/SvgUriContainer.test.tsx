@@ -27,7 +27,9 @@ const SVG = "<svg></svg>"
 const draw = async (uri: string, onError: () => void) => {
   let renderer: TestRenderer.ReactTestRenderer | undefined
   await act(async () => {
-    renderer = TestRenderer.create(<SvgUriContainer uri={uri} onError={onError} />)
+    renderer = TestRenderer.create(
+      <SvgUriContainer uri={uri} onError={onError} />
+    )
   })
   await act(async () => {
     await Promise.resolve()

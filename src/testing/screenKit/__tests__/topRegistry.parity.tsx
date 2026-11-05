@@ -33,14 +33,19 @@ describe("the test file's own registry has no layout direction", () => {
 
   it("a module that reads it as it loads can't be imported at the top", () => {
     expect(atTop).toBeInstanceOf(Error)
-    expect(String(atTop)).toMatch(/I18nManager\.isRTL read in the test file's own registry/)
+    expect(String(atTop)).toMatch(
+      /I18nManager\.isRTL read in the test file's own registry/
+    )
   })
 
   it("the same module in the loader draws the row's direction", async () => {
-    const ar = await renderScreen(() => require("../__fixtures__/RtlAtImport"), {
-      lang: "ar",
-      navigation: "none",
-    })
+    const ar = await renderScreen(
+      () => require("../__fixtures__/RtlAtImport"),
+      {
+        lang: "ar",
+        navigation: "none",
+      }
+    )
     expect(ar?.children).toEqual(["rtl rtl"])
   })
 })

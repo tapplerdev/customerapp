@@ -85,7 +85,12 @@ const SkeletonLoader: React.FC<Props> = ({
         ]}
       >
         {/* Base skeleton */}
-        <View style={[styles.skeleton, { backgroundColor: skeletonBackgroundColor, borderRadius }]} />
+        <View
+          style={[
+            styles.skeleton,
+            { backgroundColor: skeletonBackgroundColor, borderRadius },
+          ]}
+        />
 
         {/* Shimmer overlay */}
         <Animated.View

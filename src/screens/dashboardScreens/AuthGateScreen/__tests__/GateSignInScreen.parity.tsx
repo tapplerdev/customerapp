@@ -49,7 +49,18 @@ const ANSWERS = {
   // A 400 with nothing to say. It was a 500 until a 5xx got its own card
   // (server trouble); the rendered card is the same, so the case kept its name.
   "no validation": { error: { status: 400, data: {} } },
-  "too many attempts": { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } },
+  "too many attempts": {
+    error: {
+      status: 429,
+      retryAfterSeconds: 840,
+      data: {
+        message: "Too many attempts. Please try again in 14 minutes.",
+        validationErrors: {
+          email: ["Too many attempts. Please try again in 14 minutes."],
+        },
+      },
+    },
+  },
   "server failing": { error: { status: 500, data: {} } },
   accepted: { data: { token: "t", refreshToken: "r" } },
 }
@@ -71,8 +82,10 @@ const optionsFor = (
   props,
 })
 
-const type = (index: number, text: string): Step => (root) =>
-  typeInto(root, index, text)
+const type =
+  (index: number, text: string): Step =>
+  (root) =>
+    typeInto(root, index, text)
 const logIn: Step = (root, env) => pressTitled(root, copy(env, "log_In"))
 const showPassword: Step = (root) =>
   pressIcon(root, { icon: "svg:hide-password" })
@@ -88,11 +101,31 @@ const CASES: Case[] = [
   { label: "both typed, password hidden", steps: FILLED },
   { label: "both typed, password shown", steps: [...FILLED, showPassword] },
   { label: "signing in", steps: [...FILLED, logIn] },
-  { label: "refused: wrong password", answer: "password mismatch", steps: [...FILLED, logIn] },
-  { label: "refused: not registered", answer: "not registered", steps: [...FILLED, logIn] },
-  { label: "refused: no validation errors", answer: "no validation", steps: [...FILLED, logIn] },
-  { label: "too many attempts card", answer: "too many attempts", steps: [...FILLED, logIn] },
-  { label: "server trouble card", answer: "server failing", steps: [...FILLED, logIn] },
+  {
+    label: "refused: wrong password",
+    answer: "password mismatch",
+    steps: [...FILLED, logIn],
+  },
+  {
+    label: "refused: not registered",
+    answer: "not registered",
+    steps: [...FILLED, logIn],
+  },
+  {
+    label: "refused: no validation errors",
+    answer: "no validation",
+    steps: [...FILLED, logIn],
+  },
+  {
+    label: "too many attempts card",
+    answer: "too many attempts",
+    steps: [...FILLED, logIn],
+  },
+  {
+    label: "server trouble card",
+    answer: "server failing",
+    steps: [...FILLED, logIn],
+  },
 ]
 
 describe("GateSignInScreen", () => {
@@ -123,33 +156,54 @@ describe("GateSignInScreen presses", () => {
     }
   }
 
-  it.each(envs)("Log In signs in with the lower-cased email and dismisses the gate [$env.language $env.platform]", async ({ env }) => {
-    const navigation = { goBack: jest.fn() }
-    const parentNav = { goBack: jest.fn() }
-    const session = await openScreen(load, optionsFor(env, "accepted", { navigation, parentNav }))
-    try {
-      await run(session, env, [...FILLED, logIn])
-      const sent = session.requests().filter((r) => r.endpoint === "auth")
-      expect(sent).toHaveLength(1)
-      expect(JSON.stringify(sent[0].args)).toContain('"email":"mona.adel@example.com"')
-      expect(JSON.stringify(sent[0].args)).toContain('"password":"secret123"')
-      expect(parentNav.goBack).toHaveBeenCalledTimes(1)
-      expect(navigation.goBack).not.toHaveBeenCalled()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Log In signs in with the lower-cased email and dismisses the gate [$env.language $env.platform]",
+    async ({ env }) => {
+      const navigation = { goBack: jest.fn() }
+      const parentNav = { goBack: jest.fn() }
+      const session = await openScreen(
+        load,
+        optionsFor(env, "accepted", { navigation, parentNav })
+      )
+      try {
+        await run(session, env, [...FILLED, logIn])
+        const sent = session.requests().filter((r) => r.endpoint === "auth")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          '"email":"mona.adel@example.com"'
+        )
+        expect(JSON.stringify(sent[0].args)).toContain('"password":"secret123"')
+        expect(parentNav.goBack).toHaveBeenCalledTimes(1)
+        expect(navigation.goBack).not.toHaveBeenCalled()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Log In with an empty form sends nothing; the back chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const navigation = { goBack: jest.fn() }
-    const session = await openScreen(load, optionsFor(env, "accepted", { navigation, parentNav: { goBack: jest.fn() } }))
-    try {
-      await run(session, env, [logIn])
-      expect(session.requests().filter((r) => r.endpoint === "auth")).toHaveLength(0)
-      await run(session, env, [(root) => pressIcon(root, { icon: "svg:chevron-left" })])
-      expect(navigation.goBack).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Log In with an empty form sends nothing; the back chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const navigation = { goBack: jest.fn() }
+      const session = await openScreen(
+        load,
+        optionsFor(env, "accepted", {
+          navigation,
+          parentNav: { goBack: jest.fn() },
+        })
+      )
+      try {
+        await run(session, env, [logIn])
+        expect(
+          session.requests().filter((r) => r.endpoint === "auth")
+        ).toHaveLength(0)
+        await run(session, env, [
+          (root) => pressIcon(root, { icon: "svg:chevron-left" }),
+        ])
+        expect(navigation.goBack).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

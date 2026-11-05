@@ -68,7 +68,13 @@ const SECOND = {
   ...EGYPT,
   title: "Nile Corniche, Maadi",
   id: "here:af:2",
-  address: { ...EGYPT.address, street: "Nile Corniche", houseNumber: "", label: "Nile Corniche, Maadi, Cairo, Egypt", city: "Maadi" },
+  address: {
+    ...EGYPT.address,
+    street: "Nile Corniche",
+    houseNumber: "",
+    label: "Nile Corniche, Maadi, Cairo, Egypt",
+    city: "Maadi",
+  },
   position: { lat: 29.96, lng: 31.25 },
 }
 const ABROAD = { ...EGYPT, address: { ...EGYPT.address, countryCode: "USA" } }
@@ -77,9 +83,14 @@ type Here = {
   reverse?: "loading" | unknown[]
   search?: "loading" | unknown[]
 }
-const hereFixtures = ({ reverse = [EGYPT], search = [EGYPT, SECOND] }: Here): HttpFixtures =>
+const hereFixtures =
+  ({ reverse = [EGYPT], search = [EGYPT, SECOND] }: Here): HttpFixtures =>
   (key) => {
-    const answer = key.includes("/revgeocode") ? reverse : key.includes("/discover") ? search : undefined
+    const answer = key.includes("/revgeocode")
+      ? reverse
+      : key.includes("/discover")
+        ? search
+        : undefined
     if (answer === undefined) return undefined
     return answer === "loading" ? "loading" : { json: { items: answer } }
   }
@@ -103,12 +114,20 @@ const REGION = {
   latitudeDelta: 0.004,
   longitudeDelta: 0.002,
 }
-const moving: Step = (root) => fireHost(root, "MapView", "onRegionChange", [REGION])
+const moving: Step = (root) =>
+  fireHost(root, "MapView", "onRegionChange", [REGION])
 const settled: Step = (root) =>
-  fireHost(root, "MapView", "onRegionChangeComplete", [REGION, { isGesture: false }])
+  fireHost(root, "MapView", "onRegionChangeComplete", [
+    REGION,
+    { isGesture: false },
+  ])
 const focusSearch: Step = (root) => fireHost(root, "TextInput", "onFocus")
-const search = (text: string): Step => (root) => typeInto(root, 0, text)
-const confirm: Step = (root, env) => pressTitled(root, copy(env, "confirm_my_location"))
+const search =
+  (text: string): Step =>
+  (root) =>
+    typeInto(root, 0, text)
+const confirm: Step = (root, env) =>
+  pressTitled(root, copy(env, "confirm_my_location"))
 
 // Confirm is an ActionBtn turned into a ds Button by the conversion: Button's
 // own height and accessibility props, on the rows that draw it (the search
@@ -123,17 +142,42 @@ type Case = {
 }
 const CASES: Case[] = [
   { label: "as opened" },
-  { label: "as opened, no home indicator", extra: { insets: { top: 20, bottom: 0 } } },
+  {
+    label: "as opened, no home indicator",
+    extra: { insets: { top: 20, bottom: 0 } },
+  },
   { label: "pin moving: detecting the location", steps: [moving] },
-  { label: "pin settled: the address in the pill", steps: [moving, settled, wait(700)] },
+  {
+    label: "pin settled: the address in the pill",
+    steps: [moving, settled, wait(700)],
+  },
   { label: "search opened", steps: [focusSearch] },
-  { label: "search: two letters (a spinner)", steps: [focusSearch, search("Ta")] },
-  { label: "search: results pending", here: { search: "loading" }, steps: [focusSearch, search("Tahrir Sq")] },
-  { label: "search: two results", steps: [focusSearch, search("Tahrir Sq"), wait(700)] },
-  { label: "search: nothing found", here: { search: [] }, steps: [focusSearch, search("Zzzz Qqqq"), wait(700)] },
+  {
+    label: "search: two letters (a spinner)",
+    steps: [focusSearch, search("Ta")],
+  },
+  {
+    label: "search: results pending",
+    here: { search: "loading" },
+    steps: [focusSearch, search("Tahrir Sq")],
+  },
+  {
+    label: "search: two results",
+    steps: [focusSearch, search("Tahrir Sq"), wait(700)],
+  },
+  {
+    label: "search: nothing found",
+    here: { search: [] },
+    steps: [focusSearch, search("Zzzz Qqqq"), wait(700)],
+  },
   {
     label: "the second result picked: the pill shows it",
-    steps: [focusSearch, search("Tahrir Sq"), wait(700), (root) => pressText(root, SECOND.title)],
+    steps: [
+      focusSearch,
+      search("Tahrir Sq"),
+      wait(700),
+      (root) => pressText(root, SECOND.title),
+    ],
   },
   { label: "confirm pending", here: { reverse: "loading" }, steps: [confirm] },
 ]
@@ -166,90 +210,116 @@ describe("PickAddressScreen presses", () => {
     }
   }
 
-  it.each(envs)("Confirm resolves the pin's address, tells the bus and goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      const { addressEventBus } = require("@tappler/shared/src/events/AddressBus")
-      const picked: unknown[] = []
-      addressEventBus.on("address:pick", (info: unknown) => picked.push(info))
-      await run(session, env, [settled, confirm, wait(1000)])
-      expect(picked).toEqual([
-        {
-          address: "12 Tahrir Street",
-          city: "Dokki",
-          governorate: "Giza",
-          coords: { lat: 30.0444, lon: 31.2357 },
-        },
-      ])
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Confirm resolves the pin's address, tells the bus and goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const picked: unknown[] = []
+        addressEventBus.on("address:pick", (info: unknown) => picked.push(info))
+        await run(session, env, [settled, confirm, wait(1000)])
+        expect(picked).toEqual([
+          {
+            address: "12 Tahrir Street",
+            city: "Dokki",
+            governorate: "Giza",
+            coords: { lat: 30.0444, lon: 31.2357 },
+          },
+        ])
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Confirm outside Egypt alerts and does not leave [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, { reverse: [ABROAD] }))
-    try {
-      const { Alert } = require("react-native")
-      const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined)
-      await run(session, env, [confirm, wait(1000)])
-      expect(alert).toHaveBeenCalledWith(copy(env, "your_location_is_outside"))
-      expect(session.navigation.actions).toEqual([])
-      alert.mockRestore()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Confirm outside Egypt alerts and does not leave [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        optionsFor(env, { reverse: [ABROAD] })
+      )
+      try {
+        const { Alert } = require("react-native")
+        const alert = jest
+          .spyOn(Alert, "alert")
+          .mockImplementation(() => undefined)
+        await run(session, env, [confirm, wait(1000)])
+        expect(alert).toHaveBeenCalledWith(
+          copy(env, "your_location_is_outside")
+        )
+        expect(session.navigation.actions).toEqual([])
+        alert.mockRestore()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("the cross clears the text, then leaves the search, then closes the screen [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      const opened = JSON.stringify(session.tree())
-      await run(session, env, [focusSearch])
-      const searching = JSON.stringify(session.tree())
-      expect(searching).not.toBe(opened)
-      await run(session, env, [search("Tahrir Sq"), wait(700)])
-      const typed = JSON.stringify(session.tree())
-      const cross: Step = (root) => pressIcon(root, { icon: "svg:close" })
-      await run(session, env, [cross])
-      const cleared = JSON.stringify(session.tree())
-      expect(cleared).not.toBe(typed)
-      expect(cleared).toBe(searching)
-      await run(session, env, [cross])
-      expect(JSON.stringify(session.tree())).toBe(opened)
-      expect(session.navigation.actions).toEqual([])
-      await run(session, env, [cross])
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "the cross clears the text, then leaves the search, then closes the screen [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        const opened = JSON.stringify(session.tree())
+        await run(session, env, [focusSearch])
+        const searching = JSON.stringify(session.tree())
+        expect(searching).not.toBe(opened)
+        await run(session, env, [search("Tahrir Sq"), wait(700)])
+        const typed = JSON.stringify(session.tree())
+        const cross: Step = (root) => pressIcon(root, { icon: "svg:close" })
+        await run(session, env, [cross])
+        const cleared = JSON.stringify(session.tree())
+        expect(cleared).not.toBe(typed)
+        expect(cleared).toBe(searching)
+        await run(session, env, [cross])
+        expect(JSON.stringify(session.tree())).toBe(opened)
+        expect(session.navigation.actions).toEqual([])
+        await run(session, env, [cross])
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Use current location leaves the search; the map button needs a fix [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(
-      load,
-      optionsFor(env, {}, { location: { latitude: 30.06, longitude: 31.22 } })
-    )
-    try {
-      const opened = JSON.stringify(session.tree())
-      await run(session, env, [focusSearch])
-      expect(JSON.stringify(session.tree())).not.toBe(opened)
-      await run(session, env, [(root) => pressText(root, copy(env, "use_current_location"))])
-      expect(JSON.stringify(session.tree())).toBe(opened)
-      // The map button asks for a fix (it never moves a mock map, so the
-      // request is what shows it was pressed).
-      const Geolocation = require("@react-native-community/geolocation").default
-      const asked = jest.spyOn(Geolocation, "getCurrentPosition")
-      await run(session, env, [(root) => pressIcon(root, { icon: "svg:my-location-red" })])
-      expect(asked).toHaveBeenCalledTimes(1)
-      expect(JSON.stringify(session.tree())).toBe(opened)
-      asked.mockRestore()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Use current location leaves the search; the map button needs a fix [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        optionsFor(env, {}, { location: { latitude: 30.06, longitude: 31.22 } })
+      )
+      try {
+        const opened = JSON.stringify(session.tree())
+        await run(session, env, [focusSearch])
+        expect(JSON.stringify(session.tree())).not.toBe(opened)
+        await run(session, env, [
+          (root) => pressText(root, copy(env, "use_current_location")),
+        ])
+        expect(JSON.stringify(session.tree())).toBe(opened)
+        // The map button asks for a fix (it never moves a mock map, so the
+        // request is what shows it was pressed).
+        const Geolocation =
+          require("@react-native-community/geolocation").default
+        const asked = jest.spyOn(Geolocation, "getCurrentPosition")
+        await run(session, env, [
+          (root) => pressIcon(root, { icon: "svg:my-location-red" }),
+        ])
+        expect(asked).toHaveBeenCalledTimes(1)
+        expect(JSON.stringify(session.tree())).toBe(opened)
+        asked.mockRestore()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

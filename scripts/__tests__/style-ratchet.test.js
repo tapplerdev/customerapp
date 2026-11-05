@@ -744,7 +744,10 @@ describe("CLI", () => {
 
     it("the CLI fails each file that holds one, one a rise already recorded included", () => {
       const counts = (over) => ({
-        counts: { ...Object.fromEntries(ZERO_SINCE_W3.map((m) => [m, 0])), ...over },
+        counts: {
+          ...Object.fromEntries(ZERO_SINCE_W3.map((m) => [m, 0])),
+          ...over,
+        },
       })
       expect(
         absoluteViolations({
@@ -773,7 +776,7 @@ describe("CLI", () => {
         'import { View } from "react-native"',
         'import { DmText } from "@tappler/shared/src/components/UI"',
         'import clsx from "clsx"',
-        'export const X = ({ on }: { on: boolean }) => (',
+        "export const X = ({ on }: { on: boolean }) => (",
         '  <View className={clsx("mt-[4]", on && "px-[8]")}><DmText>hi</DmText></View>',
         ")",
         "export const props = { textClassName: 'x' }",
@@ -952,8 +955,13 @@ describe("LegacyText (bridge): it may rise only where DmText/ActionBtn falls as 
   const baseline = () => {
     const file = path.join(tmp, "bridge.json")
     expect(
-      run(["--update", "--root", path.join(BRIDGE, "before"), "--baseline", file])
-        .code
+      run([
+        "--update",
+        "--root",
+        path.join(BRIDGE, "before"),
+        "--baseline",
+        file,
+      ]).code
     ).toBe(0)
     return file
   }
@@ -1013,9 +1021,7 @@ describe("LegacyText (bridge): it may rise only where DmText/ActionBtn falls as 
       "LegacyText 0 -> 2 (+2): LegacyText may rise only in a file whose DmText/ActionBtn count falls by at least as much (LegacyText 0 -> 2, DmText/ActionBtn 1 -> 0)"
     )
     // a className fell, no DmText did
-    expect(out).toContain(
-      "(LegacyText 0 -> 1, DmText/ActionBtn 1 -> 1)"
-    )
+    expect(out).toContain("(LegacyText 0 -> 1, DmText/ActionBtn 1 -> 1)")
     // a new file
     expect(out).toMatch(
       /src\/screens\/Fresh\.jsx\n\s+LegacyText 0 -> 1 \(\+1\)/
@@ -1045,7 +1051,11 @@ describe("LegacyText (bridge): it may rise only where DmText/ActionBtn falls as 
 
 describe("DmText/ActionBtn (primitives): under any name, and only falling, file by file", () => {
   const UI = "@tappler/shared/src/components/UI"
-  const dmTexts = (n, imp = `import { DmText, DmView } from "${UI}"`, tag = "DmText") =>
+  const dmTexts = (
+    n,
+    imp = `import { DmText, DmView } from "${UI}"`,
+    tag = "DmText"
+  ) =>
     `import React from "react"\n${imp}\nexport const X = () => (<DmView>${Array.from({ length: n }, (_, i) => `\n  <${tag}>t${i}</${tag}>`).join("")}\n</DmView>)\n`
   const legacyTexts = (n) =>
     `import React from "react"\nimport { DmView } from "${UI}"\nimport LegacyText from "@tappler/shared/src/components/LegacyText"\nexport const X = () => (<DmView>${Array.from({ length: n }, (_, i) => `\n  <LegacyText>t${i}</LegacyText>`).join("")}\n</DmView>)\n`
@@ -1063,31 +1073,49 @@ describe("DmText/ActionBtn (primitives): under any name, and only falling, file 
 
   it("counts them under a renamed import, their own module's default, and a namespace", () => {
     expect(
-      counted(dmTexts(2, `import { DmText as Label, DmView } from "${UI}"`, "Label")).counts.primitives
+      counted(
+        dmTexts(2, `import { DmText as Label, DmView } from "${UI}"`, "Label")
+      ).counts.primitives
     ).toBe(2)
     expect(
-      counted(dmTexts(1, `import { DmView } from "${UI}"\nimport T from "${UI}/DmText"`, "T")).counts.primitives
+      counted(
+        dmTexts(
+          1,
+          `import { DmView } from "${UI}"\nimport T from "${UI}/DmText"`,
+          "T"
+        )
+      ).counts.primitives
     ).toBe(1)
     const ns = counted(
       `import React from "react"\nimport * as UI from "${UI}"\nexport const X = () => <UI.DmView><UI.ActionBtn title="a" /><UI.DmText>b</UI.DmText></UI.DmView>\n`
     )
     expect(ns.counts.primitives).toBe(2)
     expect(
-      ns.occurrences.filter((o) => o.metric === "primitives").map((o) => o.owner)
+      ns.occurrences
+        .filter((o) => o.metric === "primitives")
+        .map((o) => o.owner)
     ).toEqual(["ActionBtn", "DmText"])
   })
 
   it("keeps an aliased DmText in the strict gate, and out of LegacyText's credit", () => {
-    const aliased = dmTexts(1, `import { DmText as Label, DmView } from "${UI}"`, "Label")
+    const aliased = dmTexts(
+      1,
+      `import { DmText as Label, DmView } from "${UI}"`,
+      "Label"
+    )
     const strict = ratchet(
       { "src/A.tsx": [dmTexts(1), aliased] },
       { strict: ["src/**"], strictMetrics: ["className", "primitives"] }
     ).strictViolations
-    expect(strict.map((v) => [v.metric, v.owner])).toEqual([["primitives", "DmText"]])
+    expect(strict.map((v) => [v.metric, v.owner])).toEqual([
+      ["primitives", "DmText"],
+    ])
     // two DmText kept under another name don't pay for two LegacyText
     const swap = `import React from "react"\nimport { DmText as Label, DmView } from "${UI}"\nimport LegacyText from "@tappler/shared/src/components/LegacyText"\nexport const X = () => (<DmView><Label>a</Label><Label>b</Label><LegacyText>c</LegacyText><LegacyText>d</LegacyText></DmView>)\n`
     expect(
-      ratchet({ "src/A.tsx": [dmTexts(2), swap] }).violations.map((v) => v.metric)
+      ratchet({ "src/A.tsx": [dmTexts(2), swap] }).violations.map(
+        (v) => v.metric
+      )
     ).toEqual(["bridge"])
   })
 
@@ -1096,9 +1124,9 @@ describe("DmText/ActionBtn (primitives): under any name, and only falling, file 
       "src/A.tsx": [dmTexts(2), legacyTexts(2)],
       "src/B.tsx": [dmTexts(0), dmTexts(2)],
     })
-    expect(moved.violations.map((v) => [v.file, v.metric, v.from, v.to])).toEqual([
-      ["src/B.tsx", "primitives", 0, 2],
-    ])
+    expect(
+      moved.violations.map((v) => [v.file, v.metric, v.from, v.to])
+    ).toEqual([["src/B.tsx", "primitives", 0, 2]])
     expect(moved.violations[0].rule).toBe("DmText/ActionBtn may only fall")
     const fresh = ratchet({
       "src/A.tsx": [dmTexts(2), legacyTexts(2)],
@@ -1110,7 +1138,9 @@ describe("DmText/ActionBtn (primitives): under any name, and only falling, file 
       ["src/New.tsx", "primitiveImport"],
     ])
     // a fall alone, or a swap in the same file, is fine
-    expect(ratchet({ "src/A.tsx": [dmTexts(2), legacyTexts(2)] }).violations).toEqual([])
+    expect(
+      ratchet({ "src/A.tsx": [dmTexts(2), legacyTexts(2)] }).violations
+    ).toEqual([])
   })
 })
 
@@ -1192,9 +1222,11 @@ describe("the ways round it review-ca-w0 found: each one counts now", () => {
         `import React from "react"\nimport { ActivityIndicator, TextInput, View } from "react-native"\nexport const X = ({ on, colors }: any) => (\n  <View>${jsx}</View>\n)\n`
       ).colorLiteral
     expect(colours('<ActivityIndicator color="#CC0000" />')).toBe(1)
-    expect(colours('<ActivityIndicator color={on ? "#FFFFFF" : "#000000"} />')).toBe(2)
+    expect(
+      colours('<ActivityIndicator color={on ? "#FFFFFF" : "#000000"} />')
+    ).toBe(2)
     expect(colours('<TextInput placeholderTextColor="#999" />')).toBe(1)
-    expect(colours('<ActivityIndicator color={colors.red} />')).toBe(0)
+    expect(colours("<ActivityIndicator color={colors.red} />")).toBe(0)
     expect(colours('<View testID="#CC0000" />')).toBe(0)
     expect(colours('<ActivityIndicator color="transparent" />')).toBe(0)
   })

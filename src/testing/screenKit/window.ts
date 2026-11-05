@@ -39,7 +39,8 @@ export const windowKey = (window: ScreenWindow) =>
 
 /** Dimensions' window and screen, in the current registry. */
 export const applyWindow = (window: ScreenWindow) => {
-  const { Dimensions } = require("react-native") as typeof import("react-native")
+  const { Dimensions } =
+    require("react-native") as typeof import("react-native")
   const dims = { ...window }
   Dimensions.set({ window: dims, screen: dims })
 }

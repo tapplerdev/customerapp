@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   text: {
@@ -9,4 +9,4 @@ export default StyleSheet.create({
     height: 0.5,
     backgroundColor: colors.grey19,
   },
-});
+})

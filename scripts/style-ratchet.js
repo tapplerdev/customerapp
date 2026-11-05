@@ -224,7 +224,8 @@ const namesOf = (ast, component, filename) => {
   const names = new Set([component])
   const own = ownModule(component)
   for (const stmt of ast.program.body) {
-    if (stmt.type !== "ImportDeclaration" || stmt.importKind === "type") continue
+    if (stmt.type !== "ImportDeclaration" || stmt.importKind === "type")
+      continue
     const source = sharedForm(stmt.source.value, filename)
     const barrel = SHARED_BARRELS.has(source)
     const home = own.test(source)

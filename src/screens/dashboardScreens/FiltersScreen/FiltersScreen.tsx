@@ -29,7 +29,10 @@ export type FilterValues = {
   creditCardPayment?: boolean
 }
 
-type ContentProps = FiltersParams & { onClose: () => void; scrollRef: React.RefObject<ScrollView | null> }
+type ContentProps = FiltersParams & {
+  onClose: () => void
+  scrollRef: React.RefObject<ScrollView | null>
+}
 
 // All filter state & UI. Only ever rendered inside FiltersSheet below — the
 // split is left in place because the content is long enough to want its own
@@ -54,22 +57,43 @@ const FiltersContent: React.FC<ContentProps> = ({
 
   // Filters answered upfront (e.g. Make) act as locked cascade parents for the modal's children (e.g. Model)
   const upfrontKeys = useMemo(
-    () => new Set((upfrontSelections ?? []).flatMap((s) => s.options.map((o) => o.key))),
+    () =>
+      new Set(
+        (upfrontSelections ?? []).flatMap((s) => s.options.map((o) => o.key))
+      ),
     [upfrontSelections]
   )
 
-  const [refinementOptionIds, setRefinementOptionIds] = useState<number[]>(initialRefinementOptionIds ?? [])
-  const [rangeValues, setRangeValues] = useState<Record<number, { min?: number; max?: number }>>(() =>
-    Object.fromEntries((initialRanges ?? []).map((r) => [r.filterId, { min: r.min, max: r.max }]))
+  const [refinementOptionIds, setRefinementOptionIds] = useState<number[]>(
+    initialRefinementOptionIds ?? []
   )
-  const [proType, setProType] = useState<string | undefined>(initialFilters?.proType)
+  const [rangeValues, setRangeValues] = useState<
+    Record<number, { min?: number; max?: number }>
+  >(() =>
+    Object.fromEntries(
+      (initialRanges ?? []).map((r) => [r.filterId, { min: r.min, max: r.max }])
+    )
+  )
+  const [proType, setProType] = useState<string | undefined>(
+    initialFilters?.proType
+  )
   const [distanceKm, setDistanceKm] = useState(initialFilters?.distanceKm ?? 50)
-  const [distanceInput, setDistanceInput] = useState(String(initialFilters?.distanceKm ?? 50))
-  const [minRating, setMinRating] = useState<number | undefined>(initialFilters?.minRating)
-  const [maxResponseTimeHours, setMaxResponseTimeHours] = useState<number | undefined>(initialFilters?.maxResponseTimeHours)
-  const [creditCardPayment, setCreditCardPayment] = useState(initialFilters?.creditCardPayment || false)
+  const [distanceInput, setDistanceInput] = useState(
+    String(initialFilters?.distanceKm ?? 50)
+  )
+  const [minRating, setMinRating] = useState<number | undefined>(
+    initialFilters?.minRating
+  )
+  const [maxResponseTimeHours, setMaxResponseTimeHours] = useState<
+    number | undefined
+  >(initialFilters?.maxResponseTimeHours)
+  const [creditCardPayment, setCreditCardPayment] = useState(
+    initialFilters?.creditCardPayment || false
+  )
   // Food only: fulfillment mode lives here now (moved out of the results header)
-  const [fulfillment, setFulfillment] = useState<"all" | "delivery" | "pickup">(foodMode ?? "all")
+  const [fulfillment, setFulfillment] = useState<"all" | "delivery" | "pickup">(
+    foodMode ?? "all"
+  )
 
   // Keep the typed distance box in sync with the slider; clamp to 1–50 on edit
   useEffect(() => {
@@ -88,7 +112,10 @@ const FiltersContent: React.FC<ContentProps> = ({
     currentPlaceOfService === "delivery" ||
     currentPlaceOfService === "fixedLocations"
 
-  const toggleRefinementOption = (optionId: number, question: ServiceQuestionType) => {
+  const toggleRefinementOption = (
+    optionId: number,
+    question: ServiceQuestionType
+  ) => {
     setRefinementOptionIds((prev) => {
       if (prev.includes(optionId)) {
         return prev.filter((id) => id !== optionId)
@@ -109,7 +136,8 @@ const FiltersContent: React.FC<ContentProps> = ({
     const map = new Map<number, QuestionOptionType>()
     refinementFilters?.forEach((q) =>
       q.options?.forEach((o) => {
-        if (o.serviceCategoryFilterOptionId) map.set(o.serviceCategoryFilterOptionId, o)
+        if (o.serviceCategoryFilterOptionId)
+          map.set(o.serviceCategoryFilterOptionId, o)
       })
     )
     return map
@@ -126,7 +154,9 @@ const FiltersContent: React.FC<ContentProps> = ({
         if (!parentKey) return
         const parentSelected =
           upfrontKeys.has(parentKey) ||
-          [...current].some((sid) => optionsById.get(sid)?.filterOptionKey === parentKey)
+          [...current].some(
+            (sid) => optionsById.get(sid)?.filterOptionKey === parentKey
+          )
         if (!parentSelected) {
           current.delete(id)
           changed = true
@@ -149,7 +179,11 @@ const FiltersContent: React.FC<ContentProps> = ({
   const isOptionVisible = (o: QuestionOptionType) =>
     !o.parentFilterOptionKey || selectedKeys.has(o.parentFilterOptionKey)
 
-  const setRangeBound = (filterId: number, bound: "min" | "max", text: string) => {
+  const setRangeBound = (
+    filterId: number,
+    bound: "min" | "max",
+    text: string
+  ) => {
     const n = parseInt(text, 10)
     setRangeValues((prev) => ({
       ...prev,
@@ -158,19 +192,36 @@ const FiltersContent: React.FC<ContentProps> = ({
   }
 
   const activeRanges = Object.entries(rangeValues)
-    .map(([filterId, v]) => ({ filterId: Number(filterId), min: v.min, max: v.max }))
+    .map(([filterId, v]) => ({
+      filterId: Number(filterId),
+      min: v.min,
+      max: v.max,
+    }))
     .filter((r) => r.min != null || r.max != null)
 
-  const collectFilters = useCallback(() => ({
-    proType,
-    distanceKm: distanceKm < 50 ? distanceKm : undefined,
-    minRating,
-    maxResponseTimeHours,
-    creditCardPayment: creditCardPayment || undefined,
-    refinementFilterOptionIds: [...effectiveSelectedIds],
-    ranges: activeRanges,
-    ...(isFoodCategory && { fulfillment }),
-  }), [proType, distanceKm, minRating, maxResponseTimeHours, creditCardPayment, effectiveSelectedIds, activeRanges, isFoodCategory, fulfillment])
+  const collectFilters = useCallback(
+    () => ({
+      proType,
+      distanceKm: distanceKm < 50 ? distanceKm : undefined,
+      minRating,
+      maxResponseTimeHours,
+      creditCardPayment: creditCardPayment || undefined,
+      refinementFilterOptionIds: [...effectiveSelectedIds],
+      ranges: activeRanges,
+      ...(isFoodCategory && { fulfillment }),
+    }),
+    [
+      proType,
+      distanceKm,
+      minRating,
+      maxResponseTimeHours,
+      creditCardPayment,
+      effectiveSelectedIds,
+      activeRanges,
+      isFoodCategory,
+      fulfillment,
+    ]
+  )
 
   const handleShowResults = () => {
     onApply(collectFilters())
@@ -201,14 +252,25 @@ const FiltersContent: React.FC<ContentProps> = ({
     <DmView
       key={key}
       onPress={onPress}
-      style={[dsStyles.container, a.mr_8, a.flex_row, a.items_center, {
-        backgroundColor: isSelected ? "#F5F5F5" : colors.white,
-        borderWidth: isSelected ? 1.5 : 1,
-        borderColor: isSelected ? colors.black : "#E0E0E0",
-      }]}
+      style={[
+        dsStyles.container,
+        a.mr_8,
+        a.flex_row,
+        a.items_center,
+        {
+          backgroundColor: isSelected ? "#F5F5F5" : colors.white,
+          borderWidth: isSelected ? 1.5 : 1,
+          borderColor: isSelected ? colors.black : "#E0E0E0",
+        },
+      ]}
     >
       {isSelected && (
-        <TickIcon width={12} height={12} color={colors.black} style={{ marginRight: 5 }} />
+        <TickIcon
+          width={12}
+          height={12}
+          color={colors.black}
+          style={{ marginRight: 5 }}
+        />
       )}
       <Text
         size={12}
@@ -233,7 +295,13 @@ const FiltersContent: React.FC<ContentProps> = ({
         : question.text
 
   const activeCount =
-    [proType, distanceKm < 50 ? distanceKm : undefined, minRating, maxResponseTimeHours, creditCardPayment].filter(Boolean).length +
+    [
+      proType,
+      distanceKm < 50 ? distanceKm : undefined,
+      minRating,
+      maxResponseTimeHours,
+      creditCardPayment,
+    ].filter(Boolean).length +
     effectiveSelectedIds.size +
     activeRanges.length
 
@@ -255,7 +323,9 @@ const FiltersContent: React.FC<ContentProps> = ({
     >
       {/* Header */}
       <DmView style={[a.items_center, a.pt_12, a.pb_10, a.px_16]}>
-        <DmView style={[a.flex_row, a.items_center, a.justify_center, a.w_full]}>
+        <DmView
+          style={[a.flex_row, a.items_center, a.justify_center, a.w_full]}
+        >
           <DmView style={a.flex_1}>
             <DmView
               onPress={handleClose}
@@ -270,8 +340,20 @@ const FiltersContent: React.FC<ContentProps> = ({
               {t("filters")}
             </Text>
             {activeCount > 0 && (
-              <DmView style={[a.ml_6, dsStyles.textWrap, a.items_center, a.justify_center]}>
-                <Text size={10} weight="bold" leading="legacy" style={{ color: colors.white }}>
+              <DmView
+                style={[
+                  a.ml_6,
+                  dsStyles.textWrap,
+                  a.items_center,
+                  a.justify_center,
+                ]}
+              >
+                <Text
+                  size={10}
+                  weight="bold"
+                  leading="legacy"
+                  style={{ color: colors.white }}
+                >
                   {activeCount}
                 </Text>
               </DmView>
@@ -306,7 +388,12 @@ const FiltersContent: React.FC<ContentProps> = ({
               </Text>
               <DmView style={a.flex_row}>
                 {(["all", "delivery", "pickup"] as const).map((mode) =>
-                  renderChip(t(mode), fulfillment === mode, () => setFulfillment(mode), mode)
+                  renderChip(
+                    t(mode),
+                    fulfillment === mode,
+                    () => setFulfillment(mode),
+                    mode
+                  )
                 )}
               </DmView>
             </DmView>
@@ -319,16 +406,39 @@ const FiltersContent: React.FC<ContentProps> = ({
           <React.Fragment key={`upfront-${idx}`}>
             <DmView style={[a.px_20, a.mb_18]}>
               <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
-                {isAr && sel.questionTextAr ? sel.questionTextAr : sel.questionText}
-                <Text size={11} leading={{ fixed: px(22) }} style={{ color: colors.grey }}> · {t("chosen_earlier")}</Text>
+                {isAr && sel.questionTextAr
+                  ? sel.questionTextAr
+                  : sel.questionText}
+                <Text
+                  size={11}
+                  leading={{ fixed: px(22) }}
+                  style={{ color: colors.grey }}
+                >
+                  {" "}
+                  · {t("chosen_earlier")}
+                </Text>
               </Text>
               <DmView style={[a.flex_row, a.flex_wrap]}>
                 {sel.options.map((o) => (
                   <DmView
                     key={o.key}
-                    style={[dsStyles.container, a.mr_8, a.mb_8, { backgroundColor: "#F5F5F5", borderWidth: 1, borderColor: "#E0E0E0" }]}
+                    style={[
+                      dsStyles.container,
+                      a.mr_8,
+                      a.mb_8,
+                      {
+                        backgroundColor: "#F5F5F5",
+                        borderWidth: 1,
+                        borderColor: "#E0E0E0",
+                      },
+                    ]}
                   >
-                    <Text size={12} weight="semibold" leading="tight" style={{ color: colors.grey }}>
+                    <Text
+                      size={12}
+                      weight="semibold"
+                      leading="tight"
+                      style={{ color: colors.grey }}
+                    >
                       {isAr && o.labelAr ? o.labelAr : o.label}
                     </Text>
                   </DmView>
@@ -359,28 +469,72 @@ const FiltersContent: React.FC<ContentProps> = ({
                   </Text>
                   <DmView style={[a.flex_row, a.items_center]}>
                     <DmView
-                      style={[a.flex_1, a.px_14, { borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }]}
+                      style={[
+                        a.flex_1,
+                        a.px_14,
+                        {
+                          borderWidth: 1,
+                          borderColor: "#E0E0E0",
+                          borderRadius: 10,
+                        },
+                      ]}
                     >
                       <TextInput
                         value={range.min != null ? String(range.min) : ""}
-                        onChangeText={(text) => setRangeBound(filterId, "min", text)}
-                        placeholder={question.filter.minValue != null ? String(question.filter.minValue) : ""}
+                        onChangeText={(text) =>
+                          setRangeBound(filterId, "min", text)
+                        }
+                        placeholder={
+                          question.filter.minValue != null
+                            ? String(question.filter.minValue)
+                            : ""
+                        }
                         keyboardType="number-pad"
                         maxLength={7}
-                        style={{ paddingVertical: 9, fontSize: 13, color: colors.black }}
+                        style={{
+                          paddingVertical: 9,
+                          fontSize: 13,
+                          color: colors.black,
+                        }}
                       />
                     </DmView>
-                    <Text size={13} leading="legacy" color="tertiary" family="system" style={a.mx_10}>–</Text>
+                    <Text
+                      size={13}
+                      leading="legacy"
+                      color="tertiary"
+                      family="system"
+                      style={a.mx_10}
+                    >
+                      –
+                    </Text>
                     <DmView
-                      style={[a.flex_1, a.px_14, { borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }]}
+                      style={[
+                        a.flex_1,
+                        a.px_14,
+                        {
+                          borderWidth: 1,
+                          borderColor: "#E0E0E0",
+                          borderRadius: 10,
+                        },
+                      ]}
                     >
                       <TextInput
                         value={range.max != null ? String(range.max) : ""}
-                        onChangeText={(text) => setRangeBound(filterId, "max", text)}
-                        placeholder={question.filter.maxValue != null ? String(question.filter.maxValue) : ""}
+                        onChangeText={(text) =>
+                          setRangeBound(filterId, "max", text)
+                        }
+                        placeholder={
+                          question.filter.maxValue != null
+                            ? String(question.filter.maxValue)
+                            : ""
+                        }
                         keyboardType="number-pad"
                         maxLength={7}
-                        style={{ paddingVertical: 9, fontSize: 13, color: colors.black }}
+                        style={{
+                          paddingVertical: 9,
+                          fontSize: 13,
+                          color: colors.black,
+                        }}
                       />
                     </DmView>
                   </DmView>
@@ -415,12 +569,21 @@ const FiltersContent: React.FC<ContentProps> = ({
                 <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
                   {filterTitle(question)}
                 </Text>
-                <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <AppScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                >
                   {visibleOptions.map((o) =>
                     renderChip(
                       isAr && o.labelAr ? o.labelAr : o.label,
-                      effectiveSelectedIds.has(o.serviceCategoryFilterOptionId!),
-                      () => toggleRefinementOption(o.serviceCategoryFilterOptionId!, question),
+                      effectiveSelectedIds.has(
+                        o.serviceCategoryFilterOptionId!
+                      ),
+                      () =>
+                        toggleRefinementOption(
+                          o.serviceCategoryFilterOptionId!,
+                          question
+                        ),
                       o.serviceCategoryFilterOptionId!
                     )
                   )}
@@ -437,7 +600,9 @@ const FiltersContent: React.FC<ContentProps> = ({
             {t("pro_type")}
           </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {renderChip(t("pro_type_all"), !proType, () => setProType(undefined))}
+            {renderChip(t("pro_type_all"), !proType, () =>
+              setProType(undefined)
+            )}
             {renderChip(t("individual"), proType === "individual", () =>
               setProType(proType === "individual" ? undefined : "individual")
             )}
@@ -469,7 +634,19 @@ const FiltersContent: React.FC<ContentProps> = ({
               />
               {/* Editable distance box — type a value or use the slider */}
               <DmView
-                style={[a.mt_14, a.flex_row, a.items_center, a.px_14, { alignSelf: "flex-start", minWidth: 120, borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 10 }]}
+                style={[
+                  a.mt_14,
+                  a.flex_row,
+                  a.items_center,
+                  a.px_14,
+                  {
+                    alignSelf: "flex-start",
+                    minWidth: 120,
+                    borderWidth: 1,
+                    borderColor: "#E0E0E0",
+                    borderRadius: 10,
+                  },
+                ]}
               >
                 <TextInput
                   value={distanceInput}
@@ -479,9 +656,20 @@ const FiltersContent: React.FC<ContentProps> = ({
                   keyboardType="number-pad"
                   maxLength={2}
                   selectTextOnFocus
-                  style={{ flex: 1, paddingVertical: 9, fontSize: 13, color: colors.black }}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 9,
+                    fontSize: 13,
+                    color: colors.black,
+                  }}
                 />
-                <Text size={12} weight="medium" leading="tight" color="tertiary" style={a.ml_6}>
+                <Text
+                  size={12}
+                  weight="medium"
+                  leading="tight"
+                  color="tertiary"
+                  style={a.ml_6}
+                >
                   km
                 </Text>
               </DmView>
@@ -517,15 +705,23 @@ const FiltersContent: React.FC<ContentProps> = ({
             {t("response_time")}
           </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {renderChip(t("any"), !maxResponseTimeHours, () => setMaxResponseTimeHours(undefined))}
+            {renderChip(t("any"), !maxResponseTimeHours, () =>
+              setMaxResponseTimeHours(undefined)
+            )}
             {renderChip(t("under_1_hour"), maxResponseTimeHours === 1, () =>
-              setMaxResponseTimeHours(maxResponseTimeHours === 1 ? undefined : 1)
+              setMaxResponseTimeHours(
+                maxResponseTimeHours === 1 ? undefined : 1
+              )
             )}
             {renderChip(t("under_4_hours"), maxResponseTimeHours === 4, () =>
-              setMaxResponseTimeHours(maxResponseTimeHours === 4 ? undefined : 4)
+              setMaxResponseTimeHours(
+                maxResponseTimeHours === 4 ? undefined : 4
+              )
             )}
             {renderChip(t("under_24_hours"), maxResponseTimeHours === 24, () =>
-              setMaxResponseTimeHours(maxResponseTimeHours === 24 ? undefined : 24)
+              setMaxResponseTimeHours(
+                maxResponseTimeHours === 24 ? undefined : 24
+              )
             )}
           </AppScrollView>
         </DmView>
@@ -538,15 +734,25 @@ const FiltersContent: React.FC<ContentProps> = ({
             {t("payment_method")}
           </Text>
           <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {renderChip(t("any"), !creditCardPayment, () => setCreditCardPayment(false))}
-            {renderChip(t("credit_card"), creditCardPayment, () => setCreditCardPayment(!creditCardPayment))}
+            {renderChip(t("any"), !creditCardPayment, () =>
+              setCreditCardPayment(false)
+            )}
+            {renderChip(t("credit_card"), creditCardPayment, () =>
+              setCreditCardPayment(!creditCardPayment)
+            )}
           </AppScrollView>
         </DmView>
       </AppScrollView>
 
       {/* Bottom button */}
       <DmView
-        style={[a.px_16, a.pt_14, dsStyles.safeArea, styles.buttonShadow, { paddingBottom: insets.bottom + 12 }]}
+        style={[
+          a.px_16,
+          a.pt_14,
+          dsStyles.safeArea,
+          styles.buttonShadow,
+          { paddingBottom: insets.bottom + 12 },
+        ]}
       >
         <Button
           title={t("show_results")}
@@ -596,7 +802,12 @@ export const FiltersSheet: React.FC<
       scrollableRef={scrollRef}
       onDismissed={onClose}
     >
-      <FiltersContent key={contentKey} {...contentProps} onClose={onClose} scrollRef={scrollRef} />
+      <FiltersContent
+        key={contentKey}
+        {...contentProps}
+        onClose={onClose}
+        scrollRef={scrollRef}
+      />
     </NativeSheet>
   )
 }

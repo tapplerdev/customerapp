@@ -156,7 +156,10 @@ describe("ReviewProSelectionScreen: presses", () => {
     "leaves by itself for a food order with nobody to review, and only for that [$language $platform]",
     async (env) => {
       const goesBack = async (job: Case["job"]) => {
-        const session = await openScreen(load, options({ state: "back", job }, env))
+        const session = await openScreen(
+          load,
+          options({ state: "back", job }, env)
+        )
         try {
           await session.act(() => {})
           return session.navigation.actions.map((action) => action.type)

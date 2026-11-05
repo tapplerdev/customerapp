@@ -24,7 +24,8 @@ export const usePushNotifications = (): void => {
   const dispatch = useDispatch()
 
   const send = useCallback(
-    (registrationToken: string) => registerDevice({ registrationToken }).unwrap(),
+    (registrationToken: string) =>
+      registerDevice({ registrationToken }).unwrap(),
     [registerDevice]
   )
 
@@ -124,7 +125,8 @@ export const useRequestPushPermission = (): (() => void) => {
       // cheap and self-deduplicating when there is nothing to do.
       const alreadyAllowed = await PushNotifications.hasPermission()
       const granted =
-        alreadyAllowed || (await PushNotifications.requestPermissionWithPrompt())
+        alreadyAllowed ||
+        (await PushNotifications.requestPermissionWithPrompt())
       if (!granted) return
 
       await PushNotifications.register((registrationToken) =>

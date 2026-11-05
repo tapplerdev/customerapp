@@ -69,7 +69,8 @@ const page = <T>(rows: T[]) => ({
 const JOBS: JobType[] = [JOB, JOB_FOOD]
 const PROS: ProType[] = [PRO_INDIVIDUAL, PRO_COMPANY, PRO_FOOD]
 
-const jobById = (args: unknown) => JOBS.find((job) => job.id === idIn(args)) ?? JOB
+const jobById = (args: unknown) =>
+  JOBS.find((job) => job.id === idIn(args)) ?? JOB
 const serviceById = (args: unknown): ServiceType =>
   SERVICES.find((service) => service.id === idIn(args)) ?? SERVICES[0]
 /** `/pros/1003?serviceCategoryId=302` → the pro, whichever category. */
@@ -84,11 +85,13 @@ export const DATA: BackendFixtures = {
   getServices: data<ServicesResponse>({ ...page(SERVICES), perPage: 100 }),
   getServiceById: (args) => data<ServiceType>(serviceById(args)),
   getCustomerMe: data<CustomerMeResponse>(CUSTOMER),
-  getProsForCategory: firstPageOnly(PROS.slice(0, 2), (rows) =>
-    page(rows) satisfies ListProsResponse
+  getProsForCategory: firstPageOnly(
+    PROS.slice(0, 2),
+    (rows) => page(rows) satisfies ListProsResponse
   ),
-  getCustomerJobs: firstPageOnly(JOBS, (rows) =>
-    page(rows) satisfies ListJobsResponse
+  getCustomerJobs: firstPageOnly(
+    JOBS,
+    (rows) => page(rows) satisfies ListJobsResponse
   ),
   getCustomerJobDetails: (args) => data<JobType>(jobById(args)),
   getCustomerJobById: (args) => data<JobType>(jobById(args)),
@@ -111,8 +114,9 @@ export const DATA: BackendFixtures = {
   getUnreadNotificationsCount: data({ count: 1 }),
   openChat: data(CHAT),
   getChats: data<ListChatsResponse>({ data: [CHAT_PREVIEW] }),
-  getChatMessages: firstPageOnly(CHAT_MESSAGES, (rows) =>
-    page(rows) satisfies ListMessagesResponse
+  getChatMessages: firstPageOnly(
+    CHAT_MESSAGES,
+    (rows) => page(rows) satisfies ListMessagesResponse
   ),
 }
 

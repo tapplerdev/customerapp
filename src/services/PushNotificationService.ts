@@ -59,7 +59,6 @@ import {
 import { destinationFor } from "components/InAppMessageBanner/InAppMessageBanner"
 import { navigateFromRef } from "navigation/navigationRef"
 
-
 /**
  * Exactly the shape useChatSocket emits on "notification:new", so a
  * notification looks and behaves the same whichever channel delivered it.
@@ -183,7 +182,8 @@ class PushNotificationServiceClass {
     try {
       const token = await getToken(getMessaging())
       if (!token) return false
-      if (token === this.registeredToken || token === this.pendingToken) return true
+      if (token === this.registeredToken || token === this.pendingToken)
+        return true
 
       const generation = this.generation
       this.pendingToken = token
@@ -212,22 +212,33 @@ class PushNotificationServiceClass {
     if (this.tokenRefreshUnsubscribe) return
 
     try {
-      this.tokenRefreshUnsubscribe = onTokenRefresh(getMessaging(), async (token: string) => {
-        // pendingToken: after a sign-out's deleteToken(), the next sign-in's
-        // getToken() mints a fresh token AND fires this — register() is
-        // already sending it.
-        if (!token || token === this.registeredToken || token === this.pendingToken) return
-        const generation = this.generation
-        this.pendingToken = token
-        try {
-          await apiCall(token)
-          if (generation === this.generation) this.registeredToken = token
-        } catch (error) {
-          console.log("[PushNotificationService] Token refresh sync failed:", error)
-        } finally {
-          if (this.pendingToken === token) this.pendingToken = null
+      this.tokenRefreshUnsubscribe = onTokenRefresh(
+        getMessaging(),
+        async (token: string) => {
+          // pendingToken: after a sign-out's deleteToken(), the next sign-in's
+          // getToken() mints a fresh token AND fires this — register() is
+          // already sending it.
+          if (
+            !token ||
+            token === this.registeredToken ||
+            token === this.pendingToken
+          )
+            return
+          const generation = this.generation
+          this.pendingToken = token
+          try {
+            await apiCall(token)
+            if (generation === this.generation) this.registeredToken = token
+          } catch (error) {
+            console.log(
+              "[PushNotificationService] Token refresh sync failed:",
+              error
+            )
+          } finally {
+            if (this.pendingToken === token) this.pendingToken = null
+          }
         }
-      })
+      )
     } catch {
       // Non-fatal: the next launch re-registers whatever the current token is.
     }
@@ -306,8 +317,9 @@ class PushNotificationServiceClass {
     if (this.tapUnsubscribe) return
 
     try {
-      this.tapUnsubscribe = onNotificationOpenedApp(getMessaging(), (remoteMessage: RemoteMessage) =>
-        this.routeTap(remoteMessage)
+      this.tapUnsubscribe = onNotificationOpenedApp(
+        getMessaging(),
+        (remoteMessage: RemoteMessage) => this.routeTap(remoteMessage)
       )
 
       // Cold start: the app was not running when the notification was tapped.
@@ -353,7 +365,9 @@ class PushNotificationServiceClass {
       body,
       jobId: typeof payload?.jobId === "number" ? payload.jobId : undefined,
       jobStatus:
-        typeof payload?.job?.status === "string" ? payload.job.status : undefined,
+        typeof payload?.job?.status === "string"
+          ? payload.job.status
+          : undefined,
       // Top-level. The backend omits `pros` from the job it serialises, so the
       // food order's status is sent as its own field rather than dug out of
       // job.pros[0] — which is always undefined on the wire.

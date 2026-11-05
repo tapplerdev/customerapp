@@ -24,7 +24,9 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
   const { data: job } = useGetCustomerJobByIdQuery(jobId)
 
   const categoryName = job?.serviceCategory
-    ? isAr ? job.serviceCategory.nameAr : job.serviceCategory.nameEn
+    ? isAr
+      ? job.serviceCategory.nameAr
+      : job.serviceCategory.nameEn
     : ""
 
   // Pros that can be reviewed: have offer status and no review yet, and for a
@@ -104,8 +106,15 @@ const ReviewProSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
                   />
                 </DmView>
               ) : (
-                <DmView style={[styles.textWrap, a.items_center, a.justify_center]}>
-                  <Text size={30} weight="bold" leading="legacy" color="tertiary">
+                <DmView
+                  style={[styles.textWrap, a.items_center, a.justify_center]}
+                >
+                  <Text
+                    size={30}
+                    weight="bold"
+                    leading="legacy"
+                    color="tertiary"
+                  >
                     {displayName?.charAt(0)}
                   </Text>
                 </DmView>

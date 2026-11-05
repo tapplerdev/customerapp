@@ -133,17 +133,16 @@ const MapPickerView: React.FC<Props> = ({
                   showsCompass={false}
                   mapType="standard"
                 />
-                <DmView
-                  style={StyleSheet.absoluteFill}
-                  pointerEvents="none"
-                >
+                <DmView style={StyleSheet.absoluteFill} pointerEvents="none">
                   <MapPinPicker
                     showInstruction={!selectedRegion}
                     pinSize="medium"
                   />
                 </DmView>
                 <DropShadow
-                  style={[a.absolute, dsStyles.shadow, 
+                  style={[
+                    a.absolute,
+                    dsStyles.shadow,
                     styles.closeShadow,
                     isAndroid && styles.closeShadowAndroid,
                   ]}
@@ -162,7 +161,9 @@ const MapPickerView: React.FC<Props> = ({
                   </DmView>
                 </DropShadow>
                 <DropShadow
-                  style={[a.absolute, dsStyles.shadow2, 
+                  style={[
+                    a.absolute,
+                    dsStyles.shadow2,
                     styles.myLocationShadow,
                     isAndroid && styles.myLocationShadowAndroid,
                   ]}

@@ -52,11 +52,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         entering={FadeIn.duration(300).delay(100)}
         style={styles.card}
       >
-        <AnimatedSvg
-          width={size}
-          height={size}
-          style={spinnerStyle}
-        >
+        <AnimatedSvg width={size} height={size} style={spinnerStyle}>
           <Circle
             cx={size / 2}
             cy={size / 2}

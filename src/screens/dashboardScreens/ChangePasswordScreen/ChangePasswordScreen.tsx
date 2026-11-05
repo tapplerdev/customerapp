@@ -16,7 +16,10 @@ import { AppScrollView } from "components/scroll"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
-const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
+const disabledLookSubtleInverse = {
+  surface: "subtle",
+  label: "inverse",
+} as const
 
 type Props = RootStackScreenProps<"ChangePasswordScreen">
 
@@ -39,7 +42,8 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
 
   const isFilled = currentPassword && newPassword && repeatPassword
   const showMinLengthError = newPassword.length > 0 && newPassword.length < 6
-  const showMismatchError = repeatPassword.length > 0 && newPassword !== repeatPassword
+  const showMismatchError =
+    repeatPassword.length > 0 && newPassword !== repeatPassword
   const hasClientError = showMinLengthError || showMismatchError
 
   const handleSave = async () => {
@@ -56,10 +60,16 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
       const validationErrors = error?.data?.validationErrors
       if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
-        const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
-        setErrorMessage(typeof firstMsg === "string" ? firstMsg : t("an_error_occurred"))
+        const firstMsg = Array.isArray(firstErrors)
+          ? firstErrors[0]
+          : firstErrors
+        setErrorMessage(
+          typeof firstMsg === "string" ? firstMsg : t("an_error_occurred")
+        )
       } else {
-        setErrorMessage(error?.data?.message || error?.message || t("an_error_occurred"))
+        setErrorMessage(
+          error?.data?.message || error?.message || t("an_error_occurred")
+        )
       }
       setErrorModalVisible(true)
     }
@@ -74,7 +84,10 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -90,7 +103,11 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
       <DmView style={styles.box2} />
 
       <AppScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingTop: 24,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Current Password */}
@@ -106,9 +123,14 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>
@@ -126,9 +148,14 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
           {showMinLengthError && (
@@ -151,9 +178,14 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
           {showMismatchError && (

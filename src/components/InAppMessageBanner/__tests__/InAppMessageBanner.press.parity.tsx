@@ -92,7 +92,9 @@ describe.each(PARITY_MATRIX)(
       })
       try {
         await session.act(() => {
-          const { messageBannerEventBus } = require("events/messageBannerEventBus")
+          const {
+            messageBannerEventBus,
+          } = require("events/messageBannerEventBus")
           messageBannerEventBus.emit(row.event, row.payload)
         }, 2500)
         expect(navigate).not.toHaveBeenCalled()

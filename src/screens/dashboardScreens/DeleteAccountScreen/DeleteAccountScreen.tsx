@@ -31,7 +31,10 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -63,50 +66,55 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-      <DmView style={[a.flex_1, a.px_24, a.pt_24]}>
-        {/* Warning text */}
-        <DmView style={a.flex_row}>
-          <Text size={13} leading="loose">
-            {t("delete_account_warning")}
-          </Text>
-        </DmView>
-
-        {/* Reason field */}
-        <DmView style={a.mt_24}>
+        <DmView style={[a.flex_1, a.px_24, a.pt_24]}>
+          {/* Warning text */}
           <DmView style={a.flex_row}>
-            <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
-              {t("reason_for_cancelling")}
+            <Text size={13} leading="loose">
+              {t("delete_account_warning")}
             </Text>
           </DmView>
-          <TextInput
-            value={reason}
-            onChangeText={setReason}
-            placeholder={t("delete_account_reason_placeholder")}
-            placeholderTextColor={colors.grey15}
-            multiline
-            style={[styles.input, 
-              takeFontStyles("font-custom400 leading-[20px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr", minHeight: 60 },
-            ]}
-          />
-        </DmView>
 
-        {/* Spacer */}
-        <DmView style={a.flex_1} />
+          {/* Reason field */}
+          <DmView style={a.mt_24}>
+            <DmView style={a.flex_row}>
+              <Text size={11} weight="bold" leading="legacy" style={a.mb_6}>
+                {t("reason_for_cancelling")}
+              </Text>
+            </DmView>
+            <TextInput
+              value={reason}
+              onChangeText={setReason}
+              placeholder={t("delete_account_reason_placeholder")}
+              placeholderTextColor={colors.grey15}
+              multiline
+              style={[
+                styles.input,
+                takeFontStyles("font-custom400 leading-[20px]", i18n.language),
+                {
+                  textAlign: isAr ? "right" : "left",
+                  writingDirection: isAr ? "rtl" : "ltr",
+                  minHeight: 60,
+                },
+              ]}
+            />
+          </DmView>
 
-        {/* Delete button */}
-        <DmView style={a.pb_40}>
-          <Button
-            onPress={() => setModalVisible(true)}
-            size="sm"
-            label="sm"
-            labelWeight="semibold"
-            labelLeading={px(21)}
-            style={a.w_full}
-            title={t("delete_my_account")}
-          />
+          {/* Spacer */}
+          <DmView style={a.flex_1} />
+
+          {/* Delete button */}
+          <DmView style={a.pb_40}>
+            <Button
+              onPress={() => setModalVisible(true)}
+              size="sm"
+              label="sm"
+              labelWeight="semibold"
+              labelLeading={px(21)}
+              style={a.w_full}
+              title={t("delete_my_account")}
+            />
+          </DmView>
         </DmView>
-      </DmView>
       </AppKeyboardAwareScrollView>
 
       {/* Confirmation Modal */}

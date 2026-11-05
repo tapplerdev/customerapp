@@ -44,14 +44,29 @@ const WelcomeScreen: React.FC<Props> = () => {
   }, [])
 
   return (
-    <SafeAreaView style={[a.flex_1, a.justify_center, a.items_center, styles.safeArea]}>
+    <SafeAreaView
+      style={[a.flex_1, a.justify_center, a.items_center, styles.safeArea]}
+    >
       {isLoading && <LoadingOverlay />}
       {!isLoading && (
         <>
-          <Text size={18} weight="bold" leading={px(31)} align="center" family="arabic">
+          <Text
+            size={18}
+            weight="bold"
+            leading={px(31)}
+            align="center"
+            family="arabic"
+          >
             الرجاء اختيار اللغة
           </Text>
-          <Text size={18} weight="semibold" leading="tight" align="center" family="latin" style={styles.text}>
+          <Text
+            size={18}
+            weight="semibold"
+            leading="tight"
+            align="center"
+            family="latin"
+            style={styles.text}
+          >
             Please Select Your Language
           </Text>
           <DmView
@@ -90,7 +105,13 @@ const WelcomeScreen: React.FC<Props> = () => {
           >
             يمكنك تغيير اللغة في أي وقت بالذهاب الى "الإعدادات"
           </LegacyText>
-          <Text size={12} leading="legacy" align="center" family="latin" style={[a.mt_10, styles.text2]}>
+          <Text
+            size={12}
+            leading="legacy"
+            align="center"
+            family="latin"
+            style={[a.mt_10, styles.text2]}
+          >
             You can change the language later from "Settings"
           </Text>
         </>

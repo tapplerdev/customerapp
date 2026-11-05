@@ -56,18 +56,29 @@ const FadeInImageTile: React.FC<{
   onPress?: () => void
 }> = ({ uri, width, height, onPress }) => {
   const opacity = useRef(new Animated.Value(0)).current
-  const isLocal = uri?.startsWith("file://") || uri?.startsWith("/") || uri?.startsWith("ph://") || uri?.startsWith("assets-library://")
+  const isLocal =
+    uri?.startsWith("file://") ||
+    uri?.startsWith("/") ||
+    uri?.startsWith("ph://") ||
+    uri?.startsWith("assets-library://")
   const ImageComp = isLocal ? RNImage : FastImage
 
   return (
-    <DmView onPress={onPress} style={{ width, height, overflow: "hidden", backgroundColor: "#E0E0E0" }}>
+    <DmView
+      onPress={onPress}
+      style={{ width, height, overflow: "hidden", backgroundColor: "#E0E0E0" }}
+    >
       <Animated.View style={{ opacity, flex: 1 }}>
         <ImageComp
           source={{ uri }}
           style={{ width: "100%", height: "100%" }}
           resizeMode="cover"
           onLoad={() => {
-            Animated.timing(opacity, { toValue: 1, duration: 250, useNativeDriver: true }).start()
+            Animated.timing(opacity, {
+              toValue: 1,
+              duration: 250,
+              useNativeDriver: true,
+            }).start()
           }}
         />
       </Animated.View>
@@ -108,7 +119,9 @@ const MessageComponent: React.FC<Props> = React.memo(
     // Per-message viewer state
     const [isViewerVisible, setViewerVisible] = useState(false)
     const [viewerIndex, setViewerIndex] = useState(0)
-    const [docViewerFile, setDocViewerFile] = useState<ChatFileType | null>(null)
+    const [docViewerFile, setDocViewerFile] = useState<ChatFileType | null>(
+      null
+    )
     // The viewer mounts on this row's first document tap (every message would
     // otherwise carry its own Modal) and then stays, so its close can slide.
     const [isDocViewerMounted, setDocViewerMounted] = useState(false)
@@ -119,8 +132,10 @@ const MessageComponent: React.FC<Props> = React.memo(
       .locale(isAr ? "ar" : "en")
       .format("h:mm A")
 
-    const imageFiles = item.files?.filter((f) => f.mimeType?.startsWith("image/")) || []
-    const docFiles = item.files?.filter((f) => !f.mimeType?.startsWith("image/")) || []
+    const imageFiles =
+      item.files?.filter((f) => f.mimeType?.startsWith("image/")) || []
+    const docFiles =
+      item.files?.filter((f) => !f.mimeType?.startsWith("image/")) || []
     const hasFiles = (item.files?.length || 0) > 0
     const hasLocation = !!item.location
     const hasMedia = hasFiles || hasLocation
@@ -209,7 +224,13 @@ const MessageComponent: React.FC<Props> = React.memo(
             <DmView
               style={[
                 a.py_4,
-                isOwnAction ? (isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr) : (isAr ? messageComponentStyles.textWrapOwnActionNotAr : messageComponentStyles.textWrapOwnActionAr),
+                isOwnAction
+                  ? isAr
+                    ? messageComponentStyles.textWrapOwnActionAr
+                    : messageComponentStyles.textWrapOwnActionNotAr
+                  : isAr
+                    ? messageComponentStyles.textWrapOwnActionNotAr
+                    : messageComponentStyles.textWrapOwnActionAr,
               ]}
             >
               <Text size={10} color="tertiary">
@@ -231,7 +252,13 @@ const MessageComponent: React.FC<Props> = React.memo(
             <DmView
               style={[
                 messageComponentStyles.systemEventBubbleWrap,
-                isProAction ? (isAr ? messageComponentStyles.systemEventBubbleWrapProActionAr : messageComponentStyles.systemEventBubbleWrapProActionNotAr) : (isAr ? messageComponentStyles.systemEventBubbleWrapProActionNotAr : messageComponentStyles.systemEventBubbleWrapProActionAr),
+                isProAction
+                  ? isAr
+                    ? messageComponentStyles.systemEventBubbleWrapProActionAr
+                    : messageComponentStyles.systemEventBubbleWrapProActionNotAr
+                  : isAr
+                    ? messageComponentStyles.systemEventBubbleWrapProActionNotAr
+                    : messageComponentStyles.systemEventBubbleWrapProActionAr,
               ]}
             >
               <SystemEventBubble
@@ -252,7 +279,9 @@ const MessageComponent: React.FC<Props> = React.memo(
             <DmView
               style={[
                 messageComponentStyles.systemEventBubbleWrap,
-                isAr ? messageComponentStyles.systemEventBubbleWrapProActionAr : messageComponentStyles.systemEventBubbleWrapProActionNotAr,
+                isAr
+                  ? messageComponentStyles.systemEventBubbleWrapProActionAr
+                  : messageComponentStyles.systemEventBubbleWrapProActionNotAr,
               ]}
             >
               <OfferUpdateCard
@@ -270,7 +299,13 @@ const MessageComponent: React.FC<Props> = React.memo(
             <DmView
               style={[
                 messageComponentStyles.systemEventBubbleWrap,
-                isOwnAction ? (isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr) : (isAr ? messageComponentStyles.textWrapOwnActionNotAr : messageComponentStyles.textWrapOwnActionAr),
+                isOwnAction
+                  ? isAr
+                    ? messageComponentStyles.textWrapOwnActionAr
+                    : messageComponentStyles.textWrapOwnActionNotAr
+                  : isAr
+                    ? messageComponentStyles.textWrapOwnActionNotAr
+                    : messageComponentStyles.textWrapOwnActionAr,
               ]}
             >
               <Text size={11} leading="tight" color="brand">
@@ -323,9 +358,19 @@ const MessageComponent: React.FC<Props> = React.memo(
         const halfW = (bubbleWidth - gap) / 2
         return (
           <DmView style={[a.flex_row, { height: gridHeight }]}>
-            <FadeInImageTile uri={imageFiles[0].url720 || imageFiles[0].url} width={halfW} height={gridHeight} onPress={() => handleImagePress(0)} />
+            <FadeInImageTile
+              uri={imageFiles[0].url720 || imageFiles[0].url}
+              width={halfW}
+              height={gridHeight}
+              onPress={() => handleImagePress(0)}
+            />
             <DmView style={{ width: gap }} />
-            <FadeInImageTile uri={imageFiles[1].url720 || imageFiles[1].url} width={halfW} height={gridHeight} onPress={() => handleImagePress(1)} />
+            <FadeInImageTile
+              uri={imageFiles[1].url720 || imageFiles[1].url}
+              width={halfW}
+              height={gridHeight}
+              onPress={() => handleImagePress(1)}
+            />
           </DmView>
         )
       }
@@ -336,12 +381,27 @@ const MessageComponent: React.FC<Props> = React.memo(
         const halfH = (gridHeight - gap) / 2
         return (
           <DmView style={[a.flex_row, { height: gridHeight }]}>
-            <FadeInImageTile uri={imageFiles[0].url720 || imageFiles[0].url} width={leftW} height={gridHeight} onPress={() => handleImagePress(0)} />
+            <FadeInImageTile
+              uri={imageFiles[0].url720 || imageFiles[0].url}
+              width={leftW}
+              height={gridHeight}
+              onPress={() => handleImagePress(0)}
+            />
             <DmView style={{ width: gap }} />
             <DmView style={{ width: rightW }}>
-              <FadeInImageTile uri={imageFiles[1].url720 || imageFiles[1].url} width={rightW} height={halfH} onPress={() => handleImagePress(1)} />
+              <FadeInImageTile
+                uri={imageFiles[1].url720 || imageFiles[1].url}
+                width={rightW}
+                height={halfH}
+                onPress={() => handleImagePress(1)}
+              />
               <DmView style={{ height: gap }} />
-              <FadeInImageTile uri={imageFiles[2].url720 || imageFiles[2].url} width={rightW} height={halfH} onPress={() => handleImagePress(2)} />
+              <FadeInImageTile
+                uri={imageFiles[2].url720 || imageFiles[2].url}
+                width={rightW}
+                height={halfH}
+                onPress={() => handleImagePress(2)}
+              />
             </DmView>
           </DmView>
         )
@@ -351,16 +411,27 @@ const MessageComponent: React.FC<Props> = React.memo(
       const leftW = (bubbleWidth * 2) / 3 - gap
       const rightW = bubbleWidth / 3
       const rightItems = imageFiles.slice(1, 4)
-      const rightItemH = (gridHeight - gap * (rightItems.length - 1)) / rightItems.length
+      const rightItemH =
+        (gridHeight - gap * (rightItems.length - 1)) / rightItems.length
       return (
         <DmView style={[a.flex_row, { height: gridHeight }]}>
-          <FadeInImageTile uri={imageFiles[0].url720 || imageFiles[0].url} width={leftW} height={gridHeight} onPress={() => handleImagePress(0)} />
+          <FadeInImageTile
+            uri={imageFiles[0].url720 || imageFiles[0].url}
+            width={leftW}
+            height={gridHeight}
+            onPress={() => handleImagePress(0)}
+          />
           <DmView style={{ width: gap }} />
           <DmView style={{ width: rightW }}>
             {rightItems.map((file, idx) => (
               <React.Fragment key={file.id || idx}>
                 {idx > 0 && <DmView style={{ height: gap }} />}
-                <FadeInImageTile uri={file.url720 || file.url} width={rightW} height={rightItemH} onPress={() => handleImagePress(idx + 1)} />
+                <FadeInImageTile
+                  uri={file.url720 || file.url}
+                  width={rightW}
+                  height={rightItemH}
+                  onPress={() => handleImagePress(idx + 1)}
+                />
               </React.Fragment>
             ))}
           </DmView>
@@ -377,17 +448,29 @@ const MessageComponent: React.FC<Props> = React.memo(
           <DmView
             key={file.id}
             onPress={() => handleDocPress(file)}
-            style={[a.flex_row, a.items_center, { padding: 10, width: bubbleWidth }]}
+            style={[
+              a.flex_row,
+              a.items_center,
+              { padding: 10, width: bubbleWidth },
+            ]}
           >
             <DmView
-              style={[a.items_center, a.justify_center, {
-                width: 36,
-                height: 36,
-                borderRadius: 6,
-                backgroundColor: isMyMessage ? "#4A4A4A" : "#E0E0E0",
-              }]}
+              style={[
+                a.items_center,
+                a.justify_center,
+                {
+                  width: 36,
+                  height: 36,
+                  borderRadius: 6,
+                  backgroundColor: isMyMessage ? "#4A4A4A" : "#E0E0E0",
+                },
+              ]}
             >
-              <DocumentIcon width={18} height={18} color={isMyMessage ? "#FFFFFF" : "#000000"} />
+              <DocumentIcon
+                width={18}
+                height={18}
+                color={isMyMessage ? "#FFFFFF" : "#000000"}
+              />
             </DmView>
             <DmView style={[a.flex_1, a.ml_10]}>
               <Text
@@ -441,10 +524,20 @@ const MessageComponent: React.FC<Props> = React.memo(
               longitudeDelta: 0.005,
             }}
           >
-            <MapPinMarker coordinate={{ latitude: item.location.latitude, longitude: item.location.longitude }} />
+            <MapPinMarker
+              coordinate={{
+                latitude: item.location.latitude,
+                longitude: item.location.longitude,
+              }}
+            />
           </MapView>
           <DmView style={[a.px_14, a.py_6]}>
-            <Text size={12} weight="medium" leading="legacy" style={{ color: linkColor }}>
+            <Text
+              size={12}
+              weight="medium"
+              leading="legacy"
+              style={{ color: linkColor }}
+            >
               {t("view_on_maps")} {"\u203A"}
             </Text>
           </DmView>
@@ -460,7 +553,13 @@ const MessageComponent: React.FC<Props> = React.memo(
           <DmView
             style={[
               a.py_4,
-              isMyMessage ? (isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr) : (isAr ? messageComponentStyles.textWrapNotMyMessageAr : messageComponentStyles.textWrapNotMyMessageNotAr),
+              isMyMessage
+                ? isAr
+                  ? messageComponentStyles.textWrapOwnActionAr
+                  : messageComponentStyles.textWrapOwnActionNotAr
+                : isAr
+                  ? messageComponentStyles.textWrapNotMyMessageAr
+                  : messageComponentStyles.textWrapNotMyMessageNotAr,
             ]}
           >
             <Text size={10} color="tertiary">
@@ -471,7 +570,15 @@ const MessageComponent: React.FC<Props> = React.memo(
 
         {/* Bubble — own pinned physical-right, others physical-left (see note above) */}
         <DmView
-          style={isMyMessage ? (isAr ? messageComponentStyles.systemEventBubbleWrapProActionNotAr : messageComponentStyles.systemEventBubbleWrapProActionAr) : (isAr ? messageComponentStyles.boxWrapNotMyMessageAr : messageComponentStyles.boxWrapNotMyMessageNotAr)}
+          style={
+            isMyMessage
+              ? isAr
+                ? messageComponentStyles.systemEventBubbleWrapProActionNotAr
+                : messageComponentStyles.systemEventBubbleWrapProActionAr
+              : isAr
+                ? messageComponentStyles.boxWrapNotMyMessageAr
+                : messageComponentStyles.boxWrapNotMyMessageNotAr
+          }
         >
           <DmView
             style={[
@@ -495,7 +602,12 @@ const MessageComponent: React.FC<Props> = React.memo(
                 <Text
                   size={12}
                   leading={{ fixed: px(16) }}
-                  style={{ marginStart: 8, fontStyle: "italic", color: isMyMessage ? "#AAAAAA" : "#737385", textAlign: isAr ? "right" : "left" }}
+                  style={{
+                    marginStart: 8,
+                    fontStyle: "italic",
+                    color: isMyMessage ? "#AAAAAA" : "#737385",
+                    textAlign: isAr ? "right" : "left",
+                  }}
                 >
                   {t("attachment_unavailable")}
                 </Text>
@@ -507,8 +619,17 @@ const MessageComponent: React.FC<Props> = React.memo(
                   {renderDocuments()}
                   {renderLocation()}
                 </DmView>
-                <DmView style={[a.items_center, a.justify_center, StyleSheet.absoluteFill]}>
-                  <ActivityIndicator size="small" color={isMyMessage ? "#FFFFFF" : "#000000"} />
+                <DmView
+                  style={[
+                    a.items_center,
+                    a.justify_center,
+                    StyleSheet.absoluteFill,
+                  ]}
+                >
+                  <ActivityIndicator
+                    size="small"
+                    color={isMyMessage ? "#FFFFFF" : "#000000"}
+                  />
                 </DmView>
               </DmView>
             ) : (
@@ -521,7 +642,13 @@ const MessageComponent: React.FC<Props> = React.memo(
 
             {/* Text with auto-linking */}
             {item.text ? (
-              <DmView style={hasMedia ? { paddingHorizontal: 14, paddingTop: 5, paddingBottom: 8 } : undefined}>
+              <DmView
+                style={
+                  hasMedia
+                    ? { paddingHorizontal: 14, paddingTop: 5, paddingBottom: 8 }
+                    : undefined
+                }
+              >
                 <Autolink
                   text={item.text}
                   url
@@ -547,7 +674,14 @@ const MessageComponent: React.FC<Props> = React.memo(
 
         {/* Read receipt */}
         {showReadReceipt && (
-          <DmView style={[messageComponentStyles.readByWrap, isAr ? messageComponentStyles.textWrapOwnActionAr : messageComponentStyles.textWrapOwnActionNotAr]}>
+          <DmView
+            style={[
+              messageComponentStyles.readByWrap,
+              isAr
+                ? messageComponentStyles.textWrapOwnActionAr
+                : messageComponentStyles.textWrapOwnActionNotAr,
+            ]}
+          >
             <Text size={9}>
               {t("read_by")} {readByName}
             </Text>
@@ -580,7 +714,7 @@ const MessageComponent: React.FC<Props> = React.memo(
         )}
       </DmView>
     )
-  },
+  }
 )
 
 export default MessageComponent

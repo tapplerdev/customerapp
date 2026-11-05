@@ -1,9 +1,9 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   box: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   list: {
     backgroundColor: colors.white,
@@ -54,4 +54,4 @@ export default StyleSheet.create({
     lineHeight: 22,
     minHeight: 70,
   },
-});
+})

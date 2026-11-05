@@ -39,7 +39,10 @@ const HomeSkeletonScreen: React.FC = () => {
       <SearchBar />
       <DmView style={styles.box} />
 
-      <AppScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+      <AppScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         {/* Section 1 — squareWithOverlay (100x110) */}
         <SkeletonSection titleWidth="50%" descWidth="70%">
           {[0, 1, 2, 3].map((i) => (

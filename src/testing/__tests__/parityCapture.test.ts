@@ -13,10 +13,11 @@ import path from "path"
  */
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-const { isTestMaterial, stampOf } = require("../../../scripts/ds-parity-capture") as {
-  isTestMaterial: (file: string) => boolean
-  stampOf: (cwd: string) => { commit: string; dirty: string[] }
-}
+const { isTestMaterial, stampOf } =
+  require("../../../scripts/ds-parity-capture") as {
+    isTestMaterial: (file: string) => boolean
+    stampOf: (cwd: string) => { commit: string; dirty: string[] }
+  }
 
 const repos = fs.mkdtempSync(path.join(os.tmpdir(), "parity-capture-"))
 afterAll(() => {

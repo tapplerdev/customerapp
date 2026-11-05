@@ -708,7 +708,12 @@ export const geolocation = () => {
     if (now === "pending") return
     queueMicrotask(() => {
       if ("error" in now) {
-        failure?.({ ...now.error, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 })
+        failure?.({
+          ...now.error,
+          PERMISSION_DENIED: 1,
+          POSITION_UNAVAILABLE: 2,
+          TIMEOUT: 3,
+        })
         return
       }
       success({

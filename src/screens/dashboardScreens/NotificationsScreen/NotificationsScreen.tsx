@@ -49,7 +49,9 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
 
   // Page 1 lives in the RTK cache (socket invalidations refresh it); deeper
   // pages are appended locally and reset whenever page 1 changes.
-  const [allNotifications, setAllNotifications] = useState<NotificationsItemType[]>([])
+  const [allNotifications, setAllNotifications] = useState<
+    NotificationsItemType[]
+  >([])
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMorePages, setHasMorePages] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -152,10 +154,22 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   const renderEmpty = useCallback(
     () => (
       <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
-        <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+        <Text
+          size={16}
+          weight="semibold"
+          leading="legacy"
+          color="tertiary"
+          align="center"
+        >
           {t("no_notifications_yet")}
         </Text>
-        <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
+        <Text
+          size={12}
+          leading="legacy"
+          color="tertiary"
+          align="center"
+          style={a.mt_8}
+        >
           {t("no_notifications_yet_descr")}
         </Text>
       </DmView>
@@ -167,7 +181,15 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header — title absolutely centered so the uneven side slots
           (chevron vs "mark all read") can't shift it */}
-      <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_16, a.py_12]}>
+      <DmView
+        style={[
+          a.flex_row,
+          a.items_center,
+          a.justify_between,
+          a.px_16,
+          a.py_12,
+        ]}
+      >
         <DmView
           onPress={() => navigation.goBack()}
           style={[styles.iconWrap, a.items_center, a.justify_center]}
@@ -186,7 +208,10 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
         </DmView>
         {unreadCount > 0 ? (
-          <DmView onPress={handleMarkAll} style={[a.py_4, styles.markAllReadWrap]}>
+          <DmView
+            onPress={handleMarkAll}
+            style={[a.py_4, styles.markAllReadWrap]}
+          >
             <Text
               size={11}
               weight="semibold"
@@ -209,31 +234,33 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
         // Same smooth reveal as proapp: content fades in over 300ms once
         // the skeleton is replaced (proapp animates fadeAnim 0→1).
         <Animated.View entering={FadeIn.duration(300)} style={a.flex_1}>
-        <AppFlatList
-          data={allNotifications}
-          renderItem={renderItem}
-          keyExtractor={(item) => String(item.id)}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={renderEmpty}
-          contentContainerStyle={
-            allNotifications.length === 0 ? { flex: 1 } : { paddingBottom: 20 }
-          }
-          showsVerticalScrollIndicator={false}
-          // Opts back OUT of the app-wide alwaysBounceVertical:false default
-          // (components/scroll). Pull-to-refresh works by pulling PAST the
-          // top, so with the bounce suppressed an empty or near-empty notification list
-          // would have nothing to pull and no way to refresh at all.
-          alwaysBounceVertical
-          refreshControl={
-            <RefreshControl
-              refreshing={isPullRefreshing}
-              onRefresh={handlePullRefresh}
-              tintColor={colors.red}
-            />
-          }
-        />
+          <AppFlatList
+            data={allNotifications}
+            renderItem={renderItem}
+            keyExtractor={(item) => String(item.id)}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmpty}
+            contentContainerStyle={
+              allNotifications.length === 0
+                ? { flex: 1 }
+                : { paddingBottom: 20 }
+            }
+            showsVerticalScrollIndicator={false}
+            // Opts back OUT of the app-wide alwaysBounceVertical:false default
+            // (components/scroll). Pull-to-refresh works by pulling PAST the
+            // top, so with the bounce suppressed an empty or near-empty notification list
+            // would have nothing to pull and no way to refresh at all.
+            alwaysBounceVertical
+            refreshControl={
+              <RefreshControl
+                refreshing={isPullRefreshing}
+                onRefresh={handlePullRefresh}
+                tintColor={colors.red}
+              />
+            }
+          />
         </Animated.View>
       )}
     </SafeAreaView>

@@ -457,7 +457,10 @@ describe("RequestSummaryScreen: the Idempotency-Key", () => {
         // eslint-disable-next-line no-await-in-loop
         const session = await openScreen(
           load,
-          options({ state: "visit", api: { createJob: { data: { id: 8301 } } } }, env)
+          options(
+            { state: "visit", api: { createJob: { data: { id: 8301 } } } },
+            env
+          )
         )
         try {
           // eslint-disable-next-line no-await-in-loop
@@ -483,7 +486,9 @@ describe("RequestSummaryScreen: the Idempotency-Key", () => {
  */
 describe("RequestSummaryScreen: an earlier request answered for a changed one", () => {
   const replayingFirst = () => {
-    let first: { body: { prosIds: number[]; serviceCategoryId: number } } | undefined
+    let first:
+      | { body: { prosIds: number[]; serviceCategoryId: number } }
+      | undefined
     return (args: unknown) => {
       if (first === undefined) {
         first = args as typeof first
@@ -532,9 +537,13 @@ describe("RequestSummaryScreen: an earlier request answered for a changed one", 
         expect(
           (session.navigation.actions as { type: string }[]).map((a) => a.type)
         ).not.toContain("NAVIGATE")
-        expectParity(parityName("an earlier request answered for a changed one", env), session.tree(), {
-          allow: BUTTON,
-        })
+        expectParity(
+          parityName("an earlier request answered for a changed one", env),
+          session.tree(),
+          {
+            allow: BUTTON,
+          }
+        )
         await session.act(() => {
           pressTitled(session.root, copy(env, "OK"))
         })
@@ -566,7 +575,11 @@ describe("RequestSummaryScreen: an earlier request answered for a changed one", 
             state: "same",
             api: {
               createJob: (args: unknown) => {
-                const body = (args as { body: { prosIds: number[]; serviceCategoryId: number } }).body
+                const body = (
+                  args as {
+                    body: { prosIds: number[]; serviceCategoryId: number }
+                  }
+                ).body
                 return sent++ === 0
                   ? { error: { status: "TIMEOUT_ERROR", error: "timeout" } }
                   : {

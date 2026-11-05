@@ -52,11 +52,12 @@ const QuestionComponent: React.FC<Props> = ({
   const getOptionLabel = (opt: QuestionOptionType) =>
     isAr && opt.valueAr ? opt.valueAr : opt.value
 
-  const getQuestionText = () =>
-    isAr && item.textAr ? item.textAr : item.text
+  const getQuestionText = () => (isAr && item.textAr ? item.textAr : item.text)
 
   const currentAnswer = answers?.find((a) => a.questionId === item.id)
-  const [answer, setAnswer] = useState<QuestionAnswerType | undefined>(currentAnswer)
+  const [answer, setAnswer] = useState<QuestionAnswerType | undefined>(
+    currentAnswer
+  )
   const [inputValue, setInputValue] = useState(currentAnswer?.answer || "")
   // Compact list only: the date picker opens in place under the answer.
   const [isDatePickerOpen, setDatePickerOpen] = useState(false)
@@ -89,7 +90,8 @@ const QuestionComponent: React.FC<Props> = ({
     if (selecting && option.parentFilterOptionKey) {
       const pk = option.parentFilterOptionKey
       const parentQ = allQuestions.find(
-        (q) => q.id !== item.id && q.options?.some((o) => o.filterOptionKey === pk)
+        (q) =>
+          q.id !== item.id && q.options?.some((o) => o.filterOptionKey === pk)
       )
       const pOpt = parentQ?.options?.find((o) => o.filterOptionKey === pk)
       if (!parentQ || !pOpt) return
@@ -105,7 +107,11 @@ const QuestionComponent: React.FC<Props> = ({
         })
       } else {
         if (pAns?.optionId === pOpt.id) return
-        onChangeAnswer({ questionId: parentQ.id, optionId: pOpt.id, answer: pOpt.value })
+        onChangeAnswer({
+          questionId: parentQ.id,
+          optionId: pOpt.id,
+          answer: pOpt.value,
+        })
       }
     }
 
@@ -118,13 +124,18 @@ const QuestionComponent: React.FC<Props> = ({
         if (!cAns) return
         if (q.type === "multipleChoice" && cAns.optionsIds?.length) {
           const keep = cAns.optionsIds.filter(
-            (id) => q.options?.find((o) => o.id === id)?.parentFilterOptionKey !== rk
+            (id) =>
+              q.options?.find((o) => o.id === id)?.parentFilterOptionKey !== rk
           )
           if (keep.length !== cAns.optionsIds.length) {
             const keepVals = keep
               .map((id) => q.options?.find((o) => o.id === id)?.value)
               .filter(Boolean)
-            onChangeAnswer({ questionId: q.id, optionsIds: keep, answer: keepVals.join(", ") })
+            onChangeAnswer({
+              questionId: q.id,
+              optionsIds: keep,
+              answer: keepVals.join(", "),
+            })
           }
         } else if (cAns.optionId) {
           const cOpt = q.options?.find((o) => o.id === cAns.optionId)
@@ -199,7 +210,11 @@ const QuestionComponent: React.FC<Props> = ({
       const q = allQuestions.find((qq) => qq.id === a.questionId)
       if (!q) return
       const ids =
-        q.type === "multipleChoice" ? a.optionsIds || [] : a.optionId ? [a.optionId] : []
+        q.type === "multipleChoice"
+          ? a.optionsIds || []
+          : a.optionId
+            ? [a.optionId]
+            : []
       ids.forEach((id) => {
         const k = q.options?.find((o) => o.id === id)?.filterOptionKey
         if (k) selectedKeys.add(k)
@@ -208,7 +223,8 @@ const QuestionComponent: React.FC<Props> = ({
     const anyParentSelected = [...myParentKeys].some((k) => selectedKeys.has(k))
     if (!anyParentSelected) return opts
     return opts.filter(
-      (o) => !o.parentFilterOptionKey || selectedKeys.has(o.parentFilterOptionKey)
+      (o) =>
+        !o.parentFilterOptionKey || selectedKeys.has(o.parentFilterOptionKey)
     )
   }, [item, allQuestions, answers])
 
@@ -284,13 +300,21 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
+        <AppScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={atoms.mt_16}
+        >
           <DmView style={[atoms.flex_row, { gap }]}>{chips}</DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.mt_16, { gap }]}>{chips}</DmView>
+      return (
+        <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.mt_16, { gap }]}>
+          {chips}
+        </DmView>
+      )
     }
     return <DmView style={[atoms.mt_16, { gap }]}>{chips}</DmView>
   }
@@ -309,13 +333,30 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
-          <DmView style={[atoms.flex_row, atoms.items_center]}>{elements}</DmView>
+        <AppScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={atoms.mt_16}
+        >
+          <DmView style={[atoms.flex_row, atoms.items_center]}>
+            {elements}
+          </DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.items_center, atoms.mt_16]}>{elements}</DmView>
+      return (
+        <DmView
+          style={[
+            atoms.flex_row,
+            atoms.flex_wrap,
+            atoms.items_center,
+            atoms.mt_16,
+          ]}
+        >
+          {elements}
+        </DmView>
+      )
     }
     return <DmView style={[atoms.mt_16, atoms.items_start]}>{elements}</DmView>
   }
@@ -334,13 +375,30 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
-          <DmView style={[atoms.flex_row, atoms.items_center]}>{elements}</DmView>
+        <AppScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={atoms.mt_16}
+        >
+          <DmView style={[atoms.flex_row, atoms.items_center]}>
+            {elements}
+          </DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.items_center, atoms.mt_16]}>{elements}</DmView>
+      return (
+        <DmView
+          style={[
+            atoms.flex_row,
+            atoms.flex_wrap,
+            atoms.items_center,
+            atoms.mt_16,
+          ]}
+        >
+          {elements}
+        </DmView>
+      )
     }
     return <DmView style={[atoms.mt_16, atoms.items_start]}>{elements}</DmView>
   }
@@ -358,13 +416,21 @@ const QuestionComponent: React.FC<Props> = ({
 
     if (layout === "horizontal") {
       return (
-        <AppScrollView horizontal showsHorizontalScrollIndicator={false} style={atoms.mt_16}>
+        <AppScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={atoms.mt_16}
+        >
           <DmView style={atoms.flex_row}>{elements}</DmView>
         </AppScrollView>
       )
     }
     if (layout === "wrap") {
-      return <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.mt_16]}>{elements}</DmView>
+      return (
+        <DmView style={[atoms.flex_row, atoms.flex_wrap, atoms.mt_16]}>
+          {elements}
+        </DmView>
+      )
     }
     return <DmView style={atoms.mt_16}>{elements}</DmView>
   }
@@ -462,7 +528,11 @@ const QuestionComponent: React.FC<Props> = ({
     <DmView style={[styles.container, atoms.px_14]}>
       {(item.type === "oneChoice" || item.type === "multipleChoice") && (
         <>
-          <Text size={15} weight={compact ? "bold" : "semibold"} leading="tight">
+          <Text
+            size={15}
+            weight={compact ? "bold" : "semibold"}
+            leading="tight"
+          >
             {getQuestionText()}
           </Text>
           {renderQuestionOptions()}
@@ -470,11 +540,20 @@ const QuestionComponent: React.FC<Props> = ({
       )}
       {(item.type === "shortAnswer" || item.type === "paragraph") && (
         <>
-          <Text size={15} weight={compact ? "bold" : "semibold"} leading="tight" style={compact ? atoms.mb_12 : atoms.mb_12}>
+          <Text
+            size={15}
+            weight={compact ? "bold" : "semibold"}
+            leading="tight"
+            style={compact ? atoms.mb_12 : atoms.mb_12}
+          >
             {getQuestionText()}
           </Text>
           <DmView
-            style={[styles.inputWrap, styles.inputBorder, { borderColor: colors.grey5 }]}
+            style={[
+              styles.inputWrap,
+              styles.inputBorder,
+              { borderColor: colors.grey5 },
+            ]}
           >
             <TextInput
               value={inputValue}
@@ -497,7 +576,12 @@ const QuestionComponent: React.FC<Props> = ({
       )}
       {item.type === "dateTime" && (
         <>
-          <Text size={15} weight={compact ? "bold" : "semibold"} leading="tight" style={compact ? atoms.mb_12 : atoms.mb_12}>
+          <Text
+            size={15}
+            weight={compact ? "bold" : "semibold"}
+            leading="tight"
+            style={compact ? atoms.mb_12 : atoms.mb_12}
+          >
             {getQuestionText()}
           </Text>
           {/* A question's own card always shows the picker. The compact Job

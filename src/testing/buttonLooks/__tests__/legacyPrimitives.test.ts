@@ -95,7 +95,6 @@ const INNOCENT: Record<string, string> = {
   "an unrelated string join": `export const x = "Dm" + "View"`,
 }
 
-
 // The ways round review-ca-w2's L2 named, and the barrel's other spellings.
 const BARREL_SPELLINGS: Record<string, string> = {
   "a namespace of the barrel with a trailing slash": `import * as UI from "${UI}/"\nconst pick = (name: string) => (UI as any)[name]\nexport default pick`,
@@ -247,7 +246,10 @@ describe("the escapes review-ca-w3 planted (S1-S5, S7, S9, S15, S16)", () => {
 
     it("S5 fails: src/testing re-exports DmText and a screen renders it", () => {
       // src/testing is out of the scan, so only the screen's import can show it
-      write("src/testing/labels.ts", `export { DmText as Label } from "${UI}"\n`)
+      write(
+        "src/testing/labels.ts",
+        `export { DmText as Label } from "${UI}"\n`
+      )
       write(
         "src/screens/AboutAppScreen.tsx",
         `import { Label } from "testing/labels"\nexport const A = () => <Label>x</Label>\n`
@@ -301,8 +303,8 @@ describe("an app file reaching into what the scan leaves out", () => {
     expect(findLegacyPrimitives(source, "src/screens/Screen.tsx")).not.toEqual(
       []
     )
-    expect(
-      findLegacyPrimitives(source, "src/screens/area/Screen.tsx")
-    ).toEqual([])
+    expect(findLegacyPrimitives(source, "src/screens/area/Screen.tsx")).toEqual(
+      []
+    )
   })
 })

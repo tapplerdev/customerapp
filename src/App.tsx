@@ -31,13 +31,16 @@ const shouldShowSplash = (() => {
     const raw = storage.getString("persist:tappler_customer_app-root-storage")
     if (!raw) return false
     const parsed = JSON.parse(raw)
-    const auth = typeof parsed?.auth === "string" ? JSON.parse(parsed.auth) : parsed?.auth
+    const auth =
+      typeof parsed?.auth === "string" ? JSON.parse(parsed.auth) : parsed?.auth
     // Authenticated user — will land on HomeScreen
     if (auth?.isAuth) return true
     // Guest with saved location — will also land on HomeScreen
     if (auth?.guestLocation) return true
     return false
-  } catch { return false }
+  } catch {
+    return false
+  }
 })()
 
 // Mounted inside the Redux Provider so it can read auth state. Renders
@@ -63,7 +66,11 @@ function App(): React.JSX.Element {
         <SafeAreaProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={{ flex: 1 }}>
-              <NavigationContainer ref={navigationRef} theme={navigationTheme} onReady={handleNavReady}>
+              <NavigationContainer
+                ref={navigationRef}
+                theme={navigationTheme}
+                onReady={handleNavReady}
+              >
                 <StatusBar
                   barStyle={
                     Platform.OS === "android" ? "dark-content" : "default"

@@ -17,7 +17,10 @@ const PRO_NAME = CHAT_PREVIEW.chat.pro!.registeredName!
 
 const CASES = [
   { name: "a last message", item: CHAT_PREVIEW },
-  { name: "no last message", item: { ...CHAT_PREVIEW, lastMessage: undefined } },
+  {
+    name: "no last message",
+    item: { ...CHAT_PREVIEW, lastMessage: undefined },
+  },
 ]
 
 describe.each(PARITY_MATRIX)(

@@ -19,12 +19,16 @@ const isInside = (node: ReactTestInstance, outer: ReactTestInstance) => {
   return false
 }
 
-export const pressContaining = (root: ReactTestInstance, text: string): void => {
+export const pressContaining = (
+  root: ReactTestInstance,
+  text: string
+): void => {
   const found = root.findAll(
     (node) =>
       typeof node.props.onPress === "function" && textOf(node).includes(text)
   )
-  if (found.length === 0) throw new Error(`press a row with "${text}": no match`)
+  if (found.length === 0)
+    throw new Error(`press a row with "${text}": no match`)
   const controls = found.filter(
     (node) => !found.some((other) => other !== node && isInside(other, node))
   )

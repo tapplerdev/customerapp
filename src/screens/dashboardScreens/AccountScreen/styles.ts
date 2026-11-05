@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   safeArea: {
@@ -13,7 +13,7 @@ export default StyleSheet.create({
     color: colors.grey15,
   },
   mainModalTitle: {
-    textAlign: 'left',
+    textAlign: "left",
   },
   mainModalCard: {
     paddingBottom: 33,
@@ -21,4 +21,4 @@ export default StyleSheet.create({
   box2: {
     marginTop: 23,
   },
-});
+})

@@ -78,7 +78,9 @@ export const signOut = async (): Promise<void> => {
     if (registrationToken && store.getState().auth.token) {
       await withTimeout(
         dispatch(
-          api.endpoints.removeNotificationsDevice.initiate({ registrationToken })
+          api.endpoints.removeNotificationsDevice.initiate({
+            registrationToken,
+          })
         ).unwrap(),
         REMOVE_TOKEN_TIMEOUT_MS
       ).catch(() => undefined)

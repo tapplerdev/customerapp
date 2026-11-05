@@ -1,6 +1,14 @@
 import React from "react"
-import { TextInput, StyleSheet, KeyboardAvoidingView, Platform } from "react-native"
-import Animated, { FadeInUp, LayoutAnimationConfig } from "react-native-reanimated"
+import {
+  TextInput,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native"
+import Animated, {
+  FadeInUp,
+  LayoutAnimationConfig,
+} from "react-native-reanimated"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -73,7 +81,13 @@ const TapplyAIScreen: React.FC<Props> = ({ navigation }) => {
         {/* Search input */}
         <DmView style={[a.px_16, { paddingBottom: insets.bottom + 16 }]}>
           <DmView
-            style={[dsStyles.row, a.flex_row, a.items_center, a.px_14, styles.searchInput]}
+            style={[
+              dsStyles.row,
+              a.flex_row,
+              a.items_center,
+              a.px_14,
+              styles.searchInput,
+            ]}
           >
             <SearchIcon width={16} height={16} />
             <TextInput

@@ -1,5 +1,12 @@
 import React, { useRef, useState } from "react"
-import { Alert, Dimensions, Image, Modal, TextInput, TouchableOpacity } from "react-native"
+import {
+  Alert,
+  Dimensions,
+  Image,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 import FastImage from "react-native-fast-image"
@@ -10,7 +17,10 @@ import { requestGalleryPermission } from "@tappler/shared/src/hooks/permissionHo
 import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { openPermissionAlert } from "utils/openPermissionAlert"
 import { RootStackScreenProps } from "navigation/types"
-import { useCreateReviewMutation, useGetCustomerJobByIdQuery } from "services/api"
+import {
+  useCreateReviewMutation,
+  useGetCustomerJobByIdQuery,
+} from "services/api"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -202,7 +212,13 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Your Review label between separators */}
         <DmView style={[a.mt_20, a.mb_16, a.flex_row, a.items_center, a.px_16]}>
           <DmView style={[a.flex_1, styles.box2]} />
-          <Text size={14} weight="semibold" leading="legacy" color="brand" style={a.mx_12}>
+          <Text
+            size={14}
+            weight="semibold"
+            leading="legacy"
+            color="brand"
+            style={a.mx_12}
+          >
             {t("your_review")}
           </Text>
           <DmView style={[a.flex_1, styles.box2]} />
@@ -249,7 +265,12 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
               </Text>
             </Text>
             <DmView
-              style={[a.mt_10, styles.inputWrap, styles.reviewInputBorder, { borderColor: colors.grey5 }]}
+              style={[
+                a.mt_10,
+                styles.inputWrap,
+                styles.reviewInputBorder,
+                { borderColor: colors.grey5 },
+              ]}
             >
               <TextInput
                 value={comment}
@@ -295,7 +316,14 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
                       style={[a.absolute, styles.boxWrap]}
                       onPress={() => handleDeletePhoto(idx)}
                     >
-                      <DmView style={[styles.iconWrap2, a.border_1, a.items_center, a.justify_center]}>
+                      <DmView
+                        style={[
+                          styles.iconWrap2,
+                          a.border_1,
+                          a.items_center,
+                          a.justify_center,
+                        ]}
+                      >
                         <CloseIcon width={8} height={8} />
                       </DmView>
                     </DmView>
@@ -307,11 +335,25 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
             {/* Upload button */}
             {photos.length < 4 && (
               <DmView
-                style={[a.mt_10, a.flex_row, a.items_center, a.justify_center, a.py_10, styles.inputWrap, styles.uploadBorder]}
+                style={[
+                  a.mt_10,
+                  a.flex_row,
+                  a.items_center,
+                  a.justify_center,
+                  a.py_10,
+                  styles.inputWrap,
+                  styles.uploadBorder,
+                ]}
                 onPress={handlePickPhotos}
               >
                 <CameraPlusIcon width={40} height={26} />
-                <Text size={13} weight="semibold" leading="legacy" color="brand" style={a.ml_4}>
+                <Text
+                  size={13}
+                  weight="semibold"
+                  leading="legacy"
+                  color="brand"
+                  style={a.ml_4}
+                >
                   {t("upload_photos_videos")}
                 </Text>
               </DmView>
@@ -347,7 +389,12 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress={() => setViewerVisible(false)}
           >
             <DmView
-              style={[styles.iconWrap3, a.items_center, a.justify_center, styles.closeShadow]}
+              style={[
+                styles.iconWrap3,
+                a.items_center,
+                a.justify_center,
+                styles.closeShadow,
+              ]}
             >
               <CloseIcon width={12} height={12} fill={colors.red} />
             </DmView>
@@ -375,7 +422,13 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Thumbnails — centered at bottom */}
           <DmView
-            style={[a.absolute, styles.boxWrap3, a.items_center, a.justify_center, styles.thumbnailsBottom]}
+            style={[
+              a.absolute,
+              styles.boxWrap3,
+              a.items_center,
+              a.justify_center,
+              styles.thumbnailsBottom,
+            ]}
           >
             <DmView style={a.flex_row}>
               {photos.map((photo, idx) => (
@@ -383,11 +436,16 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
                   key={idx}
                   onPress={() => {
                     setViewerIndex(idx)
-                    carouselRef.current?.scrollTo({ index: idx, animated: true })
+                    carouselRef.current?.scrollTo({
+                      index: idx,
+                      animated: true,
+                    })
                   }}
                   style={[
                     styles.thumbnailBase,
-                    { borderColor: idx === viewerIndex ? "#fff" : "transparent" },
+                    {
+                      borderColor: idx === viewerIndex ? "#fff" : "transparent",
+                    },
                   ]}
                 >
                   <Image

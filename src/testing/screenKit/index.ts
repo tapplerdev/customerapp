@@ -49,12 +49,7 @@ import type {
 import type * as Engine from "./engine"
 import type { Step } from "./interact"
 import { preparePlatform, type KitPlatform } from "./platform"
-import {
-  applyWindow,
-  windowKey,
-  windowOf,
-  type ScreenWindow,
-} from "./window"
+import { applyWindow, windowKey, windowOf, type ScreenWindow } from "./window"
 
 export {
   BOTTOM_GAP_INSETS,
@@ -144,7 +139,8 @@ export const LOADED_AS_BEFORE = "as before"
 
 /** I18nManager's direction in the current registry, before the app loads. */
 const applyDirection = (direction: KitDirection) => {
-  const { I18nManager } = require("react-native") as typeof import("react-native")
+  const { I18nManager } =
+    require("react-native") as typeof import("react-native")
   const isRTL = direction === "rtl"
   ;(I18nManager as { isRTL: boolean }).isRTL = isRTL
   // getConstants() hands back one shared object; keep it in step.
@@ -265,7 +261,8 @@ export const rowsByPlatform = <T extends object>(
     matrix.map((env) => ({ ...entry, env }))
   )
   const order = (env: ParityEnv) =>
-    ((env.platform ?? "ios") === "ios" ? 0 : 2) + (env.language === "ar" ? 1 : 0)
+    ((env.platform ?? "ios") === "ios" ? 0 : 2) +
+    (env.language === "ar" ? 1 : 0)
   return rows
     .map((row, index) => ({ row, index }))
     .sort((a, b) => order(a.row.env) - order(b.row.env) || a.index - b.index)

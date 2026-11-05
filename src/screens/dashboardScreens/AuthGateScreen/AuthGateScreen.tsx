@@ -23,9 +23,21 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets()
 
   const valueProps = [
-    { icon: <LucideBell width={20} height={20} color={colors.red} />, title: t("track_your_request"), desc: t("track_your_request_desc") },
-    { icon: <LucideMessage width={20} height={20} color={colors.red} />, title: t("chat_with_pros"), desc: t("chat_with_pros_desc") },
-    { icon: <LucideTag width={20} height={20} color={colors.red} />, title: t("get_offers_fast"), desc: t("get_offers_fast_desc") },
+    {
+      icon: <LucideBell width={20} height={20} color={colors.red} />,
+      title: t("track_your_request"),
+      desc: t("track_your_request_desc"),
+    },
+    {
+      icon: <LucideMessage width={20} height={20} color={colors.red} />,
+      title: t("chat_with_pros"),
+      desc: t("chat_with_pros_desc"),
+    },
+    {
+      icon: <LucideTag width={20} height={20} color={colors.red} />,
+      title: t("get_offers_fast"),
+      desc: t("get_offers_fast_desc"),
+    },
   ]
 
   const handleSignUp = () => {
@@ -61,7 +73,12 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
       {/* Hero icon */}
       <DmView style={[a.items_center, a.mt_20]}>
         <DmView
-          style={[dsStyles.lucideSendWrap, a.items_center, a.justify_center, styles.heroIcon]}
+          style={[
+            dsStyles.lucideSendWrap,
+            a.items_center,
+            a.justify_center,
+            styles.heroIcon,
+          ]}
         >
           <LucideSend width={36} height={36} color={colors.red} />
         </DmView>
@@ -72,7 +89,14 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
         <Text size={24} align="center" family="system">
           {t("almost_there")}
         </Text>
-        <Text size={14} leading="loose" color="tertiary" align="center" style={a.mt_6} numberOfLines={1}>
+        <Text
+          size={14}
+          leading="loose"
+          color="tertiary"
+          align="center"
+          style={a.mt_6}
+          numberOfLines={1}
+        >
           {t("create_free_account_subtitle")}
         </Text>
       </DmView>
@@ -82,7 +106,13 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
         {valueProps.map((vp, idx) => (
           <DmView key={idx} style={[a.flex_row, a.items_center, a.mb_14]}>
             <DmView
-              style={[dsStyles.box, a.items_center, a.justify_center, a.mr_14, styles.vpIcon]}
+              style={[
+                dsStyles.box,
+                a.items_center,
+                a.justify_center,
+                a.mr_14,
+                styles.vpIcon,
+              ]}
             >
               {vp.icon}
             </DmView>
@@ -105,7 +135,12 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
       <DmView style={[a.px_22, a.pb_16]}>
         <DmView
           onPress={handleSignUp}
-          style={[dsStyles.signUpWrap, a.items_center, a.justify_center, styles.signUpShadow]}
+          style={[
+            dsStyles.signUpWrap,
+            a.items_center,
+            a.justify_center,
+            styles.signUpShadow,
+          ]}
         >
           <Text size={16} weight="bold" leading="legacy" color="inverse">
             {t("sign_up")}
@@ -126,7 +161,13 @@ const AuthGateScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
         </DmView>
 
-        <Text size={12} leading={px(18)} color="tertiary" align="center" style={a.mt_14}>
+        <Text
+          size={12}
+          leading={px(18)}
+          color="tertiary"
+          align="center"
+          style={a.mt_14}
+        >
           {t("terms_privacy_agreement")}
         </Text>
       </DmView>

@@ -23,38 +23,44 @@ import styles from "./styles"
 const HomeScreen: React.FC = () => {
   const { i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { data: preset, isLoading, isError } = useGetActivePresetQuery()
   const { data: servicesData } = useGetServicesQuery()
 
-  const handleItemPress = useCallback((item: PresetSectionItemType) => {
-    // Case 1: Main category — look up full service (with categories) from /services
-    const presetService = item.services?.[0]
-    if (presetService) {
-      const fullService = servicesData?.data?.find((s) => s.id === presetService.id)
-      if (fullService && fullService.categories?.length) {
-        navigation.navigate("SubCategoriesScreen", { service: fullService })
+  const handleItemPress = useCallback(
+    (item: PresetSectionItemType) => {
+      // Case 1: Main category — look up full service (with categories) from /services
+      const presetService = item.services?.[0]
+      if (presetService) {
+        const fullService = servicesData?.data?.find(
+          (s) => s.id === presetService.id
+        )
+        if (fullService && fullService.categories?.length) {
+          navigation.navigate("SubCategoriesScreen", { service: fullService })
+          return
+        }
+      }
+
+      // Case 2: Direct subcategory item (from "subCategories" dataSource sections)
+      const subCategory = item.serviceCategories?.[0]
+      if (subCategory) {
+        const syntheticService: ServiceType = {
+          id: subCategory.serviceId || 0,
+          nameEn: subCategory.nameEn,
+          nameAr: subCategory.nameAr,
+          categories: item.serviceCategories || [],
+        }
+        navigation.navigate("SubCategoriesScreen", {
+          service: syntheticService,
+        })
         return
       }
-    }
+    },
+    [navigation, servicesData]
+  )
 
-    // Case 2: Direct subcategory item (from "subCategories" dataSource sections)
-    const subCategory = item.serviceCategories?.[0]
-    if (subCategory) {
-      const syntheticService: ServiceType = {
-        id: subCategory.serviceId || 0,
-        nameEn: subCategory.nameEn,
-        nameAr: subCategory.nameAr,
-        categories: item.serviceCategories || [],
-      }
-      navigation.navigate("SubCategoriesScreen", { service: syntheticService })
-      return
-    }
-  }, [navigation, servicesData])
-
-  const sections = preset?.sections
-    ?.slice()
-    .sort((a, b) => a.order - b.order)
+  const sections = preset?.sections?.slice().sort((a, b) => a.order - b.order)
 
   if (isLoading) {
     return <HomeSkeletonScreen />
@@ -71,13 +77,32 @@ const HomeScreen: React.FC = () => {
         <DmView style={styles.box} />
 
         {!sections || sections.length === 0 ? (
-          <DmView style={[atoms.flex_1, atoms.items_center, atoms.justify_center, atoms.px_40]}>
-            <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+          <DmView
+            style={[
+              atoms.flex_1,
+              atoms.items_center,
+              atoms.justify_center,
+              atoms.px_40,
+            ]}
+          >
+            <Text
+              size={16}
+              weight="semibold"
+              leading="legacy"
+              color="tertiary"
+              align="center"
+            >
               {isError
                 ? "Failed to load home content"
                 : "No content available yet"}
             </Text>
-            <Text size={12} leading="legacy" color="tertiary" align="center" style={atoms.mt_8}>
+            <Text
+              size={12}
+              leading="legacy"
+              color="tertiary"
+              align="center"
+              style={atoms.mt_8}
+            >
               {isError
                 ? "Please check your connection and try again."
                 : "An admin needs to publish an active CMS preset."}

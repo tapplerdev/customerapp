@@ -101,26 +101,41 @@ const RICH: PresetType = {
   ...PRESET,
   sections: [
     // Sorted third: two stacked cards a column, two columns.
-    section(
-      23,
-      3,
-      "doubleRectangles",
+    section(23, 3, "doubleRectangles", [
       [
-        [
-          item(2301, 2300, { nameEn: "Cleaning", nameAr: "التنظيف", services: [SERVICE] }),
-          item(2302, 2300, { nameEn: "Painting and decoration", nameAr: "الدهان والديكور", services: [SERVICE_FOOD] }),
-        ],
-        [
-          item(2303, 2301, { nameEn: "Moving", nameAr: "النقل", services: [SERVICE] }),
-          item(2304, 2301, { nameEn: "Gardening", nameAr: "البستنة", services: [SERVICE] }),
-        ],
-      ]
-    ),
+        item(2301, 2300, {
+          nameEn: "Cleaning",
+          nameAr: "التنظيف",
+          services: [SERVICE],
+        }),
+        item(2302, 2300, {
+          nameEn: "Painting and decoration",
+          nameAr: "الدهان والديكور",
+          services: [SERVICE_FOOD],
+        }),
+      ],
+      [
+        item(2303, 2301, {
+          nameEn: "Moving",
+          nameAr: "النقل",
+          services: [SERVICE],
+        }),
+        item(2304, 2301, {
+          nameEn: "Gardening",
+          nameAr: "البستنة",
+          services: [SERVICE],
+        }),
+      ],
+    ]),
     // Sorted first: squares, one named by its service, one by its category,
     // one with no picture and no name at all.
     section(21, 1, "squareWithOverlay", [
       [
-        item(2101, 2100, { nameEn: "Home repairs", nameAr: "إصلاحات المنزل", services: [SERVICE] }),
+        item(2101, 2100, {
+          nameEn: "Home repairs",
+          nameAr: "إصلاحات المنزل",
+          services: [SERVICE],
+        }),
         item(2102, 2100, { services: [SERVICE_FOOD] }),
         item(2103, 2100, { serviceCategories: [SUB] }),
         item(2104, 2100, {
@@ -141,11 +156,16 @@ const RICH: PresetType = {
       [
         [
           item(2201, 2200, {
-            nameEn: "A very long category name that has to wrap onto a second line",
+            nameEn:
+              "A very long category name that has to wrap onto a second line",
             nameAr: "اسم فئة طويل جدا يجب أن ينتقل إلى السطر الثاني في البطاقة",
             services: [SERVICE],
           }),
-          item(2202, 2200, { nameEn: "Electrical", nameAr: "الكهرباء", services: [SERVICE] }),
+          item(2202, 2200, {
+            nameEn: "Electrical",
+            nameAr: "الكهرباء",
+            services: [SERVICE],
+          }),
         ],
       ],
       { titleEn: "", titleAr: "" }
@@ -157,8 +177,16 @@ const RICH: PresetType = {
       "rectangleWithText",
       [
         [
-          item(2401, 2400, { nameEn: "Appliances", nameAr: "الأجهزة", services: [SERVICE] }),
-          item(2402, 2400, { nameEn: "Carpentry", nameAr: "النجارة", services: [SERVICE] }),
+          item(2401, 2400, {
+            nameEn: "Appliances",
+            nameAr: "الأجهزة",
+            services: [SERVICE],
+          }),
+          item(2402, 2400, {
+            nameEn: "Carpentry",
+            nameAr: "النجارة",
+            services: [SERVICE],
+          }),
         ],
       ],
       { descriptionEn: "", descriptionAr: "" }
@@ -170,7 +198,15 @@ const RICH: PresetType = {
       26,
       6,
       "rectangleWithText",
-      [[item(2601, 2600, { nameEn: "Only a description", nameAr: "وصف فقط", services: [SERVICE] })]],
+      [
+        [
+          item(2601, 2600, {
+            nameEn: "Only a description",
+            nameAr: "وصف فقط",
+            services: [SERVICE],
+          }),
+        ],
+      ],
       { titleEn: "", titleAr: "" }
     ),
   ],
@@ -263,170 +299,179 @@ describe("HomeScreen, captured from the unconverted code", () => {
   )
 })
 
-describe.each(PARITY_MATRIX)("HomeScreen presses [$language $platform]", (env: ParityEnv) => {
-  const open = (options: RenderScreenOptions = {}) =>
-    openScreen(load, {
-      ...SIGNED,
-      ...options,
-      lang: env.language,
-      platform: env.platform,
-      route: { name: "home" },
-    })
-
-  const session_ = (
-    session: Awaited<ReturnType<typeof open>>,
-    press: () => void
-  ) =>
-    session.act(() => {
-      press()
-    })
-
-  const navigated = (session: Awaited<ReturnType<typeof open>>) =>
-    session.navigation.actions.map((action) => ({
-      type: action.type,
-      ...(action.payload as object),
-    }))
-
-  it("the bell opens the notifications, with or without a badge on it", async () => {
-    // One unread: the badge is inside the bell's touchable, so it has words.
-    const badged = await open()
-    try {
-      await session_(badged, () =>
-        pressText(badged.root, env.language === "ar" ? "١" : "1")
-      )
-      expect(navigated(badged)).toEqual([
-        expect.objectContaining({ name: "NotificationsScreen" }),
-      ])
-    } finally {
-      badged.unmount()
-    }
-    const plain = await open({
-      api: { ...DATA, ...notifications([NOTIFICATION_READ]) },
-    })
-    try {
-      await session_(plain, () => pressIcon(plain.root, { icon: "svg:bell" }))
-      expect(navigated(plain)).toEqual([
-        expect.objectContaining({ name: "NotificationsScreen" }),
-      ])
-    } finally {
-      plain.unmount()
-    }
-  })
-
-  it("the bell asks the server for its count, not for a page of rows (backend #423)", async () => {
-    const session = await open()
-    try {
-      const asked = session.requests().map((request) => request.endpoint)
-      expect(asked).toContain("getUnreadNotificationsCount")
-      expect(asked).not.toContain("getNotifications")
-      const count = session
-        .requests()
-        .find((request) => request.endpoint === "getUnreadNotificationsCount")
-      expect(count?.args).toBe(
-        "/notifications/unread-count?excludeEventPrefix=system.messages"
-      )
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("the badge shows the server's count, past 100 too", async () => {
-    const session = await open({
-      api: { ...DATA, getUnreadNotificationsCount: { data: { count: 140 } } },
-    })
-    try {
-      expect(JSON.stringify(session.tree())).toContain(
-        env.language === "ar" ? "٩٩+" : "99+"
-      )
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("the search bar opens Tapply AI and the filter button the categories", async () => {
-    const session = await open()
-    try {
-      await session.act(() => {
-        pressText(session.root, copy(env, "search_for_a_service"))
+describe.each(PARITY_MATRIX)(
+  "HomeScreen presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (options: RenderScreenOptions = {}) =>
+      openScreen(load, {
+        ...SIGNED,
+        ...options,
+        lang: env.language,
+        platform: env.platform,
+        route: { name: "home" },
       })
-      expect(navigated(session)).toEqual([
-        expect.objectContaining({ name: "TapplyAIScreen" }),
-      ])
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:categories" })
-      })
-      expect(navigated(session)[1]).toEqual(
-        expect.objectContaining({ name: "CategoriesScreen" })
-      )
-    } finally {
-      session.unmount()
-    }
-  })
 
-  it("a card of every shape opens its own service, the stacked ones too", async () => {
-    const session = await open({
-      api: { ...DATA, ...preset(RICH) },
+    const session_ = (
+      session: Awaited<ReturnType<typeof open>>,
+      press: () => void
+    ) =>
+      session.act(() => {
+        press()
+      })
+
+    const navigated = (session: Awaited<ReturnType<typeof open>>) =>
+      session.navigation.actions.map((action) => ({
+        type: action.type,
+        ...(action.payload as object),
+      }))
+
+    it("the bell opens the notifications, with or without a badge on it", async () => {
+      // One unread: the badge is inside the bell's touchable, so it has words.
+      const badged = await open()
+      try {
+        await session_(badged, () =>
+          pressText(badged.root, env.language === "ar" ? "١" : "1")
+        )
+        expect(navigated(badged)).toEqual([
+          expect.objectContaining({ name: "NotificationsScreen" }),
+        ])
+      } finally {
+        badged.unmount()
+      }
+      const plain = await open({
+        api: { ...DATA, ...notifications([NOTIFICATION_READ]) },
+      })
+      try {
+        await session_(plain, () => pressIcon(plain.root, { icon: "svg:bell" }))
+        expect(navigated(plain)).toEqual([
+          expect.objectContaining({ name: "NotificationsScreen" }),
+        ])
+      } finally {
+        plain.unmount()
+      }
     })
-    try {
-      const pressed = [
-        ["Home repairs", "إصلاحات المنزل", SERVICE.id], // squareWithOverlay
-        ["Electrical", "الكهرباء", SERVICE.id], // rectangleWithOverlay
-        ["Cleaning", "التنظيف", SERVICE.id], // doubleRectangles, first of a column
-        ["Painting and decoration", "الدهان والديكور", SERVICE_FOOD.id], // doubleRectangles, stacked under it
-        ["Moving", "النقل", SERVICE.id], // doubleRectangles, the second column
-        ["Appliances", "الأجهزة", SERVICE.id], // rectangleWithText
-      ] as const
-      for (const [en, ar, serviceId] of pressed) {
-        // eslint-disable-next-line no-await-in-loop
+
+    it("the bell asks the server for its count, not for a page of rows (backend #423)", async () => {
+      const session = await open()
+      try {
+        const asked = session.requests().map((request) => request.endpoint)
+        expect(asked).toContain("getUnreadNotificationsCount")
+        expect(asked).not.toContain("getNotifications")
+        const count = session
+          .requests()
+          .find((request) => request.endpoint === "getUnreadNotificationsCount")
+        expect(count?.args).toBe(
+          "/notifications/unread-count?excludeEventPrefix=system.messages"
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("the badge shows the server's count, past 100 too", async () => {
+      const session = await open({
+        api: { ...DATA, getUnreadNotificationsCount: { data: { count: 140 } } },
+      })
+      try {
+        expect(JSON.stringify(session.tree())).toContain(
+          env.language === "ar" ? "٩٩+" : "99+"
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("the search bar opens Tapply AI and the filter button the categories", async () => {
+      const session = await open()
+      try {
         await session.act(() => {
-          pressContaining(session.root, env.language === "ar" ? ar : en)
+          pressText(session.root, copy(env, "search_for_a_service"))
         })
-        expect(navigated(session)[navigated(session).length - 1]).toEqual(
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({ name: "TapplyAIScreen" }),
+        ])
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:categories" })
+        })
+        expect(navigated(session)[1]).toEqual(
+          expect.objectContaining({ name: "CategoriesScreen" })
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("a card of every shape opens its own service, the stacked ones too", async () => {
+      const session = await open({
+        api: { ...DATA, ...preset(RICH) },
+      })
+      try {
+        const pressed = [
+          ["Home repairs", "إصلاحات المنزل", SERVICE.id], // squareWithOverlay
+          ["Electrical", "الكهرباء", SERVICE.id], // rectangleWithOverlay
+          ["Cleaning", "التنظيف", SERVICE.id], // doubleRectangles, first of a column
+          ["Painting and decoration", "الدهان والديكور", SERVICE_FOOD.id], // doubleRectangles, stacked under it
+          ["Moving", "النقل", SERVICE.id], // doubleRectangles, the second column
+          ["Appliances", "الأجهزة", SERVICE.id], // rectangleWithText
+        ] as const
+        for (const [en, ar, serviceId] of pressed) {
+          // eslint-disable-next-line no-await-in-loop
+          await session.act(() => {
+            pressContaining(session.root, env.language === "ar" ? ar : en)
+          })
+          expect(navigated(session)[navigated(session).length - 1]).toEqual(
+            expect.objectContaining({
+              name: "SubCategoriesScreen",
+              params: { service: expect.objectContaining({ id: serviceId }) },
+            })
+          )
+        }
+        expect(navigated(session)).toHaveLength(pressed.length)
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("a card opens its service's categories, from /services or from its own category", async () => {
+      const session = await open({
+        api: { ...DATA, ...preset(RICH) },
+      })
+      try {
+        await session.act(() => {
+          pressContaining(
+            session.root,
+            env.language === "ar" ? "إصلاحات المنزل" : "Home repairs"
+          )
+        })
+        expect(navigated(session)).toEqual([
           expect.objectContaining({
             name: "SubCategoriesScreen",
-            params: { service: expect.objectContaining({ id: serviceId }) },
+            params: { service: expect.objectContaining({ id: SERVICE.id }) },
+          }),
+        ])
+        await session.act(() => {
+          pressContaining(
+            session.root,
+            env.language === "ar" ? "إصلاح التسريب" : "Leak repairs"
+          )
+        })
+        expect(navigated(session)[1]).toEqual(
+          expect.objectContaining({
+            name: "SubCategoriesScreen",
+            params: {
+              service: expect.objectContaining({
+                nameEn: "Leak repairs",
+                categories: [expect.objectContaining({ id: 8801 })],
+              }),
+            },
           })
         )
+      } finally {
+        session.unmount()
       }
-      expect(navigated(session)).toHaveLength(pressed.length)
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("a card opens its service's categories, from /services or from its own category", async () => {
-    const session = await open({
-      api: { ...DATA, ...preset(RICH) },
     })
-    try {
-      await session.act(() => {
-        pressContaining(session.root, env.language === "ar" ? "إصلاحات المنزل" : "Home repairs")
-      })
-      expect(navigated(session)).toEqual([
-        expect.objectContaining({
-          name: "SubCategoriesScreen",
-          params: { service: expect.objectContaining({ id: SERVICE.id }) },
-        }),
-      ])
-      await session.act(() => {
-        pressContaining(session.root, env.language === "ar" ? "إصلاح التسريب" : "Leak repairs")
-      })
-      expect(navigated(session)[1]).toEqual(
-        expect.objectContaining({
-          name: "SubCategoriesScreen",
-          params: {
-            service: expect.objectContaining({
-              nameEn: "Leak repairs",
-              categories: [expect.objectContaining({ id: 8801 })],
-            }),
-          },
-        })
-      )
-    } finally {
-      session.unmount()
-    }
-  })
-})
+  }
+)
 
 describe("what the rows drew", () => {
   it("the rich preset draws every shape's cards, in `order`, and skips an empty section", async () => {

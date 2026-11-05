@@ -516,9 +516,7 @@ const shadowIds = (): RegExp | null => {
  * Texts are never touched. expectParity applies it to both sides at compare
  * time, so a fixture captured with raw ids compares as it is.
  */
-export const withStableShadowIds = (
-  tree: HostNode | null
-): HostNode | null => {
+export const withStableShadowIds = (tree: HostNode | null): HostNode | null => {
   if (tree === null) return null
   const pattern = shadowIds()
   if (pattern === null) return tree
@@ -611,9 +609,7 @@ const ROUTE_KEY = /^(.+)-[\w-]{21}$/
  * the part that says which screen it is; a screen id that isn't a route key
  * is kept as it is. expectParity applies it to both sides at compare time.
  */
-export const withStableScreenIds = (
-  tree: HostNode | null
-): HostNode | null => {
+export const withStableScreenIds = (tree: HostNode | null): HostNode | null => {
   if (tree === null) return null
   return mapHostProps(tree, ({ props }) => {
     const { screenId } = props

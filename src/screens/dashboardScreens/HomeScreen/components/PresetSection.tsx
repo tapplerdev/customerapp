@@ -16,9 +16,7 @@ interface Props {
 const PresetSection: React.FC<Props> = ({ section, isAr, onItemPress }) => {
   const title = isAr ? section.titleAr : section.titleEn
   const description = isAr ? section.descriptionAr : section.descriptionEn
-  const sortedGroups = section.groups
-    .slice()
-    .sort((a, b) => a.order - b.order)
+  const sortedGroups = section.groups.slice().sort((a, b) => a.order - b.order)
   const flatItems = sortedGroups.flatMap((g) => g.items)
 
   if (flatItems.length === 0) return null

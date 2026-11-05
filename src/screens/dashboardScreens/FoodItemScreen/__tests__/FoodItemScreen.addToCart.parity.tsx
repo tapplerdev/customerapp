@@ -114,9 +114,11 @@ const options = (
 
 // Boxes in screen order: Size (Regular, Large), then Extras on the Molokhia
 // dish; Rice, Salad, Fries on the platter.
-const choose = (...boxes: number[]): Step => (root) => {
-  boxes.forEach((box) => pressCheckbox(root, box))
-}
+const choose =
+  (...boxes: number[]): Step =>
+  (root) => {
+    boxes.forEach((box) => pressCheckbox(root, box))
+  }
 
 type Case = {
   name: string
@@ -169,10 +171,7 @@ const CASES: Case[] = [
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
-const addButtons = (
-  root: Parameters<Step>[0],
-  env: Env
-) => {
+const addButtons = (root: Parameters<Step>[0], env: Env) => {
   const prefix = copy(env, "add_to_cart_for_egp_count").split("{{")[0]
   return root.findAll(
     (node) =>
@@ -184,11 +183,18 @@ const addButtons = (
 
 describe("FoodItemScreen, Add to cart hidden until the required options are chosen", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
-    const session = await openScreen(load, options(c.menuItemId, c.env, c.insets))
+    const session = await openScreen(
+      load,
+      options(c.menuItemId, c.env, c.insets)
+    )
     try {
       for (const [index, step] of (c.steps ?? []).entries()) {
         // eslint-disable-next-line no-await-in-loop
-        await session.act(() => step(session.root, c.env), 500, `step ${index + 1}`)
+        await session.act(
+          () => step(session.root, c.env),
+          500,
+          `step ${index + 1}`
+        )
       }
       // The rule itself, beside the tree: gone while a required group is short.
       expect(addButtons(session.root, c.env)).toHaveLength(c.hidden ? 0 : 1)

@@ -62,13 +62,18 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
 
   return (
     <DmView
-      style={[a.overflow_hidden, a.py_8, a.px_14, {
-        backgroundColor: colors.red,
-        borderTopLeftRadius: RADIUS,
-        borderTopRightRadius: RADIUS,
-        borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
-        borderBottomRightRadius: tailLeft ? RADIUS : TAIL,
-      }]}
+      style={[
+        a.overflow_hidden,
+        a.py_8,
+        a.px_14,
+        {
+          backgroundColor: colors.red,
+          borderTopLeftRadius: RADIUS,
+          borderTopRightRadius: RADIUS,
+          borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
+          borderBottomRightRadius: tailLeft ? RADIUS : TAIL,
+        },
+      ]}
     >
       <Text
         size={12}
@@ -87,10 +92,19 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
         <Text size={13} leading={{ fixed: px(17) }} style={styles.text2}>
           {isAr ? "  ←  " : "  →  "}
         </Text>
-        <Text size={15} weight="semibold" leading={{ fixed: px(19) }} style={styles.text3}>
+        <Text
+          size={15}
+          weight="semibold"
+          leading={{ fixed: px(19) }}
+          style={styles.text3}
+        >
           {`${next}`}
         </Text>
-        <Text size={13} leading={{ fixed: px(17) }} style={[a.ml_4, styles.text2]}>
+        <Text
+          size={13}
+          leading={{ fixed: px(17) }}
+          style={[a.ml_4, styles.text2]}
+        >
           {t("EGP")}
         </Text>
       </DmView>
@@ -98,7 +112,10 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
       {time ? (
         <Text
           size={10}
-          style={[styles.text4, { color: "rgba(255,255,255,0.75)", textAlign: "left" }]}
+          style={[
+            styles.text4,
+            { color: "rgba(255,255,255,0.75)", textAlign: "left" },
+          ]}
         >
           {time}
         </Text>

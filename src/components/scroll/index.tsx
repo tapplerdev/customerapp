@@ -101,7 +101,7 @@ export type AppScrollViewProps = ScrollViewProps & {
 export const AppScrollView = React.forwardRef<ScrollView, AppScrollViewProps>(
   function AppScrollView(
     { alwaysBounceVertical = false, style, ...rest },
-    ref,
+    ref
   ) {
     return (
       <ScrollView
@@ -111,7 +111,7 @@ export const AppScrollView = React.forwardRef<ScrollView, AppScrollViewProps>(
         {...rest}
       />
     )
-  },
+  }
 )
 
 /**
@@ -155,12 +155,12 @@ export type AppFlatListProps<ItemT> = FlatListProps<ItemT> & {
  */
 export const AppFlatList = asGeneric<
   <ItemT>(
-    props: AppFlatListProps<ItemT> & React.RefAttributes<FlatList<ItemT>>,
+    props: AppFlatListProps<ItemT> & React.RefAttributes<FlatList<ItemT>>
   ) => React.ReactElement
 >(
   React.forwardRef(function AppFlatListInner<ItemT>(
     { alwaysBounceVertical = false, style, ...rest }: AppFlatListProps<ItemT>,
-    ref: React.ForwardedRef<FlatList<ItemT>>,
+    ref: React.ForwardedRef<FlatList<ItemT>>
   ) {
     return (
       <FlatList<ItemT>
@@ -170,7 +170,7 @@ export const AppFlatList = asGeneric<
         {...rest}
       />
     )
-  }),
+  })
 )
 
 /**
@@ -204,7 +204,7 @@ export const AppKeyboardAwareScrollView = React.forwardRef<
   AppKeyboardAwareScrollViewProps
 >(function AppKeyboardAwareScrollView(
   { alwaysBounceVertical = false, style, ...rest },
-  ref,
+  ref
 ) {
   return (
     <KeyboardAwareScrollView

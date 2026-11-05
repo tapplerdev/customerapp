@@ -24,22 +24,21 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
     (item: ChatPreviewType) => {
       navigation.navigate("MessagesDetailsScreen", { chatPreview: item })
     },
-    [navigation],
+    [navigation]
   )
 
   const renderItem = useCallback(
     ({ item }: { item: ChatPreviewType }) => (
-      <MessagesComponent
-        item={item}
-        onPress={() => handleChatPress(item)}
-      />
+      <MessagesComponent item={item} onPress={() => handleChatPress(item)} />
     ),
-    [handleChatPress],
+    [handleChatPress]
   )
 
   const renderEmpty = useCallback(
     () => (
-      <DmView style={[a.flex_1, a.items_center, a.justify_center, styles.container]}>
+      <DmView
+        style={[a.flex_1, a.items_center, a.justify_center, styles.container]}
+      >
         <Text
           size={14}
           leading="legacy"
@@ -50,7 +49,7 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
         </Text>
       </DmView>
     ),
-    [t],
+    [t]
   )
 
   return (

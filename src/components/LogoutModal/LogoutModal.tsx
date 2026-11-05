@@ -42,7 +42,11 @@ const LogoutModal: React.FC<Props> = ({
       titleBtn={t("yes")}
       titleBtnSecond={t("no")}
       Icon={
-        <DmView style={!I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}>
+        <DmView
+          style={
+            !I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined
+          }
+        >
           <LogoutDoorIcon width={36} height={42} />
         </DmView>
       }

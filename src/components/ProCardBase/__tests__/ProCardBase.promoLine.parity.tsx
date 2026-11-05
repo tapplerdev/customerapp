@@ -64,7 +64,10 @@ const BASE = {
 }
 
 const CASES = [
-  { name: "promo line only, #522 card", props: { ...BASE, subscriptions: [promoLine] } },
+  {
+    name: "promo line only, #522 card",
+    props: { ...BASE, subscriptions: [promoLine] },
+  },
   {
     name: "promo line and stickers, #522 card, #525 offers",
     props: { ...BASE, subscriptions: [promoLine, sticker(1), sticker(2)] },
@@ -78,7 +81,10 @@ const CASES = [
       offerAmount: 450,
     },
   },
-  { name: "no promo line, #522 card, #525 offers", props: { ...BASE, subscriptions: [sticker(1)] } },
+  {
+    name: "no promo line, #522 card, #525 offers",
+    props: { ...BASE, subscriptions: [sticker(1)] },
+  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

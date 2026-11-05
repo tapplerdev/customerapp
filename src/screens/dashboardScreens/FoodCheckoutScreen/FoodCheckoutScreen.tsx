@@ -86,7 +86,6 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   )
   const [isAddressModalVisible, setAddressModalVisible] = useState(false)
 
-
   // Address changed from MySavedAddresses/PickAddress → adopt it for the
   // order. Focus + delay guard copied from useServiceAddressFlow: this
   // screen stays mounted beneath the pickers, so only act when focused.
@@ -160,7 +159,8 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Once the menu loads, snap to a mode the pro actually offers.
   useEffect(() => {
-    if (!availableModes.includes(selectedMode)) setSelectedMode(availableModes[0])
+    if (!availableModes.includes(selectedMode))
+      setSelectedMode(availableModes[0])
   }, [availableModes, selectedMode])
 
   // What date types this category actually accepts. @JobDateTypeCorrect
@@ -187,14 +187,17 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     () =>
       cart.items.reduce<(typeof cart.items)[number] | null>(
         (worst, line) =>
-          (line.leadTimeHours ?? 0) > (worst?.leadTimeHours ?? 0) ? line : worst,
+          (line.leadTimeHours ?? 0) > (worst?.leadTimeHours ?? 0)
+            ? line
+            : worst,
         null
       ),
     [cart.items]
   )
   const leadTimeHours = slowestLine?.leadTimeHours ?? 0
   const earliestAt = useMemo(
-    () => (leadTimeHours ? new Date(Date.now() + leadTimeHours * 3600_000) : null),
+    () =>
+      leadTimeHours ? new Date(Date.now() + leadTimeHours * 3600_000) : null,
     [leadTimeHours]
   )
 
@@ -366,7 +369,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     // PM rendered "9 - 12 PM", which reads backwards. It also never collapses
     // with the start, or a 6am-midnight span would print "6 - 12 AM".
     const endsAtMidnight = scheduledSlot.end.startsWith("00:")
-    const to = endsAtMidnight ? { text: "12", suffix: t("am") } : clock(scheduledSlot.end)
+    const to = endsAtMidnight
+      ? { text: "12", suffix: t("am") }
+      : clock(scheduledSlot.end)
 
     const window =
       !endsAtMidnight && from.suffix === to.suffix
@@ -391,35 +396,33 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     }
 
     const payload: CreateJobRequest = {
-        serviceCategoryId: cart.serviceCategoryId,
-        address: {
-          city: orderAddress.city || "",
-          governorate: orderAddress.governorate || "",
-          streetAddress: orderAddress.address,
-          location: {
-            lat: addressCoords.lat,
-            lng: addressCoords.lon,
-          },
+      serviceCategoryId: cart.serviceCategoryId,
+      address: {
+        city: orderAddress.city || "",
+        governorate: orderAddress.governorate || "",
+        streetAddress: orderAddress.address,
+        location: {
+          lat: addressCoords.lat,
+          lng: addressCoords.lon,
         },
-        prosIds: [cart.proId],
-        questionsAnswers: [],
-        placeOfService: selectedMode,
-        // Urgent categories take no dateType; @JobDatesCorrect then also
-        // requires dates/timeSlots to be absent, which they are.
-        ...(isUrgentCategory ? {} : { dateType: deliverNow ? "asap" : "date" }),
-        ...(!deliverNow && scheduledDate && { dates: [{ date: scheduledDate }] }),
-        ...(!deliverNow &&
-          scheduledSlot && {
-            timeSlots: [
-              { start: scheduledSlot.start, end: scheduledSlot.end },
-            ],
-          }),
-        ...(cart.orderNotes && { orderNotes: cart.orderNotes }),
-        // Only the fields the backend validates; Review rebuilds this list
-        // from the basket on submit, with the same helper.
-        foodOrderItems: buildFoodOrderItems(cart.items),
-        paymentMethod,
-      }
+      },
+      prosIds: [cart.proId],
+      questionsAnswers: [],
+      placeOfService: selectedMode,
+      // Urgent categories take no dateType; @JobDatesCorrect then also
+      // requires dates/timeSlots to be absent, which they are.
+      ...(isUrgentCategory ? {} : { dateType: deliverNow ? "asap" : "date" }),
+      ...(!deliverNow && scheduledDate && { dates: [{ date: scheduledDate }] }),
+      ...(!deliverNow &&
+        scheduledSlot && {
+          timeSlots: [{ start: scheduledSlot.start, end: scheduledSlot.end }],
+        }),
+      ...(cart.orderNotes && { orderNotes: cart.orderNotes }),
+      // Only the fields the backend validates; Review rebuilds this list
+      // from the basket on submit, with the same helper.
+      foodOrderItems: buildFoodOrderItems(cart.items),
+      paymentMethod,
+    }
 
     navigation.navigate("FoodOrderReviewScreen", {
       proId,
@@ -451,10 +454,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               lon: pro.address.address.location.lng,
             }
           : null
-        : addressCoords ?? null,
+        : (addressCoords ?? null),
     })
   }
-
 
   const sectionTitle = (label: string) => (
     <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
@@ -494,7 +496,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       </Text>
       <Text size={11} color="brand" style={a.mt_2}>
         {t(
-          isPickup ? "outside_pickup_range_descr" : "outside_delivery_zone_descr"
+          isPickup
+            ? "outside_pickup_range_descr"
+            : "outside_delivery_zone_descr"
         )}
       </Text>
 
@@ -560,7 +564,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       style={[a.flex_1, styles.safeArea, { paddingBottom: keyboardInset }]}
     >
       {/* Header */}
-      <DmView style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row]}>
+      <DmView
+        style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row]}
+      >
         <DmView
           style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
@@ -660,7 +666,13 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               >
                 {orderAddress?.address || t("choose_address")}
               </Text>
-              <Text size={12} weight="semibold" leading="tight" color="brand" style={a.ml_10}>
+              <Text
+                size={12}
+                weight="semibold"
+                leading="tight"
+                color="brand"
+                style={a.ml_10}
+              >
                 {t("change")}
               </Text>
             </DmView>
@@ -724,7 +736,12 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                       {t(isPickup ? "schedule_pickup" : "schedule_delivery")}
                     </Text>
                     {!deliverNow && !!scheduledDate && (
-                      <Text size={12} leading="tight" color="secondary" style={styles.text}>
+                      <Text
+                        size={12}
+                        leading="tight"
+                        color="secondary"
+                        style={styles.text}
+                      >
                         {scheduleLabel}
                       </Text>
                     )}
@@ -747,9 +764,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           <DmView style={[a.p_14, styles.box2]}>
             {paymentOptions.map((option, index) => (
               <React.Fragment key={option.key}>
-                {index > 0 && (
-                  <DmView style={[styles.box4, a.my_12]} />
-                )}
+                {index > 0 && <DmView style={[styles.box4, a.my_12]} />}
                 <DmView
                   style={[a.flex_row, a.items_center, a.justify_between]}
                   onPress={() => setPaymentMethod(option.key)}
@@ -777,7 +792,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           <DmView style={[styles.safeArea, styles.notesBorder]}>
             <TextInput
               value={cart.orderNotes}
-              onChangeText={(text) => dispatch(setOrderNotes({ proId, notes: text }))}
+              onChangeText={(text) =>
+                dispatch(setOrderNotes({ proId, notes: text }))
+              }
               multiline
               placeholder={t("order_notes_placeholder")}
               placeholderTextColor={colors.grey5}
@@ -796,11 +813,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               key={line.uid}
               style={[a.flex_row, a.items_center, a.justify_between, a.mt_6]}
             >
-              <Text
-                size={12}
-                style={a.flex_1}
-                numberOfLines={1}
-              >
+              <Text size={12} style={a.flex_1} numberOfLines={1}>
                 {line.quantity}× {line.name}
               </Text>
             </DmView>
@@ -812,10 +825,15 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           {!isPickup &&
             totalsRow(
               t("delivery_fee"),
-              deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
+              deliveryFee
+                ? `${formatMoney(deliveryFee)} ${t("EGP")}`
+                : t("free")
             )}
           {orderDiscount > 0 &&
-            totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
+            totalsRow(
+              t("discount"),
+              `- ${formatMoney(orderDiscount)} ${t("EGP")}`
+            )}
           {totalsRow(t("total"), `${formatMoney(total)} ${t("EGP")}`, true)}
         </DmView>
       </AppScrollView>
@@ -824,7 +842,13 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           shadow cast upward onto the content it covers. The button keeps its
           own pill radius. */}
       <DmView
-        style={[a.px_16, a.pt_14, styles.safeArea, styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
+        style={[
+          a.px_16,
+          a.pt_14,
+          styles.safeArea,
+          styles.footerShadow,
+          { paddingBottom: insets.bottom + 12 },
+        ]}
       >
         <Button
           title={t("review_order")}

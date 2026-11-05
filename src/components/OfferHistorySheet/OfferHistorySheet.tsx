@@ -50,13 +50,14 @@ const OfferHistorySheet: React.FC<Props> = ({
   return (
     <NativeActionSheet isVisible={isVisible} onClose={onClose}>
       <DmView
-        style={[styles.list, a.px_16, a.pt_18, { paddingBottom: insets.bottom + 16 }]}
+        style={[
+          styles.list,
+          a.px_16,
+          a.pt_18,
+          { paddingBottom: insets.bottom + 16 },
+        ]}
       >
-        <Text
-          size={16}
-          weight="bold"
-          style={[a.mb_12, rtlText]}
-        >
+        <Text size={16} weight="bold" style={[a.mb_12, rtlText]}>
           {t("offer_history_title")}
         </Text>
         {isLoading ? (
@@ -73,19 +74,30 @@ const OfferHistorySheet: React.FC<Props> = ({
             return (
               <DmView
                 key={offer.id}
-                style={[a.flex_row, a.items_center, styles.container, a.px_12, a.mb_8, {
-                  backgroundColor: "#FAF9F7",
-                  borderWidth: 1,
-                  borderColor: "#E6E3DE",
-                  opacity: isCurrent ? 1 : 0.85,
-                }]}
+                style={[
+                  a.flex_row,
+                  a.items_center,
+                  styles.container,
+                  a.px_12,
+                  a.mb_8,
+                  {
+                    backgroundColor: "#FAF9F7",
+                    borderWidth: 1,
+                    borderColor: "#E6E3DE",
+                    opacity: isCurrent ? 1 : 0.85,
+                  },
+                ]}
               >
                 <TagRedIcon width={15} height={15} />
                 <DmView style={[a.ml_10, a.flex_1]}>
                   {/* Row mirrors naturally under force-RTL: each Text is a
                       single atomic segment, so bidi can't reshuffle glyphs */}
                   <DmView
-                    style={[a.flex_row, a.items_center, { alignSelf: "flex-start" }]}
+                    style={[
+                      a.flex_row,
+                      a.items_center,
+                      { alignSelf: "flex-start" },
+                    ]}
                   >
                     <Text
                       size={px(17)}
@@ -104,7 +116,12 @@ const OfferHistorySheet: React.FC<Props> = ({
                     </Text>
                     {isCurrent && (
                       <DmView
-                        style={[a.ml_6, styles.textWrap, a.px_6, { backgroundColor: "#E1F5EE" }]}
+                        style={[
+                          a.ml_6,
+                          styles.textWrap,
+                          a.px_6,
+                          { backgroundColor: "#E1F5EE" },
+                        ]}
                       >
                         {/* 9.5 is off the ds scale: LegacyText, the bridge
                             pass 2 turns into Text */}
@@ -132,7 +149,12 @@ const OfferHistorySheet: React.FC<Props> = ({
                 </DmView>
                 {delta != null && delta !== 0 ? (
                   <DmView
-                    style={[styles.textWrap2, a.px_8, a.py_2, { backgroundColor: "#E1F5EE" }]}
+                    style={[
+                      styles.textWrap2,
+                      a.px_8,
+                      a.py_2,
+                      { backgroundColor: "#E1F5EE" },
+                    ]}
                   >
                     <Text
                       size={11}

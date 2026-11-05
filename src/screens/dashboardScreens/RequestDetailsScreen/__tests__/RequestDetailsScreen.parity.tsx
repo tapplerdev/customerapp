@@ -138,7 +138,12 @@ describe("RequestDetailsScreen, the pro from the profile view", () => {
     const o = options(entry, entry.env)
     const tree = await treeAfter(
       load,
-      { ...o, api: withSlimPros((o.api ?? {}) as Record<string, unknown>) as typeof o.api },
+      {
+        ...o,
+        api: withSlimPros(
+          (o.api ?? {}) as Record<string, unknown>
+        ) as typeof o.api,
+      },
       entry.env
     )
     expectParity(parityName(entry.state, entry.env), tree)

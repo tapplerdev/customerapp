@@ -37,7 +37,6 @@ import { Text, a as atoms } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodMenuScreen">
 
-
 // The customer-side twin of proapp's FoodMenuStoreScreen preview: same
 // header, section pills + item rows, but taps go to FoodItemScreen (real
 // add-to-cart) and a View Basket bar rides the bottom once the cart has lines.
@@ -52,13 +51,23 @@ type Props = RootStackScreenProps<"FoodMenuScreen">
 // come from the pro's profile (the same query ProProfileScreen reads, so it
 // is usually cached); the name, the delivery terms and the menu draw first.
 const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode = "delivery" } =
-    route.params
+  const {
+    proId,
+    serviceCategoryId,
+    serviceId,
+    proName,
+    categoryName,
+    fulfillmentMode = "delivery",
+  } = route.params
 
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
 
-  const { data: menu, isLoading, isError } = useGetProMenuQuery({
+  const {
+    data: menu,
+    isLoading,
+    isError,
+  } = useGetProMenuQuery({
     proId,
     serviceCategoryId,
   })
@@ -162,7 +171,15 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         fulfillmentMode,
       })
     },
-    [navigation, proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode]
+    [
+      navigation,
+      proId,
+      serviceCategoryId,
+      serviceId,
+      proName,
+      categoryName,
+      fulfillmentMode,
+    ]
   )
 
   // Thumbnail "+": optionless items add straight to the cart (uid matches
@@ -198,7 +215,16 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         })
       )
     },
-    [dispatch, handlePressItem, proId, serviceCategoryId, serviceId, proName, categoryName, fulfillmentMode]
+    [
+      dispatch,
+      handlePressItem,
+      proId,
+      serviceCategoryId,
+      serviceId,
+      proName,
+      categoryName,
+      fulfillmentMode,
+    ]
   )
 
   // Thumbnail trash/−: peel one off the LAST cart line of this item
@@ -227,7 +253,12 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
         style={styles.container}
         onLayout={sectionLayout(index)}
       >
-        <Text size={20} weight="semibold" leading="tight" style={[atoms.mb_20, atoms.px_14]}>
+        <Text
+          size={20}
+          weight="semibold"
+          leading="tight"
+          style={[atoms.mb_20, atoms.px_14]}
+        >
           {item.title}
         </Text>
         <DmView>
@@ -296,7 +327,13 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
               atoms.px_40,
             ]}
           >
-            <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+            <Text
+              size={16}
+              weight="semibold"
+              leading="legacy"
+              color="tertiary"
+              align="center"
+            >
               {t("menu_unavailable")}
             </Text>
           </DmView>
@@ -327,7 +364,14 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
           consistently. The red bar is the button inside it. */}
       {basketVisible && (
         <DmView
-          style={[atoms.absolute, styles.boxWrap, atoms.px_16, atoms.pt_14, styles.basketShadow, { paddingBottom: insets.bottom + 12 }]}
+          style={[
+            atoms.absolute,
+            styles.boxWrap,
+            atoms.px_16,
+            atoms.pt_14,
+            styles.basketShadow,
+            { paddingBottom: insets.bottom + 12 },
+          ]}
         >
           <DmView
             style={[styles.box2, atoms.justify_center, atoms.px_12]}
@@ -346,8 +390,20 @@ const FoodMenuScreen: React.FC<Props> = ({ route, navigation }) => {
               {t("view_basket")}
             </Text>
 
-            <DmView style={[atoms.flex_row, atoms.items_center, atoms.justify_between]}>
-              <DmView style={[styles.textWrap, atoms.items_center, atoms.justify_center]}>
+            <DmView
+              style={[
+                atoms.flex_row,
+                atoms.items_center,
+                atoms.justify_between,
+              ]}
+            >
+              <DmView
+                style={[
+                  styles.textWrap,
+                  atoms.items_center,
+                  atoms.justify_center,
+                ]}
+              >
                 <Text size={14} weight="semibold">
                   {basketCount}
                 </Text>

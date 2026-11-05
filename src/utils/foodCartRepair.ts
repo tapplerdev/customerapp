@@ -91,12 +91,16 @@ export type RepairResult = {
   changed: boolean
 }
 
-type Resolved = { ok: true; line: CartItemType; repriced: boolean } | {
-  ok: false
-  reason: RemovedReason
-}
+type Resolved =
+  | { ok: true; line: CartItemType; repriced: boolean }
+  | {
+      ok: false
+      reason: RemovedReason
+    }
 
-const groupByName = <T extends { name: string }>(rows: T[]): Map<string, T[]> => {
+const groupByName = <T extends { name: string }>(
+  rows: T[]
+): Map<string, T[]> => {
   const map = new Map<string, T[]>()
   for (const row of rows) {
     const same = map.get(row.name)
@@ -141,7 +145,9 @@ const resolveLine = (
     if (matches.length > 1) return { ok: false, reason: "optionAmbiguous" }
     const option = matches[0]
 
-    const choicesByName = groupByName<FoodOptionChoiceType>(option.choices ?? [])
+    const choicesByName = groupByName<FoodOptionChoiceType>(
+      option.choices ?? []
+    )
     const choices: CartSelectedOptionType["choices"] = []
     for (const choice of picked.choices) {
       const found = choicesByName.get(choice.name) ?? []

@@ -83,8 +83,12 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const promoLine = subscriptions.find((s: any) => s.product?.subType === "promoLine")
-  const motivational = subscriptions.filter((s: any) => s.product?.subType === "motivational")
+  const promoLine = subscriptions.find(
+    (s: any) => s.product?.subType === "promoLine"
+  )
+  const motivational = subscriptions.filter(
+    (s: any) => s.product?.subType === "motivational"
+  )
 
   return (
     <DmView
@@ -107,7 +111,13 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           {isFeatured && (
             <DmView style={[a.absolute, styles.boxWrap, a.self_center]}>
               <DmView
-                style={[styles.featuredWrap, a.px_6, a.items_center, a.justify_center, styles.featuredBadgeBorder]}
+                style={[
+                  styles.featuredWrap,
+                  a.px_6,
+                  a.items_center,
+                  a.justify_center,
+                  styles.featuredBadgeBorder,
+                ]}
               >
                 <Text size={10} weight="bold" style={styles.featured}>
                   {t("featured")}
@@ -154,22 +164,25 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
           {/* Description */}
           {!!informationAbout && (
-            <Text
-              size={10}
-              leading="loose"
-              style={a.mt_6}
-              numberOfLines={2}
-            >
+            <Text size={10} leading="loose" style={a.mt_6} numberOfLines={2}>
               {informationAbout}
             </Text>
           )}
 
           {/* Offer badge + amount */}
           {showOfferBadge && (
-            <DmView style={[a.mt_8, a.flex_row, a.items_center, a.justify_between]}>
+            <DmView
+              style={[a.mt_8, a.flex_row, a.items_center, a.justify_between]}
+            >
               <DmView style={[a.flex_row, a.items_center]}>
                 <DmView
-                  style={[a.px_8, styles.offerAmountWrap, a.mr_6, styles.offerBadgeBorder, { borderColor: colors.red }]}
+                  style={[
+                    a.px_8,
+                    styles.offerAmountWrap,
+                    a.mr_6,
+                    styles.offerBadgeBorder,
+                    { borderColor: colors.red },
+                  ]}
                 >
                   <Text size={12} weight="medium" leading="legacy">
                     {t("offer_amount")}
@@ -183,8 +196,20 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
               {unreadCount > 0 && (
                 <DmView>
                   <MailIcon width={22} height={16} />
-                  <DmView style={[a.absolute, styles.textWrap, a.items_center, a.justify_center]}>
-                    <Text size={9} weight="bold" leading="legacy" color="inverse">
+                  <DmView
+                    style={[
+                      a.absolute,
+                      styles.textWrap,
+                      a.items_center,
+                      a.justify_center,
+                    ]}
+                  >
+                    <Text
+                      size={9}
+                      weight="bold"
+                      leading="legacy"
+                      color="inverse"
+                    >
                       {unreadCount}
                     </Text>
                   </DmView>
@@ -198,8 +223,15 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
       {/* Opportunity notes bubble with triangle pointer */}
       {showOpportunityNotes && !!opportunityNotes && (
         <DmView style={[a.mt_4, { position: "relative" }]}>
-          <ChatBubbleIcon width="100%" height={undefined} style={{ aspectRatio: 340.5 / 63.727 }} preserveAspectRatio="none" />
-          <DmView style={[a.absolute, styles.textWrap2, a.px_18, a.justify_center]}>
+          <ChatBubbleIcon
+            width="100%"
+            height={undefined}
+            style={{ aspectRatio: 340.5 / 63.727 }}
+            preserveAspectRatio="none"
+          />
+          <DmView
+            style={[a.absolute, styles.textWrap2, a.px_18, a.justify_center]}
+          >
             <Text size={12} leading={px(18)} numberOfLines={2}>
               {opportunityNotes}
             </Text>
@@ -225,11 +257,16 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
                     uri={imageUrl}
                   />
                 ) : (
-                  <Text size={10} weight="semibold" leading="legacy" color="tertiary">
+                  <Text
+                    size={10}
+                    weight="semibold"
+                    leading="legacy"
+                    color="tertiary"
+                  >
                     {isAr
                       ? doc.trustDocumentData?.trustProduct?.descriptionAr
-                      : doc.trustDocumentData?.trustProduct?.descriptionEn
-                      || t("background_checked")}
+                      : doc.trustDocumentData?.trustProduct?.descriptionEn ||
+                        t("background_checked")}
                   </Text>
                 )}
               </DmView>
@@ -263,9 +300,7 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
       {/* Promo line */}
       {promoLine && promoLine.promoStickerMessage && (
-        <PromoLine
-          promoMessage={promoLine.promoStickerMessage}
-        />
+        <PromoLine promoMessage={promoLine.promoStickerMessage} />
       )}
 
       {/* SELECT ME / PASS buttons */}
@@ -302,7 +337,13 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
       {/* Rejected label */}
       {isRejected && (
         <DmView style={a.mt_10}>
-          <Text size={11} weight="medium" leading="legacy" color="tertiary" style={styles.italic}>
+          <Text
+            size={11}
+            weight="medium"
+            leading="legacy"
+            color="tertiary"
+            style={styles.italic}
+          >
             {t("passed")}
           </Text>
         </DmView>

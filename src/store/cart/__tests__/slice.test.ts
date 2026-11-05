@@ -50,7 +50,10 @@ describe("replaceCartLines", () => {
   })
 
   it("drops the draft when nothing is left", () => {
-    const after = reducer(withBasket(), replaceCartLines({ proId: 7, lines: [] }))
+    const after = reducer(
+      withBasket(),
+      replaceCartLines({ proId: 7, lines: [] })
+    )
     expect(after.carts).toEqual({})
   })
 
@@ -64,7 +67,8 @@ describe("replaceCartLines", () => {
 
 describe("the order's Idempotency-Key on the draft", () => {
   const KEY = "0b7f2d9e-5c1a-4e8b-9f3d-2a6c8e1b4d7f"
-  const keyed = () => reducer(withBasket(), setSubmitKey({ proId: 7, key: KEY }))
+  const keyed = () =>
+    reducer(withBasket(), setSubmitKey({ proId: 7, key: KEY }))
   const refused = () => reducer(keyed(), markSubmitKeyRefused(7))
 
   it("stores the key on that pro's draft only", () => {
@@ -77,7 +81,10 @@ describe("the order's Idempotency-Key on the draft", () => {
 
   it("keeps the key through basket changes while no attempt was refused (one may have landed)", () => {
     let state = keyed()
-    state = reducer(state, setCartItemQuantity({ proId: 7, uid: "1:", quantity: 3 }))
+    state = reducer(
+      state,
+      setCartItemQuantity({ proId: 7, uid: "1:", quantity: 3 })
+    )
     state = reducer(state, addCartItem({ context, item: line(3) }))
     state = reducer(state, removeCartItem({ proId: 7, uid: "2:" }))
     state = reducer(state, setOrderNotes({ proId: 7, notes: "Ring twice" }))
@@ -93,7 +100,10 @@ describe("the order's Idempotency-Key on the draft", () => {
   })
 
   it.each([
-    ["a quantity change", setCartItemQuantity({ proId: 7, uid: "1:", quantity: 2 })],
+    [
+      "a quantity change",
+      setCartItemQuantity({ proId: 7, uid: "1:", quantity: 2 }),
+    ],
     ["an added dish", addCartItem({ context, item: line(3) })],
     ["a removed dish", removeCartItem({ proId: 7, uid: "2:" })],
     ["new notes", setOrderNotes({ proId: 7, notes: "Ring twice" })],

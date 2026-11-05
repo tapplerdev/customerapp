@@ -79,7 +79,9 @@ export type TrueSheetStandIn = React.Component<Props, State> & {
  * does: it stays up and reports onDismissAttempt. Returns whether it closed.
  */
 export const userDismiss = (sheet: TrueSheetStandIn): boolean =>
-  (sheet as unknown as { screenKitUserDismiss: () => boolean }).screenKitUserDismiss()
+  (
+    sheet as unknown as { screenKitUserDismiss: () => boolean }
+  ).screenKitUserDismiss()
 
 export const trueSheet = () => {
   const R = require("react") as typeof React
@@ -98,13 +100,16 @@ export const trueSheet = () => {
     static byName(name: string) {
       const sheet = TrueSheet.instances[name]
       if (!sheet) {
-        throw new Error(`TrueSheet stand-in: no sheet named "${name}" is mounted`)
+        throw new Error(
+          `TrueSheet stand-in: no sheet named "${name}" is mounted`
+        )
       }
       return sheet
     }
 
-    static present = jest.fn((name: string, index?: number, animated?: boolean) =>
-      TrueSheet.byName(name).present(index, animated)
+    static present = jest.fn(
+      (name: string, index?: number, animated?: boolean) =>
+        TrueSheet.byName(name).present(index, animated)
     )
 
     static dismiss = jest.fn((name: string, animated?: boolean) =>
@@ -205,7 +210,9 @@ export const trueSheet = () => {
      */
     screenKitUserDismiss = () => {
       if (!this.state.presented) {
-        throw new Error("TrueSheet stand-in: the sheet isn't presented, so the user can't close it")
+        throw new Error(
+          "TrueSheet stand-in: the sheet isn't presented, so the user can't close it"
+        )
       }
       if (this.props.dismissible === false) {
         this.fire("onDismissAttempt", { nativeEvent: null })

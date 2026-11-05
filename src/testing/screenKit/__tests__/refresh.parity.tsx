@@ -110,8 +110,12 @@ const options = (row: Row, env: ParityEnv) => ({
 const auth = (session: ScreenSession) =>
   session
     .requests()
-    .filter((r) => r.endpoint === "getNotifications" || r.endpoint === AUTH_REFRESH)
-    .map((r) => `${r.endpoint}:${r.answer}${r.unanswered ? " (unanswered)" : ""}`)
+    .filter(
+      (r) => r.endpoint === "getNotifications" || r.endpoint === AUTH_REFRESH
+    )
+    .map(
+      (r) => `${r.endpoint}:${r.answer}${r.unanswered ? " (unanswered)" : ""}`
+    )
 
 it.each(rowsByPlatform(ROWS, PARITY_MATRIX))(
   "$state [$env.language $env.platform]",

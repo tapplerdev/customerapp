@@ -90,9 +90,7 @@ const Navigator = () => {
   const { hasPickedLanguage, currentScreen, isAuth, guestLocation } =
     useTypedSelector((store) => store.auth)
 
-  const hasGuestLocation = !!(
-    guestLocation?.coords || guestLocation?.address
-  )
+  const hasGuestLocation = !!(guestLocation?.coords || guestLocation?.address)
 
   let initialRouteName: keyof RootStackParamList = "WelcomeScreen"
   if (isAuth || hasGuestLocation) {
@@ -148,13 +146,31 @@ const Navigator = () => {
         layout={modalLayout}
       />
       <Stack.Screen name="HomeTabs" component={HomeTabs} />
-      <Stack.Screen name="AccountDetailsScreen" component={AccountDetailsScreen} />
-      <Stack.Screen name="MyInformationScreen" component={MyInformationScreen} />
-      <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
-      <Stack.Screen name="UpdateMobileNumberScreen" component={UpdateMobileNumberScreen} />
+      <Stack.Screen
+        name="AccountDetailsScreen"
+        component={AccountDetailsScreen}
+      />
+      <Stack.Screen
+        name="MyInformationScreen"
+        component={MyInformationScreen}
+      />
+      <Stack.Screen
+        name="ChangePasswordScreen"
+        component={ChangePasswordScreen}
+      />
+      <Stack.Screen
+        name="UpdateMobileNumberScreen"
+        component={UpdateMobileNumberScreen}
+      />
       <Stack.Screen name="UpdateEmailScreen" component={UpdateEmailScreen} />
-      <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
-      <Stack.Screen name="MySavedAddressesScreen" component={MySavedAddressesScreen} />
+      <Stack.Screen
+        name="DeleteAccountScreen"
+        component={DeleteAccountScreen}
+      />
+      <Stack.Screen
+        name="MySavedAddressesScreen"
+        component={MySavedAddressesScreen}
+      />
       {/* Opened from the request-success sheet, its way out is a reset to
           Talabati (its own back does that); a swipe would go back to the
           success screen instead. */}
@@ -173,7 +189,10 @@ const Navigator = () => {
         component={ArchivedMessagesScreen}
         options={edgeSwipeOnly}
       />
-      <Stack.Screen name="MessagesDetailsScreen" component={MessagesDetailsScreen} />
+      <Stack.Screen
+        name="MessagesDetailsScreen"
+        component={MessagesDetailsScreen}
+      />
       <Stack.Screen name="TapplyAIScreen" component={TapplyAIScreen} />
       <Stack.Screen
         name="AuthGateScreen"
@@ -188,7 +207,10 @@ const Navigator = () => {
         }}
       />
       <Stack.Screen name="CategoriesScreen" component={CategoriesScreen} />
-      <Stack.Screen name="SubCategoriesScreen" component={SubCategoriesScreen} />
+      <Stack.Screen
+        name="SubCategoriesScreen"
+        component={SubCategoriesScreen}
+      />
       {/* It REPLACES itself with the listing after ~3 s; swiped away first,
           the replace would land on the screen underneath instead. */}
       <Stack.Screen
@@ -197,8 +219,14 @@ const Navigator = () => {
         options={{ gestureEnabled: false }}
       />
       <Stack.Screen name="ProsListingScreen" component={ProsListingScreen} />
-      <Stack.Screen name="ServiceRequestDetailsScreen" component={ServiceRequestDetailsScreen} />
-      <Stack.Screen name="RequestSummaryScreen" component={RequestSummaryScreen} />
+      <Stack.Screen
+        name="ServiceRequestDetailsScreen"
+        component={ServiceRequestDetailsScreen}
+      />
+      <Stack.Screen
+        name="RequestSummaryScreen"
+        component={RequestSummaryScreen}
+      />
       {/* The request is sent: the way out is Done, which resets to Talabati.
           A swipe would go back into the summary of a request already made. */}
       <Stack.Screen
@@ -230,8 +258,14 @@ const Navigator = () => {
       />
       <Stack.Screen name="ViewAddressScreen" component={ViewAddressScreen} />
       <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} />
-      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
-      <Stack.Screen name="NotificationDetailsScreen" component={NotificationDetailsScreen} />
+      <Stack.Screen
+        name="NotificationsScreen"
+        component={NotificationsScreen}
+      />
+      <Stack.Screen
+        name="NotificationDetailsScreen"
+        component={NotificationDetailsScreen}
+      />
       <Stack.Screen
         name="RequestDetailsScreen"
         component={RequestDetailsScreen}
@@ -244,7 +278,10 @@ const Navigator = () => {
         options={{ presentation: "fullScreenModal" }}
         layout={modalLayout}
       />
-      <Stack.Screen name="ReviewProSelectionScreen" component={ReviewProSelectionScreen} />
+      <Stack.Screen
+        name="ReviewProSelectionScreen"
+        component={ReviewProSelectionScreen}
+      />
       {/* The photo carousel is gesture-handler, not a scroll view. */}
       <Stack.Screen
         name="ReviewFormScreen"
@@ -261,7 +298,10 @@ const Navigator = () => {
       />
       <Stack.Screen name="FoodCartScreen" component={FoodCartScreen} />
       <Stack.Screen name="FoodCheckoutScreen" component={FoodCheckoutScreen} />
-      <Stack.Screen name="FoodOrderReviewScreen" component={FoodOrderReviewScreen} />
+      <Stack.Screen
+        name="FoodOrderReviewScreen"
+        component={FoodOrderReviewScreen}
+      />
     </Stack.Navigator>
   )
 }

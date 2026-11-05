@@ -45,7 +45,6 @@ import {
  * and Back.
  */
 
-
 // The Continue and Back buttons were ActionBtns: Button's listed deltas on every
 // row that draws one.
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]

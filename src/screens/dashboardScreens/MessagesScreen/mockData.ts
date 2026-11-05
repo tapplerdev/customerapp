@@ -90,7 +90,11 @@ export const MOCK_CHATS: ChatPreviewType[] = [
       customerId: 1,
       pro: { id: 105, firstName: "يوسف", lastName: "علي" },
       serviceCategoryId: 5,
-      serviceCategory: { id: 5, nameEn: "AC Maintenance", nameAr: "صيانة تكييفات" },
+      serviceCategory: {
+        id: 5,
+        nameEn: "AC Maintenance",
+        nameAr: "صيانة تكييفات",
+      },
       jobId: 1005,
     },
     notReadMessages: 3,

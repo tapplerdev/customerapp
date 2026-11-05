@@ -40,8 +40,10 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
 
   const showMobileError =
     phoneNumber.length > 0 &&
-    (!phoneNumber.startsWith("01") || (phoneNumber.length > 1 && phoneNumber.length < 11))
-  const isValidMobile = phoneNumber.length === 11 && phoneNumber.startsWith("01")
+    (!phoneNumber.startsWith("01") ||
+      (phoneNumber.length > 1 && phoneNumber.length < 11))
+  const isValidMobile =
+    phoneNumber.length === 11 && phoneNumber.startsWith("01")
 
   const handleSave = async () => {
     if (!isValidMobile) return
@@ -53,10 +55,16 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
       const validationErrors = error?.data?.validationErrors
       if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
-        const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
-        setErrorMessage(typeof firstMsg === "string" ? firstMsg : t("an_error_occurred"))
+        const firstMsg = Array.isArray(firstErrors)
+          ? firstErrors[0]
+          : firstErrors
+        setErrorMessage(
+          typeof firstMsg === "string" ? firstMsg : t("an_error_occurred")
+        )
       } else {
-        setErrorMessage(error?.data?.message || error?.message || t("an_error_occurred"))
+        setErrorMessage(
+          error?.data?.message || error?.message || t("an_error_occurred")
+        )
       }
       setErrorModalVisible(true)
     }
@@ -71,7 +79,10 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header - just back chevron, no title */}
       <DmView style={[a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -150,7 +161,13 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
             maxLength={11}
             textContentType="none"
             autoComplete="off"
-            style={[a.ml_8, a.flex_1, styles.input, isAr && styles.inputAr, isAr ? { textAlign: "left", writingDirection: "rtl" } : undefined]}
+            style={[
+              a.ml_8,
+              a.flex_1,
+              styles.input,
+              isAr && styles.inputAr,
+              isAr ? { textAlign: "left", writingDirection: "rtl" } : undefined,
+            ]}
           />
         </DmView>
         {showMobileError && (
@@ -169,7 +186,13 @@ const UpdateMobileNumberScreen: React.FC<Props> = ({ navigation }) => {
           size="lg"
           shape="r10"
           label="sm"
-          disabledLook={isValidMobile ? isLoading ? undefined : disabledLookLegacyMuted : disabledLookLegacyMuted}
+          disabledLook={
+            isValidMobile
+              ? isLoading
+                ? undefined
+                : disabledLookLegacyMuted
+              : disabledLookLegacyMuted
+          }
           title={t("send_verification_code")}
         />
       </DmView>

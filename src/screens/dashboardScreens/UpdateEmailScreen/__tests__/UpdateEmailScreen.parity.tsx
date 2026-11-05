@@ -63,8 +63,10 @@ const optionsFor = (
   route: { name: "UpdateEmailScreen" },
 })
 
-const type = (index: number, text: string): Step => (root) =>
-  typeInto(root, index, text)
+const type =
+  (index: number, text: string): Step =>
+  (root) =>
+    typeInto(root, index, text)
 const send: Step = (root, env) => pressTitled(root, copy(env, "change_email"))
 const ok: Step = (root, env) => pressTitled(root, copy(env, "OK"))
 
@@ -83,15 +85,34 @@ const CASES: Case[] = [
   { label: "as opened" },
   { label: "no email on file", who: NO_EMAIL },
   { label: "not an email", steps: [type(0, "abc")] },
-  { label: "the same email as now, in other letters", steps: [type(0, "Customer.Parity@Example.com"), type(1, "secret123")] },
+  {
+    label: "the same email as now, in other letters",
+    steps: [type(0, "Customer.Parity@Example.com"), type(1, "secret123")],
+  },
   { label: "email typed, no password", steps: [type(0, "new@example.com")] },
   { label: "password typed, no email", steps: [type(1, "secret123")] },
   { label: "both filled and valid", steps: FILLED },
   { label: "sent, pending", steps: [...FILLED, send] },
-  { label: "refused with a validation error", answer: "validation", steps: [...FILLED, send] },
-  { label: "refused with a message", answer: "message", steps: [...FILLED, send] },
-  { label: "refused with neither", answer: "no message", steps: [...FILLED, send] },
-  { label: "accepted: the fields clear and the success card shows", answer: "accepted", steps: [...FILLED, send] },
+  {
+    label: "refused with a validation error",
+    answer: "validation",
+    steps: [...FILLED, send],
+  },
+  {
+    label: "refused with a message",
+    answer: "message",
+    steps: [...FILLED, send],
+  },
+  {
+    label: "refused with neither",
+    answer: "no message",
+    steps: [...FILLED, send],
+  },
+  {
+    label: "accepted: the fields clear and the success card shows",
+    answer: "accepted",
+    steps: [...FILLED, send],
+  },
 ]
 
 describe("UpdateEmailScreen", () => {
@@ -122,57 +143,74 @@ describe("UpdateEmailScreen presses", () => {
     }
   }
 
-  it.each(envs)("Change Email is refused until both fields are right [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      expect(() => pressTitled(session.root, copy(env, "change_email"))).toThrow()
-      await run(session, env, [type(0, "abc"), type(1, "secret123")])
-      expect(() => pressTitled(session.root, copy(env, "change_email"))).toThrow()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Change Email is refused until both fields are right [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        expect(() =>
+          pressTitled(session.root, copy(env, "change_email"))
+        ).toThrow()
+        await run(session, env, [type(0, "abc"), type(1, "secret123")])
+        expect(() =>
+          pressTitled(session.root, copy(env, "change_email"))
+        ).toThrow()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Change Email sends the lower-cased address; OK on the success card goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, "accepted"))
-    try {
-      await run(session, env, [...FILLED, send])
-      const sent = session.requests().filter((r) => r.endpoint === "updateCustomer")
-      expect(sent).toHaveLength(1)
-      expect(JSON.stringify(sent[0].args)).toContain('"email":"new.address@example.com"')
-      expect(session.navigation.actions).toEqual([])
-      await run(session, env, [ok])
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Change Email sends the lower-cased address; OK on the success card goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, "accepted"))
+      try {
+        await run(session, env, [...FILLED, send])
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          '"email":"new.address@example.com"'
+        )
+        expect(session.navigation.actions).toEqual([])
+        await run(session, env, [ok])
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("OK closes the error card; the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, "message"))
-    try {
-      await run(session, env, [...FILLED, send])
-      const card = () =>
-        session.root.findAll(
-          (node) =>
-            typeof node.type !== "string" &&
-            "isVisible" in node.props &&
-            "descr" in node.props
-        )[0].props
-      expect(JSON.stringify(session.tree())).toContain("Email is taken")
-      expect(card().isVisible).toBe(true)
-      await run(session, env, [ok])
-      expect(card().isVisible).toBe(false)
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "OK closes the error card; the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, "message"))
+      try {
+        await run(session, env, [...FILLED, send])
+        const card = () =>
+          session.root.findAll(
+            (node) =>
+              typeof node.type !== "string" &&
+              "isVisible" in node.props &&
+              "descr" in node.props
+          )[0].props
+        expect(JSON.stringify(session.tree())).toContain("Email is taken")
+        expect(card().isVisible).toBe(true)
+        await run(session, env, [ok])
+        expect(card().isVisible).toBe(false)
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

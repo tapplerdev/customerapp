@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   safeArea: {
@@ -43,4 +43,4 @@ export default StyleSheet.create({
     borderBottomColor: colors.grey1,
     borderLeftColor: colors.grey1,
   },
-});
+})

@@ -64,14 +64,12 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
   // This screen always operates on the draft for the pro it was opened from —
   // other kitchens' baskets are untouched.
   const cartState = useTypedSelector((state) => state.cart)
-  const cart =
-    selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
+  const cart = selectDraft(cartState, proId, Date.now()) ?? emptyDraft(proId)
 
   const { data: menu } = useGetProMenuQuery(
     { proId: cart.proId, serviceCategoryId: cart.serviceCategoryId },
     { skip: !cart.serviceCategoryId }
   )
-
 
   // Shared with checkout and review — the cart had its own copy of this math
   // with no pickup awareness, so a pickup draft showed a delivery fee here and
@@ -85,7 +83,11 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const changeQuantity = (line: CartItemType, delta: number) => {
     dispatch(
-      setCartItemQuantity({ proId, uid: line.uid, quantity: line.quantity + delta })
+      setCartItemQuantity({
+        proId,
+        uid: line.uid,
+        quantity: line.quantity + delta,
+      })
     )
   }
 
@@ -98,10 +100,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
     )
 
     return (
-      <DmView
-        key={line.uid}
-        style={[a.px_16, a.py_18, styles.container]}
-      >
+      <DmView key={line.uid} style={[a.px_16, a.py_18, styles.container]}>
         {/* Top: name + options + badge | thumbnail */}
         <DmView style={a.flex_row}>
           <DmView style={[a.flex_1, a.mr_12]}>
@@ -120,7 +119,9 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
               </Text>
             ))}
             {line.isPreOrderOnly && (
-              <DmView style={[a.mt_8, a.self_start, styles.preOrderWrap, a.px_8]}>
+              <DmView
+                style={[a.mt_8, a.self_start, styles.preOrderWrap, a.px_8]}
+              >
                 <Text size={11} weight="bold" leading="tight" color="inverse">
                   {t("pre_order")}
                 </Text>
@@ -139,23 +140,31 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Bottom: price (left) on the same line as the stepper (right) */}
-        <DmView style={[a.mt_14, a.flex_row, a.items_center, a.justify_between]}>
+        <DmView
+          style={[a.mt_14, a.flex_row, a.items_center, a.justify_between]}
+        >
           <DmView style={[a.flex_1, a.flex_row, a.items_center, a.flex_wrap]}>
             <Text size={14}>
-              {formatMoney(effectiveTotal)}{" "}
-              {t("EGP")}
+              {formatMoney(effectiveTotal)} {t("EGP")}
             </Text>
             {showStrike && (
               <Text size={14} color="secondary" style={[a.ml_10, styles.eGP]}>
-                {formatMoney(originalTotal)}{" "}
-                {t("EGP")}
+                {formatMoney(originalTotal)} {t("EGP")}
               </Text>
             )}
           </DmView>
 
           {/* Bordered stepper (matches the cart mockup) */}
           <DmView
-            style={[a.flex_row, a.items_center, a.justify_between, a.border_1, styles.row, a.px_6, styles.stepper]}
+            style={[
+              a.flex_row,
+              a.items_center,
+              a.justify_between,
+              a.border_1,
+              styles.row,
+              a.px_6,
+              styles.stepper,
+            ]}
           >
             <DmView
               style={[styles.iconWrap, a.items_center, a.justify_center]}
@@ -172,7 +181,12 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
                 line.quantity < 30 ? () => changeQuantity(line, 1) : undefined
               }
             >
-              <PlusIcon color={colors.red} width={16} height={16} strokeWidth={2.5} />
+              <PlusIcon
+                color={colors.red}
+                width={16}
+                height={16}
+                strokeWidth={2.5}
+              />
             </DmView>
           </DmView>
         </DmView>
@@ -182,16 +196,10 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
     <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_12]}>
-      <Text
-        size={bold ? 16 : 14}
-        weight={bold ? "bold" : "regular"}
-      >
+      <Text size={bold ? 16 : 14} weight={bold ? "bold" : "regular"}>
         {label}
       </Text>
-      <Text
-        size={bold ? 16 : 14}
-        weight={bold ? "bold" : "regular"}
-      >
+      <Text size={bold ? 16 : 14} weight={bold ? "bold" : "regular"}>
         {value}
       </Text>
     </DmView>
@@ -200,7 +208,9 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <SafeAreaView style={[a.flex_1, styles.safeArea]} edges={["top"]}>
       {/* Header */}
-      <DmView style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row2]}>
+      <DmView
+        style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row2]}
+      >
         <DmView
           style={[styles.iconWrap2, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
@@ -226,7 +236,13 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {cart.items.length === 0 ? (
         <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+          <Text
+            size={16}
+            weight="semibold"
+            leading="legacy"
+            color="tertiary"
+            align="center"
+          >
             {t("basket_empty")}
           </Text>
           <Button
@@ -243,7 +259,12 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 24 }}
           >
-            <Text size={22} weight="bold" leading="tight" style={[a.px_16, a.pt_20, a.pb_6]}>
+            <Text
+              size={22}
+              weight="bold"
+              leading="tight"
+              style={[a.px_16, a.pt_20, a.pb_6]}
+            >
               {t("your_cart")}
             </Text>
 
@@ -279,14 +300,22 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
               white container, shadow cast upward onto the content it covers.
               The button keeps its own pill radius. */}
           <DmView
-            style={[a.px_16, a.pt_14, styles.safeArea, styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
+            style={[
+              a.px_16,
+              a.pt_14,
+              styles.safeArea,
+              styles.footerShadow,
+              { paddingBottom: insets.bottom + 12 },
+            ]}
           >
             <Button
               title={t("continue")}
               size={px(48)}
               label="md"
               labelWeight="semibold"
-              onPress={() => navigation.navigate("FoodCheckoutScreen", { proId })}
+              onPress={() =>
+                navigation.navigate("FoodCheckoutScreen", { proId })
+              }
             />
           </DmView>
         </>

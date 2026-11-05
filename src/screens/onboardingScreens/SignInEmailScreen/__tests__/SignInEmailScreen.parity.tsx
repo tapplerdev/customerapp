@@ -60,107 +60,213 @@ type Case = {
 const CASES: Case[] = [
   { state: "as it opens" },
   { state: "both fields filled", steps: fill },
-  { state: "the password shown", steps: [...fill, (root) => pressIcon(root, { icon: "svg:hide-password" })] },
-  { state: "the request on its way", api: { auth: "loading" }, steps: [...fill, login] },
-  { state: "a wrong password", api: refused({ validationErrors: { password: ["Password does not match"] } }), steps: [...fill, login] },
-  { state: "an email nobody registered", api: refused({ validationErrors: { email: ["This email is not registered"] } }), steps: [...fill, login] },
+  {
+    state: "the password shown",
+    steps: [...fill, (root) => pressIcon(root, { icon: "svg:hide-password" })],
+  },
+  {
+    state: "the request on its way",
+    api: { auth: "loading" },
+    steps: [...fill, login],
+  },
+  {
+    state: "a wrong password",
+    api: refused({
+      validationErrors: { password: ["Password does not match"] },
+    }),
+    steps: [...fill, login],
+  },
+  {
+    state: "an email nobody registered",
+    api: refused({
+      validationErrors: { email: ["This email is not registered"] },
+    }),
+    steps: [...fill, login],
+  },
   // (A refusal with no reasons draws the same card.)
-  { state: "any other refusal", api: refused({ validationErrors: { email: ["must be an email"] } }), steps: [...fill, login] },
+  {
+    state: "any other refusal",
+    api: refused({ validationErrors: { email: ["must be an email"] } }),
+    steps: [...fill, login],
+  },
   // Not about what was typed (backend #413's 429, the server failing, no
   // answer): told before any validation text. retryAfterSeconds is what the
   // auth endpoint's transformErrorResponse copies off Retry-After.
-  { state: "too many attempts card", api: { auth: { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } } }, steps: [...fill, login] },
-  { state: "too many attempts card, no wait given", api: { auth: { error: { status: 429, data: { validationErrors: { email: ["Too many attempts."] } } } } }, steps: [...fill, login] },
-  { state: "server trouble card", api: { auth: { error: { status: 500, data: {} } } }, steps: [...fill, login] },
-  { state: "no connection card", api: { auth: { error: { status: "FETCH_ERROR", error: "TypeError: Network request failed" } } }, steps: [...fill, login] },
+  {
+    state: "too many attempts card",
+    api: {
+      auth: {
+        error: {
+          status: 429,
+          retryAfterSeconds: 840,
+          data: {
+            message: "Too many attempts. Please try again in 14 minutes.",
+            validationErrors: {
+              email: ["Too many attempts. Please try again in 14 minutes."],
+            },
+          },
+        },
+      },
+    },
+    steps: [...fill, login],
+  },
+  {
+    state: "too many attempts card, no wait given",
+    api: {
+      auth: {
+        error: {
+          status: 429,
+          data: { validationErrors: { email: ["Too many attempts."] } },
+        },
+      },
+    },
+    steps: [...fill, login],
+  },
+  {
+    state: "server trouble card",
+    api: { auth: { error: { status: 500, data: {} } } },
+    steps: [...fill, login],
+  },
+  {
+    state: "no connection card",
+    api: {
+      auth: {
+        error: {
+          status: "FETCH_ERROR",
+          error: "TypeError: Network request failed",
+        },
+      },
+    },
+    steps: [...fill, login],
+  },
 ]
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
 describe("SignInEmailScreen, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, api, steps, env }) => {
-    const tree = await treeAfter(
-      load,
-      {
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, api, steps, env }) => {
+      const tree = await treeAfter(
+        load,
+        {
+          ...guestState("data"),
+          api: { ...DATA, ...api },
+          lang: env.language,
+          platform: env.platform,
+          route: { name: "SignInEmailScreen" },
+        },
+        env,
+        steps
+      )
+      expectParity(parityName(state, env), tree, { allow: ALLOW })
+    }
+  )
+})
+
+describe.each(PARITY_MATRIX)(
+  "SignInEmailScreen presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (options: Partial<RenderScreenOptions> = {}) =>
+      openScreen(load, {
         ...guestState("data"),
-        api: { ...DATA, ...api },
+        api: { ...DATA, auth: ANSWER },
         lang: env.language,
         platform: env.platform,
         route: { name: "SignInEmailScreen" },
-      },
-      env,
-      steps
-    )
-    expectParity(parityName(state, env), tree, { allow: ALLOW })
-  })
-})
+        ...options,
+      })
+    type Session = Awaited<ReturnType<typeof open>>
+    const act = (session: Session, press: () => void) =>
+      session.act(() => {
+        press()
+      })
+    const run = async (session: Session, steps: Step[]) => {
+      for (const step of steps) {
+        // eslint-disable-next-line no-await-in-loop
+        await session.act(() => step(session.root, env), step.settleMs)
+      }
+    }
+    const navigated = (session: Session) =>
+      session.navigation.actions.map((action) => ({
+        type: action.type,
+        ...(action.payload as object),
+      }))
+    const sent = (session: Session) =>
+      session.requests().filter((request) => request.endpoint === "auth")
 
-describe.each(PARITY_MATRIX)("SignInEmailScreen presses [$language $platform]", (env: ParityEnv) => {
-  const open = (options: Partial<RenderScreenOptions> = {}) =>
-    openScreen(load, {
-      ...guestState("data"),
-      api: { ...DATA, auth: ANSWER },
-      lang: env.language,
-      platform: env.platform,
-      route: { name: "SignInEmailScreen" },
-      ...options,
+    it("Log In sends the lower-cased email once, stores the tokens and leaves for Home", async () => {
+      const session = await open()
+      try {
+        await run(session, [...fill, login])
+        await session.settle(1000)
+        expect(sent(session)).toHaveLength(1)
+        expect(JSON.stringify(sent(session)[0].args)).toContain(
+          "mona.adel@example.com"
+        )
+        expect(session.store.getState().auth.token).toBe("t-1")
+        expect(session.store.getState().auth.refreshToken).toBe("r-1")
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({
+            type: "RESET",
+            index: 0,
+            routes: [{ name: "HomeTabs" }],
+          }),
+        ])
+      } finally {
+        session.unmount()
+      }
     })
-  type Session = Awaited<ReturnType<typeof open>>
-  const act = (session: Session, press: () => void) => session.act(() => { press() })
-  const run = async (session: Session, steps: Step[]) => {
-    for (const step of steps) {
-      // eslint-disable-next-line no-await-in-loop
-      await session.act(() => step(session.root, env), step.settleMs)
-    }
+
+    it("coming from the sign-in gate it goes back instead, and the sign-up link carries that on", async () => {
+      const session = await open({
+        route: { name: "SignInEmailScreen", params: { returnTo: true } },
+      })
+      try {
+        await run(session, [...fill, login])
+        await session.settle(1000)
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+        await act(session, () =>
+          pressText(
+            session.root,
+            `${copy(env, "dont_have_an_account")} ${copy(env, "sign_up")}`.replace(
+              "  ",
+              " "
+            )
+          )
+        )
+        expect(navigated(session)[1]).toEqual(
+          expect.objectContaining({
+            name: "RegisterScreen",
+            params: { returnTo: true },
+          })
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("an empty form sends nothing; the sign-up link, the back chevron and Forgot password", async () => {
+      const session = await open()
+      try {
+        await act(session, () => login(session.root, env))
+        await session.settle(500)
+        expect(sent(session)).toHaveLength(0)
+        await act(session, () =>
+          pressText(session.root, copy(env, "forgot_your_password"))
+        )
+        expect(navigated(session)).toEqual([])
+        await act(session, () =>
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        )
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
+    })
   }
-  const navigated = (session: Session) =>
-    session.navigation.actions.map((action) => ({ type: action.type, ...(action.payload as object) }))
-  const sent = (session: Session) => session.requests().filter((request) => request.endpoint === "auth")
-
-  it("Log In sends the lower-cased email once, stores the tokens and leaves for Home", async () => {
-    const session = await open()
-    try {
-      await run(session, [...fill, login])
-      await session.settle(1000)
-      expect(sent(session)).toHaveLength(1)
-      expect(JSON.stringify(sent(session)[0].args)).toContain("mona.adel@example.com")
-      expect(session.store.getState().auth.token).toBe("t-1")
-      expect(session.store.getState().auth.refreshToken).toBe("r-1")
-      expect(navigated(session)).toEqual([
-        expect.objectContaining({ type: "RESET", index: 0, routes: [{ name: "HomeTabs" }] }),
-      ])
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("coming from the sign-in gate it goes back instead, and the sign-up link carries that on", async () => {
-    const session = await open({ route: { name: "SignInEmailScreen", params: { returnTo: true } } })
-    try {
-      await run(session, [...fill, login])
-      await session.settle(1000)
-      expect(navigated(session)).toEqual([expect.objectContaining({ type: "GO_BACK" })])
-      await act(session, () => pressText(session.root, `${copy(env, "dont_have_an_account")} ${copy(env, "sign_up")}`.replace("  ", " ")))
-      expect(navigated(session)[1]).toEqual(
-        expect.objectContaining({ name: "RegisterScreen", params: { returnTo: true } })
-      )
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("an empty form sends nothing; the sign-up link, the back chevron and Forgot password", async () => {
-    const session = await open()
-    try {
-      await act(session, () => login(session.root, env))
-      await session.settle(500)
-      expect(sent(session)).toHaveLength(0)
-      await act(session, () => pressText(session.root, copy(env, "forgot_your_password")))
-      expect(navigated(session)).toEqual([])
-      await act(session, () => pressIcon(session.root, { icon: "svg:chevron-left" }))
-      expect(navigated(session)).toEqual([expect.objectContaining({ type: "GO_BACK" })])
-    } finally {
-      session.unmount()
-    }
-  })
-})
+)

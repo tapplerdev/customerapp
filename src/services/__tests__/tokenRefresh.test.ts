@@ -54,7 +54,12 @@ const ACCOUNT_B: Auth = {
   user: { id: 2 },
 }
 
-type Seen = { url: string; method: string; authorization: string | null; body: string }
+type Seen = {
+  url: string
+  method: string
+  authorization: string | null
+  body: string
+}
 
 const tick = () =>
   new Promise<void>((resolve) => {
@@ -68,7 +73,7 @@ const json = (status: number, body: unknown) =>
   })
 
 /** A promise and the function that settles it. */
-const deferred = <T,>() => {
+const deferred = <T>() => {
   let settle!: (value: T) => void
   const promise = new Promise<T>((resolve) => {
     settle = resolve
@@ -122,12 +127,14 @@ describe("token refresh (the real base query)", () => {
       enhancers: (getDefault) => getDefault({ autoBatch: false }),
     })
 
-  const refreshCalls = () => seen.filter((entry) => entry.url.endsWith("/auth/refresh"))
+  const refreshCalls = () =>
+    seen.filter((entry) => entry.url.endsWith("/auth/refresh"))
 
   beforeEach(() => {
     seen = []
     actions = []
-    refreshAnswer = async () => json(200, { token: "access-2", refreshToken: "refresh-2" })
+    refreshAnswer = async () =>
+      json(200, { token: "access-2", refreshToken: "refresh-2" })
     profileAnswer = async (authorization) =>
       authorization === "Bearer access-1"
         ? json(401, { message: "Unauthorized" })
@@ -151,7 +158,9 @@ describe("token refresh (the real base query)", () => {
 
   it("refreshes with POST and the token in the body, stores both new tokens, and retries", async () => {
     const store = makeStore()
-    const result = await store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const result = await store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
 
     expect(result.data).toEqual({ id: 1 })
     expect(refreshCalls()).toEqual([
@@ -170,15 +179,19 @@ describe("token refresh (the real base query)", () => {
     expect(actions).not.toContain("auth/logout")
   })
 
-  it.each([401, 403, 404])("signs out when the refresh is refused with %s", async (status) => {
-    refreshAnswer = async () => json(status, { message: "Specified refresh token not found!" })
-    const store = makeStore()
-    await store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+  it.each([401, 403, 404])(
+    "signs out when the refresh is refused with %s",
+    async (status) => {
+      refreshAnswer = async () =>
+        json(status, { message: "Specified refresh token not found!" })
+      const store = makeStore()
+      await store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
 
-    expect(actions).toEqual(
-      expect.arrayContaining(["auth/logout", api.util.resetApiState().type])
-    )
-  })
+      expect(actions).toEqual(
+        expect.arrayContaining(["auth/logout", api.util.resetApiState().type])
+      )
+    }
+  )
 
   it("keeps the session when the refresh fails for any other reason", async () => {
     refreshAnswer = async () => json(500, { message: "boom" })
@@ -193,7 +206,9 @@ describe("token refresh (the real base query)", () => {
     const answer = deferred<Response>()
     profileAnswer = () => answer.promise
     const store = makeStore()
-    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const pending = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     await tick()
 
     store.dispatch({ type: "test/signIn", payload: ACCOUNT_B })
@@ -202,7 +217,9 @@ describe("token refresh (the real base query)", () => {
 
     expect((result.error as any)?.status).toBe(401)
     expect(refreshCalls()).toEqual([])
-    expect(seen.map((entry) => entry.authorization)).toEqual(["Bearer access-1"])
+    expect(seen.map((entry) => entry.authorization)).toEqual([
+      "Bearer access-1",
+    ])
     expect(actions).not.toContain("auth/logout")
     expect((store.getState() as any).auth).toEqual(ACCOUNT_B)
   })
@@ -211,7 +228,9 @@ describe("token refresh (the real base query)", () => {
     const answer = deferred<Response>()
     profileAnswer = () => answer.promise
     const store = makeStore()
-    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const pending = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     await tick()
 
     store.dispatch({ type: "test/signIn", payload: { isAuth: false } })
@@ -235,11 +254,16 @@ describe("token refresh (the real base query)", () => {
         : json(200, { id: 1 })
     }
     const store = makeStore()
-    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const pending = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     await tick()
 
     // Another request refreshed for the same account while this one was out.
-    store.dispatch({ type: "auth/setTokens", payload: { token: "access-2", refreshToken: "refresh-2" } })
+    store.dispatch({
+      type: "auth/setTokens",
+      payload: { token: "access-2", refreshToken: "refresh-2" },
+    })
     answer.settle(json(401, { message: "Unauthorized" }))
     const result = await pending
 
@@ -252,7 +276,9 @@ describe("token refresh (the real base query)", () => {
     const refresh = deferred<Response>()
     refreshAnswer = () => refresh.promise
     const store = makeStore()
-    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const pending = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     for (let i = 0; i < 4 && refreshCalls().length === 0; i++) await tick()
     expect(refreshCalls()).toHaveLength(1)
 
@@ -268,7 +294,9 @@ describe("token refresh (the real base query)", () => {
     const refresh = deferred<Response>()
     refreshAnswer = () => refresh.promise
     const store = makeStore()
-    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const pending = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     for (let i = 0; i < 4 && refreshCalls().length === 0; i++) await tick()
 
     store.dispatch({ type: "test/signIn", payload: ACCOUNT_B })
@@ -276,17 +304,26 @@ describe("token refresh (the real base query)", () => {
     await pending
 
     expect((store.getState() as any).auth).toEqual(ACCOUNT_B)
-    expect(seen.filter((entry) => entry.authorization === "Bearer access-B")).toEqual([])
+    expect(
+      seen.filter((entry) => entry.authorization === "Bearer access-B")
+    ).toEqual([])
   })
 
   it("leaves a fresh sign-in as the same account alone when the old refresh is refused", async () => {
     const refresh = deferred<Response>()
     refreshAnswer = () => refresh.promise
     const store = makeStore()
-    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const pending = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     for (let i = 0; i < 4 && refreshCalls().length === 0; i++) await tick()
 
-    const AGAIN: Auth = { token: "access-9", refreshToken: "refresh-9", isAuth: true, user: { id: 1 } }
+    const AGAIN: Auth = {
+      token: "access-9",
+      refreshToken: "refresh-9",
+      isAuth: true,
+      user: { id: 1 },
+    }
     store.dispatch({ type: "test/signIn", payload: AGAIN })
     refresh.settle(json(404, { message: "Specified refresh token not found!" }))
     await pending
@@ -299,7 +336,9 @@ describe("token refresh (the real base query)", () => {
     const refresh = deferred<Response>()
     refreshAnswer = () => refresh.promise
     const store = makeStore()
-    const first = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const first = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     const second = store.dispatch(api.endpoints.getChats.initiate(undefined))
     for (let i = 0; i < 6 && refreshCalls().length === 0; i++) await tick()
     await tick()
@@ -318,7 +357,9 @@ describe("token refresh (the real base query)", () => {
     const refresh = deferred<Response>()
     refreshAnswer = () => refresh.promise
     const store = makeStore()
-    const first = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const first = store.dispatch(
+      api.endpoints.getCustomerMe.initiate(undefined)
+    )
     const second = store.dispatch(api.endpoints.getChats.initiate(undefined))
     for (let i = 0; i < 6 && refreshCalls().length === 0; i++) await tick()
     await tick()

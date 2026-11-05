@@ -5,7 +5,9 @@ import { describe, expect, it, jest } from "@jest/globals"
 jest.mock("services/api", () => {
   const never = { matchFulfilled: () => false }
   return {
-    api: { endpoints: { auth: never, getCustomerMe: never, updateCustomer: never } },
+    api: {
+      endpoints: { auth: never, getCustomerMe: never, updateCustomer: never },
+    },
   }
 })
 
@@ -27,7 +29,10 @@ describe("setTokens", () => {
   })
 
   it("is ignored once signed out (a refresh landing after logout)", () => {
-    const signedIn = reducer(reducer(undefined, setIsAuth(true)), setTokens({ token: "t-1", refreshToken: "r-1" }))
+    const signedIn = reducer(
+      reducer(undefined, setIsAuth(true)),
+      setTokens({ token: "t-1", refreshToken: "r-1" })
+    )
     const signedOut = reducer(signedIn, logout())
     const after = reducer(signedOut, setTokens(PAIR))
     expect(after.isAuth).toBe(false)

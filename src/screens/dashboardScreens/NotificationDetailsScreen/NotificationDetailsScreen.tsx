@@ -46,7 +46,10 @@ const NotificationDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
           />
         </DmView>
-        <DmView style={[a.absolute, styles.notificationsWrap, a.items_center]} pointerEvents="none">
+        <DmView
+          style={[a.absolute, styles.notificationsWrap, a.items_center]}
+          pointerEvents="none"
+        >
           <Text size={16} weight="semibold" leading="legacy">
             {t("notifications")}
           </Text>
@@ -63,7 +66,13 @@ const NotificationDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             {notification?.title || ""}
           </Text>
 
-          <Text size={13} weight="bold" leading={px(22)} color="brand" style={styles.text}>
+          <Text
+            size={13}
+            weight="bold"
+            leading={px(22)}
+            color="brand"
+            style={styles.text}
+          >
             {user?.firstName ? `${t("hello")}, ${user.firstName}` : t("hello")}
           </Text>
 

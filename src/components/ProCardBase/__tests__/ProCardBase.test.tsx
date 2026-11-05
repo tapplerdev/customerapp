@@ -125,7 +125,10 @@ describe("ProCardBase: the OFFERS box", () => {
     // The pink footer band is gone, and nothing bleeds past the card's edges.
     expect(findAll(card, isBand)).toHaveLength(0)
     expect(
-      findAll(card, (n) => StyleSheet.flatten(n.props.style)?.marginHorizontal === -15)
+      findAll(
+        card,
+        (n) => StyleSheet.flatten(n.props.style)?.marginHorizontal === -15
+      )
     ).toHaveLength(0)
     // SELECT ME / PASS are the card's foot again.
     const foot = kids(card)[kids(card).length - 1]

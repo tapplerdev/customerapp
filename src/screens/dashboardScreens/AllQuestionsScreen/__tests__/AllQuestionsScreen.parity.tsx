@@ -48,7 +48,11 @@ const load = () => {
       onClose: () => undefined,
       onApply: () => undefined,
       categoryName: "Plumbing",
-      placeOfServiceOptions: ["proToCustomer", "customerToPro", "remoteOrOnline"],
+      placeOfServiceOptions: [
+        "proToCustomer",
+        "customerToPro",
+        "remoteOrOnline",
+      ],
       customerQuestions: QUESTIONS_RICH,
       initialAnswers: [],
       ...props,
@@ -74,14 +78,47 @@ type Case = {
 
 const CASES: Case[] = [
   { state: "three places, nothing answered", props: {} },
-  { state: "a place seeded", props: { initialPlaceOfService: "customerToPro" } },
-  { state: "a second open, answers and a place seeded", props: { initialPlaceOfService: "remoteOrOnline", initialAnswers: SEEDED } },
+  {
+    state: "a place seeded",
+    props: { initialPlaceOfService: "customerToPro" },
+  },
+  {
+    state: "a second open, answers and a place seeded",
+    props: { initialPlaceOfService: "remoteOrOnline", initialAnswers: SEEDED },
+  },
   // (No place at all draws the same as one: only two or more ask.)
-  { state: "one place (no place block)", props: { placeOfServiceOptions: ["proToCustomer"] } },
-  { state: "an unlisted place falls back to its own name", props: { placeOfServiceOptions: ["delivery", "fixedLocations", "somethingElse"] } },
+  {
+    state: "one place (no place block)",
+    props: { placeOfServiceOptions: ["proToCustomer"] },
+  },
+  {
+    state: "an unlisted place falls back to its own name",
+    props: {
+      placeOfServiceOptions: ["delivery", "fixedLocations", "somethingElse"],
+    },
+  },
   { state: "no questions", props: { customerQuestions: [] } },
-  { state: "a pro's question is not asked", props: { customerQuestions: [{ ...QUESTIONS_RICH[0], id: 899, assignee: "pro", text: "A pro's question" }, ...QUESTIONS_RICH.slice(5)] } },
-  { state: "a long category name", props: { categoryName: "Plumbing, heating and every other kind of household maintenance and repair" } },
+  {
+    state: "a pro's question is not asked",
+    props: {
+      customerQuestions: [
+        {
+          ...QUESTIONS_RICH[0],
+          id: 899,
+          assignee: "pro",
+          text: "A pro's question",
+        },
+        ...QUESTIONS_RICH.slice(5),
+      ],
+    },
+  },
+  {
+    state: "a long category name",
+    props: {
+      categoryName:
+        "Plumbing, heating and every other kind of household maintenance and repair",
+    },
+  },
   { state: "bottom inset 0", props: {}, insets: { bottom: 0 } },
   { state: "bottom inset 48", props: {}, insets: { bottom: 48 } },
 ]
@@ -89,82 +126,130 @@ const CASES: Case[] = [
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
 describe("AllQuestionsSheet, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, props, insets, steps, env }) => {
-    const tree = await treeAfter(
-      load,
-      { ...screenState("data"), lang: env.language, platform: env.platform, navigation: "none", insets, props },
-      env,
-      steps
-    )
-    expectParity(parityName(state, env), tree, { allow: ALLOW })
-  })
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, props, insets, steps, env }) => {
+      const tree = await treeAfter(
+        load,
+        {
+          ...screenState("data"),
+          lang: env.language,
+          platform: env.platform,
+          navigation: "none",
+          insets,
+          props,
+        },
+        env,
+        steps
+      )
+      expectParity(parityName(state, env), tree, { allow: ALLOW })
+    }
+  )
 })
 
-describe.each(PARITY_MATRIX)("AllQuestionsSheet presses [$language $platform]", (env: ParityEnv) => {
-  const open = (props: Record<string, unknown>) =>
-    openScreen(load, {
-      ...screenState("data"),
-      lang: env.language,
-      platform: env.platform,
-      navigation: "none",
-      props,
-    } as RenderScreenOptions)
-  type Session = Awaited<ReturnType<typeof open>>
-  const act = (session: Session, press: () => void) => session.act(() => { press() })
-  const ar = env.language === "ar"
-  const label = (en: string, arabic: string) => (ar ? arabic : en)
+describe.each(PARITY_MATRIX)(
+  "AllQuestionsSheet presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (props: Record<string, unknown>) =>
+      openScreen(load, {
+        ...screenState("data"),
+        lang: env.language,
+        platform: env.platform,
+        navigation: "none",
+        props,
+      } as RenderScreenOptions)
+    type Session = Awaited<ReturnType<typeof open>>
+    const act = (session: Session, press: () => void) =>
+      session.act(() => {
+        press()
+      })
+    const ar = env.language === "ar"
+    const label = (en: string, arabic: string) => (ar ? arabic : en)
 
-  it("See matches hands over the place and the answers, once, and closes", async () => {
-    const onApply = jest.fn()
-    const onClose = jest.fn()
-    const session = await open({ onApply, onClose })
-    try {
-      await act(session, () => pressContaining(session.root, copy(env, "at_pro_location")))
-      await act(session, () => pressContaining(session.root, label("Repair", "إصلاح")))
-      await act(session, () => pressContaining(session.root, label("The tap", "الصنبور")))
-      await act(session, () => typeInto(session.root, 2, "Hello"))
-      await act(session, () => pressTitled(session.root, copy(env, "see_matches")))
-      expect(onClose).toHaveBeenCalledTimes(1)
-      expect(onApply).toHaveBeenCalledTimes(1)
-      expect(onApply).toHaveBeenCalledWith(
-        expect.objectContaining({
-          placeOfService: "customerToPro",
-          filterOptionIds: [9011],
-          filtersChanged: true,
-          resetAll: false,
-          dataAnswers: expect.arrayContaining([expect.objectContaining({ questionId: 806, answer: "Hello" })]),
-        })
-      )
-    } finally {
-      session.unmount()
-    }
-  })
+    it("See matches hands over the place and the answers, once, and closes", async () => {
+      const onApply = jest.fn()
+      const onClose = jest.fn()
+      const session = await open({ onApply, onClose })
+      try {
+        await act(session, () =>
+          pressContaining(session.root, copy(env, "at_pro_location"))
+        )
+        await act(session, () =>
+          pressContaining(session.root, label("Repair", "إصلاح"))
+        )
+        await act(session, () =>
+          pressContaining(session.root, label("The tap", "الصنبور"))
+        )
+        await act(session, () => typeInto(session.root, 2, "Hello"))
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "see_matches"))
+        )
+        expect(onClose).toHaveBeenCalledTimes(1)
+        expect(onApply).toHaveBeenCalledTimes(1)
+        expect(onApply).toHaveBeenCalledWith(
+          expect.objectContaining({
+            placeOfService: "customerToPro",
+            filterOptionIds: [9011],
+            filtersChanged: true,
+            resetAll: false,
+            dataAnswers: expect.arrayContaining([
+              expect.objectContaining({ questionId: 806, answer: "Hello" }),
+            ]),
+          })
+        )
+      } finally {
+        session.unmount()
+      }
+    })
 
-  it("Reset all clears the answers and says so; the close X commits like See matches", async () => {
-    const onApply = jest.fn()
-    const onClose = jest.fn()
-    const session = await open({ onApply, onClose, initialPlaceOfService: "remoteOrOnline", initialAnswers: SEEDED })
-    try {
-      await act(session, () => pressText(session.root, copy(env, "reset_all")))
-      await act(session, () => pressIcon(session.root, { icon: "svg:close" }))
-      expect(onClose).toHaveBeenCalledTimes(1)
-      expect(onApply).toHaveBeenCalledTimes(1)
-      expect(onApply).toHaveBeenCalledWith(
-        expect.objectContaining({ placeOfService: undefined, filterOptionIds: [], dataAnswers: [], allAnswers: [], resetAll: true, filtersChanged: true })
-      )
-    } finally {
-      session.unmount()
-    }
-  })
+    it("Reset all clears the answers and says so; the close X commits like See matches", async () => {
+      const onApply = jest.fn()
+      const onClose = jest.fn()
+      const session = await open({
+        onApply,
+        onClose,
+        initialPlaceOfService: "remoteOrOnline",
+        initialAnswers: SEEDED,
+      })
+      try {
+        await act(session, () =>
+          pressText(session.root, copy(env, "reset_all"))
+        )
+        await act(session, () => pressIcon(session.root, { icon: "svg:close" }))
+        expect(onClose).toHaveBeenCalledTimes(1)
+        expect(onApply).toHaveBeenCalledTimes(1)
+        expect(onApply).toHaveBeenCalledWith(
+          expect.objectContaining({
+            placeOfService: undefined,
+            filterOptionIds: [],
+            dataAnswers: [],
+            allAnswers: [],
+            resetAll: true,
+            filtersChanged: true,
+          })
+        )
+      } finally {
+        session.unmount()
+      }
+    })
 
-  it("nothing changed: See matches reports no change", async () => {
-    const onApply = jest.fn()
-    const session = await open({ onApply, initialAnswers: SEEDED })
-    try {
-      await act(session, () => pressTitled(session.root, copy(env, "see_matches")))
-      expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ filtersChanged: false, resetAll: false, filterOptionIds: [9011] }))
-    } finally {
-      session.unmount()
-    }
-  })
-})
+    it("nothing changed: See matches reports no change", async () => {
+      const onApply = jest.fn()
+      const session = await open({ onApply, initialAnswers: SEEDED })
+      try {
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "see_matches"))
+        )
+        expect(onApply).toHaveBeenCalledWith(
+          expect.objectContaining({
+            filtersChanged: false,
+            resetAll: false,
+            filterOptionIds: [9011],
+          })
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

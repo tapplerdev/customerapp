@@ -54,7 +54,13 @@ const ImageViewerModal: React.FC<Props> = ({
         {/* Close button */}
         <DmView
           onPress={onClose}
-          style={[a.absolute, dsStyles.iconWrap, a.items_center, a.justify_center, { top: insets.top + 10, left: 16 }]}
+          style={[
+            a.absolute,
+            dsStyles.iconWrap,
+            a.items_center,
+            a.justify_center,
+            { top: insets.top + 10, left: 16 },
+          ]}
         >
           <CloseIcon width={16} height={16} color="white" />
         </DmView>
@@ -80,14 +86,23 @@ const ImageViewerModal: React.FC<Props> = ({
         {/* Page indicator */}
         {images.length > 1 && (
           <DmView
-            style={[a.absolute, a.flex_row, a.items_center, a.justify_center, { bottom: insets.bottom + 20, left: 0, right: 0 }]}
+            style={[
+              a.absolute,
+              a.flex_row,
+              a.items_center,
+              a.justify_center,
+              { bottom: insets.bottom + 20, left: 0, right: 0 },
+            ]}
           >
             {images.map((_, index) => (
               <DmView
                 key={index}
-                style={[dsStyles.container, 
+                style={[
+                  dsStyles.container,
                   styles.dot,
-                  index === currentIndex ? styles.dotActive : styles.dotInactive,
+                  index === currentIndex
+                    ? styles.dotActive
+                    : styles.dotInactive,
                 ]}
               />
             ))}

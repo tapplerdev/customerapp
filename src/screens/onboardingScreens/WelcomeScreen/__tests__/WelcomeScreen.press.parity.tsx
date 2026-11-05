@@ -19,40 +19,52 @@ import { PARITY_MATRIX, type ParityEnv } from "testing/hostTreeParity"
 
 const load = () => require("../WelcomeScreen")
 
-describe.each(PARITY_MATRIX)("WelcomeScreen presses [$language $platform]", (env: ParityEnv) => {
-  const open = (currentScreen?: string) =>
-    openScreen(load, {
-      ...freshInstallState(),
-      state: { auth: { ...freshInstallState().state.auth, currentScreen } as never },
-      lang: env.language,
-      platform: env.platform,
-      route: { name: "WelcomeScreen" },
-    })
-
-  it.each([
-    ["English", "en"],
-    ["عربي", "ar"],
-  ])("%s stores the language and where to come back to", async (title, language) => {
-    const session = await open()
-    try {
-      expect(session.store.getState().auth.currentScreen).toBeUndefined()
-      await session.act(() => {
-        pressTitled(session.root, title)
+describe.each(PARITY_MATRIX)(
+  "WelcomeScreen presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (currentScreen?: string) =>
+      openScreen(load, {
+        ...freshInstallState(),
+        state: {
+          auth: { ...freshInstallState().state.auth, currentScreen } as never,
+        },
+        lang: env.language,
+        platform: env.platform,
+        route: { name: "WelcomeScreen" },
       })
-      expect(session.store.getState().auth.language).toBe(language)
-      expect(session.store.getState().auth.currentScreen).toBe("auth-welcome")
-      expect(JSON.stringify(session.tree())).not.toContain("Please Select Your Language")
-    } finally {
-      session.unmount()
-    }
-  })
 
-  it("an earlier restart's screen to come back to is cleared on arrival", async () => {
-    const session = await open("auth-welcome")
-    try {
-      expect(session.store.getState().auth.currentScreen).toBeUndefined()
-    } finally {
-      session.unmount()
-    }
-  })
-})
+    it.each([
+      ["English", "en"],
+      ["عربي", "ar"],
+    ])(
+      "%s stores the language and where to come back to",
+      async (title, language) => {
+        const session = await open()
+        try {
+          expect(session.store.getState().auth.currentScreen).toBeUndefined()
+          await session.act(() => {
+            pressTitled(session.root, title)
+          })
+          expect(session.store.getState().auth.language).toBe(language)
+          expect(session.store.getState().auth.currentScreen).toBe(
+            "auth-welcome"
+          )
+          expect(JSON.stringify(session.tree())).not.toContain(
+            "Please Select Your Language"
+          )
+        } finally {
+          session.unmount()
+        }
+      }
+    )
+
+    it("an earlier restart's screen to come back to is cleared on arrival", async () => {
+      const session = await open("auth-welcome")
+      try {
+        expect(session.store.getState().auth.currentScreen).toBeUndefined()
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

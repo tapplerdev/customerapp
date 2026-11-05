@@ -56,9 +56,9 @@ function markApplied(id: number): boolean {
 
 /** The chat's first-page entries: where live writes land (deeper pages are history). */
 const firstPageArgs = (getState: GetState, chatId: number) =>
-  (api.util.selectCachedArgsForQuery(getState(), "getChatMessages") as any[]).filter(
-    (arg) => arg?.chatId === chatId && (arg?.page ?? 1) === 1
-  )
+  (
+    api.util.selectCachedArgsForQuery(getState(), "getChatMessages") as any[]
+  ).filter((arg) => arg?.chatId === chatId && (arg?.page ?? 1) === 1)
 
 // --- Mutations ---------------------------------------------------------------
 
@@ -165,7 +165,11 @@ export function applyIncomingMessage(
   // client-only zero above leaves readAt NULL and the pill resurrects on the
   // next getChats refetch. Gated on the other party's message — own echoes have
   // nothing to mark. Guarded by `known` so an unknown-chat fallback still runs.
-  if (known && chatId === activeChatId && message.ownerType === OTHER_OWNER_TYPE) {
+  if (
+    known &&
+    chatId === activeChatId &&
+    message.ownerType === OTHER_OWNER_TYPE
+  ) {
     // track:false — fire-and-forget; without it each active-chat message would
     // leak a tracked mutation entry in the RTK store (never unsubscribed).
     dispatch(api.endpoints.markAllAsRead.initiate(chatId, { track: false }))
@@ -228,7 +232,10 @@ export function applyReadReceipts(
     }
   }
   if (!readAtById.size) return
-  for (const arg of api.util.selectCachedArgsForQuery(getState(), "getChatMessages")) {
+  for (const arg of api.util.selectCachedArgsForQuery(
+    getState(),
+    "getChatMessages"
+  )) {
     dispatch(
       api.util.updateQueryData("getChatMessages", arg, (draft: any) => {
         draft?.data?.forEach((m: any) => {

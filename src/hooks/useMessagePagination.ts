@@ -4,10 +4,7 @@ import { useIsFocused } from "@react-navigation/native"
 import { useDispatch, useStore } from "react-redux"
 import { ChatMessageType } from "types/chat"
 import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
-import {
-  useGetChatMessagesQuery,
-  useMarkAllAsReadMutation,
-} from "services/api"
+import { useGetChatMessagesQuery, useMarkAllAsReadMutation } from "services/api"
 import { WebSocketService } from "services/WebSocketService"
 import {
   applyCounterpartLastSeen,
@@ -28,7 +25,9 @@ export const mergeFirstPage = (
   onScreen: ChatMessageType[]
 ): ChatMessageType[] => {
   const inPage = new Set(page.map((m) => m.id))
-  const parsedHead = page.length ? Date.parse(page[0].createdAt ?? "") : -Infinity
+  const parsedHead = page.length
+    ? Date.parse(page[0].createdAt ?? "")
+    : -Infinity
   // A head with no readable time keeps only the sends in flight.
   const headAt = Number.isNaN(parsedHead) ? Infinity : parsedHead
   const extra = onScreen.filter(
@@ -78,7 +77,9 @@ const useMessagePagination = (chatId: number) => {
   // Track WS connectivity so the poll is only the FALLBACK when the socket is
   // down — while connected, useChatSocket delivers messages instantly and the
   // 10s poll would be redundant churn.
-  const [isWsConnected, setIsWsConnected] = useState(WebSocketService.isConnected())
+  const [isWsConnected, setIsWsConnected] = useState(
+    WebSocketService.isConnected()
+  )
   useEffect(() => {
     const onUp = () => setIsWsConnected(true)
     const onDown = () => setIsWsConnected(false)
@@ -151,7 +152,9 @@ const useMessagePagination = (chatId: number) => {
       } else {
         setAllMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id))
-          const newMessages = messagesData.data.filter((m) => !existingIds.has(m.id))
+          const newMessages = messagesData.data.filter(
+            (m) => !existingIds.has(m.id)
+          )
           return [...prev, ...newMessages]
         })
       }
@@ -221,17 +224,20 @@ const useMessagePagination = (chatId: number) => {
     })
   }, [])
 
-  const replaceOptimisticMessage = useCallback((optimisticId: number, realMsg: ChatMessageType) => {
-    setAllMessages((prev) => {
-      if (prev.some((m) => m.id === realMsg.id)) {
-        return prev.filter((m) => m.id !== optimisticId)
-      }
-      return prev.map((m) => m.id === optimisticId ? realMsg : m)
-    })
-    // The page holds it from now on, so read receipts reach it and later
-    // writes to the page keep it.
-    insertOwnMessage(dispatch, store.getState, chatId, realMsg)
-  }, [dispatch, store, chatId])
+  const replaceOptimisticMessage = useCallback(
+    (optimisticId: number, realMsg: ChatMessageType) => {
+      setAllMessages((prev) => {
+        if (prev.some((m) => m.id === realMsg.id)) {
+          return prev.filter((m) => m.id !== optimisticId)
+        }
+        return prev.map((m) => (m.id === optimisticId ? realMsg : m))
+      })
+      // The page holds it from now on, so read receipts reach it and later
+      // writes to the page keep it.
+      insertOwnMessage(dispatch, store.getState, chatId, realMsg)
+    },
+    [dispatch, store, chatId]
+  )
 
   // Drop an optimistic bubble that failed to send (e.g. blocked by moderation).
   // Animated so the neighbours settle back down instead of snapping.

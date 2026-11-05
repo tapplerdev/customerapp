@@ -199,9 +199,11 @@ describe("customerapp's two ways of importing a component", () => {
         return /\.tsx?$/.test(entry.name) ? [full] : []
       })
     const specifiers = walk(SRC).flatMap((file) =>
-      [...fs.readFileSync(file, "utf8").matchAll(/from "(components\/[^"]+)"/g)].map(
-        (match) => match[1]
-      )
+      [
+        ...fs
+          .readFileSync(file, "utf8")
+          .matchAll(/from "(components\/[^"]+)"/g),
+      ].map((match) => match[1])
     )
     expect(specifiers.length).toBeGreaterThan(100)
     const neither = specifiers.filter((specifier) => {
@@ -209,7 +211,9 @@ describe("customerapp's two ways of importing a component", () => {
       return !componentImport(name).test(specifier)
     })
     // a folder's other files (scroll's index re-exports; styles) aren't components
-    expect(neither.filter((s) => !/\/(styles|index|types?)$/.test(s))).toEqual([])
+    expect(neither.filter((s) => !/\/(styles|index|types?)$/.test(s))).toEqual(
+      []
+    )
   })
 })
 

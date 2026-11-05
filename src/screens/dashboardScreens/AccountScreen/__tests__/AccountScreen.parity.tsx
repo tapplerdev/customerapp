@@ -94,9 +94,18 @@ describe("AccountScreen", () => {
   )
 })
 
-const MENU: { who: StateName; key: string; route: string; accessory?: string }[] = [
+const MENU: {
+  who: StateName
+  key: string
+  route: string
+  accessory?: string
+}[] = [
   { who: "signed in", key: "account_details", route: "AccountDetailsScreen" },
-  { who: "signed in", key: "my_saved_addresses", route: "MySavedAddressesScreen" },
+  {
+    who: "signed in",
+    key: "my_saved_addresses",
+    route: "MySavedAddressesScreen",
+  },
   { who: "signed in", key: "about_app", route: "AboutAppScreen" },
   { who: "guest", key: "about_app", route: "AboutAppScreen" },
 ]

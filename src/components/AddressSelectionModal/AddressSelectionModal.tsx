@@ -39,7 +39,9 @@ const AddressSelectionModal: React.FC<Props> = ({
   const insets = useSafeAreaInsets()
   const { t } = useTranslation()
   const { guestLocation, isAuth } = useTypedSelector((store) => store.auth)
-  const { data: customerData } = useGetCustomerMeQuery(undefined, { skip: !isAuth })
+  const { data: customerData } = useGetCustomerMeQuery(undefined, {
+    skip: !isAuth,
+  })
 
   const lastUsedAddress = guestLocation?.address
   const savedAddresses = isAuth ? customerData?.addresses || [] : []
@@ -55,7 +57,10 @@ const AddressSelectionModal: React.FC<Props> = ({
       address: saved.address.streetAddress || "",
       city: saved.address.city,
       governorate: saved.address.governorate,
-      coords: { lat: saved.address.location.lat, lon: saved.address.location.lng },
+      coords: {
+        lat: saved.address.location.lat,
+        lon: saved.address.location.lng,
+      },
     })
   }
 
@@ -71,20 +76,26 @@ const AddressSelectionModal: React.FC<Props> = ({
 
   const sheetContent = (
     <>
-        {/* Header Section — transparent bg with white text */}
-        <DmView style={[a.px_18, a.pt_20, a.pb_16, styles.box]}>
-          <DmView style={[a.flex_row, a.items_center, a.mb_8]}>
-            <LocationIcon width={22} height={22} />
-            <Text size={18} weight="bold" leading="tight" color="inverse" style={[a.ml_4, a.flex_1]}>
-              {t("choose_service_address")}
-            </Text>
-          </DmView>
-          <Text size={12} leading={px(18)} color="inverse">
-            {t("use_your_registered_address_or_add_new")}
+      {/* Header Section — transparent bg with white text */}
+      <DmView style={[a.px_18, a.pt_20, a.pb_16, styles.box]}>
+        <DmView style={[a.flex_row, a.items_center, a.mb_8]}>
+          <LocationIcon width={22} height={22} />
+          <Text
+            size={18}
+            weight="bold"
+            leading="tight"
+            color="inverse"
+            style={[a.ml_4, a.flex_1]}
+          >
+            {t("choose_service_address")}
           </Text>
         </DmView>
+        <Text size={12} leading={px(18)} color="inverse">
+          {t("use_your_registered_address_or_add_new")}
+        </Text>
+      </DmView>
 
-        {/*
+      {/*
           White Content Section.
 
           Rounds its OWN top corners, because this sheet passes
@@ -98,9 +109,13 @@ const AddressSelectionModal: React.FC<Props> = ({
           TapplerSheetHostView.kt is 28, and so is sheetContentRound on the JS
           side.
         */}
-        <DmView
-          style={[styles.scrollWrap, a.overflow_hidden, { paddingBottom: insets.bottom + 2, maxHeight: 550 }]}
-        >
+      <DmView
+        style={[
+          styles.scrollWrap,
+          a.overflow_hidden,
+          { paddingBottom: insets.bottom + 2, maxHeight: 550 },
+        ]}
+      >
         <AppScrollView showsVerticalScrollIndicator={false}>
           {/* Last used address */}
           {!!lastUsedAddress && (
@@ -126,7 +141,10 @@ const AddressSelectionModal: React.FC<Props> = ({
           {/* Saved account addresses (max 2) */}
           {filteredSavedAddresses.map((saved) => (
             <React.Fragment key={saved.id}>
-              <DmView style={[a.px_18, a.py_12]} onPress={() => handleSelectSaved(saved)}>
+              <DmView
+                style={[a.px_18, a.py_12]}
+                onPress={() => handleSelectSaved(saved)}
+              >
                 <Text size={12} weight="bold" leading={px(26)}>
                   {saved.name}
                 </Text>
@@ -153,7 +171,11 @@ const AddressSelectionModal: React.FC<Props> = ({
               <Text size={12} weight="bold">
                 {t("new_location")}
               </Text>
-              <Text size={12} color="tertiary" style={styles.chooseAnotherAddress}>
+              <Text
+                size={12}
+                color="tertiary"
+                style={styles.chooseAnotherAddress}
+              >
                 {t("choose_another_address")}
               </Text>
             </DmView>
@@ -162,7 +184,7 @@ const AddressSelectionModal: React.FC<Props> = ({
             </DmView>
           </DmView>
         </AppScrollView>
-        </DmView>
+      </DmView>
     </>
   )
 

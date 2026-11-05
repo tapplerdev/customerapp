@@ -32,7 +32,8 @@ const fs = require("fs")
 const path = require("path")
 const { execFileSync, spawnSync } = require("child_process")
 
-const TEST_MATERIAL = /(^|\/)(__tests__|__fixtures__|__parity__)\/|\.(parity|test)\.[jt]sx?$/
+const TEST_MATERIAL =
+  /(^|\/)(__tests__|__fixtures__|__parity__)\/|\.(parity|test)\.[jt]sx?$/
 
 /** A path the captured code doesn't depend on: a test, its fixture, its inputs. */
 const isTestMaterial = (file) => TEST_MATERIAL.test(file)

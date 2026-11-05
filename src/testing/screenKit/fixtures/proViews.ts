@@ -88,7 +88,14 @@ const PROFILE: ViewShape = {
   reviewScore: { overallScore: true, reviewsCount: true },
   documents: STICKER_DOCUMENTS,
   workPhotos: [
-    { id: true, mimeType: true, posterUrl: true, urlThumb: true, url720: true, url: true },
+    {
+      id: true,
+      mimeType: true,
+      posterUrl: true,
+      urlThumb: true,
+      url720: true,
+      url: true,
+    },
   ],
   hours: [{ dayOfWeek: true, openingTime: true, closingTime: true }],
   paymentMethods: true,
@@ -97,7 +104,8 @@ const PROFILE: ViewShape = {
 }
 
 /** A pro as `GET /pros/category/:id?view=card` sends it. */
-export const asCard = (pro: ProType): ProType => projectView(pro, CARD) as ProType
+export const asCard = (pro: ProType): ProType =>
+  projectView(pro, CARD) as ProType
 
 /**
  * A pro as `GET /pros/:id?view=profile` sends it. The profile only ever
@@ -129,10 +137,14 @@ export const withSlimPros = <A extends Record<string, unknown>>(api: A): A => ({
   ...api,
   ...("getProsForCategory" in api && {
     getProsForCategory: mapAnswer(api.getProsForCategory, (page) =>
-      page && Array.isArray(page.data) ? { ...page, data: page.data.map(asCard) } : page
+      page && Array.isArray(page.data)
+        ? { ...page, data: page.data.map(asCard) }
+        : page
     ),
   }),
   ...("getProProfile" in api && {
-    getProProfile: mapAnswer(api.getProProfile, (pro) => (pro ? asProfile(pro) : pro)),
+    getProProfile: mapAnswer(api.getProProfile, (pro) =>
+      pro ? asProfile(pro) : pro
+    ),
   }),
 })

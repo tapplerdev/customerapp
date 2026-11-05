@@ -4,11 +4,7 @@ import { DmView } from "@tappler/shared/src/components/UI"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
 
 import styles from "./styles"
-import {
-  effectiveUnitPrice,
-  formatMoney,
-  hasDiscount,
-} from "store/cart/slice"
+import { effectiveUnitPrice, formatMoney, hasDiscount } from "store/cart/slice"
 import { FoodMenuItemType } from "types/food"
 import { useTranslation } from "react-i18next"
 import colors from "@tappler/shared/src/styles/colors"
@@ -46,7 +42,11 @@ const FoodMenuItemRow: React.FC<Props> = ({
       onPress={onPress && !outOfStock ? () => onPress(item) : undefined}
     >
       <DmView
-        style={[a.flex_row, a.justify_between, outOfStock ? styles.outOfStock : undefined]}
+        style={[
+          a.flex_row,
+          a.justify_between,
+          outOfStock ? styles.outOfStock : undefined,
+        ]}
       >
         <DmView style={[a.flex_1, a.justify_between]}>
           <DmView>
@@ -69,7 +69,12 @@ const FoodMenuItemRow: React.FC<Props> = ({
                   {formatMoney(effectiveUnitPrice(item))} {t("EGP")}
                 </Text>
                 {hasDiscount(item) && (
-                  <Text size={13} leading="tight" color="secondary" style={[a.ml_10, styles.eGP]}>
+                  <Text
+                    size={13}
+                    leading="tight"
+                    color="secondary"
+                    style={[a.ml_10, styles.eGP]}
+                  >
                     {formatMoney(Number(item.price))} {t("EGP")}
                   </Text>
                 )}
@@ -107,7 +112,13 @@ const FoodMenuItemRow: React.FC<Props> = ({
             <DmView style={[a.absolute, styles.box2, a.items_center]}>
               {cartQty > 0 ? (
                 <DmView
-                  style={[a.flex_row, a.items_center, styles.row2, a.px_8, styles.badgeShadow]}
+                  style={[
+                    a.flex_row,
+                    a.items_center,
+                    styles.row2,
+                    a.px_8,
+                    styles.badgeShadow,
+                  ]}
                 >
                   <DmView
                     style={[styles.iconWrap, a.items_center, a.justify_center]}
@@ -132,7 +143,12 @@ const FoodMenuItemRow: React.FC<Props> = ({
                 </DmView>
               ) : (
                 <DmView
-                  style={[a.items_center, a.justify_center, styles.iconWrap2, styles.badgeShadow]}
+                  style={[
+                    a.items_center,
+                    a.justify_center,
+                    styles.iconWrap2,
+                    styles.badgeShadow,
+                  ]}
                   onPress={() => onQuickAdd?.(item)}
                 >
                   <PlusIcon

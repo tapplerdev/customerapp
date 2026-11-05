@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   safeArea: {
@@ -32,7 +32,7 @@ export default StyleSheet.create({
     borderBottomRightRadius: 9999,
     borderBottomLeftRadius: 9999,
   },
-});
+})
 
 export const mapPickerWithSearchViewStyles = StyleSheet.create({
   row: {
@@ -59,7 +59,7 @@ export const mapPickerWithSearchViewStyles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   boxSearchMode: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     top: 0,
@@ -67,23 +67,23 @@ export const mapPickerWithSearchViewStyles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   boxNotSearchMode: {
-    position: 'absolute',
+    position: "absolute",
     left: 16,
     right: 16,
   },
   rowSearchMode: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     paddingLeft: 16,
     paddingRight: 16,
     height: 56,
   },
   rowNotSearchMode: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     paddingLeft: 12,
     paddingRight: 12,
     height: 48,
@@ -92,7 +92,7 @@ export const mapPickerWithSearchViewStyles = StyleSheet.create({
     backgroundColor: colors.grey38,
   },
   dmInputContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderTopWidth: 0,
     borderRightWidth: 0,
     borderLeftWidth: 0,
@@ -101,7 +101,7 @@ export const mapPickerWithSearchViewStyles = StyleSheet.create({
     width: 32,
     height: 32,
   },
-});
+})
 
 export const searchViewStyles = StyleSheet.create({
   container: {
@@ -113,4 +113,4 @@ export const searchViewStyles = StyleSheet.create({
     borderRightWidth: 0,
     borderLeftWidth: 0,
   },
-});
+})

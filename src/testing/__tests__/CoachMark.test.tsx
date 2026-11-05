@@ -37,15 +37,13 @@ describe("CoachMark geometry", () => {
       "M18 20H102A8 8 0 0 1 110 28V52A8 8 0 0 1 102 60H18A8 8 0 0 1 10 52V28A8 8 0 0 1 18 20Z"
     )
     // 40 high: a radius of 99 is a pill of 20.
-    expect(roundedRectPath({ x: 0, y: 0, width: 100, height: 40 }, 99)).toContain(
-      "A20 20 0 0 1"
-    )
+    expect(
+      roundedRectPath({ x: 0, y: 0, width: 100, height: 40 }, 99)
+    ).toContain("A20 20 0 0 1")
   })
 
   it("subtracts the hole from the window (the even-odd path)", () => {
-    expect(
-      cutoutPath(PHONE, { x: 10, y: 20, width: 100, height: 40 }, 8)
-    ).toBe(
+    expect(cutoutPath(PHONE, { x: 10, y: 20, width: 100, height: 40 }, 8)).toBe(
       "M0 0H390V844H0Z" +
         "M18 20H102A8 8 0 0 1 110 28V52A8 8 0 0 1 102 60H18A8 8 0 0 1 10 52V28A8 8 0 0 1 18 20Z"
     )
@@ -73,7 +71,9 @@ describe("CoachMark geometry", () => {
   })
 
   it("lets a negative gap overlap the target", () => {
-    expect(placeTooltip({ ...base, placement: "below", gap: -55 }).top).toBe(345)
+    expect(placeTooltip({ ...base, placement: "below", gap: -55 }).top).toBe(
+      345
+    )
   })
 
   it("auto takes the side it fits on, else the roomier one", () => {
@@ -112,7 +112,9 @@ describe("CoachMark geometry", () => {
 
 const makeTarget = (frame: typeof FRAME | (() => typeof FRAME)) => {
   const view = {
-    measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => {
+    measureInWindow: (
+      cb: (x: number, y: number, w: number, h: number) => void
+    ) => {
       const f = typeof frame === "function" ? frame() : frame
       cb(f.x, f.y, f.width, f.height)
     },
@@ -154,11 +156,17 @@ const mount = (
       act(() => {
         renderer.update(<Host {...next} />)
       }),
-    modal: () => renderer.root.findAll((n) => String(n.type) === "Modal")[0] as Node | undefined,
+    modal: () =>
+      renderer.root.findAll((n) => String(n.type) === "Modal")[0] as
+        | Node
+        | undefined,
   }
 }
 
-const settle = () => act(async () => { await Promise.resolve() })
+const settle = () =>
+  act(async () => {
+    await Promise.resolve()
+  })
 
 const mounted: TestRenderer.ReactTestRenderer[] = []
 afterEach(() => {
@@ -172,7 +180,9 @@ describe("CoachMark", () => {
   it("draws nothing while it is not visible", () => {
     const m = mount({ visible: false })
     expect(m.modal()).toBeUndefined()
-    expect(m.renderer.root.findAllByProps({ fillRule: "evenodd" })).toHaveLength(0)
+    expect(
+      m.renderer.root.findAllByProps({ fillRule: "evenodd" })
+    ).toHaveLength(0)
   })
 
   it("opens over the measured target: a dim with the hole, and the tooltip", async () => {
@@ -184,12 +194,17 @@ describe("CoachMark", () => {
       cutoutPath(WINDOW, { x: 18, y: 298, width: 354, height: 104 }, 20)
     )
     expect(path.props.fillOpacity).toBe(0.7)
-    expect(m.renderer.root.findAllByProps({ testID: "tip" }).length).toBeGreaterThan(0)
+    expect(
+      m.renderer.root.findAllByProps({ testID: "tip" }).length
+    ).toBeGreaterThan(0)
   })
 
   it("waits for a target that is not laid out yet, and opens when it is", async () => {
     let frame = { x: 0, y: 0, width: 0, height: 0 }
-    const m = mount({ visible: true }, makeTarget(() => frame))
+    const m = mount(
+      { visible: true },
+      makeTarget(() => frame)
+    )
     await settle()
     expect(m.modal()).toBeUndefined()
     frame = { x: 20, y: 300, width: 350, height: 100 }
@@ -201,7 +216,10 @@ describe("CoachMark", () => {
 
   it("measures again when the target is laid out again while it is open", async () => {
     let frame = { x: 20, y: 300, width: 350, height: 100 }
-    const m = mount({ visible: true, borderRadius: 10 }, makeTarget(() => frame))
+    const m = mount(
+      { visible: true, borderRadius: 10 },
+      makeTarget(() => frame)
+    )
     await settle()
     frame = { x: 20, y: 420, width: 350, height: 100 }
     await act(async () => {
@@ -221,7 +239,10 @@ describe("CoachMark", () => {
     )
     // The tooltip is placed by top and a symmetric left/right pair only.
     const tip = m.renderer.root.findByProps({ testID: "tip" }).parent!.parent!
-    const style = Object.assign({}, ...[tip.props.style].flat(5).filter(Boolean))
+    const style = Object.assign(
+      {},
+      ...[tip.props.style].flat(5).filter(Boolean)
+    )
     expect(style.left).toBe(style.right)
     expect(style.start).toBeUndefined()
     expect(style.end).toBeUndefined()
@@ -230,11 +251,15 @@ describe("CoachMark", () => {
   it("hides the tooltip until its height is known, then places it by that height", async () => {
     const m = mount({ visible: true, placement: "below", gap: 12 })
     await settle()
-    const tip = () => m.renderer.root.findByProps({ testID: "tip" }).parent!.parent!
-    const flat = (n: Node) => Object.assign({}, ...[n.props.style].flat(5).filter(Boolean))
+    const tip = () =>
+      m.renderer.root.findByProps({ testID: "tip" }).parent!.parent!
+    const flat = (n: Node) =>
+      Object.assign({}, ...[n.props.style].flat(5).filter(Boolean))
     expect(flat(tip()).opacity).toBe(0)
     act(() => {
-      tip().props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 200 } } })
+      tip().props.onLayout({
+        nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 200 } },
+      })
     })
     // Under the hole (300 + 100) and its gap, whole inside the safe area.
     expect(flat(tip()).top).toBe(412)
@@ -245,12 +270,16 @@ describe("CoachMark", () => {
     try {
       const m = mount({ visible: true, placement: "below", gap: 12 })
       await settle()
-      const tip = () => m.renderer.root.findByProps({ testID: "tip" }).parent!.parent!
-      const flat = (n: Node) => Object.assign({}, ...[n.props.style].flat(5).filter(Boolean))
+      const tip = () =>
+        m.renderer.root.findByProps({ testID: "tip" }).parent!.parent!
+      const flat = (n: Node) =>
+        Object.assign({}, ...[n.props.style].flat(5).filter(Boolean))
       // Nothing moves before the tooltip's height is known.
       expect(timing).not.toHaveBeenCalled()
       act(() => {
-        tip().props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 200 } } })
+        tip().props.onLayout({
+          nativeEvent: { layout: { x: 0, y: 0, width: 300, height: 200 } },
+        })
       })
       // It starts lowered and clear, and rises on the native driver over 1 s
       // (the end values live on the UI thread, out of the test renderer's reach).

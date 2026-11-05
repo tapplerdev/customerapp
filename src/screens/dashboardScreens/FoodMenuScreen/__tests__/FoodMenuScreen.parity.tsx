@@ -1,4 +1,3 @@
- 
 import { describe, expect, it, jest } from "@jest/globals"
 import { StyleSheet } from "react-native"
 import type { ReactTestInstance } from "react-test-renderer"
@@ -93,8 +92,16 @@ type Case = {
 }
 const NO_CART = screenState("data")
 const CASES: Case[] = [
-  { name: "menu, no basket, hero a11y, white chips", base: NO_CART, api: menu() },
-  { name: "menu, basket, hero a11y, white chips", base: withCart(DRAFT_RICH), api: menu() },
+  {
+    name: "menu, no basket, hero a11y, white chips",
+    base: NO_CART,
+    api: menu(),
+  },
+  {
+    name: "menu, basket, hero a11y, white chips",
+    base: withCart(DRAFT_RICH),
+    api: menu(),
+  },
   {
     name: "basket, no bottom inset, hero a11y, white chips",
     base: withCart(DRAFT_RICH),
@@ -166,7 +173,7 @@ const options = (c: Case, env: (typeof PARITY_MATRIX)[number]) =>
     platform: env.platform,
     route: { name: "FoodMenuScreen", params: c.params ?? PARAMS },
     ...(c.insets ? { insets: c.insets } : {}),
-  } satisfies RenderScreenOptions)
+  }) satisfies RenderScreenOptions
 
 describe("FoodMenuScreen, captured from the unconverted code", () => {
   it.each(rows)("$name [$env.language $env.platform]", async (c) => {
@@ -301,7 +308,10 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         })
         expect(cartLines(session.store, PRO_FOOD.id)).toEqual([[412, 1]])
-        expectParity(parityName("quick add, hero a11y, white chips", env), session.tree())
+        expectParity(
+          parityName("quick add, hero a11y, white chips", env),
+          session.tree()
+        )
       } finally {
         session.unmount()
       }
@@ -329,7 +339,10 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           [411, 1],
           [431, 30],
         ])
-        expectParity(parityName("trash twice, hero a11y, white chips", env), session.tree())
+        expectParity(
+          parityName("trash twice, hero a11y, white chips", env),
+          session.tree()
+        )
       } finally {
         session.unmount()
       }
@@ -360,7 +373,9 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
       () => {
         sections.forEach((node, index) => {
           node.props.onLayout({
-            nativeEvent: { layout: { x: 0, y: TOPS[index], width: 402, height: 500 } },
+            nativeEvent: {
+              layout: { x: 0, y: TOPS[index], width: 402, height: 500 },
+            },
           })
         })
         list.props.onLayout({
@@ -420,14 +435,22 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         const list = await measured(session)
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
-        await session.act(() => {
-          pressText(session.root, "Mains")
-        }, 0, "press Mains at the top")
+        await session.act(
+          () => {
+            pressText(session.root, "Mains")
+          },
+          0,
+          "press Mains at the top"
+        )
         expect(scrollTo).not.toHaveBeenCalled()
         await session.act(() => scrollList(list, 900), 0, "scroll down")
-        await session.act(() => {
-          pressText(session.root, "Mains")
-        }, 0, "press Mains")
+        await session.act(
+          () => {
+            pressText(session.root, "Mains")
+          },
+          0,
+          "press Mains"
+        )
         expect(scrollTo).toHaveBeenCalledWith({ y: 0, animated: true })
         expect(activePill(session.root)).toEqual(["Mains"])
       } finally {
@@ -444,9 +467,13 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         const list = await measured(session)
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
-        await session.act(() => {
-          pressText(session.root, "Desserts")
-        }, 0, "press Desserts")
+        await session.act(
+          () => {
+            pressText(session.root, "Desserts")
+          },
+          0,
+          "press Desserts"
+        )
         // As far as the list goes: Desserts' top less what it can't scroll.
         expect(scrollTo).toHaveBeenCalledTimes(1)
         expect(scrollTo).toHaveBeenCalledWith({ y: 1300, animated: true })
@@ -455,7 +482,11 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         await session.act(() => scrollList(list, 800), 0, "the scroll, passing")
         expect(activePill(session.root)).toEqual(["Desserts"])
         // It arrives, and the reader's own scroll is followed again.
-        await session.act(() => scrollList(list, 1300), 0, "the scroll, arriving")
+        await session.act(
+          () => scrollList(list, 1300),
+          0,
+          "the scroll, arriving"
+        )
         await session.act(() => scrollList(list, 750), 0, "the reader scrolls")
         expect(activePill(session.root)).toEqual(["Sides"])
       } finally {
@@ -499,7 +530,9 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
     // The hero lets touches through: the one host with a layout and no touches.
     const hero = session.root.find(
       (node) =>
-        hosts(node) && !!node.props.onLayout && node.props.pointerEvents === "none"
+        hosts(node) &&
+        !!node.props.onLayout &&
+        node.props.pointerEvents === "none"
     )
     const info = hero.findAll(
       (node) => node !== hero && hosts(node) && !!node.props.onLayout
@@ -513,7 +546,8 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         !!node.props.horizontal
     )
     let pills = row.parent
-    while (pills && !(hosts(pills) && pills.props.onLayout)) pills = pills.parent
+    while (pills && !(hosts(pills) && pills.props.onLayout))
+      pills = pills.parent
     expect(pills).toBeTruthy()
     const layout = (height: number) => ({
       nativeEvent: { layout: { x: 0, y: 0, width: 402, height } },
@@ -538,18 +572,27 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
       try {
         await measureHeader(session)
         const list = await measured(session)
-        expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingTop).toBe(HERO + PILLS + 24)
+        expect(
+          StyleSheet.flatten(list.props.contentContainerStyle).paddingTop
+        ).toBe(HERO + PILLS + 24)
         // Taller than its 600-pt view, so it can always scroll a whole fold.
-        expect(StyleSheet.flatten(list.props.contentContainerStyle).minHeight).toBe(
-          600 + HERO - (topInset(env) + 48)
-        )
+        expect(
+          StyleSheet.flatten(list.props.contentContainerStyle).minHeight
+        ).toBe(600 + HERO - (topInset(env) + 48))
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
-        await session.act(() => {
-          pressText(session.root, "Sides")
-        }, 0, "press Sides")
+        await session.act(
+          () => {
+            pressText(session.root, "Sides")
+          },
+          0,
+          "press Sides"
+        )
         const sticky = topInset(env) + 48 + PILLS
-        expect(scrollTo).toHaveBeenCalledWith({ y: TOPS[1] - sticky, animated: true })
+        expect(scrollTo).toHaveBeenCalledWith({
+          y: TOPS[1] - sticky,
+          animated: true,
+        })
         expect(activePill(session.root)).toEqual(["Sides"])
         // And the reader's scroll counts a section reached under the header.
         await session.act(() => scrollList(list, TOPS[1] - sticky), 0, "arrive")
@@ -595,9 +638,13 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
             typeof node.props.onPress === "function"
         )
         expect(button.length).toBeGreaterThan(0)
-        await session.act(() => {
-          button[0].props.onPress()
-        }, 0, "open the sheet")
+        await session.act(
+          () => {
+            button[0].props.onPress()
+          },
+          0,
+          "open the sheet"
+        )
         expect(sheetOf(session.root).props.isVisible).toBe(true)
         expect(
           sheetRows(session.root).map((row) =>
@@ -607,7 +654,10 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
               .join("")
           )
         ).toEqual(["Mains", "Sides", "Desserts"])
-        expectParity(parityName("sections sheet, hero a11y, white chips", env), session.tree())
+        expectParity(
+          parityName("sections sheet, hero a11y, white chips", env),
+          session.tree()
+        )
         const scrollTo = list.instance.scrollTo as ReturnType<typeof jest.fn>
         scrollTo.mockClear()
         // The row's own control (the pill shows the same title).
@@ -622,7 +672,11 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
               .some((n) => n.children.join("") === "Desserts")
         )
         expect(dessertsRow.length).toBeGreaterThan(0)
-        await session.act(() => dessertsRow[0].props.onPress(), 0, "pick Desserts")
+        await session.act(
+          () => dessertsRow[0].props.onPress(),
+          0,
+          "pick Desserts"
+        )
         expect(scrollTo).toHaveBeenCalledWith({ y: 1300, animated: true })
         expect(activePill(session.root)).toEqual(["Desserts"])
         expect(sheetOf(session.root).props.isVisible).toBe(false)
@@ -646,7 +700,8 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         style.top === 0 &&
         style.bottom === 0 &&
         style.backgroundColor === "#FFFFFF" &&
-        (node.props.pointerEvents === "auto" || node.props.pointerEvents === "none")
+        (node.props.pointerEvents === "auto" ||
+          node.props.pointerEvents === "none")
       )
     })
   // Every text the screen reader skips.
@@ -677,8 +732,11 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
         await session.act(() => scrollList(list, collapse + 100), 0, "fold")
         expect(barFill(session.root).props.pointerEvents).toBe("auto")
         // The bar's title speaks now; the hero's name, faded under it, doesn't.
-        const names = session.root
-          .findAll((n) => String(n.type) === "Text" && n.children.join("") === "Laila's Kitchen")
+        const names = session.root.findAll(
+          (n) =>
+            String(n.type) === "Text" &&
+            n.children.join("") === "Laila's Kitchen"
+        )
         expect(names.length).toBe(2)
         expect(hiddenTexts(session.root)).toContain("Laila's Kitchen")
         expect(hiddenTexts(session.root).length).toBeGreaterThan(1)

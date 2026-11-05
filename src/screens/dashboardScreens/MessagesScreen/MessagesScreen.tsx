@@ -33,7 +33,9 @@ const MessagesScreen: React.FC = () => {
   const [searchText, setSearchText] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { data, isLoading, refetch } = useGetChatsQuery(undefined, { skip: !isAuth })
+  const { data, isLoading, refetch } = useGetChatsQuery(undefined, {
+    skip: !isAuth,
+  })
   const [archiveChat] = useArchiveChatMutation()
 
   // Refetch chat list when tab is focused
@@ -53,14 +55,20 @@ const MessagesScreen: React.FC = () => {
   // Shared predicate with the tab badge (helpers/chatVisibility) — keeping
   // them identical is what guarantees the badge never counts a hidden chat.
   const activeChats = allChats.filter(isChatVisible)
-  const archivedCount = allChats.filter((item) => item.chat.status === "archived").length
+  const archivedCount = allChats.filter(
+    (item) => item.chat.status === "archived"
+  ).length
 
   const filteredChats = useMemo(() => {
     if (!debouncedSearch.trim()) return activeChats
 
     const query = debouncedSearch.toLowerCase()
     return activeChats.filter((item) => {
-      const proName = (item.chat.pro?.businessName || item.chat.pro?.registeredName || "").toLowerCase()
+      const proName = (
+        item.chat.pro?.businessName ||
+        item.chat.pro?.registeredName ||
+        ""
+      ).toLowerCase()
       const serviceEn = item.chat.serviceCategory?.nameEn?.toLowerCase() || ""
       const serviceAr = item.chat.serviceCategory?.nameAr || ""
       return (
@@ -71,18 +79,20 @@ const MessagesScreen: React.FC = () => {
     })
   }, [debouncedSearch, activeChats])
 
-  const handleArchive = useCallback(async (chatId: number) => {
-    try {
-      await archiveChat(chatId).unwrap()
-    } catch (error) {
-    }
-  }, [archiveChat])
+  const handleArchive = useCallback(
+    async (chatId: number) => {
+      try {
+        await archiveChat(chatId).unwrap()
+      } catch (error) {}
+    },
+    [archiveChat]
+  )
 
   const handleChatPress = useCallback(
     (item: ChatPreviewType) => {
       navigation.navigate("MessagesDetailsScreen", { chatPreview: item })
     },
-    [navigation],
+    [navigation]
   )
 
   const renderItem = useCallback(
@@ -93,12 +103,14 @@ const MessagesScreen: React.FC = () => {
         onArchive={handleArchive}
       />
     ),
-    [handleChatPress, handleArchive],
+    [handleChatPress, handleArchive]
   )
 
   const renderEmpty = useCallback(
     () => (
-      <DmView style={[a.flex_1, a.items_center, a.justify_center, styles.container]}>
+      <DmView
+        style={[a.flex_1, a.items_center, a.justify_center, styles.container]}
+      >
         <NoMessagesIcon width={120} height={120} />
         <Text
           size={14}
@@ -111,7 +123,7 @@ const MessagesScreen: React.FC = () => {
         </Text>
       </DmView>
     ),
-    [t],
+    [t]
   )
 
   return (
@@ -124,74 +136,100 @@ const MessagesScreen: React.FC = () => {
       </DmView>
       {!isAuth ? (
         <>
-        <DmView style={styles.box} />
-        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
-            {t("login_to_view_messages")}
-          </Text>
-          <Text size={12} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
-            {t("login_to_view_messages_descr")}
-          </Text>
-          <DmView style={[a.mt_20, a.px_20, a.w_full]}>
-            <Button
-              title={t("log_In")}
-              onPress={() => navigation.navigate("SignInEmailScreen")}
-              label={14}
-              labelWeight="semibold"
-              labelLeading="legacy"
-            />
+          <DmView style={styles.box} />
+          <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+            <Text
+              size={16}
+              weight="semibold"
+              leading="legacy"
+              color="tertiary"
+              align="center"
+            >
+              {t("login_to_view_messages")}
+            </Text>
+            <Text
+              size={12}
+              leading="legacy"
+              color="tertiary"
+              align="center"
+              style={a.mt_8}
+            >
+              {t("login_to_view_messages_descr")}
+            </Text>
+            <DmView style={[a.mt_20, a.px_20, a.w_full]}>
+              <Button
+                title={t("log_In")}
+                onPress={() => navigation.navigate("SignInEmailScreen")}
+                label={14}
+                labelWeight="semibold"
+                labelLeading="legacy"
+              />
+            </DmView>
           </DmView>
-        </DmView>
         </>
       ) : (
-      <>
-      {/* Search */}
-      <SearchMessagesComponent
-        searchText={searchText}
-        onChangeText={handleSearchChange}
-      />
+        <>
+          {/* Search */}
+          <SearchMessagesComponent
+            searchText={searchText}
+            onChangeText={handleSearchChange}
+          />
 
-      {/* Archived row */}
-      <DmView
-        onPress={() => navigation.navigate("ArchivedMessagesScreen")}
-        style={[
-          a.pt_30,
-          a.pb_14,
-          styles.row,
-          a.flex_row,
-          a.justify_between,
-          a.border_b_1,
-        ]}
-      >
-        <DmView style={[a.pl_10, a.flex_row, a.items_center]}>
-          <ArchivedIcon />
-          <Text size={13} weight="semibold" leading="tight" style={[a.mx_10, styles.archived]}>
-            {t("archived")}
-          </Text>
-        </DmView>
-        <Text size={13} weight="semibold" leading="tight" style={styles.archived}>
-          {archivedCount}
-        </Text>
-      </DmView>
+          {/* Archived row */}
+          <DmView
+            onPress={() => navigation.navigate("ArchivedMessagesScreen")}
+            style={[
+              a.pt_30,
+              a.pb_14,
+              styles.row,
+              a.flex_row,
+              a.justify_between,
+              a.border_b_1,
+            ]}
+          >
+            <DmView style={[a.pl_10, a.flex_row, a.items_center]}>
+              <ArchivedIcon />
+              <Text
+                size={13}
+                weight="semibold"
+                leading="tight"
+                style={[a.mx_10, styles.archived]}
+              >
+                {t("archived")}
+              </Text>
+            </DmView>
+            <Text
+              size={13}
+              weight="semibold"
+              leading="tight"
+              style={styles.archived}
+            >
+              {archivedCount}
+            </Text>
+          </DmView>
 
-      {/* Chat list */}
-      {isLoading ? (
-        <MessagesSkeleton />
-      ) : (
-        <Animated.View entering={FadeIn.duration(400)} style={a.flex_1}>
-        <AppFlatList
-          data={filteredChats}
-          keyExtractor={(item) => String(item.chat.id)}
-          renderItem={renderItem}
-          ListEmptyComponent={renderEmpty}
-          getItemLayout={(_, index) => ({ length: 64, offset: 64 * index, index })}
-          contentContainerStyle={
-            filteredChats.length === 0 ? { flex: 1 } : undefined
-          }
-        />
-        </Animated.View>
-      )}
-      </>
+          {/* Chat list */}
+          {isLoading ? (
+            <MessagesSkeleton />
+          ) : (
+            <Animated.View entering={FadeIn.duration(400)} style={a.flex_1}>
+              <AppFlatList
+                data={filteredChats}
+                keyExtractor={(item) => String(item.chat.id)}
+                renderItem={renderItem}
+                ListEmptyComponent={renderEmpty}
+                getItemLayout={(_, index) => ({
+                  length: 64,
+                  offset: 64 * index,
+                  index,
+                })}
+                contentContainerStyle={
+                  filteredChats.length === 0 ? { flex: 1 } : undefined
+                }
+              />
+            </Animated.View>
+          )}
+        </>
       )}
     </SafeAreaView>
   )
