@@ -275,9 +275,9 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
         </DmView>
       )}
 
-      {/* The OFFERS box (#522): the red tab over a white bordered box, a
-          third of the row to each sticker from the start edge (#525), thin
-          dividers between them, after the trust stickers as on the pro's
+      {/* The OFFERS box (#522): the red tab over a white bordered box, the
+          stickers in thirds, or halves for a pair, from the start edge
+          (#525), thin dividers between them, after the trust stickers as on the pro's
           own card. It replaces the pink footer band. Each is the
           product's single picture, centred, untrimmed: the CMS template's
           group translate is what centres the drawing in its box (see

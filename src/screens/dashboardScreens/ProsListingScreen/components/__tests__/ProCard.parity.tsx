@@ -52,6 +52,14 @@ import type { ProType } from "types/pro"
  * a "#525 offers" name and captured beside the frozen ones, which no row
  * draws any more.
  */
+/*
+ * #525's second pass made every sticker bigger and the same size: its art 45
+ * tall in a slot of its own (the box still 59pt), a pair sharing the row in
+ * halves with slots as wide as a third's, one sticker still a third at the
+ * start edge. The states that draw the box are drawn again under a
+ * "#525 equal slots" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => {
   const React = require("react") as typeof import("react")
   const ProCard = require("../ProCard").default
@@ -194,11 +202,12 @@ const BASE_CASES: Case[] = [
   },
   { state: "a promo line, #522 card", pro: proWith({}, [promoLine]) },
   {
-    state: "a promo line and stickers, #522 card, #525 offers",
+    state:
+      "a promo line and stickers, #522 card, #525 offers, #525 equal slots",
     pro: proWith({}, [promoLine, sticker(1), sticker(2)]),
   },
   {
-    state: "stickers only, #522 card, #525 offers",
+    state: "stickers only, #522 card, #525 offers, #525 equal slots",
     pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]),
   },
   {
@@ -228,7 +237,7 @@ const BASE_CASES: Case[] = [
   },
   {
     state:
-      "the food card with a promo line and a sticker, #522 card, #525 offers",
+      "the food card with a promo line and a sticker, #522 card, #525 offers, #525 equal slots",
     pro: {
       ...PRO_FOOD,
       serviceCategories: [
