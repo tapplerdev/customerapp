@@ -279,6 +279,60 @@ describe("token refresh (the real base query)", () => {
     expect(seen.filter((entry) => entry.authorization === "Bearer access-B")).toEqual([])
   })
 
+  it("leaves a fresh sign-in as the same account alone when the old refresh is refused", async () => {
+    const refresh = deferred<Response>()
+    refreshAnswer = () => refresh.promise
+    const store = makeStore()
+    const pending = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    for (let i = 0; i < 4 && refreshCalls().length === 0; i++) await tick()
+
+    const AGAIN: Auth = { token: "access-9", refreshToken: "refresh-9", isAuth: true, user: { id: 1 } }
+    store.dispatch({ type: "test/signIn", payload: AGAIN })
+    refresh.settle(json(404, { message: "Specified refresh token not found!" }))
+    await pending
+
+    expect(actions).not.toContain("auth/logout")
+    expect((store.getState() as any).auth).toEqual(AGAIN)
+  })
+
+  it("shares one refresh between 401s that land together, and both retry with the new token", async () => {
+    const refresh = deferred<Response>()
+    refreshAnswer = () => refresh.promise
+    const store = makeStore()
+    const first = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const second = store.dispatch(api.endpoints.getChats.initiate(undefined))
+    for (let i = 0; i < 6 && refreshCalls().length === 0; i++) await tick()
+    await tick()
+    await tick()
+
+    refresh.settle(json(200, { token: "access-2", refreshToken: "refresh-2" }))
+    const [a, b] = await Promise.all([first, second])
+
+    expect(refreshCalls()).toHaveLength(1)
+    expect(a.data).toEqual({ id: 1 })
+    expect(b.data).toEqual({ id: 1 })
+    expect(actions).not.toContain("auth/logout")
+  })
+
+  it("has a waiting request hand back its 401 when the shared refresh is refused", async () => {
+    const refresh = deferred<Response>()
+    refreshAnswer = () => refresh.promise
+    const store = makeStore()
+    const first = store.dispatch(api.endpoints.getCustomerMe.initiate(undefined))
+    const second = store.dispatch(api.endpoints.getChats.initiate(undefined))
+    for (let i = 0; i < 6 && refreshCalls().length === 0; i++) await tick()
+    await tick()
+    await tick()
+
+    refresh.settle(json(404, { message: "Specified refresh token not found!" }))
+    const [, b] = await Promise.all([first, second])
+
+    expect(refreshCalls()).toHaveLength(1)
+    expect((b.error as any)?.status).toBe(401)
+    // Neither request went out again once the session was gone.
+    expect(seen.filter((entry) => entry.authorization === null)).toEqual([])
+  })
+
   describe("in a release build", () => {
     const g = global as unknown as { __DEV__: boolean }
     const wasDev = g.__DEV__

@@ -157,9 +157,15 @@ const baseQueryWithReauth: BaseQueryFn<
 
     const refreshResult = await refreshPromise
 
-    // The account changed while the refresh was out: its answer is A's, so
-    // neither store A's tokens over B's nor sign B out on A's refusal.
-    if (!stillSignedInAs(apiBase, sentBy)) {
+    // The session changed while the refresh was out: its answer belongs to
+    // the old one, so neither store its tokens nor sign out on its refusal.
+    // That covers another account signing in, and the same account signing
+    // out and back in (a fresh pair the old refresh must not touch). Only
+    // this refresh or a sign-in moves the token off `sentWith` here.
+    if (
+      !stillSignedInAs(apiBase, sentBy) ||
+      (apiBase.getState() as RootState).auth.token !== sentWith
+    ) {
       isRefreshing = false
       refreshPromise = null
       return result
