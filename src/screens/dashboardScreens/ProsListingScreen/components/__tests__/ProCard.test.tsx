@@ -7,8 +7,8 @@ import type { ProType } from "types/pro"
 
 /*
  * The pros listing's card (#522): a pro's stickers sit in the OFFERS box
- * (tappler-shared's OffersBox: the red tab over a white bordered box, a
- * third of the row to each sticker from the start edge) after the trust
+ * (tappler-shared's OffersBox: the red tab over a white bordered box, the
+ * stickers in thirds, or halves for a pair, from the start edge) after the trust
  * stickers and before the promo line, where the pink band at the card's foot was. A pro with only a promo
  * line keeps that line's own OFFER tab and gets no OFFERS box; a pro with
  * neither gets no tab at all. The rating is one red star and "x of 5 (N
@@ -137,12 +137,12 @@ describe("ProCard: the OFFERS box", () => {
 
     // The box's OFFERS tab, then the promo line's OFFER tab.
     expect(tabLabels(card)).toEqual(["OFFERS", "OFFER"])
-    // The stickers, one to a cell, each fitted into its cell at 39 tall.
+    // The stickers, one to a cell, each fitted into its slot at 45 tall.
     const art = findAll(card, (n) => n.type === "SvgUriContainer")
     expect(art.map((n) => n.props.uri)).toEqual(["en-1.svg", "en-2.svg"])
     expect(art.map((n) => [n.props.width, n.props.height])).toEqual([
-      ["100%", 39],
-      ["100%", 39],
+      ["100%", 45],
+      ["100%", 45],
     ])
     // The pink footer band is gone, and nothing bleeds past the card's edges.
     expect(findAll(card, isBand)).toHaveLength(0)

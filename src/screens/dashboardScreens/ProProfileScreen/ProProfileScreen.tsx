@@ -402,9 +402,9 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           )}
 
           {/* The OFFERS box (#522), the card's own: the red tab over a
-              white bordered box, a third of the row to each sticker from
-              the start edge (#525), thin dividers between them. Each is the
-              product's single picture, centred. */}
+              white bordered box, the stickers in thirds, or halves for a
+              pair, from the start edge (#525), thin dividers between them.
+              Each is the product's single picture, centred. */}
           <OffersBox>
             {motivational.map((sub: any, idx: number) => {
               const uri = isAr ? sub.product?.pictureAr : sub.product?.pictureEn

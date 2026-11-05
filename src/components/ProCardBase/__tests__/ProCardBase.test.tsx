@@ -119,8 +119,8 @@ describe("ProCardBase: the OFFERS box", () => {
     const art = findAll(card, (n) => n.type === "SvgUriContainer")
     expect(art.map((n) => n.props.uri)).toEqual(["en-1.svg", "en-2.svg"])
     expect(art.map((n) => [n.props.width, n.props.height])).toEqual([
-      ["100%", 39],
-      ["100%", 39],
+      ["100%", 45],
+      ["100%", 45],
     ])
     // The pink footer band is gone, and nothing bleeds past the card's edges.
     expect(findAll(card, isBand)).toHaveLength(0)

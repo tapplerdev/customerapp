@@ -60,6 +60,14 @@ import type { ProType, ProWorkPhotoType } from "types/pro"
  * a "#525 offers" name and captured beside the frozen ones, which no row
  * draws any more.
  */
+/*
+ * #525's second pass made every sticker bigger and the same size: its art 45
+ * tall in a slot of its own (the box still 59pt), a pair sharing the row in
+ * halves with slots as wide as a third's, one sticker still a third at the
+ * start edge. The states that draw the box are drawn again under a
+ * "#525 equal slots" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => require("../ProProfileScreen")
 
 const img = (
@@ -263,7 +271,7 @@ const CASES: Case[] = [
   },
   {
     state:
-      "a full company profile, #522 profile hero, pill as tall as Featured, #525 offers",
+      "a full company profile, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(FULL),
   },
   {
@@ -277,7 +285,7 @@ const CASES: Case[] = [
   },
   {
     state:
-      "no photo: the initial letter, #522 profile hero, pill as tall as Featured, #525 offers",
+      "no photo: the initial letter, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(NO_PHOTO),
   },
   {
@@ -291,7 +299,7 @@ const CASES: Case[] = [
   },
   {
     state:
-      "a long name, #522 profile hero, pill as tall as Featured, #525 offers",
+      "a long name, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro({
       ...FULL,
       businessName:
@@ -309,13 +317,13 @@ const CASES: Case[] = [
   },
   {
     state:
-      "the listing's categories win over the pro's, #522 profile hero, pill as tall as Featured, #525 offers",
+      "the listing's categories win over the pro's, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }),
   },
   // OffersSection's banner sizes its stickers from the window it loaded with.
   {
     state:
-      "four stickers, #522 profile hero, pill as tall as Featured, #525 offers",
+      "four stickers, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(
       withCategory(PRO_COMPANY, [
         sticker(2, "motivational"),
@@ -327,7 +335,7 @@ const CASES: Case[] = [
   },
   {
     state:
-      "four stickers, a 390-wide phone, #522 profile hero, pill as tall as Featured, #525 offers",
+      "four stickers, a 390-wide phone, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: {
       ...withPro(
         withCategory(PRO_COMPANY, [
@@ -342,41 +350,42 @@ const CASES: Case[] = [
   },
   {
     state:
-      "scrolled past the photo, #522 profile hero, pill as tall as Featured, #525 offers",
+      "scrolled past the photo, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(FULL),
     steps: [scrollTo(300), wait(300)],
   },
   {
     state:
-      "scrolled halfway into the header, #522 profile hero, pill as tall as Featured, #525 offers",
+      "scrolled halfway into the header, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(FULL),
     steps: [scrollTo(260), wait(300)],
   },
   {
     state:
-      "scrolled back up, #522 profile hero, pill as tall as Featured, #525 offers",
+      "scrolled back up, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(FULL),
     steps: [scrollTo(300), wait(300), scrollTo(0), wait(300)],
   },
   {
     state:
-      "the work-photo viewer open on the first tile, #522 profile hero, pill as tall as Featured, #525 offers",
+      "the work-photo viewer open on the first tile, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(FULL),
     steps: [openViewer(0), wait(600)],
   },
   {
     state:
-      "the work-photo viewer open on a video, #522 profile hero, pill as tall as Featured, #525 offers",
+      "the work-photo viewer open on a video, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(FULL),
     steps: [openViewer(2), wait(600)],
   },
   {
     state:
-      "no top inset, #522 profile hero, pill as tall as Featured, #525 offers",
+      "no top inset, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: { ...withPro(FULL), insets: { top: 0 } },
   },
   {
-    state: "a notch, #522 profile hero, pill as tall as Featured, #525 offers",
+    state:
+      "a notch, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: { ...withPro(FULL), insets: { top: 59 } },
   },
   // The Featured art can't be loaded (a bad upload, offline before it was
@@ -384,7 +393,7 @@ const CASES: Case[] = [
   // rather than its empty window and margin.
   {
     state:
-      "the Featured art fails to load, #522 profile hero, pill as tall as Featured, #525 offers",
+      "the Featured art fails to load, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: {
       ...withPro(FULL),
       http: (key) =>

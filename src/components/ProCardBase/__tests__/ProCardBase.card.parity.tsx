@@ -63,6 +63,14 @@ import {
  * a "#525 offers" name and captured beside the frozen ones, which no row
  * draws any more.
  */
+/*
+ * #525's second pass made every sticker bigger and the same size: its art 45
+ * tall in a slot of its own (the box still 59pt), a pair sharing the row in
+ * halves with slots as wide as a third's, one sticker still a third at the
+ * start edge. The states that draw the box are drawn again under a
+ * "#525 equal slots" name and captured beside the frozen ones, which no row
+ * draws any more.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
@@ -127,7 +135,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "company with everything, #522 card, #525 offers",
+    name: "company with everything, #522 card, #525 offers, #525 equal slots",
     props: {
       displayName: "Nile Plumbing Co.",
       photoUrl: "https://example.com/parity/pro.jpg",
@@ -164,7 +172,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "offer with no amount, #522 card, #525 offers",
+    name: "offer with no amount, #522 card, #525 offers, #525 equal slots",
     props: {
       displayName: "Mona Adel",
       isCompany: false,
