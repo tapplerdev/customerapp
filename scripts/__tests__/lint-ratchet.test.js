@@ -1,7 +1,8 @@
 /**
  * The ratcheted lint warnings (scripts/lint-ratchet-rules.js): what each
  * selector flags on a sample, which files .eslintrc.js applies them to, and
- * how scripts/lint-ratchet.js compares counts with the baseline.
+ * how scripts/lint-ratchet.js compares counts with the baseline. Also the
+ * Alert import ban that replaced the Alert ratchet once it reached 0.
  */
 const path = require("path")
 const { ESLint } = require("eslint")
@@ -11,11 +12,10 @@ const { compare } = require("../lint-ratchet")
 const ROOT = path.resolve(__dirname, "..", "..")
 
 const SAMPLE = `
-import { Alert, Text } from "react-native"
+import { Text } from "react-native"
 import { dsColors } from "styles/dsColors"
 import other from "../../styles/dsColors"
 
-export const a = () => Alert.alert("x")
 export const b = <Text style={{ color: "#fff", backgroundColor: "rgba(0,0,0,0.5)" }}>{"#hashtag"}</Text>
 export const c = ["#12345678", "rgb(1,2,3)", "#1234567890", "red"]
 export const d = dsColors && other
@@ -59,16 +59,31 @@ const keysFor = async (file) => {
   ].sort()
 }
 
+// The import-ban errors the real .eslintrc.js gives `code` at `file`.
+const importBans = async (code, file) => {
+  const [result] = await new ESLint({ cwd: ROOT }).lintText(code, {
+    filePath: path.join(ROOT, file),
+  })
+
+  // A file outside the TS project doesn't parse, and then no rule runs: a
+  // case would pass for nothing. Real files only.
+  const fatal = result.messages.filter((m) => m.fatal)
+  if (fatal.length) throw new Error(`${file}: ${fatal[0].message}`)
+
+  return result.messages
+    .filter((m) => m.ruleId === "@typescript-eslint/no-restricted-imports")
+    .map((m) => ({ severity: m.severity, message: m.message }))
+}
+
 describe("the ratcheted selectors", () => {
-  it("in .tsx: Alert.alert, both dsColors imports, hex and rgb(a) colours", async () => {
+  it("in .tsx: both dsColors imports, hex and rgb(a) colours", async () => {
     expect(await flag({ tsx: true })).toEqual([
       "3:dsColorsImport",
       "4:dsColorsImport",
-      "6:alert",
+      "6:colourLiteral",
+      "6:colourLiteral",
       "7:colourLiteral",
       "7:colourLiteral",
-      "8:colourLiteral",
-      "8:colourLiteral",
     ])
   })
 
@@ -76,13 +91,12 @@ describe("the ratcheted selectors", () => {
     expect(await flag({ tsx: false })).toEqual([
       "3:dsColorsImport",
       "4:dsColorsImport",
-      "6:alert",
     ])
   })
 
   it("leave out the keys a file is excepted from", async () => {
-    expect(await flag({ tsx: true, except: ["alert"] })).not.toContain(
-      "6:alert"
+    expect(await flag({ tsx: true, except: ["dsColorsImport"] })).not.toContain(
+      "3:dsColorsImport"
     )
   })
 })
@@ -90,14 +104,7 @@ describe("the ratcheted selectors", () => {
 describe(".eslintrc.js", () => {
   it("applies all of them to app .tsx", async () => {
     expect(await keysFor("src/App.tsx")).toEqual([
-      "alert",
       "colourLiteral",
-      "dsColorsImport",
-    ])
-  })
-
-  it("lets openPermissionAlert call Alert.alert", async () => {
-    expect(await keysFor("src/utils/openPermissionAlert.ts")).toEqual([
       "dsColorsImport",
     ])
   })
@@ -109,17 +116,62 @@ describe(".eslintrc.js", () => {
   })
 })
 
+describe("the Alert import ban", () => {
+  const ALERT = 'import { Alert } from "react-native"\nexport const a = Alert\n'
+  const ALIASED =
+    'import { Alert as Popup } from "react-native"\nexport const a = Popup\n'
+  const SCROLL =
+    'import { ScrollView } from "react-native"\nexport const s = ScrollView\n'
+
+  it.each([
+    ["an import", ALERT],
+    ["an aliased import", ALIASED],
+  ])("refuses %s of Alert in app code, as an error", async (_name, code) => {
+    const bans = await importBans(code, "src/App.tsx")
+
+    expect(bans).toHaveLength(1)
+    expect(bans[0].severity).toBe(2)
+    expect(bans[0].message).toContain("Alert is only for a permission denial")
+  })
+
+  it.each([
+    "src/utils/openPermissionAlert.ts",
+    "src/utils/__tests__/chatBlockCode.test.ts",
+  ])("lets %s import it", async (file) => {
+    expect(await importBans(ALERT, file)).toEqual([])
+  })
+
+  // The ban is a pattern entry: a second "react-native" path would have
+  // replaced the scroll ban, which has to hold everywhere still.
+  it.each(["src/App.tsx", "src/utils/openPermissionAlert.ts"])(
+    "keeps the scroll-view ban in %s",
+    async (file) => {
+      const bans = await importBans(SCROLL, file)
+
+      expect(bans).toHaveLength(1)
+      expect(bans[0].message).toContain("components/scroll")
+    }
+  )
+})
+
 describe("the comparison", () => {
-  const baseline = { alert: 46, dsColorsImport: 24, colourLiteral: 115 }
+  const baseline = { dsColorsImport: 24, colourLiteral: 115 }
 
   it("passes when nothing moved", () => {
     expect(compare(baseline, { ...baseline })).toEqual([])
   })
 
   it("fails a rise", () => {
-    expect(compare(baseline, { ...baseline, alert: 47 })).toEqual([
-      "alert: 47, up from 46. Fix the new one.",
+    expect(compare(baseline, { ...baseline, dsColorsImport: 25 })).toEqual([
+      "dsColorsImport: 25, up from 24. Fix the new one.",
     ])
+  })
+
+  // A ban is held at 0: its first one fails CI.
+  it("fails a banned Alert import", () => {
+    expect(
+      compare({ ...baseline, alertImport: 0 }, { ...baseline, alertImport: 1 })
+    ).toEqual(["alertImport: 1, up from 0. Fix the new one."])
   })
 
   it("fails a fall until the baseline is lowered", () => {

@@ -1,4 +1,7 @@
-const { selectorsFor } = require("./scripts/lint-ratchet-rules")
+const {
+  ALERT_BAN_MESSAGE,
+  selectorsFor,
+} = require("./scripts/lint-ratchet-rules")
 
 // Scroll surfaces must come from components/scroll, which carries the
 // alwaysBounceVertical={false} default that `ScrollView.defaultProps` used to
@@ -50,10 +53,23 @@ const paths = [
 
 // Deep paths bypass an exact-name match, e.g.
 // react-native/Libraries/Components/ScrollView/ScrollView
+// Objects, not strings: the Alert ban below is an object, and the schema
+// takes all of one kind (an invalid config stops ESLint running at all).
 const patterns = [
-  "react-native/Libraries/Components/ScrollView/*",
-  "react-native/Libraries/Lists/*",
+  { group: ["react-native/Libraries/Components/ScrollView/*"] },
+  { group: ["react-native/Libraries/Lists/*"] },
 ]
+
+// Alert only through utils/openPermissionAlert: an import ban, so an aliased
+// import (`Alert as A`) is caught too. A pattern entry rather than a second
+// "react-native" path: two paths with one name, and the second silently
+// replaces the first (the scroll ban above would go). The message is shared
+// with yarn lint:ratchet, which holds this ban at 0 in CI.
+const alertBan = {
+  group: ["react-native"],
+  importNames: ["Alert"],
+  message: ALERT_BAN_MESSAGE,
+}
 
 const withTypes = {
   paths: paths.map((p) => ({ ...p, allowTypeImports: true })),
@@ -71,16 +87,6 @@ module.exports = {
     {
       files: ["*.tsx"],
       rules: { "no-restricted-syntax": restrictedSyntax({ tsx: true }) },
-    },
-    {
-      // where Alert.alert belongs
-      files: ["src/utils/openPermissionAlert.ts"],
-      rules: {
-        "no-restricted-syntax": restrictedSyntax({
-          tsx: false,
-          except: ["alert"],
-        }),
-      },
     },
     {
       // Tests and harnesses assert colours and mock Alert on purpose.
@@ -101,14 +107,40 @@ module.exports = {
       // four files legitimately need the real type for a ref
       files: ["*.ts", "*.tsx"],
       rules: {
-        "@typescript-eslint/no-restricted-imports": ["error", withTypes],
+        "@typescript-eslint/no-restricted-imports": [
+          "error",
+          { ...withTypes, patterns: [...patterns, alertBan] },
+        ],
       },
     },
     {
       // .js/.jsx get the core rule — no type imports exist there anyway. This
       // is what guards index.js, the file the default was removed from.
       files: ["*.js", "*.jsx"],
-      rules: { "no-restricted-imports": ["error", { paths, patterns }] },
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          { paths, patterns: [...patterns, alertBan] },
+        ],
+      },
+    },
+    {
+      // Where Alert belongs: a permission the OS won't ask for again. Tests
+      // and harnesses mock it on purpose.
+      files: [
+        "src/utils/openPermissionAlert.ts",
+        "**/__tests__/**",
+        "**/__fixtures__/**",
+        "**/__mocks__/**",
+        "**/__parity__/**",
+        "*.test.*",
+        "*.spec.*",
+        "*.parity.*",
+        "src/testing/**",
+      ],
+      rules: {
+        "@typescript-eslint/no-restricted-imports": ["error", withTypes],
+      },
     },
     {
       // the wrappers themselves must import the real components

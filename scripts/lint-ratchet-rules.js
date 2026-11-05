@@ -2,8 +2,9 @@
  * The lint warnings on a ratchet. .eslintrc.js warns on each of these, and
  * `yarn lint:ratchet` (scripts/lint-ratchet.js, run in CI) fails when a
  * count rises above scripts/lint-ratchet-baseline.json. Each count can only
- * go down. Known gaps: an aliased Alert (`A.alert`), `require(...).Alert`,
- * and colours built in template literals.
+ * go down. Known gap: colours built in template literals. (Alert was on the
+ * ratchet until it reached 0; it is an import ban at error now, in
+ * .eslintrc.js.)
  */
 const COLOUR =
   "No colour literals in .tsx. Use a ds colour token (color.* from " +
@@ -11,14 +12,6 @@ const COLOUR =
   "if it's missing."
 
 const ratcheted = [
-  {
-    key: "alert",
-    selector:
-      "CallExpression[callee.object.name='Alert'][callee.property.name='alert']",
-    message:
-      "Alert.alert is only for a permission denial, through openPermissionAlert. " +
-      "Show a request failure with ErrorModal.",
-  },
   {
     key: "dsColorsImport",
     selector: "ImportDeclaration[source.value=/dsColors$/]",
@@ -40,6 +33,18 @@ const ratcheted = [
   },
 ]
 
+/*
+ * Bans held at 0: errors in .eslintrc.js that `yarn lint:ratchet` counts too,
+ * so CI fails on one (CI doesn't gate the rest of lint). Matched by message.
+ * Alert came off the ratchet at 0 and became an import ban: Alert is for a
+ * permission denial (utils/openPermissionAlert) only.
+ */
+const ALERT_BAN_MESSAGE =
+  "Alert is only for a permission denial (utils/openPermissionAlert). " +
+  "Show a request failure with ErrorModal."
+
+const banned = [{ key: "alertImport", message: ALERT_BAN_MESSAGE }]
+
 // The no-restricted-syntax entries for a kind of file: the .tsx-only ones
 // only for .tsx, and without the keys in `except`.
 const selectorsFor = ({ tsx, except = [] }) =>
@@ -47,4 +52,4 @@ const selectorsFor = ({ tsx, except = [] }) =>
     .filter((r) => (tsx || !r.tsxOnly) && !except.includes(r.key))
     .map(({ selector, message }) => ({ selector, message }))
 
-module.exports = { ratcheted, selectorsFor }
+module.exports = { ratcheted, selectorsFor, banned, ALERT_BAN_MESSAGE }

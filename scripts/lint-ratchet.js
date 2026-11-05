@@ -2,10 +2,11 @@
 /**
  * yarn lint:ratchet [--update]
  *
- * The ratchet for the warnings in scripts/lint-ratchet-rules.js (Alert.alert
- * outside openPermissionAlert, dsColors imports, colour literals in .tsx). Lints
- * src with .eslintrc.js, counts those warnings, and compares the counts with
- * scripts/lint-ratchet-baseline.json:
+ * The ratchet for the warnings in scripts/lint-ratchet-rules.js (dsColors
+ * imports, colour literals in .tsx), and the bans held at 0 there (an Alert
+ * import outside its two helpers). Lints src with .eslintrc.js, counts
+ * those, and
+ * compares the counts with scripts/lint-ratchet-baseline.json:
  *
  * - a count above its baseline fails: fix the new one (`npx eslint <file>`
  *   on the files you changed shows where);
@@ -18,7 +19,7 @@
 const fs = require("fs")
 const path = require("path")
 const { ESLint } = require("eslint")
-const { ratcheted } = require("./lint-ratchet-rules")
+const { banned, ratcheted } = require("./lint-ratchet-rules")
 
 const ROOT = path.resolve(__dirname, "..")
 const BASELINE = path.join(__dirname, "lint-ratchet-baseline.json")
@@ -27,7 +28,12 @@ const ABOUT =
   "may only go down. Written with --update."
 
 const KEY_OF = new Map(ratcheted.map(({ message, key }) => [message, key]))
-const KEYS = [...new Set(ratcheted.map(({ key }) => key))]
+const KEYS = [...new Set([...ratcheted, ...banned].map(({ key }) => key))]
+
+// A ban's error, by its message (ESLint puts its own words in front:
+// "'Alert' import from 'react-native' is restricted ... <message>").
+const bannedKeyOf = (message) =>
+  banned.find((ban) => message.includes(ban.message))?.key
 
 const countWarnings = async () => {
   const results = await new ESLint({ cwd: ROOT }).lintFiles(["src"])
@@ -35,7 +41,10 @@ const countWarnings = async () => {
 
   results.forEach(({ messages }) =>
     messages.forEach(({ ruleId, message }) => {
-      const key = ruleId === "no-restricted-syntax" && KEY_OF.get(message)
+      const key =
+        ruleId === "no-restricted-syntax"
+          ? KEY_OF.get(message)
+          : bannedKeyOf(message)
       if (key) counts[key] += 1
     })
   )
