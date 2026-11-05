@@ -31,9 +31,7 @@ jest.mock("store/auth/slice", () => ({
   setTokens: (payload: unknown) => ({ type: "auth/setTokens", payload }),
 }))
 
-/* eslint-disable import/first */
 import { api } from "services/api"
-/* eslint-enable import/first */
 
 type Auth = {
   token?: string
