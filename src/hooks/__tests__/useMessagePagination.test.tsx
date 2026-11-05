@@ -105,14 +105,14 @@ const flush = async (rounds = 4) => {
 }
 
 const open = async () => {
-  const { api } = require("services/api")
-  const authReducer = require("store/auth/slice").default
+  const { api } = require("services/api") as typeof import("services/api")
+  const authReducer = (require("store/auth/slice") as typeof import("store/auth/slice")).default
   const auth = authReducer(undefined, { type: "@@init" })
   const store = configureStore({
     reducer: { [api.reducerPath]: api.reducer, auth: authReducer },
     preloadedState: {
-      auth: { ...auth, isAuth: true, token: "t", user: { ...(auth.user ?? {}), id: 1 } },
-    } as any,
+      auth: { ...auth, isAuth: true, token: "t", user: { ...(auth.user ?? {}), id: 1 } as any },
+    },
     middleware: (gdm) =>
       gdm({ serializableCheck: false, immutableCheck: false }).concat(api.middleware),
     // RTK batches query notifications on requestAnimationFrame by default,
