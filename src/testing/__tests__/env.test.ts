@@ -16,8 +16,7 @@ import { searchAddressByPosition } from "services/here-maps-api"
 
 const ROOT = path.resolve(__dirname, "../../..")
 const STUB = (globalThis as Record<string, unknown>).__PARITY_ENV_STUB__ as
-  | Record<string, string>
-  | undefined
+  Record<string, string> | undefined
 
 describe("@env is stubbed in jest", () => {
   it("stubs every key src/types/env.d.ts declares", () => {

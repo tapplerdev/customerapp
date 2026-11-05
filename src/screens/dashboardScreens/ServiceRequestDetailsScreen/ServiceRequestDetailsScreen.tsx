@@ -25,11 +25,7 @@ import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
 import dsStyles from "./styles"
 
 type DateTypeOption =
-  | "notDecided"
-  | "hours48"
-  | "week"
-  | "furtherOut"
-  | "specificDates"
+  "notDecided" | "hours48" | "week" | "furtherOut" | "specificDates"
 
 // Whether a row really answers a question of that type. A bare row
 // ({questionId}: an un-ticked choice, a cleared date) does not, and a job sent

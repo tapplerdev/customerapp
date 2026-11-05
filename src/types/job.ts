@@ -123,11 +123,7 @@ export type JobProType = {
   jobId: number
   proId: number
   selectionStatus:
-    | "selected"
-    | "opportunity"
-    | "offer"
-    | "proRejected"
-    | "customerRejected"
+    "selected" | "opportunity" | "offer" | "proRejected" | "customerRejected"
   responseTime?: number
   ratePerHour?: number
   opportunityNotes?: string

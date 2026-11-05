@@ -54,8 +54,7 @@ export type EndpointAnswer =
   | "loading"
 
 export type EndpointFixture =
-  | EndpointAnswer
-  | ((args: unknown, request: BackendRequest) => EndpointAnswer)
+  EndpointAnswer | ((args: unknown, request: BackendRequest) => EndpointAnswer)
 
 /** Fixtures by endpoint name (services/api.ts), plus `authRefresh`. */
 export type BackendFixtures = Record<string, EndpointFixture>
@@ -75,13 +74,11 @@ export type BackendRequest = {
 
 /** A plain fetch's answer: a body as JSON or text, and a status. */
 export type HttpAnswer =
-  | { status?: number; json?: unknown; text?: string }
-  | "loading"
+  { status?: number; json?: unknown; text?: string } | "loading"
 
 /** Answers by httpKey, or a function of the key (undefined: not answered). */
 export type HttpFixtures =
-  | Record<string, HttpAnswer>
-  | ((key: string) => HttpAnswer | undefined)
+  Record<string, HttpAnswer> | ((key: string) => HttpAnswer | undefined)
 
 /** One plain fetch the screen made, and whether a fixture answered it. */
 export type HttpRequest = { key: string; answered: boolean }

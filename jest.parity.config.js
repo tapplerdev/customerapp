@@ -67,9 +67,8 @@ module.exports = {
   transform: {
     "^.+\\.(js|ts|tsx)$": "babel-jest",
     "^.+\\.svg$": "<rootDir>/src/testing/screenKit/svgTransformer.js",
-    "^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|webp)$": require.resolve(
-      "@react-native/jest-preset/jest/assetFileTransformer.js"
-    ),
+    "^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|webp)$":
+      require.resolve("@react-native/jest-preset/jest/assetFileTransformer.js"),
   },
   setupFilesAfterEnv: [
     ...base.setupFilesAfterEnv,

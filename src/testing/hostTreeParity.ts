@@ -894,9 +894,7 @@ export const captureCommit = () => parityFlags.DS_PARITY_COMMIT ?? "unknown"
  * compare.js: allowButtonHeight), so a site the codemod accepted passes here.
  */
 export type ParityAllowance =
-  | "buttonHeight"
-  | "buttonDisabledView"
-  | "buttonAccessibility"
+  "buttonHeight" | "buttonDisabledView" | "buttonAccessibility"
 
 /** One accepted delta: where it was, and what was accepted. */
 export type AcceptedDelta = { path: string; what: string }

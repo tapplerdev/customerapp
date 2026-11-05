@@ -151,11 +151,7 @@ export const boot = (platform: KitPlatform) => {
 
 /** A react-native-permissions result (its RESULTS values). */
 export type PermissionAnswer =
-  | "granted"
-  | "limited"
-  | "denied"
-  | "blocked"
-  | "unavailable"
+  "granted" | "limited" | "denied" | "blocked" | "unavailable"
 
 type Mocked = {
   mockImplementation: (fn: unknown) => void
@@ -473,8 +469,7 @@ export const openScreen = async (
     // MMKV starts empty but for the render's keys (nativeMocks.mmkv).
     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
     const mmkv = require("react-native-mmkv").__screenKitValues as
-      | Map<string, unknown>
-      | undefined
+      Map<string, unknown> | undefined
     mmkv?.clear()
     Object.entries(options.storage ?? {}).forEach(([key, value]) =>
       mmkv?.set(key, value)
