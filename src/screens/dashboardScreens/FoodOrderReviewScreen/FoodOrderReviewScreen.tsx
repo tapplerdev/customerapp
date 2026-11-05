@@ -322,7 +322,11 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
               <DmView key={line.uid} style={a.mt_10}>
                 <DmView style={[a.flex_row, a.justify_between]}>
                   <Text size={13} weight="medium" style={[a.flex_1, a.pr_10]}>
-                    {line.quantity}×  {line.name}
+                    {/* Both spaces as a string: Prettier collapses repeated
+                        spaces in JSX text, and RN Text draws every one. */}
+                    {line.quantity}
+                    {"×  "}
+                    {line.name}
                   </Text>
                   <Text size={13}>
                     {formatMoney(cartLineTotal(line))} {t("EGP")}
