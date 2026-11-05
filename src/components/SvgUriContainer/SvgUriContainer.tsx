@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { SvgXml } from "react-native-svg"
 
 import { loadSvg, peekSvg } from "services/svgCache"
@@ -16,6 +16,9 @@ interface Props {
    *  Only for stickers that line up against a column of text. In a centred or
    *  justify-around row this pushes everything off to one side. */
   pinLeft?: boolean
+  /** The art could not be loaded (offline before it was cached, a bad
+   *  upload): the container draws nothing. Same prop as proapp's. */
+  onError?: () => void
 }
 
 /**
@@ -30,7 +33,12 @@ const SvgUriContainer: React.FC<Props> = ({
   height,
   autoTrimLeftPadding = false,
   pinLeft = false,
+  onError,
 }) => {
+  // Read when the load settles, so a new callback each render doesn't refetch.
+  const onErrorRef = useRef(onError)
+  onErrorRef.current = onError
+
   const [loaded, setLoaded] = useState<{ uri: string; xml: string } | null>(
     () => {
       const hit = peekSvg(uri)
@@ -45,7 +53,9 @@ const SvgUriContainer: React.FC<Props> = ({
     if (!uri || peekSvg(uri)) return
     let alive = true
     loadSvg(uri).then((res) => {
-      if (alive && res) setLoaded({ uri, xml: res })
+      if (!alive) return
+      if (res) setLoaded({ uri, xml: res })
+      else onErrorRef.current?.()
     })
     return () => {
       alive = false

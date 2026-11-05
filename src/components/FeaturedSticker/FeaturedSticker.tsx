@@ -22,9 +22,11 @@ interface Props {
   uri: string
   /** The badge's height on screen; its width follows (65:16). */
   height: number
+  /** The art could not be loaded (offline before it was cached, a bad upload). */
+  onError?: () => void
 }
 
-const FeaturedSticker: React.FC<Props> = ({ uri, height }) => {
+const FeaturedSticker: React.FC<Props> = ({ uri, height, onError }) => {
   const { i18n } = useTranslation()
   const art = i18n.language === "ar" ? ART.ar : ART.en
   const scale = height / BADGE.height
@@ -43,7 +45,12 @@ const FeaturedSticker: React.FC<Props> = ({ uri, height }) => {
           ],
         }}
       >
-        <SvgUriContainer uri={uri} width={artWidth} height={artHeight} />
+        <SvgUriContainer
+          uri={uri}
+          width={artWidth}
+          height={artHeight}
+          onError={onError}
+        />
       </DmView>
     </DmView>
   )

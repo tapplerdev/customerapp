@@ -197,6 +197,10 @@ const CASES: Case[] = [
   { state: "the work-photo viewer open on a video, #522 profile hero, pill as tall as Featured, #525 offers", options: withPro(FULL), steps: [openViewer(2), wait(600)] },
   { state: "no top inset, #522 profile hero, pill as tall as Featured, #525 offers", options: { ...withPro(FULL), insets: { top: 0 } } },
   { state: "a notch, #522 profile hero, pill as tall as Featured, #525 offers", options: { ...withPro(FULL), insets: { top: 59 } } },
+  // The Featured art can't be loaded (a bad upload, offline before it was
+  // cached): no sticker beside the name or the pill, as with no art at all,
+  // rather than its empty window and margin.
+  { state: "the Featured art fails to load, #522 profile hero, pill as tall as Featured, #525 offers", options: { ...withPro(FULL), http: (key) => (/featuredPro/.test(key) ? { status: 404, text: "Not Found" } : { text: SVG_ART }) } },
 ]
 
 function SIGNED_PLAIN() {

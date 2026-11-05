@@ -127,9 +127,15 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const motivational = (proServiceCat?.subscriptions || []).filter(
     (sub: any) => sub.product?.subType === "motivational"
   )
-  const featuredUri = isAr
+  const featuredArt = isAr
     ? featureSubscription?.product?.pictureAr
     : featureSubscription?.product?.pictureEn
+  // An art that fails to load (offline before it was cached, a bad upload)
+  // is dropped like a missing one, rather than leaving its empty window and
+  // margin beside the name. Kept per uri, so new art gets its own try.
+  const [failedArt, setFailedArt] = useState<string>()
+  const featuredUri = featuredArt !== failedArt ? featuredArt : undefined
+  const onFeaturedError = () => setFailedArt(featuredArt)
 
   const closeViewStyle = useMemo(() => {
     return { top: insets.top || 35, zIndex: 10 }
@@ -212,7 +218,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 </Text>
                 {featuredUri && (
                   <DmView style={a.ml_6}>
-                    <FeaturedSticker uri={featuredUri} height={14} />
+                    <FeaturedSticker
+                      uri={featuredUri}
+                      height={14}
+                      onError={onFeaturedError}
+                    />
                   </DmView>
                 )}
               </DmView>
@@ -290,7 +300,11 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
             {featuredUri && (
               <DmView style={a.ml_8}>
-                <FeaturedSticker uri={featuredUri} height={PILL_HEIGHT} />
+                <FeaturedSticker
+                  uri={featuredUri}
+                  height={PILL_HEIGHT}
+                  onError={onFeaturedError}
+                />
               </DmView>
             )}
           </DmView>

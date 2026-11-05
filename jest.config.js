@@ -64,7 +64,7 @@ module.exports = {
   // Toolkit family, without which any test touching a slice or services/api
   // dies on `Unexpected token 'export'`.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@reduxjs/toolkit|immer|reselect|redux|redux-thunk|@lodev09/react-native-true-sheet)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@reduxjs/toolkit|immer|reselect|redux|redux-thunk|react-redux|@lodev09/react-native-true-sheet)/)',
   ],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   globals: { __PARITY_ENV_STUB__: ENV_STUB },

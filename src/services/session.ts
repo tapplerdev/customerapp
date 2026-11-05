@@ -22,7 +22,8 @@ import { logout } from "store/auth/slice"
  *      deletes this device's access and refresh tokens, so a copy of either
  *      stops working, and closes the sockets opened with them. After step 1,
  *      which needs the access token it revokes. It always answers 204, and
- *      its result is never read. At the same time:
+ *      its result is never read. Skipped if a different account signed in
+ *      meanwhile: its tokens are in the store now. At the same time:
  *   3. Kill the token at Firebase, so pushes die even if step 1 never
  *      arrived. Errors ignored, like steps 1 and 2 (and on Android without
  *      Firebase configured, messaging() throws — same outcome).
@@ -83,10 +84,13 @@ export const signOut = async (): Promise<void> => {
       ).catch(() => undefined)
     }
     // Step 2 names the session by the access token (the Bearer header) and
-    // the refresh token (the body), whichever the server still knows.
-    const { token, refreshToken } = store.getState().auth
+    // the refresh token (the body), whichever the server still knows. Read
+    // after step 1, so a different account that signed in meanwhile would
+    // have its tokens here: its session is skipped, not ended (proapp's
+    // endServerSession makes the same check).
+    const { token, refreshToken, user } = store.getState().auth
     const endSession =
-      token || refreshToken
+      user?.id === startedAs && (token || refreshToken)
         ? withTimeout(
             Promise.resolve().then(() =>
               dispatch(
