@@ -1,5 +1,6 @@
 import { DmView } from "@tappler/shared/src/components/UI"
 import React, { useCallback, useRef, useState } from "react"
+import ErrorModal from "components/ErrorModal"
 import { useTranslation } from "react-i18next"
 import DropShadow from "react-native-drop-shadow"
 import MapView, { Details, PROVIDER_GOOGLE, Region } from "react-native-maps"
@@ -10,7 +11,7 @@ import MapPinPicker from "components/MapPinPicker/MapPinPicker"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import styles from "../styles"
-import { Alert, Platform, StyleSheet } from "react-native"
+import { Platform, StyleSheet } from "react-native"
 import useLocation from "@tappler/shared/src/hooks/useLocation"
 
 import { searchAddressByPosition } from "services/here-maps-api"
@@ -38,9 +39,15 @@ const MapPickerView: React.FC<Props> = ({
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null)
   const [addressConfirming, setAddressConfirming] = useState<boolean>(false)
 
-  const onErrorGetCurrentLocation = useCallback((error: string) => {
-    Alert.alert(error)
-  }, [])
+  // A location error, or a pick outside Egypt. A refused permission
+  // already showed the hook's own alert: a modal can't open over it.
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const onErrorGetCurrentLocation = useCallback(
+    (error: string, alreadyAlerted: boolean) => {
+      if (!alreadyAlerted) setLocationError(error)
+    },
+    []
+  )
   const { getCurrentLocation } = useLocation(onErrorGetCurrentLocation)
   const mapRef = useRef<MapView>(null)
 
@@ -86,7 +93,7 @@ const MapPickerView: React.FC<Props> = ({
       if (egyAddressRs.length > 0) {
         onSelectedAddress?.(egyAddressRs[0])
       } else {
-        Alert.alert(t("your_location_is_outside"))
+        setLocationError(t("your_location_is_outside"))
         setAddressConfirming(false)
       }
     } else {
@@ -199,6 +206,11 @@ const MapPickerView: React.FC<Props> = ({
           isLoading={addressConfirming}
         />
       </DmView>
+      <ErrorModal
+        isVisible={!!locationError}
+        descr={locationError ?? undefined}
+        onClose={() => setLocationError(null)}
+      />
     </>
   )
 }

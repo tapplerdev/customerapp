@@ -2,6 +2,7 @@
 /* eslint-disable no-useless-escape */
 import { DmInput, DmView } from "@tappler/shared/src/components/UI"
 import React, { useCallback, useRef, useState } from "react"
+import ErrorModal from "components/ErrorModal"
 import SearchIcon from "assets/icons/search-black.svg"
 import CloseIcon from "assets/icons/close.svg"
 import LocationIcon from "assets/icons/location.svg"
@@ -9,7 +10,6 @@ import LocationRedIcon from "assets/icons/location-red.svg"
 import { useTranslation } from "react-i18next"
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   ListRenderItemInfo,
 } from "react-native"
@@ -74,9 +74,15 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
 
   const { t, i18n } = useTranslation()
 
-  const onErrorGetCurrentLocation = useCallback((error: string) => {
-    Alert.alert(error)
-  }, [])
+  // A location error, or a pick outside Egypt. A refused permission
+  // already showed the hook's own alert: a modal can't open over it.
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const onErrorGetCurrentLocation = useCallback(
+    (error: string, alreadyAlerted: boolean) => {
+      if (!alreadyAlerted) setLocationError(error)
+    },
+    []
+  )
   const { getCurrentLocation } = useLocation(onErrorGetCurrentLocation)
 
   const onUseMyLocation = useCallback(async () => {
@@ -90,7 +96,7 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
       if (egyAddressRs.length > 0) {
         onLocationSelect(egyAddressRs[0].position, egyAddressRs[0])
       } else {
-        Alert.alert(t("your_location_is_outside"))
+        setLocationError(t("your_location_is_outside"))
       }
     }
   }, [onLocationSelect, i18n.language])
@@ -236,6 +242,11 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
           </Text>
         </DmView>
       )}
+      <ErrorModal
+        isVisible={!!locationError}
+        descr={locationError ?? undefined}
+        onClose={() => setLocationError(null)}
+      />
     </KeyboardAvoidingView>
   )
 }

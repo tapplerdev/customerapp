@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import ErrorModal from "components/ErrorModal"
 
 // Components
 import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView } from "react-native-safe-area-context"
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -37,9 +37,15 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const onLocationError = useCallback((error: string) => {
-    Alert.alert(error)
-  }, [])
+  // A location error, or a pick outside Egypt. A refused permission
+  // already showed the hook's own alert: a modal can't open over it.
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const onLocationError = useCallback(
+    (error: string, alreadyAlerted: boolean) => {
+      if (!alreadyAlerted) setLocationError(error)
+    },
+    []
+  )
 
   const { getCurrentLocation, loading } = useLocation(onLocationError)
 
@@ -190,6 +196,11 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
           </DropShadow>
         </DmView>
       </DmView>
+      <ErrorModal
+        isVisible={!!locationError}
+        descr={locationError ?? undefined}
+        onClose={() => setLocationError(null)}
+      />
     </SafeAreaView>
   )
 }

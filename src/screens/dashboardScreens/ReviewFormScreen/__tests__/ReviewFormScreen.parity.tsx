@@ -23,6 +23,17 @@ import {
   type ParityAllowance,
   type ParityEnv,
 } from "testing/hostTreeParity"
+
+// A pop-up that is up and says `text`, as its title or its description.
+const popUpSays = (
+  root: { findAll: (p: (n: any) => boolean) => unknown[] },
+  text: string
+) =>
+  root.findAll(
+    (node) =>
+      node.props?.isVisible === true &&
+      (node.props?.descr === text || node.props?.title === text)
+  ).length > 0
 import type { JobType } from "types/job"
 
 import { JOB_REVIEWABLE } from "../../__fixtures__/jobStates"
@@ -282,8 +293,10 @@ describe("ReviewFormScreen: presses", () => {
             proCompletedJob: true,
           }).slice(1, -1)
         )
-        expect(alert).toHaveBeenCalledTimes(1)
-        expect(alert.mock.calls[0][0]).toBe(copy(env, "review_submitted"))
+        expect(alert).not.toHaveBeenCalled()
+        expect(popUpSays(session.root, copy(env, "review_submitted"))).toBe(
+          true
+        )
       } finally {
         session.unmount()
       }
@@ -316,10 +329,8 @@ describe("ReviewFormScreen: presses", () => {
           '"proCompletedJob":false'
         )
         expect(JSON.stringify(sent[0].args)).toContain('"comment":" "')
-        expect(alert).toHaveBeenCalledWith(
-          copy(env, "error"),
-          "Already reviewed"
-        )
+        expect(alert).not.toHaveBeenCalled()
+        expect(popUpSays(session.root, "Already reviewed")).toBe(true)
       } finally {
         session.unmount()
       }
