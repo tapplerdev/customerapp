@@ -48,6 +48,7 @@ import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 import { checkProfanity } from "@tappler/shared/src/profanity"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
+import { chatBlockCodeOf } from "utils/chatBlockCode"
 import { uuidV4 } from "utils/uuid"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -509,13 +510,13 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
   }, [navigation])
 
   // Route a send failure to the right UI. The backend returns a stable code
-  // in validationErrors.text; VIOLATIONS (profanity / contact-info) get the
+  // as the top-level `code` (an older backend: validationErrors.text[0]); VIOLATIONS (profanity / contact-info) get the
   // proapp-style bottom modal — the blocked text is already restored into the
   // input by the caller, so "Edit message" puts the customer back in it.
   // Non-violations (couldn't-verify / network) keep the lightweight banner.
   const handleSendFailure = useCallback(
     (e: any) => {
-      const code = e?.data?.validationErrors?.text?.[0]
+      const code = chatBlockCodeOf(e)
       if (code === "CHAT_BLOCK_PROFANITY") {
         showBlockedModal(t("message_violates_community_standards"))
         return
