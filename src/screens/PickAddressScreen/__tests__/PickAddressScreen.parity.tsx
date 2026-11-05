@@ -26,6 +26,17 @@ import {
   type ParityEnv,
 } from "testing/hostTreeParity"
 
+// A pop-up that is up and says `text`, as its title or its description.
+const popUpSays = (
+  root: { findAll: (p: (n: any) => boolean) => unknown[] },
+  text: string
+) =>
+  root.findAll(
+    (node) =>
+      node.props?.isVisible === true &&
+      (node.props?.descr === text || node.props?.title === text)
+  ).length > 0
+
 /*
  * Pick address, the combined search-and-map picker (USE_COMBINED_SEARCH_MAP
  * is true: the screen's two-page branch, its SafeAreaView and
@@ -239,23 +250,18 @@ describe("PickAddressScreen presses", () => {
   )
 
   it.each(envs)(
-    "Confirm outside Egypt alerts and does not leave [$env.language $env.platform]",
+    "Confirm outside Egypt says so and does not leave [$env.language $env.platform]",
     async ({ env }) => {
       const session = await openScreen(
         load,
         optionsFor(env, { reverse: [ABROAD] })
       )
       try {
-        const { Alert } = require("react-native")
-        const alert = jest
-          .spyOn(Alert, "alert")
-          .mockImplementation(() => undefined)
         await run(session, env, [confirm, wait(1000)])
-        expect(alert).toHaveBeenCalledWith(
-          copy(env, "your_location_is_outside")
-        )
+        expect(
+          popUpSays(session.root, copy(env, "your_location_is_outside"))
+        ).toBe(true)
         expect(session.navigation.actions).toEqual([])
-        alert.mockRestore()
       } finally {
         session.unmount()
       }

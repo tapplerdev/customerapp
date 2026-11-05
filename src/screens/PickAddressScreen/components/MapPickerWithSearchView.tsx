@@ -1,5 +1,6 @@
 import { DmInput, DmView } from "@tappler/shared/src/components/UI"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import ErrorModal from "components/ErrorModal"
 import { useTranslation } from "react-i18next"
 import DropShadow from "react-native-drop-shadow"
 import MapView, { Details, PROVIDER_GOOGLE, Region } from "react-native-maps"
@@ -16,7 +17,6 @@ import { MapLocationResult, MapPosition } from "services/map-types"
 import styles from "../styles"
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Easing,
   Keyboard,
@@ -158,9 +158,15 @@ const MapPickerWithSearchView: React.FC<Props> = ({
   // Confirm state
   const [addressConfirming, setAddressConfirming] = useState<boolean>(false)
 
-  const onErrorGetCurrentLocation = useCallback((error: string) => {
-    Alert.alert(error)
-  }, [])
+  // A location error, or a pick outside Egypt. A refused permission
+  // already showed the hook's own alert: a modal can't open over it.
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const onErrorGetCurrentLocation = useCallback(
+    (error: string, alreadyAlerted: boolean) => {
+      if (!alreadyAlerted) setLocationError(error)
+    },
+    []
+  )
   const { getCurrentLocation } = useLocation(onErrorGetCurrentLocation)
   const mapRef = useRef<MapView>(null)
 
@@ -339,7 +345,7 @@ const MapPickerWithSearchView: React.FC<Props> = ({
       if (egyAddressRs.length > 0) {
         onSelectedAddress?.(egyAddressRs[0])
       } else {
-        Alert.alert(t("your_location_is_outside"))
+        setLocationError(t("your_location_is_outside"))
         setAddressConfirming(false)
       }
     } else {
@@ -680,6 +686,11 @@ const MapPickerWithSearchView: React.FC<Props> = ({
           )}
         </DmView>
       )}
+      <ErrorModal
+        isVisible={!!locationError}
+        descr={locationError ?? undefined}
+        onClose={() => setLocationError(null)}
+      />
     </DmView>
   )
 }

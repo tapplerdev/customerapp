@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { MainModal } from "@tappler/shared/src/components"
 import { useTranslation } from "react-i18next"
 
@@ -26,13 +26,23 @@ const ErrorModal: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
 
+  // Callers close this by clearing their message (isVisible={!!error},
+  // onClose={() => setError(null)}), and the card keeps drawing through its
+  // fade-out. So what it says is taken only while it is up, or the fade
+  // shows the fallback ("An error occurred") for a moment (proapp's map,
+  // 2026-10-15).
+  const [shown, setShown] = useState({ title, descr })
+  if (isVisible && (shown.title !== title || shown.descr !== descr)) {
+    setShown({ title, descr })
+  }
+
   return (
     <MainModal
       isVisible={isVisible}
       onClose={onClose}
       onModalHide={onModalHide}
-      title={title || t("error")}
-      descr={descr || t("an_error_occurred")}
+      title={shown.title || t("error")}
+      descr={shown.descr || t("an_error_occurred")}
       titleBtn={t("OK")}
       onPress={onClose}
       Icon={Icon || <CloseBigIcon />}

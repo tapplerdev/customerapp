@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react"
 import {
-  Alert,
   Dimensions,
   Image,
   Modal,
@@ -16,6 +15,8 @@ import { requestGalleryPermission } from "@tappler/shared/src/hooks/permissionHo
 
 import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { openPermissionAlert } from "utils/openPermissionAlert"
+import ErrorModal from "components/ErrorModal"
+import { MainModal } from "@tappler/shared/src/components"
 import { RootStackScreenProps } from "navigation/types"
 import {
   useCreateReviewMutation,
@@ -65,10 +66,12 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
   const [viewerVisible, setViewerVisible] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
   const carouselRef = useRef<ICarouselInstance>(null)
+  const [errorText, setErrorText] = useState<string | null>(null)
+  const [isSubmitted, setSubmitted] = useState(false)
 
   const handlePickPhotos = async () => {
     if (photos.length >= 4) {
-      Alert.alert(t("error"), t("max_4_photos"))
+      setErrorText(t("max_4_photos"))
       return
     }
     const hasPermission = await requestGalleryPermission()
@@ -120,11 +123,10 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
         proCompletedJob: proCompletedJob!,
       }).unwrap()
 
-      Alert.alert(t("review_submitted"), t("review_submitted_descr"), [
-        { text: t("OK"), onPress: () => navigation.popToTop() },
-      ])
+      // OK leaves once the card has faded (navigating under it doesn't).
+      setSubmitted(true)
     } catch (error: any) {
-      Alert.alert(t("error"), error?.data?.message || t("an_error_occurred"))
+      setErrorText(error?.data?.message || t("an_error_occurred"))
     } finally {
       setLoading(false)
     }
@@ -459,6 +461,20 @@ const ReviewFormScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         </DmView>
       </Modal>
+      <ErrorModal
+        isVisible={!!errorText}
+        descr={errorText ?? undefined}
+        onClose={() => setErrorText(null)}
+      />
+      <MainModal
+        isVisible={isSubmitted}
+        onClose={() => setSubmitted(false)}
+        onModalHide={() => navigation.popToTop()}
+        title={t("review_submitted")}
+        descr={t("review_submitted_descr")}
+        titleBtn={t("OK")}
+        onPress={() => setSubmitted(false)}
+      />
     </SafeAreaView>
   )
 }
