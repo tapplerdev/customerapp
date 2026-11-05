@@ -1,3 +1,5 @@
+const { selectorsFor } = require("./scripts/lint-ratchet-rules")
+
 // Scroll surfaces must come from components/scroll, which carries the
 // alwaysBounceVertical={false} default that `ScrollView.defaultProps` used to
 // set globally in index.js.
@@ -58,10 +60,42 @@ const withTypes = {
   patterns,
 }
 
+// The ratcheted warnings (scripts/lint-ratchet-rules.js, yarn lint:ratchet).
+const restrictedSyntax = (options) => ["warn", ...selectorsFor(options)]
+
 module.exports = {
   root: true,
   extends: "@react-native",
+  rules: { "no-restricted-syntax": restrictedSyntax({ tsx: false }) },
   overrides: [
+    {
+      files: ["*.tsx"],
+      rules: { "no-restricted-syntax": restrictedSyntax({ tsx: true }) },
+    },
+    {
+      // where Alert.alert belongs
+      files: ["src/utils/openPermissionAlert.ts"],
+      rules: {
+        "no-restricted-syntax": restrictedSyntax({
+          tsx: false,
+          except: ["alert"],
+        }),
+      },
+    },
+    {
+      // Tests and harnesses assert colours and mock Alert on purpose.
+      files: [
+        "**/__tests__/**",
+        "**/__fixtures__/**",
+        "**/__mocks__/**",
+        "**/__parity__/**",
+        "*.test.*",
+        "*.spec.*",
+        "*.parity.*",
+        "src/testing/**",
+      ],
+      rules: { "no-restricted-syntax": "off" },
+    },
     {
       // the TS variant is the only one that understands allowTypeImports, and
       // four files legitimately need the real type for a ref
