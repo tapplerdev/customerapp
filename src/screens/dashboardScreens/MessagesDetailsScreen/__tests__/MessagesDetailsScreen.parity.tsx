@@ -5,6 +5,7 @@ import type { ReactTestInstance } from "react-test-renderer"
 
 import {
   copy,
+  fields,
   openScreen,
   pressIcon,
   pressText,
@@ -876,6 +877,149 @@ describe("MessagesDetailsScreen, the send's Idempotency-Key", () => {
         const sent = requests(session, "sendMessage")
         expect(sent).toHaveLength(2)
         expect(keyOf(sent[1])).not.toBe(keyOf(sent[0]))
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
+
+/*
+ * The in-app banner opens another chat by navigating to this screen with that
+ * chat's params, and React Navigation 7 reuses the open screen rather than
+ * pushing a new one. Nothing typed, picked or failed in the first chat may
+ * reach the second: least of all the failed send's Idempotency-Key, which
+ * would have the backend answer the second chat's send with the first
+ * chat's saved message.
+ */
+describe("MessagesDetailsScreen, switching to another chat in place", () => {
+  const OTHER_CHAT: ChatPreviewType = {
+    ...WITH_OFFER,
+    chat: { ...WITH_OFFER.chat, id: WITH_OFFER.chat.id + 1 },
+  }
+  const keyOf = (request: { args: unknown }) =>
+    (request.args as { headers?: Record<string, string> }).headers?.[
+      "Idempotency-Key"
+    ]
+  const urlOf = (request: { args: unknown }) =>
+    (request.args as { url: string }).url
+  /** The screen as the navigator renders it: its route and navigation. */
+  const screenRoute = (root: ReactTestInstance) => {
+    const found = root.findAll(
+      (n) =>
+        typeof n.type !== "string" &&
+        n.props.route?.name === "MessagesDetailsScreen" &&
+        typeof n.props.navigation?.navigate === "function"
+    )
+    expect(found.length).toBeGreaterThan(0)
+    return found[0].props as {
+      route: { key: string; params: { chatPreview: ChatPreviewType } }
+      navigation: { navigate: (name: string, params: object) => void }
+    }
+  }
+  /** What the banner does: navigate to the open screen with another chat. */
+  const switchTo = async (
+    session: Awaited<ReturnType<typeof open>>,
+    preview: ChatPreviewType
+  ) => {
+    const before = screenRoute(session.root)
+    await session.act(() => {
+      before.navigation.navigate("MessagesDetailsScreen", {
+        chatPreview: preview,
+      })
+    })
+    const after = screenRoute(session.root)
+    // The premise: the same route, its params swapped, not a new screen.
+    expect(after.route.key).toBe(before.route.key)
+    expect(after.route.params.chatPreview.chat.id).toBe(preview.chat.id)
+  }
+  const composerText = (root: ReactTestInstance) => {
+    const inputs = fields(root)[0].findAll(
+      (n) =>
+        (n.type as unknown) === "TextInput" &&
+        typeof n.props.onChangeText === "function"
+    )
+    expect(inputs).toHaveLength(1)
+    return inputs[0].props.value as string
+  }
+  /** The failed send's banner ("Failed to send — tap to dismiss"). */
+  const showsBanner = (root: ReactTestInstance, env: ParityEnv) =>
+    root.findAll(
+      (n) =>
+        typeof n.type === "string" &&
+        [n.props.children]
+          .flat()
+          .join("")
+          .includes(copy(env, "tap_to_dismiss"))
+    ).length > 0
+  const send = async (
+    session: Awaited<ReturnType<typeof open>>,
+    text: string
+  ) => {
+    await session.act(() => {
+      typeInto(session.root, 0, text)
+    })
+    await session.act(() => {
+      pressIcon(session.root, { icon: "svg:sendArrow" })
+    })
+  }
+
+  it.each(envs)(
+    "a failed send's text, its banner and its key stay with the first chat [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(
+        {
+          ...WITH_OFFER_CASE,
+          api: apiFor(WITH_OFFER, THREAD, { sendMessage: SERVER_ERROR }),
+        },
+        env
+      )
+      try {
+        await send(session, "On my way")
+        // The first chat has the text back, with the banner.
+        expect(composerText(session.root)).toBe("On my way")
+        expect(showsBanner(session.root, env)).toBe(true)
+
+        await switchTo(session, OTHER_CHAT)
+        expect(composerText(session.root)).toBe("")
+        expect(showsBanner(session.root, env)).toBe(false)
+
+        // The same words in the second chat are a new message with a new key.
+        await send(session, "On my way")
+        const sent = requests(session, "sendMessage")
+        expect(sent).toHaveLength(2)
+        expect(urlOf(sent[0])).toBe(`/chats/${WITH_OFFER.chat.id}/messages`)
+        expect(urlOf(sent[1])).toBe(`/chats/${OTHER_CHAT.chat.id}/messages`)
+        expect(keyOf(sent[1])).toBeDefined()
+        expect(keyOf(sent[1])).not.toBe(keyOf(sent[0]))
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "photos picked in the first chat are not sent in the second [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(WITH_OFFER_CASE, env, withCameraRoll)
+      try {
+        await session.act(() => {
+          plus(session.root)
+        }, 400)
+        await session.act(() => {
+          photoTile(session.root, PHOTOS[0]).props.onPress()
+        })
+
+        await switchTo(session, OTHER_CHAT)
+        await send(session, "Hello")
+        // A text send, not an upload of the first chat's photo.
+        expect(requests(session, "uploadFile")).toHaveLength(0)
+        const sent = requests(session, "sendMessage")
+        expect(sent).toHaveLength(1)
+        expect(urlOf(sent[0])).toBe(`/chats/${OTHER_CHAT.chat.id}/messages`)
+        expect(
+          (sent[0].args as { body: { files?: unknown } }).body.files
+        ).toBeUndefined()
       } finally {
         session.unmount()
       }

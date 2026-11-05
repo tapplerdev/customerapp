@@ -92,7 +92,7 @@ const COMPOSER_ANIM = LayoutAnimation.create(
 
 type Props = RootStackScreenProps<"MessagesDetailsScreen">
 
-const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
+const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
   const { chatPreview: chatPreviewParam } = route.params
   // The route param is a NAVIGATION-TIME SNAPSHOT — after the pro revises an
   // offer, the header badge kept the old rate because the screen never saw the
@@ -1396,5 +1396,21 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     </SafeAreaView>
   )
 }
+
+/**
+ * One conversation per mount. The in-app banner opens another chat by
+ * navigating here with that chat's params, and React Navigation 7 reuses the
+ * open screen instead of pushing a new one, so without the key everything the
+ * thread holds (the draft, picked photos, the failed-send banner, the failed
+ * send's Idempotency-Key) carried over into the next chat. The key gives each
+ * chat a fresh thread, and a send still in flight from the previous chat
+ * settles into the old, unmounted one rather than into this one.
+ */
+const MessagesDetailsScreen: React.FC<Props> = (props) => (
+  <MessagesDetailsThread
+    key={props.route.params.chatPreview.chat.id}
+    {...props}
+  />
+)
 
 export default MessagesDetailsScreen
