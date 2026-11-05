@@ -9,9 +9,36 @@ import {
   useMarkAllAsReadMutation,
 } from "services/api"
 import { WebSocketService } from "services/WebSocketService"
-import { applyCounterpartLastSeen, setActiveChat } from "services/chatCache"
+import {
+  applyCounterpartLastSeen,
+  insertOwnMessage,
+  setActiveChat,
+} from "services/chatCache"
 
 const POLL_INTERVAL = 10000 // 10 seconds
+
+/**
+ * The first page as the cache now has it, plus anything on screen that it
+ * doesn't hold: a send still in flight (negative id) or a message newer than
+ * the page's head. The cache's copy wins for a message both hold (it carries
+ * the latest readAt). Newest first, as the list draws it.
+ */
+export const mergeFirstPage = (
+  page: ChatMessageType[],
+  onScreen: ChatMessageType[]
+): ChatMessageType[] => {
+  const inPage = new Set(page.map((m) => m.id))
+  const parsedHead = page.length ? Date.parse(page[0].createdAt ?? "") : -Infinity
+  // A head with no readable time keeps only the sends in flight.
+  const headAt = Number.isNaN(parsedHead) ? Infinity : parsedHead
+  const extra = onScreen.filter(
+    (m) =>
+      !inPage.has(m.id) &&
+      (m.id < 0 || !(Date.parse(m.createdAt ?? "") <= headAt))
+  )
+  if (!extra.length) return page
+  return [...extra, ...page]
+}
 
 // Slide-up for message arrival: the new bubble fades in at the bottom while
 // the existing rows get pushed up smoothly (Airbnb/iMessage feel). Applied to
@@ -32,6 +59,21 @@ const useMessagePagination = (chatId: number) => {
   const [allMessages, setAllMessages] = useState<ChatMessageType[]>([])
   const [hasMore, setHasMore] = useState(true)
   const isLoadingRef = useRef(false)
+
+  // A new chat in the same screen (the in-app banner navigates to the open
+  // thread with another chat's params, which reuses it) starts from nothing.
+  // The page merge keeps what's on screen that the page lacks, so without
+  // this one chat's messages, a send in flight included, would carry over
+  // into the next. Reset while rendering, React's pattern for state that
+  // follows a prop, so the old list never draws under the new chat.
+  const [shownChatId, setShownChatId] = useState(chatId)
+  if (shownChatId !== chatId) {
+    setShownChatId(chatId)
+    setAllMessages([])
+    setPage(1)
+    setHasMore(true)
+    isLoadingRef.current = false
+  }
 
   // Track WS connectivity so the poll is only the FALLBACK when the socket is
   // down — while connected, useChatSocket delivers messages instantly and the
@@ -102,7 +144,10 @@ const useMessagePagination = (chatId: number) => {
         ) {
           scheduleLayoutAnimation(MESSAGE_ANIM)
         }
-        setAllMessages(next)
+        // Merged, not replaced: a bubble that isn't in the page yet (a send
+        // still waiting for the server) has to survive the pro's reply or a
+        // read receipt landing in the page meanwhile.
+        setAllMessages((prev) => mergeFirstPage(next, prev))
       } else {
         setAllMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id))
@@ -183,7 +228,10 @@ const useMessagePagination = (chatId: number) => {
       }
       return prev.map((m) => m.id === optimisticId ? realMsg : m)
     })
-  }, [])
+    // The page holds it from now on, so read receipts reach it and later
+    // writes to the page keep it.
+    insertOwnMessage(dispatch, store.getState, chatId, realMsg)
+  }, [dispatch, store, chatId])
 
   // Drop an optimistic bubble that failed to send (e.g. blocked by moderation).
   // Animated so the neighbours settle back down instead of snapping.

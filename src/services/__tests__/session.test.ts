@@ -158,11 +158,17 @@ describe("signOut", () => {
   })
 
   it("leaves a different account alone if one signed in mid-flight", async () => {
+    // Account 8 signs in while step 1 is out: the store now holds ITS tokens,
+    // so step 2 would end 8's session on the server (it used to: this test
+    // expected a logout here). No logout, and no local sign-out either.
     mockRemove.mockImplementation(async () => {
       mockState.auth.user = { id: 8 }
+      mockState.auth.token = "jwt-of-8"
+      mockState.auth.refreshToken = "refresh-of-8"
     })
     await signOut()
-    expect(mockOrder).toEqual(["remove", "logout", "deleteToken"])
+    expect(mockOrder).toEqual(["remove", "deleteToken"])
+    expect(dispatchedTypes()).not.toContain("logout")
   })
 
   it("runs once when called twice before the first finishes, then again", async () => {

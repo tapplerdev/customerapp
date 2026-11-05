@@ -54,6 +54,12 @@ function markApplied(id: number): boolean {
   return true
 }
 
+/** The chat's first-page entries: where live writes land (deeper pages are history). */
+const firstPageArgs = (getState: GetState, chatId: number) =>
+  (api.util.selectCachedArgsForQuery(getState(), "getChatMessages") as any[]).filter(
+    (arg) => arg?.chatId === chatId && (arg?.page ?? 1) === 1
+  )
+
 // --- Mutations ---------------------------------------------------------------
 
 /**
@@ -100,8 +106,7 @@ export function applyIncomingMessage(
   //    the echo would render the same message twice. The chats-list preview
   //    below still updates for own messages.
   if (message.ownerType !== OWN_OWNER_TYPE) {
-    for (const arg of api.util.selectCachedArgsForQuery(getState(), "getChatMessages") as any[]) {
-      if (arg?.chatId !== chatId || (arg?.page ?? 1) !== 1) continue
+    for (const arg of firstPageArgs(getState, chatId)) {
       dispatch(
         api.util.updateQueryData("getChatMessages", arg, (draft: any) => {
           if (!draft?.data) return
@@ -167,6 +172,72 @@ export function applyIncomingMessage(
   }
 
   return known
+}
+
+/**
+ * The customer's own message, once the server has answered the send: into
+ * the chat's first page. Without it the sent message lived only in the open
+ * screen's state, so the next write to the page (the pro's reply, a read
+ * receipt) replaced the list without it, and a receipt had nothing to land on.
+ * The socket echo of the same message is still skipped in applyIncomingMessage;
+ * this runs once the send's 200 is in, keyed by the server's id, so the two
+ * never show the message twice.
+ */
+export function insertOwnMessage(
+  dispatch: Dispatch,
+  getState: GetState,
+  chatId: number,
+  message: ChatMessageType | undefined
+): void {
+  if (!message?.id || message.id < 0) return
+  for (const arg of firstPageArgs(getState, chatId)) {
+    dispatch(
+      api.util.updateQueryData("getChatMessages", arg, (draft: any) => {
+        if (!draft?.data) return
+        if (draft.data.some((m: any) => m.id === message.id)) return
+        // Newest first. A pro message that landed while the send was in
+        // flight can be newer than this one, so it isn't always the head.
+        const at = Date.parse(message.createdAt ?? "")
+        const index = draft.data.findIndex(
+          (m: any) => !(Date.parse(m.createdAt ?? "") > at)
+        )
+        if (index === -1) draft.data.push(message)
+        else draft.data.splice(index, 0, message)
+      })
+    )
+  }
+}
+
+/**
+ * Read receipts (`message.updatedMany`): the pro read the customer's
+ * messages, so their readAt changes and nothing else does. Written into every
+ * cached page that holds them; no refetch. Mirrors proapp's applyReadReceipts.
+ */
+export function applyReadReceipts(
+  dispatch: Dispatch,
+  getState: GetState,
+  receipts: ReadonlyArray<{ id?: number; readAt?: string | null }> | undefined
+): void {
+  // Socket payloads are untyped at this boundary; a bad body must not throw
+  // out of the socket listener.
+  if (!Array.isArray(receipts) || !receipts.length) return
+  const readAtById = new Map<number, string>()
+  for (const receipt of receipts) {
+    if (typeof receipt?.id === "number" && receipt.readAt) {
+      readAtById.set(receipt.id, receipt.readAt)
+    }
+  }
+  if (!readAtById.size) return
+  for (const arg of api.util.selectCachedArgsForQuery(getState(), "getChatMessages")) {
+    dispatch(
+      api.util.updateQueryData("getChatMessages", arg, (draft: any) => {
+        draft?.data?.forEach((m: any) => {
+          const readAt = readAtById.get(m.id)
+          if (readAt && m.readAt !== readAt) m.readAt = readAt
+        })
+      })
+    )
+  }
 }
 
 /**

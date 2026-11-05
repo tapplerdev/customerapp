@@ -3,7 +3,11 @@ import { AppState } from "react-native"
 import { useDispatch, useStore } from "react-redux"
 
 import { api } from "services/api"
-import { applyIncomingMessage, getActiveChat } from "services/chatCache"
+import {
+  applyIncomingMessage,
+  applyReadReceipts,
+  getActiveChat,
+} from "services/chatCache"
 import { messageBannerEventBus } from "events/messageBannerEventBus"
 import { WebSocketService } from "services/WebSocketService"
 import { RootState, useTypedSelector } from "store"
@@ -105,11 +109,23 @@ export const useChatSocket = () => {
             messageBannerEventBus.emit("message:new", { chatPreview, body: wsMessage.text })
           }
         }
+      } else if (data.eventName === "message.updatedMany") {
+        // Read receipts. The batch goes to both sides of the chat: one of
+        // only the pro's messages is the echo of this customer's own
+        // mark-as-read, with nothing to show here, so it is skipped (as
+        // proapp skips its mirror). Otherwise the pro read the customer's
+        // messages, and their readAt is written into the cached pages.
+        // Nothing else refreshes it while the socket is up: the open
+        // thread's poll runs only with the socket down.
+        const batch = data.args?.[0]?.body
+        const isOwnReadEcho =
+          Array.isArray(batch) &&
+          batch.length > 0 &&
+          batch.every((m: any) => m?.ownerType === "pro")
+        if (Array.isArray(batch) && !isOwnReadEcho) {
+          applyReadReceipts(dispatch, store.getState, batch)
+        }
       }
-      // message.updatedMany (read receipts on the customer's own messages) is
-      // intentionally not handled here: the customerapp's getChatMessages
-      // carries no cache tag, and the in-chat fallback poll / focus refetch
-      // already refresh read state for the open thread.
     }
 
     WebSocketService.on("event", handler)

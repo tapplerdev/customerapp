@@ -22,8 +22,11 @@ const useAttachments = (params: {
   chatId: number
   onMessageSent: (msg: ChatMessageType) => void
   onMessageReplaced?: (optimisticId: number, realMsg: ChatMessageType) => void
+  /** The upload or the send failed: take the bubble back down. */
+  onMessageRemoved?: (optimisticId: number) => void
 }) => {
-  const { maxCount, chatId, onMessageSent, onMessageReplaced } = params
+  const { maxCount, chatId, onMessageSent, onMessageReplaced, onMessageRemoved } =
+    params
 
   const [pending, setPending] = useState<AttachmentFile[]>([])
   const [recentPhotos, setRecentPhotos] = useState<{ uri: string }[]>([])
@@ -182,8 +185,14 @@ const useAttachments = (params: {
         .map((f: any) => f.url720 || f.url)
         .filter((url: string) => url?.length > 0) ?? []
 
+      // A warm-up only: the send already went, so a preload that throws must
+      // not reach the catch below and take a delivered message's bubble down.
       if (imageUrls.length > 0) {
-        FastImage.preload(imageUrls.map((uri: string) => ({ uri })))
+        try {
+          FastImage.preload(imageUrls.map((uri: string) => ({ uri })))
+        } catch {
+          // nothing to undo
+        }
       }
 
       // 6. Replace optimistic with real message
@@ -193,11 +202,15 @@ const useAttachments = (params: {
       }
     } catch (e) {
       uploadingIdsRef.current.delete(optimisticId)
+      // A failed send isn't in the thread: the text and location paths
+      // already take their bubble down, and the screen keeps a bubble that
+      // isn't in the page yet, so this one would otherwise stay for good.
+      onMessageRemoved?.(optimisticId)
       throw e
     } finally {
       setIsUploading(false)
     }
-  }, [pending, chatId, sendMessage, uploadFile, onMessageSent, onMessageReplaced])
+  }, [pending, chatId, sendMessage, uploadFile, onMessageSent, onMessageReplaced, onMessageRemoved])
 
   const isMessageUploading = useCallback((messageId: number) => {
     return uploadingIdsRef.current.has(messageId)
