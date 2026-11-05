@@ -64,45 +64,83 @@ export const PROS_LIST_PER_PAGE = 100
 let isRefreshing = false
 let refreshPromise: Promise<any> | null = null
 
+// Request logging is for development only. A release build's console reaches
+// the device log, and these lines carry response bodies (names, phone numbers,
+// addresses) and the auth state. The arguments are built inside the callback,
+// so a release build doesn't serialise every response just to drop it.
+const devLog = (line: () => unknown[]) => {
+  if (__DEV__) console.log(...line())
+}
+
+// Whether the store still holds the account a request was sent as. Logout
+// only clears the store, so a late answer for account A can land after B has
+// signed in, and nothing it carries may be applied to B's session.
+const stillSignedInAs = (apiBase: { getState: () => unknown }, userId?: number) => {
+  const { auth } = apiBase.getState() as RootState
+  return !!auth.token && auth.user?.id === userId
+}
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, apiBase, extraOptions) => {
   const url = typeof args === "string" ? args : args.url
-  console.log(`[API] ${typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"} ${API_URL}${url}`)
+  devLog(() => [`[API] ${typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"} ${API_URL}${url}`])
+
+  // The token and account this request goes out with, compared with the
+  // store when a 401 comes back.
+  const sentState = apiBase.getState() as RootState
+  const sentWith = sentState.auth.token
+  const sentBy = sentState.auth.user?.id
 
   const result = await baseQuery(args, apiBase, extraOptions)
 
   if (result?.error) {
-    console.log(`[API] ❌ Error:`, result.error.status, JSON.stringify(result.error.data || result.error).substring(0, 200))
+    devLog(() => [`[API] ❌ Error:`, result.error!.status, JSON.stringify(result.error!.data || result.error).substring(0, 200)])
   } else {
-    const dataPreview = JSON.stringify(result.data).substring(0, 100)
-    console.log(`[API] ✅ Success: ${dataPreview}...`)
+    devLog(() => [`[API] ✅ Success: ${JSON.stringify(result.data).substring(0, 100)}...`])
   }
 
   if (result?.error?.status !== 401) {
     return result
   }
 
-  console.log(`[API] 🔒 Got 401 for ${url}`)
+  devLog(() => [`[API] 🔒 Got 401 for ${url}`])
 
-  const state = apiBase.getState() as RootState
-  const { refreshToken, isAuth, token } = state.auth
-
-  console.log(`[API] 🔒 Auth state: isAuth=${isAuth}, hasToken=${!!token}, hasRefreshToken=${!!refreshToken}`)
-
-  if (!refreshToken || !isAuth) {
-    console.log(`[API] 🔒 No refresh token or not auth — returning 401 silently`)
+  // Decide from the store as it is NOW, not as it was when the request went
+  // out. Signed out, or a DIFFERENT account signed in meanwhile: hand the 401
+  // back. Refreshing would use B's refresh token to replay A's request as B,
+  // and a refused refresh would sign B out. (A request sent with no token is
+  // a guest's, and its 401 has nothing to refresh either.)
+  if (!sentWith || !stillSignedInAs(apiBase, sentBy)) {
+    devLog(() => [`[API] 🔒 Sent by another session — returning the 401`])
     return result
   }
 
-  console.log(`[API] 🔒 Attempting token refresh...`)
+  const { refreshToken, isAuth, token } = (apiBase.getState() as RootState).auth
+
+  // Another request already refreshed while this one was out: the new token
+  // is in the store, so a plain retry is all this needs. A second refresh
+  // would only spend the rotated refresh token again.
+  if (token !== sentWith) {
+    devLog(() => [`[API] 🔒 Token already refreshed — retrying`])
+    return await baseQuery(args, apiBase, extraOptions)
+  }
+
+  if (!refreshToken || !isAuth) {
+    devLog(() => [`[API] 🔒 No refresh token or not auth — returning 401 silently`])
+    return result
+  }
+
+  devLog(() => [`[API] 🔒 Attempting token refresh...`])
 
   try {
     // If another request is already refreshing, wait for it
     if (isRefreshing && refreshPromise) {
       await refreshPromise
+      // The refresh can settle after a sign-out or another sign-in.
+      if (!stillSignedInAs(apiBase, sentBy)) return result
       return await baseQuery(args, apiBase, extraOptions)
     }
 
@@ -119,9 +157,23 @@ const baseQueryWithReauth: BaseQueryFn<
 
     const refreshResult = await refreshPromise
 
+    // The session changed while the refresh was out: its answer belongs to
+    // the old one, so neither store its tokens nor sign out on its refusal.
+    // That covers another account signing in, and the same account signing
+    // out and back in (a fresh pair the old refresh must not touch). Only
+    // this refresh or a sign-in moves the token off `sentWith` here.
+    if (
+      !stillSignedInAs(apiBase, sentBy) ||
+      (apiBase.getState() as RootState).auth.token !== sentWith
+    ) {
+      isRefreshing = false
+      refreshPromise = null
+      return result
+    }
+
     if (refreshResult.data) {
       const data = refreshResult.data as { token: string; refreshToken: string }
-      console.log(`[API] 🔒 Token refresh SUCCESS — retrying original request`)
+      devLog(() => [`[API] 🔒 Token refresh SUCCESS — retrying original request`])
       apiBase.dispatch(setTokens({ token: data.token, refreshToken: data.refreshToken }))
 
       isRefreshing = false
@@ -130,7 +182,7 @@ const baseQueryWithReauth: BaseQueryFn<
       // Retry original request with new token
       return await baseQuery(args, apiBase, extraOptions)
     } else {
-      console.log(`[API] 🔒 Token refresh FAILED:`, JSON.stringify(refreshResult.error?.data || refreshResult.error).substring(0, 200))
+      devLog(() => [`[API] 🔒 Token refresh FAILED:`, JSON.stringify(refreshResult.error?.data || refreshResult.error).substring(0, 200)])
       isRefreshing = false
       refreshPromise = null
       // Only a definitive rejection from a live server means the session is
@@ -145,7 +197,7 @@ const baseQueryWithReauth: BaseQueryFn<
         refreshStatus === 403 ||
         refreshStatus === 404
       ) {
-        console.log(`[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`)
+        devLog(() => [`[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`])
         // Kill the push token at Firebase too (services/session does the same,
         // plus the backend call this dead session cannot make): a signed-out
         // phone must not keep receiving the account's pushes.
@@ -155,14 +207,14 @@ const baseQueryWithReauth: BaseQueryFn<
         apiBase.dispatch(logout())
         apiBase.dispatch(api.util.resetApiState())
       } else {
-        console.log(`[API] 🔒 Refresh unreachable (${String(refreshStatus)}) — keeping session`)
+        devLog(() => [`[API] 🔒 Refresh unreachable (${String(refreshStatus)}) — keeping session`])
       }
       return result
     }
   } catch (e: any) {
     // Exceptions here are code/network failures, never an auth verdict —
     // keep the session.
-    console.log(`[API] 🔒 Token refresh EXCEPTION (keeping session):`, e?.message || e)
+    devLog(() => [`[API] 🔒 Token refresh EXCEPTION (keeping session):`, e?.message || e])
     isRefreshing = false
     refreshPromise = null
     return result
