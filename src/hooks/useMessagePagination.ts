@@ -28,7 +28,9 @@ export const mergeFirstPage = (
   onScreen: ChatMessageType[]
 ): ChatMessageType[] => {
   const inPage = new Set(page.map((m) => m.id))
-  const headAt = page.length ? Date.parse(page[0].createdAt ?? "") : -Infinity
+  const parsedHead = page.length ? Date.parse(page[0].createdAt ?? "") : -Infinity
+  // A head with no readable time keeps only the sends in flight.
+  const headAt = Number.isNaN(parsedHead) ? Infinity : parsedHead
   const extra = onScreen.filter(
     (m) =>
       !inPage.has(m.id) &&
@@ -57,6 +59,21 @@ const useMessagePagination = (chatId: number) => {
   const [allMessages, setAllMessages] = useState<ChatMessageType[]>([])
   const [hasMore, setHasMore] = useState(true)
   const isLoadingRef = useRef(false)
+
+  // A new chat in the same screen (the in-app banner navigates to the open
+  // thread with another chat's params, which reuses it) starts from nothing.
+  // The page merge keeps what's on screen that the page lacks, so without
+  // this one chat's messages, a send in flight included, would carry over
+  // into the next. Reset while rendering, React's pattern for state that
+  // follows a prop, so the old list never draws under the new chat.
+  const [shownChatId, setShownChatId] = useState(chatId)
+  if (shownChatId !== chatId) {
+    setShownChatId(chatId)
+    setAllMessages([])
+    setPage(1)
+    setHasMore(true)
+    isLoadingRef.current = false
+  }
 
   // Track WS connectivity so the poll is only the FALLBACK when the socket is
   // down — while connected, useChatSocket delivers messages instantly and the

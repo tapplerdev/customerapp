@@ -193,6 +193,7 @@ const MessagesDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     chatId: context.chatId,
     onMessageSent: pagination.addOptimisticMessage,
     onMessageReplaced: pagination.replaceOptimisticMessage,
+    onMessageRemoved: pagination.removeOptimisticMessage,
   })
 
   const [messageText, setMessageText] = useState("")

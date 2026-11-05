@@ -73,15 +73,17 @@ const msg = (id: number, ownerType: Msg["ownerType"], extra: Partial<Msg> = {}):
 
 const READ_AT = at(30)
 
-/** Newest first, as the backend pages them. */
-let page1: Msg[] = []
+/** Each chat's first page, newest first, as the backend pages them. */
+let pages: Record<number, Msg[]> = {}
 
 beforeEach(() => {
-  page1 = [msg(2, "customer"), msg(1, "pro")]
+  pages = { [CHAT_ID]: [msg(2, "customer"), msg(1, "pro")] }
   ;(global as any).fetch = jest.fn(async (input: any) => {
     const url = typeof input === "string" ? input : input.url
-    const body = /\/chats\/\d+\/messages/.test(url)
-      ? { data: page1, meta: { page: 1, perPage: 20, total: page1.length } }
+    const chat = Number(url.match(/\/chats\/(\d+)\/messages/)?.[1])
+    const page = pages[chat] ?? []
+    const body = chat
+      ? { data: page, meta: { page: 1, perPage: 20, total: page.length } }
       : {}
     return new Response(JSON.stringify(body), {
       status: 200,
@@ -122,18 +124,19 @@ const open = async () => {
   const useMessagePagination = require("hooks/useMessagePagination").default
   const { useChatSocket } = require("hooks/useChatSocket")
   const latest: { current: any } = { current: undefined }
-  const Harness = () => {
+  const Harness = ({ chatId }: { chatId: number }) => {
     useChatSocket()
-    latest.current = useMessagePagination(CHAT_ID)
+    latest.current = useMessagePagination(chatId)
     return null
   }
   let renderer: TestRenderer.ReactTestRenderer | undefined
+  const draw = (chatId: number) => (
+    <Provider store={store}>
+      <Harness chatId={chatId} />
+    </Provider>
+  )
   await act(async () => {
-    renderer = TestRenderer.create(
-      <Provider store={store}>
-        <Harness />
-      </Provider>
-    )
+    renderer = TestRenderer.create(draw(CHAT_ID))
   })
   await flush()
   cleanup = () => {
@@ -165,6 +168,13 @@ const open = async () => {
     proReplies: (id: number) =>
       socketEvent("message.created", { ...msg(id, "pro"), chatId: CHAT_ID }),
     receipts: (batch: Partial<Msg>[]) => socketEvent("message.updatedMany", batch),
+    /** The same screen handed another chat (the in-app banner does this). */
+    switchTo: async (chatId: number) => {
+      await act(async () => {
+        renderer?.update(draw(chatId))
+      })
+      await flush()
+    },
   }
 }
 
@@ -224,6 +234,18 @@ describe("an open conversation", () => {
     await chat.receipts([{ ...msg(1, "pro"), readAt: READ_AT }])
 
     expect(chat.readAt(1)).toBeNull()
+  })
+
+  it("starts the next chat from its own page when the screen switches chats", async () => {
+    pages[8] = [msg(40, "pro"), msg(39, "customer")]
+    const chat = await open()
+    await chat.send(-45)
+    await chat.proReplies(50)
+    expect(chat.ids()).toEqual([-45, 50, 2, 1])
+
+    await chat.switchTo(8)
+
+    expect(chat.ids()).toEqual([40, 39])
   })
 
   it("survives a receipt body that isn't a list", async () => {

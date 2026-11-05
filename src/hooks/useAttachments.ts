@@ -22,8 +22,11 @@ const useAttachments = (params: {
   chatId: number
   onMessageSent: (msg: ChatMessageType) => void
   onMessageReplaced?: (optimisticId: number, realMsg: ChatMessageType) => void
+  /** The upload or the send failed: take the bubble back down. */
+  onMessageRemoved?: (optimisticId: number) => void
 }) => {
-  const { maxCount, chatId, onMessageSent, onMessageReplaced } = params
+  const { maxCount, chatId, onMessageSent, onMessageReplaced, onMessageRemoved } =
+    params
 
   const [pending, setPending] = useState<AttachmentFile[]>([])
   const [recentPhotos, setRecentPhotos] = useState<{ uri: string }[]>([])
@@ -193,11 +196,15 @@ const useAttachments = (params: {
       }
     } catch (e) {
       uploadingIdsRef.current.delete(optimisticId)
+      // A failed send isn't in the thread: the text and location paths
+      // already take their bubble down, and the screen keeps a bubble that
+      // isn't in the page yet, so this one would otherwise stay for good.
+      onMessageRemoved?.(optimisticId)
       throw e
     } finally {
       setIsUploading(false)
     }
-  }, [pending, chatId, sendMessage, uploadFile, onMessageSent, onMessageReplaced])
+  }, [pending, chatId, sendMessage, uploadFile, onMessageSent, onMessageReplaced, onMessageRemoved])
 
   const isMessageUploading = useCallback((messageId: number) => {
     return uploadingIdsRef.current.has(messageId)
