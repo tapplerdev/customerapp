@@ -63,13 +63,7 @@ const clsx = (...inputs: unknown[]): string => {
 }
 
 export type PropKind =
-  | "text"
-  | "fn"
-  | "class"
-  | "bool"
-  | "node"
-  | "value"
-  | "any"
+  "text" | "fn" | "class" | "bool" | "node" | "value" | "any"
 
 export type ElementSpec = {
   $el: string

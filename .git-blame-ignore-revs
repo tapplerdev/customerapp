@@ -4,3 +4,6 @@
 
 # style: format with Prettier (no code changes)
 34d559f29bac629a4e399002848f00020fa96fc1
+
+# style: re-wrap with Prettier 3.9.10 (no code changes)
+93060c6189c97aec6fe9906b410f33ea9f63936a

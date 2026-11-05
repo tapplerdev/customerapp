@@ -487,8 +487,7 @@ describe("RequestSummaryScreen: the Idempotency-Key", () => {
 describe("RequestSummaryScreen: an earlier request answered for a changed one", () => {
   const replayingFirst = () => {
     let first:
-      | { body: { prosIds: number[]; serviceCategoryId: number } }
-      | undefined
+      { body: { prosIds: number[]; serviceCategoryId: number } } | undefined
     return (args: unknown) => {
       if (first === undefined) {
         first = args as typeof first

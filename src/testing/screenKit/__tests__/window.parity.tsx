@@ -45,8 +45,7 @@ const style = (tree: HostNode | null, testID: string) => {
     return node.children.map(find).find(Boolean)
   }
   return (tree ? find(tree)?.props.style : undefined) as
-    | Record<string, unknown>
-    | undefined
+    Record<string, unknown> | undefined
 }
 
 // Platform by platform, and back to 390 after 402: each switch is a fresh

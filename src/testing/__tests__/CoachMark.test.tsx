@@ -158,8 +158,7 @@ const mount = (
       }),
     modal: () =>
       renderer.root.findAll((n) => String(n.type) === "Modal")[0] as
-        | Node
-        | undefined,
+        Node | undefined,
   }
 }
 
