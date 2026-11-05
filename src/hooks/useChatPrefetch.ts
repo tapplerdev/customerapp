@@ -30,8 +30,8 @@ const useChatPrefetch = (chats: ChatPreviewType[]) => {
       const promise = dispatch(
         api.endpoints.getChatMessages.initiate(
           { chatId, page: 1, perPage: 20 },
-          { forceRefetch: false },
-        ),
+          { forceRefetch: false }
+        )
       ) as any
 
       // After messages load, preload image thumbnails

@@ -18,7 +18,10 @@ import { AppKeyboardAwareScrollView } from "components/scroll"
 import { Text, Button, a } from "@tappler/shared/src/ds"
 import { gateSignInScreenStyles } from "./styles"
 
-const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navigation, parentNav }) => {
+const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({
+  navigation,
+  parentNav,
+}) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const dispatch = useDispatch()
@@ -45,7 +48,9 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
         rememberMe: true,
       }).unwrap()
 
-      dispatch(setTokens({ token: authRes.token, refreshToken: authRes.refreshToken }))
+      dispatch(
+        setTokens({ token: authRes.token, refreshToken: authRes.refreshToken })
+      )
       await getCustomerMe().unwrap()
 
       // Dismiss the auth gate modal — returns to RequestSummaryScreen
@@ -60,7 +65,9 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
         setErrorMessage(failure)
       } else if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
-        const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
+        const firstMsg = Array.isArray(firstErrors)
+          ? firstErrors[0]
+          : firstErrors
         if (typeof firstMsg === "string") {
           if (firstMsg.includes("Password does not match")) {
             setErrorMessage(t("incorrect_password"))
@@ -82,9 +89,16 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
   }
 
   return (
-    <SafeAreaView style={[a.flex_1, gateSignInScreenStyles.safeArea]} edges={[]}>
+    <SafeAreaView
+      style={[a.flex_1, gateSignInScreenStyles.safeArea]}
+      edges={[]}
+    >
       <AppKeyboardAwareScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 27, paddingHorizontal: 19 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 27,
+          paddingHorizontal: 19,
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -139,7 +153,15 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
                   onIconPress={() => setPasswordVisible(!isPasswordVisible)}
                   secureTextEntry={isPasswordVisible}
                   autoComplete="off"
-                  Icon={<HideIcon fill={!isPasswordVisible ? colors.black : colors.greyPlaceholder} />}
+                  Icon={
+                    <HideIcon
+                      fill={
+                        !isPasswordVisible
+                          ? colors.black
+                          : colors.greyPlaceholder
+                      }
+                    />
+                  }
                 />
               )}
               name="password"
@@ -159,7 +181,11 @@ const GateSignInScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navig
           </DmView>
         </DmView>
       </AppKeyboardAwareScrollView>
-      <ErrorModal isVisible={isErrorModalVisible} onClose={() => setErrorModalVisible(false)} descr={errorMessage || t("invalid_credentials")} />
+      <ErrorModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setErrorModalVisible(false)}
+        descr={errorMessage || t("invalid_credentials")}
+      />
     </SafeAreaView>
   )
 }

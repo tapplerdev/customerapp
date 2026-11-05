@@ -60,7 +60,12 @@ const EGYPT = {
   distance: 0,
   mapView: { west: 31.2, south: 30, east: 31.3, north: 30.1 },
 }
-const SECOND = { ...EGYPT, title: "Nile Corniche, Maadi", id: "here:af:2", position: { lat: 29.96, lng: 31.25 } }
+const SECOND = {
+  ...EGYPT,
+  title: "Nile Corniche, Maadi",
+  id: "here:af:2",
+  position: { lat: 29.96, lng: 31.25 },
+}
 
 type Here = { reverse?: "loading" | unknown[]; search?: "loading" | unknown[] }
 const hereFixtures =
@@ -91,19 +96,38 @@ const optionsFor = (
 })
 
 const POSITION = { lat: 30.0444, lng: 31.2357 }
-const REGION = { latitude: 30.05, longitude: 31.24, latitudeDelta: 0.005, longitudeDelta: 0.0025 }
+const REGION = {
+  latitude: 30.05,
+  longitude: 31.24,
+  latitudeDelta: 0.005,
+  longitudeDelta: 0.0025,
+}
 
-const type = (text: string): Step => (root) => typeInto(root, 0, text)
+const type =
+  (text: string): Step =>
+  (root) =>
+    typeInto(root, 0, text)
 
 describe("SearchView", () => {
-  const props = () => ({ onClose: () => undefined, onLocationSelect: () => undefined })
+  const props = () => ({
+    onClose: () => undefined,
+    onLocationSelect: () => undefined,
+  })
   type Case = { label: string; here?: Here; steps?: Step[] }
   const CASES: Case[] = [
     { label: "as opened: use current location" },
     { label: "two letters typed (a spinner)", steps: [type("Ta")] },
-    { label: "results pending", here: { search: "loading" }, steps: [type("Tahrir Sq")] },
+    {
+      label: "results pending",
+      here: { search: "loading" },
+      steps: [type("Tahrir Sq")],
+    },
     { label: "two results", steps: [type("Tahrir Sq"), wait(700)] },
-    { label: "nothing found", here: { search: [] }, steps: [type("Zzzz Qqqq"), wait(700)] },
+    {
+      label: "nothing found",
+      here: { search: [] },
+      steps: [type("Zzzz Qqqq"), wait(700)],
+    },
   ]
   it.each(rowsByPlatform(CASES, PARITY_MATRIX))(
     "$label [$env.language $env.platform]",
@@ -122,7 +146,12 @@ describe("SearchView", () => {
       const onLocationSelect = jest.fn()
       const session = await openScreen(
         SEARCH,
-        optionsFor(env, { onClose, onLocationSelect }, {}, { latitude: 30.06, longitude: 31.22 })
+        optionsFor(
+          env,
+          { onClose, onLocationSelect },
+          {},
+          { latitude: 30.06, longitude: 31.22 }
+        )
       )
       try {
         await session.act(() => {
@@ -159,16 +188,29 @@ describe("MapPickerView", () => {
     onClose: () => undefined,
     onSelectedAddress: () => undefined,
   })
-  const confirm: Step = (root, env) => pressTitled(root, copy(env, "confirm_my_location"))
-  type Case = { label: string; position?: object | null; here?: Here; steps?: Step[] }
+  const confirm: Step = (root, env) =>
+    pressTitled(root, copy(env, "confirm_my_location"))
+  type Case = {
+    label: string
+    position?: object | null
+    here?: Here
+    steps?: Step[]
+  }
   const CASES: Case[] = [
     { label: "as opened: the pin's hint" },
     { label: "no position yet: only Confirm", position: null },
     {
       label: "the map settled: the hint goes",
-      steps: [(root) => fireHost(root, "MapView", "onRegionChangeComplete", [REGION, {}])],
+      steps: [
+        (root) =>
+          fireHost(root, "MapView", "onRegionChangeComplete", [REGION, {}]),
+      ],
     },
-    { label: "confirm pending", here: { reverse: "loading" }, steps: [confirm] },
+    {
+      label: "confirm pending",
+      here: { reverse: "loading" },
+      steps: [confirm],
+    },
   ]
   it.each(rowsByPlatform(CASES, PARITY_MATRIX))(
     "$label [$env.language $env.platform]",
@@ -205,7 +247,8 @@ describe("MapPickerView", () => {
         })
         expect(onClose).toHaveBeenCalledTimes(1)
         const before = JSON.stringify(session.tree())
-        const Geolocation = require("@react-native-community/geolocation").default
+        const Geolocation =
+          require("@react-native-community/geolocation").default
         const asked = jest.spyOn(Geolocation, "getCurrentPosition")
         await session.act(() => {
           pressIcon(session.root, { icon: "svg:my-location-red" })

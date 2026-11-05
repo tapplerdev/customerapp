@@ -41,12 +41,19 @@ const load = () => require("../AuthWelcomeScreen")
 const FRESH = freshInstallState()
 const PICKED = {
   ...FRESH,
-  state: { auth: { ...FRESH.state.auth, hasPickedLanguage: true, guestLocation: GUEST_LOCATION } },
+  state: {
+    auth: {
+      ...FRESH.state.auth,
+      hasPickedLanguage: true,
+      guestLocation: GUEST_LOCATION,
+    },
+  },
 }
 // Button's own listed deltas on its root: ActionBtn before, Button after.
 const ALLOW: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
-const toggle: Step = (root, env) => pressText(root, env.language === "ar" ? "English" : "عربي")
+const toggle: Step = (root, env) =>
+  pressText(root, env.language === "ar" ? "English" : "عربي")
 
 type Case = {
   state: string
@@ -57,76 +64,123 @@ type Case = {
 
 const CASES: Case[] = [
   { state: "a fresh install", options: FRESH, allow: ALLOW },
-  { state: "a location picked (the back chevron, create account)", options: PICKED, allow: ALLOW },
-  { state: "the language toggled: the loading overlay", options: FRESH, steps: [toggle] },
+  {
+    state: "a location picked (the back chevron, create account)",
+    options: PICKED,
+    allow: ALLOW,
+  },
+  {
+    state: "the language toggled: the loading overlay",
+    options: FRESH,
+    steps: [toggle],
+  },
 ]
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
 describe("AuthWelcomeScreen, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, options, steps, allow, env }) => {
-    const tree = await treeAfter(
-      load,
-      { ...options, lang: env.language, platform: env.platform, route: { name: "AuthWelcomeScreen" } },
-      env,
-      steps
-    )
-    expectParity(parityName(state, env), tree, allow ? { allow } : undefined)
-  })
-})
-
-describe.each(PARITY_MATRIX)("AuthWelcomeScreen presses [$language $platform]", (env: ParityEnv) => {
-  const open = (options: object) =>
-    openScreen(load, {
-      ...options,
-      lang: env.language,
-      platform: env.platform,
-      route: { name: "AuthWelcomeScreen" },
-    } as RenderScreenOptions)
-  type Session = Awaited<ReturnType<typeof open>>
-  const act = (session: Session, press: () => void) => session.act(() => { press() })
-  const navigated = (session: Session) =>
-    session.navigation.actions.map((action) => ({ type: action.type, ...(action.payload as object) }))
-
-  it("email and guest go to their screens; Facebook and Google go nowhere", async () => {
-    const session = await open(FRESH)
-    try {
-      await act(session, () => pressTitled(session.root, copy(env, "sign_in_with_email")))
-      await act(session, () => pressTitled(session.root, copy(env, "sign_in_with_facebook")))
-      await act(session, () => pressTitled(session.root, copy(env, "sign_in_with_google")))
-      expect(navigated(session)).toEqual([expect.objectContaining({ name: "SignInEmailScreen" })])
-      await act(session, () => pressTitled(session.root, copy(env, "continue_as_guest")))
-      expect(navigated(session)).toEqual([
-        expect.objectContaining({ name: "SignInEmailScreen" }),
-        expect.objectContaining({ name: "GuestLocationScreen" }),
-      ])
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("create an account goes to the sign-up; the chevron leaves for Home", async () => {
-    const session = await open(PICKED)
-    try {
-      await act(session, () => pressTitled(session.root, copy(env, "dont_have_an_account")))
-      expect(navigated(session)).toEqual([expect.objectContaining({ name: "RegisterScreen" })])
-      await act(session, () => pressIcon(session.root, { icon: "svg:chevron-left" }))
-      expect(navigated(session)[1]).toEqual(
-        expect.objectContaining({ type: "RESET", index: 0, routes: [{ name: "HomeTabs" }] })
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, options, steps, allow, env }) => {
+      const tree = await treeAfter(
+        load,
+        {
+          ...options,
+          lang: env.language,
+          platform: env.platform,
+          route: { name: "AuthWelcomeScreen" },
+        },
+        env,
+        steps
       )
-    } finally {
-      session.unmount()
+      expectParity(parityName(state, env), tree, allow ? { allow } : undefined)
     }
-  })
-
-  it("the toggle stores the other language and where to come back to", async () => {
-    const session = await open(FRESH)
-    try {
-      await act(session, () => toggle(session.root, env))
-      expect(session.store.getState().auth.language).toBe(env.language === "ar" ? "en" : "ar")
-      expect(session.store.getState().auth.currentScreen).toBe("auth-welcome")
-    } finally {
-      session.unmount()
-    }
-  })
+  )
 })
+
+describe.each(PARITY_MATRIX)(
+  "AuthWelcomeScreen presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (options: object) =>
+      openScreen(load, {
+        ...options,
+        lang: env.language,
+        platform: env.platform,
+        route: { name: "AuthWelcomeScreen" },
+      } as RenderScreenOptions)
+    type Session = Awaited<ReturnType<typeof open>>
+    const act = (session: Session, press: () => void) =>
+      session.act(() => {
+        press()
+      })
+    const navigated = (session: Session) =>
+      session.navigation.actions.map((action) => ({
+        type: action.type,
+        ...(action.payload as object),
+      }))
+
+    it("email and guest go to their screens; Facebook and Google go nowhere", async () => {
+      const session = await open(FRESH)
+      try {
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "sign_in_with_email"))
+        )
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "sign_in_with_facebook"))
+        )
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "sign_in_with_google"))
+        )
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({ name: "SignInEmailScreen" }),
+        ])
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "continue_as_guest"))
+        )
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({ name: "SignInEmailScreen" }),
+          expect.objectContaining({ name: "GuestLocationScreen" }),
+        ])
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("create an account goes to the sign-up; the chevron leaves for Home", async () => {
+      const session = await open(PICKED)
+      try {
+        await act(session, () =>
+          pressTitled(session.root, copy(env, "dont_have_an_account"))
+        )
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({ name: "RegisterScreen" }),
+        ])
+        await act(session, () =>
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        )
+        expect(navigated(session)[1]).toEqual(
+          expect.objectContaining({
+            type: "RESET",
+            index: 0,
+            routes: [{ name: "HomeTabs" }],
+          })
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("the toggle stores the other language and where to come back to", async () => {
+      const session = await open(FRESH)
+      try {
+        await act(session, () => toggle(session.root, env))
+        expect(session.store.getState().auth.language).toBe(
+          env.language === "ar" ? "en" : "ar"
+        )
+        expect(session.store.getState().auth.currentScreen).toBe("auth-welcome")
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

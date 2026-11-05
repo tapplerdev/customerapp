@@ -1,0 +1,20 @@
+name: Format
+
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      # Pinned to the Prettier in yarn.lock (3.6.2) and run without installing
+      # the app's dependencies, which the check doesn't need. Bump both
+      # together. Same files as `yarn format:check`.
+      - run: >-
+          npx --yes prettier@3.6.2 --check
+          "src/**/*.{ts,tsx,js}" "*.{js,ts,tsx}" ".*.js"
+          "__tests__/**/*.{js,ts,tsx}" "scripts/**/*.{js,ts}"

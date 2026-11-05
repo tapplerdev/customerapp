@@ -79,7 +79,12 @@ const proWith = (
     proType: "individual",
     reviewScore,
     serviceCategories: [
-      { serviceCategoryId: 3, status: "active", isFeatured: false, subscriptions },
+      {
+        serviceCategoryId: 3,
+        status: "active",
+        isFeatured: false,
+        subscriptions,
+      },
     ],
   }) as unknown as ProType
 
@@ -142,7 +147,10 @@ describe("ProCard: the OFFERS box", () => {
     // The pink footer band is gone, and nothing bleeds past the card's edges.
     expect(findAll(card, isBand)).toHaveLength(0)
     expect(
-      findAll(card, (n) => StyleSheet.flatten(n.props.style)?.marginHorizontal === -15)
+      findAll(
+        card,
+        (n) => StyleSheet.flatten(n.props.style)?.marginHorizontal === -15
+      )
     ).toHaveLength(0)
     // The buttons are the card's foot again.
     const foot = kids(card)[kids(card).length - 1]

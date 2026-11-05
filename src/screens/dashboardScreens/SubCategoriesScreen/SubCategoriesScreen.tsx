@@ -33,7 +33,9 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
     const name = isAr ? item.nameAr : item.nameEn
     return (
       <DmView onPress={() => openAddressFor(item, service)}>
-        <DmView style={[a.flex_row, a.items_center, a.justify_between, styles.row]}>
+        <DmView
+          style={[a.flex_row, a.items_center, a.justify_between, styles.row]}
+        >
           <Text size={12} weight="medium" leading="legacy" style={a.flex_1}>
             {name}
           </Text>
@@ -54,7 +56,9 @@ const SubCategoriesScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <SafeAreaView style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
-      <DmView style={[a.flex_row, a.items_center, a.px_20, styles.row2, a.pb_20]}>
+      <DmView
+        style={[a.flex_row, a.items_center, a.px_20, styles.row2, a.pb_20]}
+      >
         <DmView
           style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}

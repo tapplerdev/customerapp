@@ -1,18 +1,8 @@
 import { DmInput, DmView } from "@tappler/shared/src/components/UI"
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import DropShadow from "react-native-drop-shadow"
-import MapView, {
-  Details,
-  PROVIDER_GOOGLE,
-  Region,
-} from "react-native-maps"
+import MapView, { Details, PROVIDER_GOOGLE, Region } from "react-native-maps"
 import CloseIcon from "assets/icons/close.svg"
 import MyLocationIcon from "assets/icons/my-location-red.svg"
 import MapMarkerIcon from "@tappler/shared/src/assets/icons/map-pin.svg"
@@ -24,13 +14,21 @@ import LocationIcon from "assets/icons/location.svg"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { MapLocationResult, MapPosition } from "services/map-types"
 import styles from "../styles"
-import { ActivityIndicator, Alert, Animated, Easing, Keyboard, LayoutAnimation, ListRenderItemInfo, Platform, UIManager, StyleSheet } from "react-native"
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Easing,
+  Keyboard,
+  LayoutAnimation,
+  ListRenderItemInfo,
+  Platform,
+  UIManager,
+  StyleSheet,
+} from "react-native"
 import useLocation from "@tappler/shared/src/hooks/useLocation"
 
-import {
-  searchAddress,
-  searchAddressByPosition,
-} from "services/here-maps-api"
+import { searchAddress, searchAddressByPosition } from "services/here-maps-api"
 import { isEgyptCountry } from "@tappler/shared/src/helpers/helpers"
 import { SHOULD_IGNORE_START_TEXT_ADDRESS } from "utils/constants"
 import colors from "@tappler/shared/src/styles/colors"
@@ -51,10 +49,7 @@ const defaultLongitudeDelta = 0.002
 const isAndroid = Platform.OS === "android"
 
 // Enable LayoutAnimation on Android (one-time setup)
-if (
-  isAndroid &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
+if (isAndroid && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
 }
 
@@ -83,14 +78,17 @@ const SearchResultItem = (props: {
 }) => (
   <DmView onPress={() => props.onPress(props.item)}>
     <DmView
-      style={[a.py_14, a.flex_row, a.items_center, a.border_b_1, mapPickerWithSearchViewStyles.row, { marginEnd: 16, paddingStart: 16 }]}
+      style={[
+        a.py_14,
+        a.flex_row,
+        a.items_center,
+        a.border_b_1,
+        mapPickerWithSearchViewStyles.row,
+        { marginEnd: 16, paddingStart: 16 },
+      ]}
     >
       <LocationRedIcon />
-      <Text
-        size={13}
-        leading="loose"
-        style={[a.flex_1, { marginStart: 12 }]}
-      >
+      <Text size={13} leading="loose" style={[a.flex_1, { marginStart: 12 }]}>
         {props.item.title}
       </Text>
     </DmView>
@@ -132,7 +130,6 @@ const MapPickerWithSearchView: React.FC<Props> = ({
       }),
     ]).start()
   }, [isMapMoving, pinTranslateY, shadowScale])
-
 
   // Search state
   const [searchText, setSearchText] = useState("")
@@ -348,13 +345,7 @@ const MapPickerWithSearchView: React.FC<Props> = ({
     } else {
       setAddressConfirming(false)
     }
-  }, [
-    selectedRegion,
-    initPosition,
-    onSelectedAddress,
-    i18n.language,
-    t,
-  ])
+  }, [selectedRegion, initPosition, onSelectedAddress, i18n.language, t])
 
   // X button has a 3-stage dismiss:
   //   1. Has search text            → clear the text (stay in search mode)
@@ -412,13 +403,13 @@ const MapPickerWithSearchView: React.FC<Props> = ({
   const searchPlaceholder = isSearchMode
     ? t("search_for_your_address")
     : isResolvingAddress
-    ? t("detecting_location")
-    : subtitleText || t("search_for_your_address")
+      ? t("detecting_location")
+      : subtitleText || t("search_for_your_address")
   const placeholderColor = isResolvingAddress
     ? "#9A9A9A"
     : !isSearchMode && subtitleText
-    ? "#1A1A1A"
-    : "#9A9A9A"
+      ? "#1A1A1A"
+      : "#9A9A9A"
 
   const renderSearchItem = useCallback(
     (info: ListRenderItemInfo<MapLocationResult>) => (
@@ -428,7 +419,9 @@ const MapPickerWithSearchView: React.FC<Props> = ({
   )
 
   return (
-    <DmView style={[a.w_full, a.flex_1, mapPickerWithSearchViewStyles.container]}>
+    <DmView
+      style={[a.w_full, a.flex_1, mapPickerWithSearchViewStyles.container]}
+    >
       <DmView style={[a.w_full, a.flex_1]}>
         {initPosition && (
           <>
@@ -495,7 +488,9 @@ const MapPickerWithSearchView: React.FC<Props> = ({
             {/* My location FAB (hidden while searching) */}
             {!isSearchMode && (
               <DropShadow
-                style={[a.absolute, mapPickerWithSearchViewStyles.shadow, 
+                style={[
+                  a.absolute,
+                  mapPickerWithSearchViewStyles.shadow,
                   styles.myLocationShadow,
                   isAndroid && styles.myLocationShadowAndroid,
                 ]}
@@ -521,7 +516,12 @@ const MapPickerWithSearchView: React.FC<Props> = ({
       {/* Confirm button (hidden while searching) */}
       {!isSearchMode && (
         <DmView
-          style={[a.w_full, a.px_16, a.pt_40, { paddingBottom: Math.max(insets.bottom + 10, 30) }]}
+          style={[
+            a.w_full,
+            a.px_16,
+            a.pt_40,
+            { paddingBottom: Math.max(insets.bottom + 10, 30) },
+          ]}
         >
           <Button
             onPress={onConfirmAddress}
@@ -546,11 +546,14 @@ const MapPickerWithSearchView: React.FC<Props> = ({
        */}
       {initPosition && (
         <DmView
-          style={
-            [isSearchMode ? mapPickerWithSearchViewStyles.boxSearchMode : mapPickerWithSearchViewStyles.boxNotSearchMode, isSearchMode
+          style={[
+            isSearchMode
+              ? mapPickerWithSearchViewStyles.boxSearchMode
+              : mapPickerWithSearchViewStyles.boxNotSearchMode,
+            isSearchMode
               ? { paddingTop: insets.top }
-              : { top: insets.top + 12 }]
-          }
+              : { top: insets.top + 12 },
+          ]}
         >
           <DropShadow
             style={
@@ -559,14 +562,20 @@ const MapPickerWithSearchView: React.FC<Props> = ({
                     styles.searchHeaderShadow,
                     isAndroid && styles.searchHeaderShadowAndroid,
                   ]
-                : [
-                    styles.searchShadow,
-                    isAndroid && styles.searchShadowAndroid,
-                  ]
+                : [styles.searchShadow, isAndroid && styles.searchShadowAndroid]
             }
           >
             <DmView
-              style={isSearchMode ? mapPickerWithSearchViewStyles.rowSearchMode : [mapPickerWithSearchViewStyles.rowNotSearchMode, isResolvingAddress ? mapPickerWithSearchViewStyles.rowNotSearchModeResolvingAddress : mapPickerWithSearchViewStyles.container]}
+              style={
+                isSearchMode
+                  ? mapPickerWithSearchViewStyles.rowSearchMode
+                  : [
+                      mapPickerWithSearchViewStyles.rowNotSearchMode,
+                      isResolvingAddress
+                        ? mapPickerWithSearchViewStyles.rowNotSearchModeResolvingAddress
+                        : mapPickerWithSearchViewStyles.container,
+                    ]
+              }
             >
               <DmView style={a.mr_4}>
                 <SearchIcon width={18} height={18} />
@@ -580,7 +589,11 @@ const MapPickerWithSearchView: React.FC<Props> = ({
                     a.border_b_0,
                     a.px_8,
                   ]}
-                  inputType={{ size: 14, weight: "regular", arabicLeading: px(19) }}
+                  inputType={{
+                    size: 14,
+                    weight: "regular",
+                    arabicLeading: px(19),
+                  }}
                   value={searchText}
                   placeholder={searchPlaceholder}
                   placeholderTextColor={placeholderColor}
@@ -603,8 +616,16 @@ const MapPickerWithSearchView: React.FC<Props> = ({
 
           {/* Results / empty state / "use current location" — only when expanded */}
           {isSearchMode && (
-            <DmView style={[a.flex_1, a.w_full, mapPickerWithSearchViewStyles.container]}>
-              <DmView style={[a.border_b_1, mapPickerWithSearchViewStyles.row]} />
+            <DmView
+              style={[
+                a.flex_1,
+                a.w_full,
+                mapPickerWithSearchViewStyles.container,
+              ]}
+            >
+              <DmView
+                style={[a.border_b_1, mapPickerWithSearchViewStyles.row]}
+              />
               {searchText.length > 0 ? (
                 isSearchLoading ||
                 (!isValidSearchText && searchResults.length === 0) ? (
@@ -618,7 +639,14 @@ const MapPickerWithSearchView: React.FC<Props> = ({
                     keyboardShouldPersistTaps="handled"
                   />
                 ) : (
-                  <DmView style={[a.flex_1, a.items_center, a.justify_center, a.pt_18]}>
+                  <DmView
+                    style={[
+                      a.flex_1,
+                      a.items_center,
+                      a.justify_center,
+                      a.pt_18,
+                    ]}
+                  >
                     <Text size={14} color="brand">
                       {t("no_address_found")}
                     </Text>
@@ -627,7 +655,14 @@ const MapPickerWithSearchView: React.FC<Props> = ({
               ) : (
                 <DmView onPress={onUseMyLocationFromSearch}>
                   <DmView
-                    style={[a.py_20, a.flex_row, a.items_center, a.border_b_1, mapPickerWithSearchViewStyles.row, { marginEnd: 16, paddingStart: 16 }]}
+                    style={[
+                      a.py_20,
+                      a.flex_row,
+                      a.items_center,
+                      a.border_b_1,
+                      mapPickerWithSearchViewStyles.row,
+                      { marginEnd: 16, paddingStart: 16 },
+                    ]}
                   >
                     <LocationIcon />
                     <Text

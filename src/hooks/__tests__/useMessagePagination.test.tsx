@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals"
 import React from "react"
 import { Provider } from "react-redux"
 import TestRenderer, { act } from "react-test-renderer"
@@ -60,9 +67,14 @@ type Msg = {
   chatId?: number
 }
 
-const at = (minute: number) => new Date(Date.UTC(2026, 10, 4, 12, minute)).toISOString()
+const at = (minute: number) =>
+  new Date(Date.UTC(2026, 10, 4, 12, minute)).toISOString()
 
-const msg = (id: number, ownerType: Msg["ownerType"], extra: Partial<Msg> = {}): Msg => ({
+const msg = (
+  id: number,
+  ownerType: Msg["ownerType"],
+  extra: Partial<Msg> = {}
+): Msg => ({
   id,
   ownerType,
   text: `m${id}`,
@@ -108,15 +120,24 @@ const flush = async (rounds = 4) => {
 
 const open = async () => {
   const { api } = require("services/api") as typeof import("services/api")
-  const authReducer = (require("store/auth/slice") as typeof import("store/auth/slice")).default
+  const authReducer = (
+    require("store/auth/slice") as typeof import("store/auth/slice")
+  ).default
   const auth = authReducer(undefined, { type: "@@init" })
   const store = configureStore({
     reducer: { [api.reducerPath]: api.reducer, auth: authReducer },
     preloadedState: {
-      auth: { ...auth, isAuth: true, token: "t", user: { ...(auth.user ?? {}), id: 1 } as any },
+      auth: {
+        ...auth,
+        isAuth: true,
+        token: "t",
+        user: { ...(auth.user ?? {}), id: 1 } as any,
+      },
     },
     middleware: (gdm) =>
-      gdm({ serializableCheck: false, immutableCheck: false }).concat(api.middleware),
+      gdm({ serializableCheck: false, immutableCheck: false }).concat(
+        api.middleware
+      ),
     // RTK batches query notifications on requestAnimationFrame by default,
     // a timer that outlives the test; notify synchronously instead.
     enhancers: (gde) => gde({ autoBatch: false }),
@@ -167,7 +188,8 @@ const open = async () => {
     },
     proReplies: (id: number) =>
       socketEvent("message.created", { ...msg(id, "pro"), chatId: CHAT_ID }),
-    receipts: (batch: Partial<Msg>[]) => socketEvent("message.updatedMany", batch),
+    receipts: (batch: Partial<Msg>[]) =>
+      socketEvent("message.updatedMany", batch),
     /** The same screen handed another chat (the in-app banner does this). */
     switchTo: async (chatId: number) => {
       await act(async () => {

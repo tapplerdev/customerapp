@@ -26,7 +26,14 @@ const NotificationsSkeleton: React.FC = () => (
             <SkeletonLoader width={row.title} height={16} borderRadius={4} />
           </DmView>
           {row.bodyLines.map((width, j) => (
-            <DmView key={j} style={j === 0 ? notificationsSkeletonStyles.skeletonLoaderWrap : a.mt_2}>
+            <DmView
+              key={j}
+              style={
+                j === 0
+                  ? notificationsSkeletonStyles.skeletonLoaderWrap
+                  : a.mt_2
+              }
+            >
               <SkeletonLoader width={width} height={15} borderRadius={4} />
             </DmView>
           ))}

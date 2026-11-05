@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Animated, Dimensions, Easing, Keyboard, StyleSheet } from "react-native"
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  Keyboard,
+  StyleSheet,
+} from "react-native"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
 
@@ -68,7 +74,9 @@ const StepCard: React.FC<{
   const isAr = i18n.language === "ar"
   // Where "off-screen" is for an incoming card: right edge in LTR, left in RTL
   const offscreenX = (isAr ? -1 : 1) * Dimensions.get("window").width
-  const translateX = useRef(new Animated.Value(animateIn ? offscreenX : 0)).current
+  const translateX = useRef(
+    new Animated.Value(animateIn ? offscreenX : 0)
+  ).current
   const dim = useRef(new Animated.Value(0)).current
 
   // Entry: the new page slides in over the previous one
@@ -149,7 +157,10 @@ const StepCard: React.FC<{
       {/* Dims while a newer page covers this one (pointer-transparent) */}
       <Animated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: "#000", opacity: dim }]}
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: "#000", opacity: dim },
+        ]}
       />
     </Animated.View>
   )
@@ -169,7 +180,9 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
 
   const handleChangeAnswer = (newAnswer: QuestionAnswerType) => {
     ctx.setAnswers((prev) => {
-      const existing = prev.findIndex((a) => a.questionId === newAnswer.questionId)
+      const existing = prev.findIndex(
+        (a) => a.questionId === newAnswer.questionId
+      )
       if (existing >= 0) {
         const updated = [...prev]
         updated[existing] = newAnswer
@@ -208,7 +221,8 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
     const question = currentStep.question
     const answer = ctx.answers.find((a) => a.questionId === question.id)
     if (!answer) return false
-    if (question.type === "shortAnswer" || question.type === "paragraph") return !!answer.answer
+    if (question.type === "shortAnswer" || question.type === "paragraph")
+      return !!answer.answer
     if (question.type === "oneChoice") return !!answer.optionId
     if (question.type === "multipleChoice") return !!answer.optionsIds?.length
     if (question.type === "dateTime") return !!answer.date || !!answer.startDate
@@ -245,10 +259,22 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
     */
     <SafeAreaView
       edges={[]}
-      style={[atoms.flex_1, dsStyles.safeArea, { paddingBottom: keyboardInset }]}
+      style={[
+        atoms.flex_1,
+        dsStyles.safeArea,
+        { paddingBottom: keyboardInset },
+      ]}
     >
       {/* Header */}
-      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_16, atoms.pt_12, atoms.pb_8]}>
+      <DmView
+        style={[
+          atoms.flex_row,
+          atoms.items_center,
+          atoms.px_16,
+          atoms.pt_12,
+          atoms.pb_8,
+        ]}
+      >
         <DmView
           style={[dsStyles.iconWrap, atoms.items_center, atoms.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
@@ -283,7 +309,11 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
       {/* Question content */}
       <AppScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 28, paddingBottom: 20, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingTop: 28,
+          paddingBottom: 20,
+          flexGrow: 1,
+        }}
         bounces={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -303,7 +333,12 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
 
       {/* Bottom button */}
       <DmView
-        style={[atoms.px_16, dsStyles.buttonWrap, styles.buttonShadow, { paddingBottom: insets.bottom + 16 }]}
+        style={[
+          atoms.px_16,
+          dsStyles.buttonWrap,
+          styles.buttonShadow,
+          { paddingBottom: insets.bottom + 16 },
+        ]}
       >
         <Button
           title={isLastStep ? t("done") : t("next")}
@@ -351,10 +386,14 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
       .filter((q) => q.assignee === "customer")
       .sort((a, b) => a.order - b.order)
 
-    const filterQuestions = customerOnly.filter((q) => q.isFilter && q.tier !== "refinement")
+    const filterQuestions = customerOnly.filter(
+      (q) => q.isFilter && q.tier !== "refinement"
+    )
     const dataQuestions = customerOnly.filter((q) => !q.isFilter)
 
-    filterQuestions.forEach((q) => result.push({ type: "question", question: q }))
+    filterQuestions.forEach((q) =>
+      result.push({ type: "question", question: q })
+    )
     dataQuestions.forEach((q) => result.push({ type: "question", question: q }))
 
     return result
@@ -534,20 +573,33 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
     registerBackAction?.(() => backActionRef.current())
   }, [registerBackAction])
 
-  const sharedState: SharedState = useMemo(() => ({
-    steps,
-    totalSteps: steps.length,
-    categoryName,
-    placeOfServiceOptions,
-    answers,
-    selectedPlaceOfService,
-    setAnswers,
-    setSelectedPlaceOfService,
-    goNext,
-    goPrev,
-    onDone: handleDone,
-    onClose,
-  }), [steps, categoryName, placeOfServiceOptions, answers, selectedPlaceOfService, goNext, goPrev, handleDone, onClose])
+  const sharedState: SharedState = useMemo(
+    () => ({
+      steps,
+      totalSteps: steps.length,
+      categoryName,
+      placeOfServiceOptions,
+      answers,
+      selectedPlaceOfService,
+      setAnswers,
+      setSelectedPlaceOfService,
+      goNext,
+      goPrev,
+      onDone: handleDone,
+      onClose,
+    }),
+    [
+      steps,
+      categoryName,
+      placeOfServiceOptions,
+      answers,
+      selectedPlaceOfService,
+      goNext,
+      goPrev,
+      handleDone,
+      onClose,
+    ]
+  )
 
   return (
     <SharedStateContext.Provider value={sharedState}>
@@ -603,7 +655,11 @@ const styles = StyleSheet.create({
  * habit; nothing here is a screen.
  */
 export const QuestionFlowSheet: React.FC<
-  QuestionFlowParams & { visible: boolean; contentKey: number; onClose: () => void }
+  QuestionFlowParams & {
+    visible: boolean
+    contentKey: number
+    onClose: () => void
+  }
 > = ({ visible, contentKey, onClose, ...contentProps }) => {
   // Swipe-down dismiss should commit partial answers (handleDone), not just
   // close. The content sets this ref to its handleDone; fall back to onClose

@@ -45,7 +45,8 @@ const CATEGORIES = [
   some<ServiceCategoryType>({
     id: 3042,
     nameEn: "Online tutoring for school students in every subject at any level",
-    nameAr: "دروس خصوصية عبر الإنترنت لطلاب المدارس في جميع المواد وفي كل المستويات",
+    nameAr:
+      "دروس خصوصية عبر الإنترنت لطلاب المدارس في جميع المواد وفي كل المستويات",
     serviceId: 204,
     placeOfService: ["remoteOrOnline"],
   }),
@@ -70,7 +71,12 @@ const MANY: ServiceType = {
   nameAr: "خدمات منزلية وكل شيء آخر حول المنزل بما في ذلك الصيانة",
   categories: CATEGORIES,
 }
-const NONE: ServiceType = { id: 205, nameEn: "Nothing yet", nameAr: "لا شيء بعد", categories: [] }
+const NONE: ServiceType = {
+  id: 205,
+  nameEn: "Nothing yet",
+  nameAr: "لا شيء بعد",
+  categories: [],
+}
 
 type Case = {
   state: string
@@ -85,17 +91,32 @@ const withService = (service: ServiceType) => ({
 
 const CASES: Case[] = [
   { state: "one category", options: { ...SIGNED, ...withService(SERVICE) } },
-  { state: "several categories, long names", options: { ...SIGNED, ...withService(MANY) } },
+  {
+    state: "several categories, long names",
+    options: { ...SIGNED, ...withService(MANY) },
+  },
   { state: "no categories", options: { ...SIGNED, ...withService(NONE) } },
   {
     state: "the address sheet open, signed in",
     options: { ...SIGNED, ...withService(MANY) },
-    steps: [(root, env) => pressText(root, env.language === "ar" ? CATEGORIES[0].nameAr! : CATEGORIES[0].nameEn!)],
+    steps: [
+      (root, env) =>
+        pressText(
+          root,
+          env.language === "ar" ? CATEGORIES[0].nameAr! : CATEGORIES[0].nameEn!
+        ),
+    ],
   },
   {
     state: "the address sheet open, guest",
     options: { ...guestState("data"), ...withService(MANY) },
-    steps: [(root, env) => pressText(root, env.language === "ar" ? CATEGORIES[3].nameAr! : CATEGORIES[3].nameEn!)],
+    steps: [
+      (root, env) =>
+        pressText(
+          root,
+          env.language === "ar" ? CATEGORIES[3].nameAr! : CATEGORIES[3].nameEn!
+        ),
+    ],
   },
 ]
 
@@ -146,7 +167,9 @@ describe.each(PARITY_MATRIX)(
         expect(JSON.stringify(session.tree())).not.toContain("Tahrir")
         await act(session, () => pressText(session.root, name(CATEGORIES[0])))
         expect(JSON.stringify(session.tree())).toContain("12 Tahrir Street")
-        await act(session, () => pressContaining(session.root, "3 Nile Corniche"))
+        await act(session, () =>
+          pressContaining(session.root, "3 Nile Corniche")
+        )
         expect(navigated(session)).toEqual([
           expect.objectContaining({
             name: "SearchAnimationScreen",
@@ -180,12 +203,16 @@ describe.each(PARITY_MATRIX)(
             },
           }),
         ])
-        expect(JSON.stringify(session.tree())).not.toContain("Tahrir Street, Dokki")
+        expect(JSON.stringify(session.tree())).not.toContain(
+          "Tahrir Street, Dokki"
+        )
         await act(session, () => pressText(session.root, name(CATEGORIES[2])))
         expect(navigated(session)).toHaveLength(2)
         expect(navigated(session)[1]).toEqual(
           expect.objectContaining({
-            params: { nextParams: expect.objectContaining({ categoryId: 3043 }) },
+            params: {
+              nextParams: expect.objectContaining({ categoryId: 3043 }),
+            },
           })
         )
       } finally {
@@ -196,7 +223,9 @@ describe.each(PARITY_MATRIX)(
     it("the back chevron goes back", async () => {
       const session = await open()
       try {
-        await act(session, () => pressIcon(session.root, { icon: "svg:chevron-left" }))
+        await act(session, () =>
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        )
         expect(navigated(session)).toEqual([
           expect.objectContaining({ type: "GO_BACK" }),
         ])

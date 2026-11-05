@@ -42,11 +42,13 @@ const RateComponent: React.FC<Props> = ({
             : "0%"
 
     return (
-      <DmView
-        style={[styles.container, { width: itemSize, height: itemSize }]}
-      >
+      <DmView style={[styles.container, { width: itemSize, height: itemSize }]}>
         <DmView
-          style={[styles.iconWrap, a.h_full, { width: itemWidth as DimensionValue }]}
+          style={[
+            styles.iconWrap,
+            a.h_full,
+            { width: itemWidth as DimensionValue },
+          ]}
         >
           <StarIcon
             width={itemSize}
@@ -59,10 +61,20 @@ const RateComponent: React.FC<Props> = ({
     )
   }
 
-  if (!rate && reviewsCount !== undefined && reviewsCount === 0 && !showFullReviewText) {
+  if (
+    !rate &&
+    reviewsCount !== undefined &&
+    reviewsCount === 0 &&
+    !showFullReviewText
+  ) {
     return (
       <DmView style={[a.flex_row, a.items_center]}>
-        <Text size={11} weight="medium" leading="tight" style={[styles.newOnTappler, styles.italic]}>
+        <Text
+          size={11}
+          weight="medium"
+          leading="tight"
+          style={[styles.newOnTappler, styles.italic]}
+        >
           {t("new_on_tappler")}
         </Text>
       </DmView>
@@ -79,7 +91,12 @@ const RateComponent: React.FC<Props> = ({
       {reviewsCount !== undefined ? (
         showFullReviewText ? (
           <>
-            <Text size={13} weight="semibold" leading="tight" style={styles.text}>
+            <Text
+              size={13}
+              weight="semibold"
+              leading="tight"
+              style={styles.text}
+            >
               {`${rate % 1 === 0 ? rate : rate.toFixed(1)} ${t("of")} 5`}
             </Text>
             <Text size={13} weight="medium" leading="tight" style={styles.text}>
@@ -88,16 +105,31 @@ const RateComponent: React.FC<Props> = ({
           </>
         ) : (
           <>
-            <Text size={11} weight="medium" leading="tight" style={styles.text2}>
+            <Text
+              size={11}
+              weight="medium"
+              leading="tight"
+              style={styles.text2}
+            >
               {`${rate % 1 === 0 ? rate : rate.toFixed(1)} ${t("of")} 5`}
             </Text>
-            <Text size={11} weight="medium" leading="tight" style={styles.text3}>
+            <Text
+              size={11}
+              weight="medium"
+              leading="tight"
+              style={styles.text3}
+            >
               ({reviewsCount})
             </Text>
           </>
         )
       ) : (
-        <Text size={showFullReviewText ? 13 : 11} weight="medium" leading="tight" style={styles.text}>
+        <Text
+          size={showFullReviewText ? 13 : 11}
+          weight="medium"
+          leading="tight"
+          style={styles.text}
+        >
           {rate % 1 === 0 ? rate : rate.toFixed(1)} {t("of")} 5
         </Text>
       )}

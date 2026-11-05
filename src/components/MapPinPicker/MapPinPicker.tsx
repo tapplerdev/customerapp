@@ -33,7 +33,9 @@ const MapPinPicker: React.FC<MapPinPickerProps> = ({
         style={[currentSize.background, styles.rounded, pinColors.background]}
       />
 
-      <DmView style={[StyleSheet.absoluteFill, a.items_center, a.justify_center]}>
+      <DmView
+        style={[StyleSheet.absoluteFill, a.items_center, a.justify_center]}
+      >
         <DmView style={[a.items_center, currentSize.offset]}>
           <DmView
             style={[currentSize.pinHead, styles.rounded, pinColors.pinHead]}
@@ -47,10 +49,17 @@ const MapPinPicker: React.FC<MapPinPickerProps> = ({
       </DmView>
 
       {showInstruction && (
-        <DmView style={[a.absolute, styles.boxWrap, a.items_center, a.justify_center]}>
+        <DmView
+          style={[a.absolute, styles.boxWrap, a.items_center, a.justify_center]}
+        >
           <DmView style={[a.w_full, a.items_center, styles.box]}>
             <DmView style={[a.w_full, styles.textWrap, a.items_center]}>
-              <Text size={13} color="inverse" align="center" style={[a.w_full, a.mt_10]}>
+              <Text
+                size={13}
+                color="inverse"
+                align="center"
+                style={[a.w_full, a.mt_10]}
+              >
                 {instructionText || defaultInstruction}
               </Text>
             </DmView>

@@ -7,7 +7,11 @@ import { useDispatch } from "react-redux"
 import { DmAuthInput, DmView } from "@tappler/shared/src/components/UI"
 import ErrorModal from "components/ErrorModal"
 import { describeSignInFailure } from "utils/authErrors"
-import { useCustomerSignUpMutation, useAuthMutation, useLazyGetCustomerMeQuery } from "services/api"
+import {
+  useCustomerSignUpMutation,
+  useAuthMutation,
+  useLazyGetCustomerMeQuery,
+} from "services/api"
 import { setTokens } from "store/auth/slice"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
@@ -28,7 +32,10 @@ interface FormValues {
   gender: "male" | "female"
 }
 
-const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ navigation, parentNav }) => {
+const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
+  navigation,
+  parentNav,
+}) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const dispatch = useDispatch()
@@ -84,7 +91,9 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
         rememberMe: true,
       }).unwrap()
 
-      dispatch(setTokens({ token: authRes.token, refreshToken: authRes.refreshToken }))
+      dispatch(
+        setTokens({ token: authRes.token, refreshToken: authRes.refreshToken })
+      )
       await getCustomerMe().unwrap()
 
       // Dismiss the auth gate modal — returns to RequestSummaryScreen
@@ -99,8 +108,12 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
         setErrorMessage(failure)
       } else if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
-        const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
-        setErrorMessage(typeof firstMsg === "string" ? firstMsg : t("invalid_credentials"))
+        const firstMsg = Array.isArray(firstErrors)
+          ? firstErrors[0]
+          : firstErrors
+        setErrorMessage(
+          typeof firstMsg === "string" ? firstMsg : t("invalid_credentials")
+        )
       } else {
         setErrorMessage(error?.data?.message || t("invalid_credentials"))
       }
@@ -111,7 +124,10 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
   }
 
   return (
-    <SafeAreaView style={[a.flex_1, gateRegisterScreenStyles.safeArea]} edges={[]}>
+    <SafeAreaView
+      style={[a.flex_1, gateRegisterScreenStyles.safeArea]}
+      edges={[]}
+    >
       <AppKeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 27 }}
         showsVerticalScrollIndicator={false}
@@ -148,7 +164,12 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
             control={control}
             rules={{ required: true }}
             render={({ field: { value, onChange } }) => (
-              <DmAuthInput value={value} placeholder={t("first_name")} onChangeText={onChange} isBorderVisible={false} />
+              <DmAuthInput
+                value={value}
+                placeholder={t("first_name")}
+                onChangeText={onChange}
+                isBorderVisible={false}
+              />
             )}
             name="firstName"
           />
@@ -157,7 +178,13 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
             control={control}
             rules={{ required: true }}
             render={({ field: { value, onChange } }) => (
-              <DmAuthInput value={value} placeholder={t("last_name")} onChangeText={onChange} isBorderVisible={false} wrapperStyle={a.mt_14} />
+              <DmAuthInput
+                value={value}
+                placeholder={t("last_name")}
+                onChangeText={onChange}
+                isBorderVisible={false}
+                wrapperStyle={a.mt_14}
+              />
             )}
             name="lastName"
           />
@@ -166,7 +193,14 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
             control={control}
             rules={{ required: true }}
             render={({ field: { value, onChange } }) => (
-              <DmAuthInput value={value} placeholder={t("your_email")} onChangeText={onChange} keyboardType="email-address" isBorderVisible={false} wrapperStyle={a.mt_14} />
+              <DmAuthInput
+                value={value}
+                placeholder={t("your_email")}
+                onChangeText={onChange}
+                keyboardType="email-address"
+                isBorderVisible={false}
+                wrapperStyle={a.mt_14}
+              />
             )}
             name="email"
           />
@@ -184,7 +218,13 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
                 onIconPress={() => setPasswordVisible(!isPasswordVisible)}
                 isBorderVisible={false}
                 wrapperStyle={a.mt_14}
-                Icon={<HideIcon fill={!isPasswordVisible ? colors.black : colors.greyPlaceholder} />}
+                Icon={
+                  <HideIcon
+                    fill={
+                      !isPasswordVisible ? colors.black : colors.greyPlaceholder
+                    }
+                  />
+                }
               />
             )}
             name="password"
@@ -192,16 +232,28 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
           <DmView style={gateRegisterScreenStyles.box4} />
           <Controller
             control={control}
-            rules={{ required: true, validate: (val) => val.startsWith("01") && val.length === 11 }}
+            rules={{
+              required: true,
+              validate: (val) => val.startsWith("01") && val.length === 11,
+            }}
             render={({ field: { value, onChange } }) => (
               <DmView style={a.mt_8}>
                 <DmView style={[a.flex_row, a.items_center]}>
                   <DmView style={[a.flex_row, a.items_center, a.mr_10]}>
                     <FlagEgyptIcon width={24} height={16} />
-                    <Text size={13} leading="legacy" style={a.ml_6}>+20</Text>
+                    <Text size={13} leading="legacy" style={a.ml_6}>
+                      +20
+                    </Text>
                   </DmView>
                   <DmView style={a.flex_1}>
-                    <DmAuthInput value={value} placeholder={t("mobile_number")} onChangeText={onChange} keyboardType="phone-pad" maxLength={11} isBorderVisible={false} />
+                    <DmAuthInput
+                      value={value}
+                      placeholder={t("mobile_number")}
+                      onChangeText={onChange}
+                      keyboardType="phone-pad"
+                      maxLength={11}
+                      isBorderVisible={false}
+                    />
                   </DmView>
                 </DmView>
                 <DmView style={gateRegisterScreenStyles.box5} />
@@ -213,19 +265,49 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
 
         {/* Gender */}
         <DmView style={[a.mt_16, gateRegisterScreenStyles.box3]}>
-          <Text size={13} leading="legacy" color="placeholder">{t("gender")}</Text>
+          <Text size={13} leading="legacy" color="placeholder">
+            {t("gender")}
+          </Text>
           <DmView style={[a.flex_row, a.mt_10]}>
-            <DmView style={[a.flex_row, a.items_center, a.mr_30]} onPress={() => setValue("gender", "female")}>
-              <DmView style={[gateRegisterScreenStyles.box6, a.border_1, a.items_center, a.justify_center]}>
-                {selectedGender === "female" && <DmView style={gateRegisterScreenStyles.box7} />}
+            <DmView
+              style={[a.flex_row, a.items_center, a.mr_30]}
+              onPress={() => setValue("gender", "female")}
+            >
+              <DmView
+                style={[
+                  gateRegisterScreenStyles.box6,
+                  a.border_1,
+                  a.items_center,
+                  a.justify_center,
+                ]}
+              >
+                {selectedGender === "female" && (
+                  <DmView style={gateRegisterScreenStyles.box7} />
+                )}
               </DmView>
-              <Text size={14} leading="legacy" style={a.ml_8}>{t("female")}</Text>
+              <Text size={14} leading="legacy" style={a.ml_8}>
+                {t("female")}
+              </Text>
             </DmView>
-            <DmView style={[a.flex_row, a.items_center]} onPress={() => setValue("gender", "male")}>
-              <DmView style={[gateRegisterScreenStyles.box6, a.border_1, a.items_center, a.justify_center]}>
-                {selectedGender === "male" && <DmView style={gateRegisterScreenStyles.box7} />}
+            <DmView
+              style={[a.flex_row, a.items_center]}
+              onPress={() => setValue("gender", "male")}
+            >
+              <DmView
+                style={[
+                  gateRegisterScreenStyles.box6,
+                  a.border_1,
+                  a.items_center,
+                  a.justify_center,
+                ]}
+              >
+                {selectedGender === "male" && (
+                  <DmView style={gateRegisterScreenStyles.box7} />
+                )}
               </DmView>
-              <Text size={14} leading="legacy" style={a.ml_8}>{t("male")}</Text>
+              <Text size={14} leading="legacy" style={a.ml_8}>
+                {t("male")}
+              </Text>
             </DmView>
           </DmView>
         </DmView>
@@ -243,7 +325,11 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({ nav
           />
         </DmView>
       </AppKeyboardAwareScrollView>
-      <ErrorModal isVisible={isErrorModalVisible} onClose={() => setErrorModalVisible(false)} descr={errorMessage} />
+      <ErrorModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setErrorModalVisible(false)}
+        descr={errorMessage}
+      />
     </SafeAreaView>
   )
 }

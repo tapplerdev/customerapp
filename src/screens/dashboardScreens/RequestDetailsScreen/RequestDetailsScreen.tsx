@@ -31,7 +31,9 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { data: job, isLoading } = useGetCustomerJobDetailsQuery(jobId)
 
   const categoryName = job?.serviceCategory
-    ? isAr ? job.serviceCategory.nameAr : job.serviceCategory.nameEn
+    ? isAr
+      ? job.serviceCategory.nameAr
+      : job.serviceCategory.nameEn
     : ""
 
   const address = job?.address?.address
@@ -47,7 +49,9 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const streetAddress = address?.streetAddress || ""
   const city = address?.city || ""
   const governorate = address?.governorate || ""
-  const fullAddress = [streetAddress, city, governorate].filter(Boolean).join(", ")
+  const fullAddress = [streetAddress, city, governorate]
+    .filter(Boolean)
+    .join(", ")
 
   // Food orders are the reason this screen exists after a cancellation: it is
   // the record of what was asked for. Everything below branches on that.
@@ -114,11 +118,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {label}
       </Text>
-      <Text
-        size={13}
-        weight={bold ? "bold" : "medium"}
-        leading={px(17)}
-      >
+      <Text size={13} weight={bold ? "bold" : "medium"} leading={px(17)}>
         {value}
       </Text>
     </DmView>
@@ -131,9 +131,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           {title}
         </Text>
         <DmView style={a.pt_6}>
-          <Text size={13}>
-            {descr}
-          </Text>
+          <Text size={13}>{descr}</Text>
         </DmView>
       </DmView>
     )
@@ -193,9 +191,15 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* Questions & Answers */}
           {job.questionsAnswers?.map((qa) => {
             const questionText = (qa as any).question?.text || t("question")
-            const displayValue = qa.answer || qa.date ||
-              (qa.startTime && qa.endTime ? `${qa.startTime} - ${qa.endTime}` : "") ||
-              ((qa as any).files?.length ? `${(qa as any).files.length} file(s)` : "")
+            const displayValue =
+              qa.answer ||
+              qa.date ||
+              (qa.startTime && qa.endTime
+                ? `${qa.startTime} - ${qa.endTime}`
+                : "") ||
+              ((qa as any).files?.length
+                ? `${(qa as any).files.length} file(s)`
+                : "")
             if (!displayValue) return null
             return (
               <React.Fragment key={qa.questionId}>
@@ -258,7 +262,9 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
               {!isPickup &&
                 totalsRow(
                   t("delivery_fee"),
-                  deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
+                  deliveryFee
+                    ? `${formatMoney(deliveryFee)} ${t("EGP")}`
+                    : t("free")
                 )}
               {orderDiscount > 0 &&
                 totalsRow(

@@ -46,7 +46,18 @@ const ANSWERS = {
   // A 400 with nothing to say. It was a 500 until a 5xx got its own card
   // (server trouble); the rendered card is the same, so the case kept its name.
   "no message": { error: { status: 400, data: {} } },
-  "too many attempts": { error: { status: 429, retryAfterSeconds: 840, data: { message: "Too many attempts. Please try again in 14 minutes.", validationErrors: { email: ["Too many attempts. Please try again in 14 minutes."] } } } },
+  "too many attempts": {
+    error: {
+      status: 429,
+      retryAfterSeconds: 840,
+      data: {
+        message: "Too many attempts. Please try again in 14 minutes.",
+        validationErrors: {
+          email: ["Too many attempts. Please try again in 14 minutes."],
+        },
+      },
+    },
+  },
   "server failing": { error: { status: 500, data: {} } },
   accepted: { data: { id: 1 } },
 }
@@ -73,8 +84,10 @@ const optionsFor = (
   props,
 })
 
-const type = (index: number, text: string): Step => (root) =>
-  typeInto(root, index, text)
+const type =
+  (index: number, text: string): Step =>
+  (root) =>
+    typeInto(root, index, text)
 const register: Step = (root, env) => pressTitled(root, copy(env, "register"))
 const showPassword: Step = (root) =>
   pressIcon(root, { icon: "svg:hide-password" })
@@ -97,17 +110,46 @@ const CASES: Case[] = [
   { label: "as opened" },
   { label: "first name typed", steps: [type(0, "Mona")] },
   { label: "everything typed and valid", steps: FILLED },
-  { label: "everything typed, password shown", steps: [...FILLED, showPassword] },
+  {
+    label: "everything typed, password shown",
+    steps: [...FILLED, showPassword],
+  },
   { label: "everything typed, female picked", steps: [...FILLED, pickFemale] },
   { label: "female picked, nothing typed", steps: [pickFemale] },
-  { label: "password too short", steps: [...FILLED.slice(0, 3), type(3, "abc"), FILLED[4]] },
-  { label: "mobile number invalid", steps: [...FILLED.slice(0, 4), type(4, "0123")] },
+  {
+    label: "password too short",
+    steps: [...FILLED.slice(0, 3), type(3, "abc"), FILLED[4]],
+  },
+  {
+    label: "mobile number invalid",
+    steps: [...FILLED.slice(0, 4), type(4, "0123")],
+  },
   { label: "registering", steps: [...FILLED, register] },
-  { label: "refused with a validation error", answer: "validation", steps: [...FILLED, register] },
-  { label: "refused with a message", answer: "message", steps: [...FILLED, register] },
-  { label: "refused with neither", answer: "no message", steps: [...FILLED, register] },
-  { label: "too many attempts card", answer: "too many attempts", steps: [...FILLED, register] },
-  { label: "server trouble card", answer: "server failing", steps: [...FILLED, register] },
+  {
+    label: "refused with a validation error",
+    answer: "validation",
+    steps: [...FILLED, register],
+  },
+  {
+    label: "refused with a message",
+    answer: "message",
+    steps: [...FILLED, register],
+  },
+  {
+    label: "refused with neither",
+    answer: "no message",
+    steps: [...FILLED, register],
+  },
+  {
+    label: "too many attempts card",
+    answer: "too many attempts",
+    steps: [...FILLED, register],
+  },
+  {
+    label: "server trouble card",
+    answer: "server failing",
+    steps: [...FILLED, register],
+  },
 ]
 
 describe("GateRegisterScreen", () => {
@@ -138,71 +180,95 @@ describe("GateRegisterScreen presses", () => {
     }
   }
 
-  it.each(envs)("the radios swap: Male after Female draws the opened form again [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      const opened = JSON.stringify(session.tree())
-      await run(session, env, [pickFemale])
-      expect(JSON.stringify(session.tree())).not.toBe(opened)
-      await run(session, env, [pickMale])
-      expect(JSON.stringify(session.tree())).toBe(opened)
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "the radios swap: Male after Female draws the opened form again [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        const opened = JSON.stringify(session.tree())
+        await run(session, env, [pickFemale])
+        expect(JSON.stringify(session.tree())).not.toBe(opened)
+        await run(session, env, [pickMale])
+        expect(JSON.stringify(session.tree())).toBe(opened)
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Register is refused until the form is valid [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
-      await run(session, env, [type(0, "Mona")])
-      expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Register is refused until the form is valid [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
+        await run(session, env, [type(0, "Mona")])
+        expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Register signs up, signs in and dismisses the gate [$env.language $env.platform]", async ({ env }) => {
-    const navigation = { goBack: jest.fn() }
-    const parentNav = { goBack: jest.fn() }
-    const session = await openScreen(load, optionsFor(env, "accepted", { navigation, parentNav }))
-    try {
-      await run(session, env, [...FILLED, pickFemale, register])
-      const signUp = session.requests().filter((r) => r.endpoint === "customerSignUp")
-      expect(signUp).toHaveLength(1)
-      const body = JSON.stringify(signUp[0].args)
-      expect(body).toContain('"email":"mona.adel@example.com"')
-      expect(body).toContain('"gender":"female"')
-      expect(body).toContain('"mobileNumber":"01012345678"')
-      expect(session.requests().filter((r) => r.endpoint === "auth")).toHaveLength(1)
-      expect(parentNav.goBack).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Register signs up, signs in and dismisses the gate [$env.language $env.platform]",
+    async ({ env }) => {
+      const navigation = { goBack: jest.fn() }
+      const parentNav = { goBack: jest.fn() }
+      const session = await openScreen(
+        load,
+        optionsFor(env, "accepted", { navigation, parentNav })
+      )
+      try {
+        await run(session, env, [...FILLED, pickFemale, register])
+        const signUp = session
+          .requests()
+          .filter((r) => r.endpoint === "customerSignUp")
+        expect(signUp).toHaveLength(1)
+        const body = JSON.stringify(signUp[0].args)
+        expect(body).toContain('"email":"mona.adel@example.com"')
+        expect(body).toContain('"gender":"female"')
+        expect(body).toContain('"mobileNumber":"01012345678"')
+        expect(
+          session.requests().filter((r) => r.endpoint === "auth")
+        ).toHaveLength(1)
+        expect(parentNav.goBack).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("OK closes the error card; the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const navigation = { goBack: jest.fn() }
-    const session = await openScreen(
-      load,
-      optionsFor(env, "message", { navigation, parentNav: { goBack: jest.fn() } })
-    )
-    try {
-      await run(session, env, [...FILLED, register])
-      const card = () =>
-        session.root.findAll(
-          (node) =>
-            typeof node.type !== "string" &&
-            "isVisible" in node.props &&
-            "descr" in node.props
-        )[0].props
-      expect(card().isVisible).toBe(true)
-      await run(session, env, [(root, e) => pressTitled(root, copy(e, "OK"))])
-      expect(card().isVisible).toBe(false)
-      await run(session, env, [(root) => pressIcon(root, { icon: "svg:chevron-left" })])
-      expect(navigation.goBack).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "OK closes the error card; the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const navigation = { goBack: jest.fn() }
+      const session = await openScreen(
+        load,
+        optionsFor(env, "message", {
+          navigation,
+          parentNav: { goBack: jest.fn() },
+        })
+      )
+      try {
+        await run(session, env, [...FILLED, register])
+        const card = () =>
+          session.root.findAll(
+            (node) =>
+              typeof node.type !== "string" &&
+              "isVisible" in node.props &&
+              "descr" in node.props
+          )[0].props
+        expect(card().isVisible).toBe(true)
+        await run(session, env, [(root, e) => pressTitled(root, copy(e, "OK"))])
+        expect(card().isVisible).toBe(false)
+        await run(session, env, [
+          (root) => pressIcon(root, { icon: "svg:chevron-left" }),
+        ])
+        expect(navigation.goBack).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

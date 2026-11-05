@@ -21,7 +21,12 @@ const DURATION = 5000
 // not. Kept as one component rather than two overlays so a message and a
 // notification landing together replace each other instead of stacking.
 type Banner =
-  | { kind: "message"; chatPreview: ChatPreviewType; title: string; body: string }
+  | {
+      kind: "message"
+      chatPreview: ChatPreviewType
+      title: string
+      body: string
+    }
   | {
       kind: "notification"
       event: string
@@ -39,7 +44,12 @@ const REVIEW_EVENT = "system.account:customer.jobs.review"
 // `ended` is the clock closing an order nobody answered, or one the restaurant
 // never marked finished: the news is "this is over", on the very screen that
 // still reads "Sent to Pro" until it refetches.
-const ORDER_ENDED_STATUSES = ["declined", "cancelledByPro", "cancelled", "ended"]
+const ORDER_ENDED_STATUSES = [
+  "declined",
+  "cancelledByPro",
+  "cancelled",
+  "ended",
+]
 // The food order's own terminal status, set unconditionally by the cancel
 // itself — unlike job.status, which depends on a backend settle step that can
 // bail silently. Expiry writes `ended` on the row too. The banner reads this
@@ -60,10 +70,16 @@ export const destinationFor = (
   // ParsedNotification and no banner "kind" — can call the same function
   // instead of keeping a second copy of the rule.
   banner: { event: string; jobId?: number }
-): { screen: "JobDetailScreen" | "ReviewProSelectionScreen"; jobId: number } | null => {
+): {
+  screen: "JobDetailScreen" | "ReviewProSelectionScreen"
+  jobId: number
+} | null => {
   if (!banner.jobId) return null
   return {
-    screen: banner.event === REVIEW_EVENT ? "ReviewProSelectionScreen" : "JobDetailScreen",
+    screen:
+      banner.event === REVIEW_EVENT
+        ? "ReviewProSelectionScreen"
+        : "JobDetailScreen",
     jobId: banner.jobId,
   }
 }
@@ -99,9 +115,17 @@ const InAppMessageBanner: React.FC = () => {
   }, [isAuth])
 
   useEffect(() => {
-    const handler = ({ chatPreview, body }: { chatPreview: ChatPreviewType; body: string }) => {
+    const handler = ({
+      chatPreview,
+      body,
+    }: {
+      chatPreview: ChatPreviewType
+      body: string
+    }) => {
       const title =
-        chatPreview.chat.pro?.businessName || chatPreview.chat.pro?.registeredName || "New message"
+        chatPreview.chat.pro?.businessName ||
+        chatPreview.chat.pro?.registeredName ||
+        "New message"
       setBanner({ kind: "message", chatPreview, title, body })
     }
     const notificationHandler = ({
@@ -148,13 +172,16 @@ const InAppMessageBanner: React.FC = () => {
         ORDER_ENDED_STATUSES.includes(jobStatus ?? "") ||
         ORDER_ENDED_FOOD_STATUSES.includes(foodStatus ?? "")
 
-      const current = navigationRef.isReady() ? navigationRef.getCurrentRoute() : null
+      const current = navigationRef.isReady()
+        ? navigationRef.getCurrentRoute()
+        : null
       const destination = destinationFor(next)
       if (
         !isOrderEnded &&
         destination &&
         current?.name === destination.screen &&
-        (current.params as { jobId?: number } | undefined)?.jobId === destination.jobId
+        (current.params as { jobId?: number } | undefined)?.jobId ===
+          destination.jobId
       ) {
         return
       }
@@ -202,7 +229,9 @@ const InAppMessageBanner: React.FC = () => {
       // also bump the badge once the chat mounts.
       setActiveChat(banner.chatPreview.chat.id)
       dismiss(true)
-      navigateFromRef("MessagesDetailsScreen", { chatPreview: banner.chatPreview })
+      navigateFromRef("MessagesDetailsScreen", {
+        chatPreview: banner.chatPreview,
+      })
       return
     }
     dismiss(true)
@@ -269,13 +298,17 @@ const InAppMessageBanner: React.FC = () => {
       >
         <TouchableOpacity activeOpacity={0.9} onPress={handlePress}>
           <DmView
-            style={[styles.boxWrap, a.overflow_hidden, {
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 3 },
-              shadowOpacity: 0.18,
-              shadowRadius: 8,
-              elevation: 6,
-            }]}
+            style={[
+              styles.boxWrap,
+              a.overflow_hidden,
+              {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.18,
+                shadowRadius: 8,
+                elevation: 6,
+              },
+            ]}
           >
             <DmView style={[a.flex_row, a.items_center, a.p_14]}>
               {photo ? (
@@ -287,14 +320,33 @@ const InAppMessageBanner: React.FC = () => {
                   />
                 </DmView>
               ) : (
-                <DmView style={[styles.textWrap, a.items_center, a.justify_center, a.mr_12]}>
-                  <Text size={16} weight="semibold" leading="legacy" color="inverse">
+                <DmView
+                  style={[
+                    styles.textWrap,
+                    a.items_center,
+                    a.justify_center,
+                    a.mr_12,
+                  ]}
+                >
+                  <Text
+                    size={16}
+                    weight="semibold"
+                    leading="legacy"
+                    color="inverse"
+                  >
                     {(banner.title || "Tappler").charAt(0)}
                   </Text>
                 </DmView>
               )}
               <DmView style={a.flex_1}>
-                <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mb_2]}>
+                <DmView
+                  style={[
+                    a.flex_row,
+                    a.items_center,
+                    a.justify_between,
+                    a.mb_2,
+                  ]}
+                >
                   <Text
                     size={15}
                     weight="semibold"
@@ -307,9 +359,21 @@ const InAppMessageBanner: React.FC = () => {
                         rendering a blank bold line above the message. */}
                     {banner.title || "Tappler"}
                   </Text>
-                  <Text size={11} leading="legacy" color="tertiary" style={a.ml_8}>now</Text>
+                  <Text
+                    size={11}
+                    leading="legacy"
+                    color="tertiary"
+                    style={a.ml_8}
+                  >
+                    now
+                  </Text>
                 </DmView>
-                <Text size={13} leading="legacy" color="secondary" numberOfLines={2}>
+                <Text
+                  size={13}
+                  leading="legacy"
+                  color="secondary"
+                  numberOfLines={2}
+                >
                   {banner.body}
                 </Text>
               </DmView>

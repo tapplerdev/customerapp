@@ -34,40 +34,55 @@ const CASES = INSETS.map((insets) => ({
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
 describe("TapplyAIScreen, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, insets, env }) => {
-    const tree = await renderScreen(load, {
-      ...screenState("data"),
-      lang: env.language,
-      platform: env.platform,
-      insets,
-    })
-    expectParity(parityName(state, env), tree)
-  })
-
-  it.each(
-    rowsByPlatform([{ state: "guest" }], PARITY_MATRIX)
-  )("$state [$env.language $env.platform] draws what a signed-in customer's does", async ({ env }) => {
-    const options = { lang: env.language, platform: env.platform } as const
-    const guest = await renderScreen(load, { ...guestState("data"), ...options })
-    const signed = await renderScreen(load, { ...screenState("data"), ...options })
-    expect(guest).toEqual(signed)
-  })
-})
-
-describe.each(PARITY_MATRIX)("TapplyAIScreen presses [$language $platform]", (env: ParityEnv) => {
-  it("the back chevron goes back", async () => {
-    const session = await openScreen(load, {
-      ...screenState("data"),
-      lang: env.language,
-      platform: env.platform,
-    })
-    try {
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, insets, env }) => {
+      const tree = await renderScreen(load, {
+        ...screenState("data"),
+        lang: env.language,
+        platform: env.platform,
+        insets,
       })
-      expect(session.navigation.actions.map((action) => action.type)).toEqual(["GO_BACK"])
-    } finally {
-      session.unmount()
+      expectParity(parityName(state, env), tree)
     }
-  })
+  )
+
+  it.each(rowsByPlatform([{ state: "guest" }], PARITY_MATRIX))(
+    "$state [$env.language $env.platform] draws what a signed-in customer's does",
+    async ({ env }) => {
+      const options = { lang: env.language, platform: env.platform } as const
+      const guest = await renderScreen(load, {
+        ...guestState("data"),
+        ...options,
+      })
+      const signed = await renderScreen(load, {
+        ...screenState("data"),
+        ...options,
+      })
+      expect(guest).toEqual(signed)
+    }
+  )
 })
+
+describe.each(PARITY_MATRIX)(
+  "TapplyAIScreen presses [$language $platform]",
+  (env: ParityEnv) => {
+    it("the back chevron goes back", async () => {
+      const session = await openScreen(load, {
+        ...screenState("data"),
+        lang: env.language,
+        platform: env.platform,
+      })
+      try {
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions.map((action) => action.type)).toEqual(
+          ["GO_BACK"]
+        )
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

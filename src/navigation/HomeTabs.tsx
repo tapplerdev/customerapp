@@ -29,7 +29,10 @@ const HomeTabs: React.FC = () => {
   // Unread messages badge — updates instantly on read via markAllAsRead's
   // optimistic cache zero. Sharing isChatVisible with the list makes
   // "badge ⊆ list" structural: a hidden chat can never feed the badge.
-  const totalUnread = visibleChats.reduce((sum, c) => sum + (c.notReadMessages || 0), 0)
+  const totalUnread = visibleChats.reduce(
+    (sum, c) => sum + (c.notReadMessages || 0),
+    0
+  )
 
   return (
     <Tab.Navigator
@@ -63,7 +66,11 @@ const HomeTabs: React.FC = () => {
         component={MessagesScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <RenderTabBarIcon focused={focused} type="messages" badge={totalUnread} />
+            <RenderTabBarIcon
+              focused={focused}
+              type="messages"
+              badge={totalUnread}
+            />
           ),
         }}
       />

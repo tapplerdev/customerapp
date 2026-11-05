@@ -14,29 +14,48 @@ interface Props {
   descr?: string
 }
 
-const SuccessModal: React.FC<Props> = ({ isVisible, onClose, title, descr }) => {
+const SuccessModal: React.FC<Props> = ({
+  isVisible,
+  onClose,
+  title,
+  descr,
+}) => {
   const { t } = useTranslation()
 
   return (
     <Modal visible={isVisible} transparent animationType="fade">
       <DmView
-        style={[a.flex_1, a.items_center, a.justify_center, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        style={[
+          a.flex_1,
+          a.items_center,
+          a.justify_center,
+          { backgroundColor: "rgba(0,0,0,0.5)" },
+        ]}
         onPress={onClose}
       >
-        <DmView
-          style={[styles.box, a.py_30]}
-          onPress={() => {}}
-        >
+        <DmView style={[styles.box, a.py_30]} onPress={() => {}}>
           <DmView style={a.items_center}>
             <BigCheckIcon />
           </DmView>
           {title && (
-            <Text size={20} weight="semibold" leading="tight" align="center" style={styles.text}>
+            <Text
+              size={20}
+              weight="semibold"
+              leading="tight"
+              align="center"
+              style={styles.text}
+            >
               {title}
             </Text>
           )}
           {descr && (
-            <Text size={13} weight="medium" leading={px(27)} align="center" style={styles.text2}>
+            <Text
+              size={13}
+              weight="medium"
+              leading={px(27)}
+              align="center"
+              style={styles.text2}
+            >
               {descr}
             </Text>
           )}

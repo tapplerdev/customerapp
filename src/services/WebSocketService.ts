@@ -24,9 +24,9 @@
  * have to be passed in).
  */
 
-import { io, Socket } from 'socket.io-client'
-import { EventEmitter } from 'events'
-import { API_URL } from '../config'
+import { io, Socket } from "socket.io-client"
+import { EventEmitter } from "events"
+import { API_URL } from "../config"
 
 interface WebSocketConfig {
   token: string
@@ -39,14 +39,14 @@ interface WebSocketConfig {
    */
   getToken?: () => string | null | undefined
   userId?: number
-  userType?: 'pro' | 'customer' | 'employee'
+  userType?: "pro" | "customer" | "employee"
 }
 
 const bearer = (token: string) =>
-  token.startsWith('Bearer ') ? token : `Bearer ${token}`
+  token.startsWith("Bearer ") ? token : `Bearer ${token}`
 
 interface ConnectionState {
-  status: 'disconnected' | 'connecting' | 'connected' | 'error'
+  status: "disconnected" | "connecting" | "connected" | "error"
   lastConnected?: number
   lastDisconnected?: number
   reconnectAttempts: number
@@ -57,8 +57,8 @@ class WebSocketServiceClass extends EventEmitter {
   private socket: Socket | null = null
   private config: WebSocketConfig | null = null
   private state: ConnectionState = {
-    status: 'disconnected',
-    reconnectAttempts: 0
+    status: "disconnected",
+    reconnectAttempts: 0,
   }
 
   // Configuration
@@ -68,7 +68,7 @@ class WebSocketServiceClass extends EventEmitter {
 
   // Background retry after reconnect_failed
   private backgroundRetryInterval: ReturnType<typeof setInterval> | null = null
-  private readonly backgroundRetryMs = 60000  // Retry every 60s after giving up
+  private readonly backgroundRetryMs = 60000 // Retry every 60s after giving up
 
   // A server-side disconnect ('io server disconnect') is the one the client
   // never reconnects from by itself. Reconnect after a backoff: 1 s, 2 s,
@@ -91,7 +91,7 @@ class WebSocketServiceClass extends EventEmitter {
 
   constructor() {
     super()
-    console.log('🔌 [WebSocketService] Initialized')
+    console.log("🔌 [WebSocketService] Initialized")
   }
 
   /**
@@ -99,12 +99,12 @@ class WebSocketServiceClass extends EventEmitter {
    */
   connect(config: WebSocketConfig): void {
     if (this.socket?.connected) {
-      console.log('🔌 [WebSocketService] Already connected, skipping')
+      console.log("🔌 [WebSocketService] Already connected, skipping")
       return
     }
 
-    if (this.state.status === 'connecting') {
-      console.log('🔌 [WebSocketService] Connection in progress, skipping')
+    if (this.state.status === "connecting") {
+      console.log("🔌 [WebSocketService] Connection in progress, skipping")
       return
     }
 
@@ -116,35 +116,37 @@ class WebSocketServiceClass extends EventEmitter {
     }
 
     this.config = config
-    this.state.status = 'connecting'
+    this.state.status = "connecting"
     // A new socket starts the server-disconnect backoff over.
     this.serverDisconnects = 0
 
     // Socket.IO endpoint is at root level, not under /api
     // Remove /api from URL if present
     if (!API_URL) {
-      console.error('❌ [WebSocketService] API_URL is undefined - cannot connect')
-      this.state.status = 'error'
-      this.state.error = 'API_URL not configured'
-      this.emit('error', new Error('API_URL not configured'))
+      console.error(
+        "❌ [WebSocketService] API_URL is undefined - cannot connect"
+      )
+      this.state.status = "error"
+      this.state.error = "API_URL not configured"
+      this.emit("error", new Error("API_URL not configured"))
       return
     }
 
-    const baseUrl = API_URL.replace(/\/api$/, '')
-    const protocol = baseUrl.startsWith('https') ? 'wss' : 'ws'
+    const baseUrl = API_URL.replace(/\/api$/, "")
+    const protocol = baseUrl.startsWith("https") ? "wss" : "ws"
 
-    console.log('🔌 [WebSocketService] Connecting to WebSocket...', {
+    console.log("🔌 [WebSocketService] Connecting to WebSocket...", {
       apiUrl: API_URL,
       baseUrl,
       protocol,
-      socketPath: '/socket',
+      socketPath: "/socket",
       fullUrl: `${baseUrl}/socket`,
-      fullWebSocketUrl: `${protocol}://${baseUrl.replace(/^https?:\/\//, '')}/socket`,
-      note: 'Backend uses custom path /socket (not default /socket.io/)',
+      fullWebSocketUrl: `${protocol}://${baseUrl.replace(/^https?:\/\//, "")}/socket`,
+      note: "Backend uses custom path /socket (not default /socket.io/)",
       userType: config.userType,
       userId: config.userId,
       hasToken: !!config.token,
-      tokenPrefix: config.token?.substring(0, 10) + '...'
+      tokenPrefix: config.token?.substring(0, 10) + "...",
     })
 
     try {
@@ -152,8 +154,8 @@ class WebSocketServiceClass extends EventEmitter {
       // Backend expects: io('https://api.tappler.com/socket', { transports: ['websocket'], auth: { token: 'Bearer ...' } })
       // Try with polling fallback first for debugging
       this.socket = io(baseUrl, {
-        path: '/socket', // ← Backend uses custom path /socket (not default /socket.io/)
-        transports: ['websocket'], // ← Backend only supports WebSocket (no polling)
+        path: "/socket", // ← Backend uses custom path /socket (not default /socket.io/)
+        transports: ["websocket"], // ← Backend only supports WebSocket (no polling)
         // A callback, not an object: socket.io calls it on every connect
         // attempt, so each reconnect presents the current token.
         auth: (cb) => {
@@ -171,24 +173,24 @@ class WebSocketServiceClass extends EventEmitter {
         autoConnect: true,
         forceNew: true, // Force new connection
         upgrade: true, // Allow transport upgrade
-        rememberUpgrade: false // Don't remember transport for debugging
+        rememberUpgrade: false, // Don't remember transport for debugging
       })
 
-      console.log('🔌 [WebSocketService] Socket.IO client created', {
+      console.log("🔌 [WebSocketService] Socket.IO client created", {
         baseUrl,
-        path: '/socket',
-        transports: ['websocket'],
+        path: "/socket",
+        transports: ["websocket"],
         timeout: 20000,
-        note: 'WebSocket-only (backend does not support polling)'
+        note: "WebSocket-only (backend does not support polling)",
       })
 
       this.setupEventHandlers()
-
     } catch (error) {
-      console.error('❌ [WebSocketService] Connection failed:', error)
-      this.state.status = 'error'
-      this.state.error = error instanceof Error ? error.message : 'Unknown error'
-      this.emit('error', error)
+      console.error("❌ [WebSocketService] Connection failed:", error)
+      this.state.status = "error"
+      this.state.error =
+        error instanceof Error ? error.message : "Unknown error"
+      this.emit("error", error)
     }
   }
 
@@ -199,28 +201,28 @@ class WebSocketServiceClass extends EventEmitter {
     if (!this.socket) return
 
     // Connection successful
-    this.socket.on('connect', () => {
-      console.log('✅ [WebSocketService] Connected successfully', {
+    this.socket.on("connect", () => {
+      console.log("✅ [WebSocketService] Connected successfully", {
         socketId: this.socket?.id,
-        transport: this.socket?.io.engine.transport.name
+        transport: this.socket?.io.engine.transport.name,
       })
 
-      this.state.status = 'connected'
+      this.state.status = "connected"
       this.state.lastConnected = Date.now()
       this.state.reconnectAttempts = 0
       this.state.error = undefined
 
       this.stopBackgroundRetry()
 
-      this.emit('connected', {
+      this.emit("connected", {
         socketId: this.socket?.id,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     })
 
     // Connection error (before connect)
-    this.socket.on('connect_error', (error) => {
-      console.error('❌ [WebSocketService] Connection error:', {
+    this.socket.on("connect_error", (error) => {
+      console.error("❌ [WebSocketService] Connection error:", {
         message: error.message,
         name: error.name,
         description: (error as any).description,
@@ -228,27 +230,33 @@ class WebSocketServiceClass extends EventEmitter {
         type: (error as any).type,
         attempt: this.state.reconnectAttempts + 1,
         maxAttempts: this.maxReconnectAttempts,
-        transport: this.socket?.io?.engine?.transport?.name
+        transport: this.socket?.io?.engine?.transport?.name,
       })
 
       // Log full error for debugging
-      console.error('❌ [WebSocketService] Full error object:', error)
+      console.error("❌ [WebSocketService] Full error object:", error)
 
       // Log error stack trace
       if (error.stack) {
-        console.error('❌ [WebSocketService] Error stack:', error.stack)
+        console.error("❌ [WebSocketService] Error stack:", error.stack)
       }
 
       // Log all error properties (including non-enumerable)
-      const errorProps = Object.getOwnPropertyNames(error).reduce((acc, key) => {
-        acc[key] = (error as any)[key]
-        return acc
-      }, {} as any)
-      console.error('❌ [WebSocketService] All error properties:', JSON.stringify(errorProps, null, 2))
+      const errorProps = Object.getOwnPropertyNames(error).reduce(
+        (acc, key) => {
+          acc[key] = (error as any)[key]
+          return acc
+        },
+        {} as any
+      )
+      console.error(
+        "❌ [WebSocketService] All error properties:",
+        JSON.stringify(errorProps, null, 2)
+      )
 
       // Log Socket.IO engine state
       if (this.socket?.io?.engine) {
-        console.error('❌ [WebSocketService] Engine state:', {
+        console.error("❌ [WebSocketService] Engine state:", {
           readyState: this.socket.io.engine.readyState,
           transport: this.socket.io.engine.transport?.name,
           upgrading: (this.socket.io.engine as any).upgrading,
@@ -260,24 +268,30 @@ class WebSocketServiceClass extends EventEmitter {
       }
 
       // Log connection configuration
-      console.error('❌ [WebSocketService] Connection config:', {
+      console.error("❌ [WebSocketService] Connection config:", {
         url: (this.socket?.io as any)?.uri,
         opts: {
           path: (this.socket?.io?.opts as any)?.path,
           transports: (this.socket?.io?.opts as any)?.transports,
           secure: (this.socket?.io?.opts as any)?.secure,
           reconnection: (this.socket?.io?.opts as any)?.reconnection,
-        }
+        },
       })
 
-      this.state.status = 'error'
+      this.state.status = "error"
       this.state.error = error.message
       this.state.reconnectAttempts++
 
       // Check for auth errors
-      if (error.message.includes('Unauthorized') || error.message.includes('401') || error.message.includes('403')) {
-        console.error('🚫 [WebSocketService] Authentication failed - invalid token')
-        this.emit('auth_error', error)
+      if (
+        error.message.includes("Unauthorized") ||
+        error.message.includes("401") ||
+        error.message.includes("403")
+      ) {
+        console.error(
+          "🚫 [WebSocketService] Authentication failed - invalid token"
+        )
+        this.emit("auth_error", error)
 
         // Stop reconnection attempts on auth failure
         this.stopBackgroundRetry()
@@ -286,64 +300,79 @@ class WebSocketServiceClass extends EventEmitter {
       }
 
       // Check for connection refused / endpoint not found
-      if (error.message.includes('ECONNREFUSED') || error.message.includes('404')) {
-        console.error('🚫 [WebSocketService] Endpoint not found or connection refused')
-        console.error('   Check if Socket.IO server is running at the endpoint')
-        console.error('   Current endpoint:', (this.socket?.io as any)?.uri)
+      if (
+        error.message.includes("ECONNREFUSED") ||
+        error.message.includes("404")
+      ) {
+        console.error(
+          "🚫 [WebSocketService] Endpoint not found or connection refused"
+        )
+        console.error("   Check if Socket.IO server is running at the endpoint")
+        console.error("   Current endpoint:", (this.socket?.io as any)?.uri)
       }
 
-      this.emit('connect_error', error)
+      this.emit("connect_error", error)
     })
 
     // Disconnection
-    this.socket.on('disconnect', (reason) => {
-      console.log('🔌 [WebSocketService] Disconnected:', reason)
+    this.socket.on("disconnect", (reason) => {
+      console.log("🔌 [WebSocketService] Disconnected:", reason)
 
-      this.state.status = 'disconnected'
+      this.state.status = "disconnected"
       this.state.lastDisconnected = Date.now()
 
-      this.emit('disconnected', {
+      this.emit("disconnected", {
         reason,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       // Handle different disconnect reasons
-      if (reason === 'io server disconnect') {
+      if (reason === "io server disconnect") {
         // The server closed this socket on purpose (today nothing does; a
         // drain with disconnectSockets() would). socket.io never reconnects
         // from that by itself, which would strand the app until a restart or
         // a new token. Reconnect after a backoff; the auth callback presents
         // the current token, and a refused one ends in auth_error as usual.
-        console.log('🚫 [WebSocketService] Server forced disconnect - reconnecting after a backoff')
-        this.emit('server_disconnect', { reason })
+        console.log(
+          "🚫 [WebSocketService] Server forced disconnect - reconnecting after a backoff"
+        )
+        this.emit("server_disconnect", { reason })
         this.scheduleServerDisconnectRetry()
-      } else if (reason === 'transport close' || reason === 'ping timeout') {
+      } else if (reason === "transport close" || reason === "ping timeout") {
         // Network issues - Socket.IO will auto-reconnect.
         // Stale links surface here as 'ping timeout' via engine.io's built-in
         // watchdog (server defaults: ping 25s + timeout 20s). Do NOT add a
         // manual heartbeat that calls socket.disconnect() on staleness —
         // 'io client disconnect' sets skipReconnect and never auto-reconnects.
-        console.log('🔄 [WebSocketService] Network disconnect - will auto-reconnect')
+        console.log(
+          "🔄 [WebSocketService] Network disconnect - will auto-reconnect"
+        )
       }
     })
 
     // Reconnection attempt
-    this.socket.io.on('reconnect_attempt', (attempt) => {
-      console.log(`🔄 [WebSocketService] Reconnection attempt ${attempt}/${this.maxReconnectAttempts}`)
+    this.socket.io.on("reconnect_attempt", (attempt) => {
+      console.log(
+        `🔄 [WebSocketService] Reconnection attempt ${attempt}/${this.maxReconnectAttempts}`
+      )
       this.state.reconnectAttempts = attempt
-      this.emit('reconnecting', { attempt })
+      this.emit("reconnecting", { attempt })
     })
 
     // Reconnection successful
-    this.socket.io.on('reconnect', (attemptNumber) => {
-      console.log(`✅ [WebSocketService] Reconnected after ${attemptNumber} attempts`)
-      this.emit('reconnected', { attemptNumber })
+    this.socket.io.on("reconnect", (attemptNumber) => {
+      console.log(
+        `✅ [WebSocketService] Reconnected after ${attemptNumber} attempts`
+      )
+      this.emit("reconnected", { attemptNumber })
     })
 
     // Reconnection failed
-    this.socket.io.on('reconnect_failed', () => {
-      console.error('❌ [WebSocketService] Reconnection failed after max attempts')
-      console.error('❌ [WebSocketService] Final connection state:', {
+    this.socket.io.on("reconnect_failed", () => {
+      console.error(
+        "❌ [WebSocketService] Reconnection failed after max attempts"
+      )
+      console.error("❌ [WebSocketService] Final connection state:", {
         attempts: this.state.reconnectAttempts,
         maxAttempts: this.maxReconnectAttempts,
         lastError: this.state.error,
@@ -353,68 +382,100 @@ class WebSocketServiceClass extends EventEmitter {
         connected: this.socket?.connected,
         disconnected: this.socket?.disconnected,
       })
-      console.error('❌ [WebSocketService] WebSocket endpoint may not exist or is unreachable')
-      console.error('❌ [WebSocketService] Check backend WebSocket server status')
+      console.error(
+        "❌ [WebSocketService] WebSocket endpoint may not exist or is unreachable"
+      )
+      console.error(
+        "❌ [WebSocketService] Check backend WebSocket server status"
+      )
 
-      this.state.status = 'error'
-      this.state.error = 'Max reconnection attempts reached'
-      this.emit('reconnect_failed')
+      this.state.status = "error"
+      this.state.error = "Max reconnection attempts reached"
+      this.emit("reconnect_failed")
 
       this.startBackgroundRetry()
     })
 
     // Listen for notification events from backend
     // Backend emits to room "<userType>:<userId>" (e.g., "pro:123")
-    this.socket.on('notification', (payload) => {
-      console.log('📬 [WebSocketService] ========== RAW NOTIFICATION RECEIVED ==========')
-      console.log('📬 [WebSocketService] Full payload:', JSON.stringify(payload, null, 2))
-      console.log('📬 [WebSocketService] Summary:', {
+    this.socket.on("notification", (payload) => {
+      console.log(
+        "📬 [WebSocketService] ========== RAW NOTIFICATION RECEIVED =========="
+      )
+      console.log(
+        "📬 [WebSocketService] Full payload:",
+        JSON.stringify(payload, null, 2)
+      )
+      console.log("📬 [WebSocketService] Summary:", {
         type: payload.type || payload.event,
         title: payload.title,
         body: payload.body,
         data: payload.data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
-      console.log('📬 [WebSocketService] ====================================================')
+      console.log(
+        "📬 [WebSocketService] ===================================================="
+      )
 
-      this.emit('notification', payload)
+      this.emit("notification", payload)
     })
 
     // Listen for system notifications (alternative event name)
-    this.socket.on('system.notification', (payload) => {
-      console.log('📬 [WebSocketService] ========== SYSTEM NOTIFICATION RECEIVED ==========')
-      console.log('📬 [WebSocketService] Full payload:', JSON.stringify(payload, null, 2))
-      console.log('📬 [WebSocketService] Summary:', {
+    this.socket.on("system.notification", (payload) => {
+      console.log(
+        "📬 [WebSocketService] ========== SYSTEM NOTIFICATION RECEIVED =========="
+      )
+      console.log(
+        "📬 [WebSocketService] Full payload:",
+        JSON.stringify(payload, null, 2)
+      )
+      console.log("📬 [WebSocketService] Summary:", {
         type: payload.type || payload.event,
         title: payload.title,
         body: payload.body,
-        data: payload.data
+        data: payload.data,
       })
-      console.log('📬 [WebSocketService] ====================================================')
+      console.log(
+        "📬 [WebSocketService] ===================================================="
+      )
 
-      this.emit('notification', payload)
+      this.emit("notification", payload)
     })
 
     // Generic event listener for any other events backend might send
     this.socket.onAny((eventName, ...args) => {
-      console.log('📡 [WebSocketService] ========== ANY EVENT RECEIVED ==========')
-      console.log('📡 [WebSocketService] Event name:', eventName)
-      console.log('📡 [WebSocketService] Args count:', args.length)
-      console.log('📡 [WebSocketService] All args:', JSON.stringify(args, null, 2))
-      console.log('📡 [WebSocketService] ====================================================')
+      console.log(
+        "📡 [WebSocketService] ========== ANY EVENT RECEIVED =========="
+      )
+      console.log("📡 [WebSocketService] Event name:", eventName)
+      console.log("📡 [WebSocketService] Args count:", args.length)
+      console.log(
+        "📡 [WebSocketService] All args:",
+        JSON.stringify(args, null, 2)
+      )
+      console.log(
+        "📡 [WebSocketService] ===================================================="
+      )
 
       // Backend emits custom events like 'custom.screenName.pro.service.screenName'
       // We need to treat ALL backend events as notifications
-      if (eventName.startsWith('custom.') || eventName.startsWith('system.')) {
+      if (eventName.startsWith("custom.") || eventName.startsWith("system.")) {
         const payload = args[0]
 
-        console.log('📬 [WebSocketService] ========== CONVERTING TO NOTIFICATION ==========')
-        console.log('📬 [WebSocketService] Event type:', eventName)
-        console.log('📬 [WebSocketService] Payload:', JSON.stringify(payload, null, 2))
-        console.log('📬 [WebSocketService] Title:', payload?.title)
-        console.log('📬 [WebSocketService] Body:', payload?.body)
-        console.log('📬 [WebSocketService] Data:', payload?.data)
-        console.log('📬 [WebSocketService] ====================================================')
+        console.log(
+          "📬 [WebSocketService] ========== CONVERTING TO NOTIFICATION =========="
+        )
+        console.log("📬 [WebSocketService] Event type:", eventName)
+        console.log(
+          "📬 [WebSocketService] Payload:",
+          JSON.stringify(payload, null, 2)
+        )
+        console.log("📬 [WebSocketService] Title:", payload?.title)
+        console.log("📬 [WebSocketService] Body:", payload?.body)
+        console.log("📬 [WebSocketService] Data:", payload?.data)
+        console.log(
+          "📬 [WebSocketService] ===================================================="
+        )
 
         // Add event type to payload if not present
         if (payload && !payload.event) {
@@ -422,16 +483,16 @@ class WebSocketServiceClass extends EventEmitter {
         }
 
         // Emit as notification so HeaderDashboard picks it up
-      this.emit('notification', payload)
+        this.emit("notification", payload)
       } else {
-        this.emit('event', { eventName, args })
+        this.emit("event", { eventName, args })
       }
     })
 
     // Error events
-    this.socket.on('error', (error) => {
-      console.error('❌ [WebSocketService] Socket error:', error)
-      this.emit('error', error)
+    this.socket.on("error", (error) => {
+      console.error("❌ [WebSocketService] Socket error:", error)
+      this.emit("error", error)
     })
   }
 
@@ -447,7 +508,7 @@ class WebSocketServiceClass extends EventEmitter {
       return
     }
 
-    console.log('🔌 [WebSocketService] Disconnecting...')
+    console.log("🔌 [WebSocketService] Disconnecting...")
 
     this.stopBackgroundRetry()
 
@@ -456,7 +517,7 @@ class WebSocketServiceClass extends EventEmitter {
     this.socket = null
     this.config = null
 
-    this.state.status = 'disconnected'
+    this.state.status = "disconnected"
     this.state.lastDisconnected = Date.now()
   }
 
@@ -464,12 +525,14 @@ class WebSocketServiceClass extends EventEmitter {
    * Reconnect with fresh token (for token refresh scenarios)
    */
   reconnect(newToken?: string): void {
-    console.log('🔄 [WebSocketService] Reconnecting with fresh token...')
+    console.log("🔄 [WebSocketService] Reconnecting with fresh token...")
 
     const currentConfig = this.config
 
     if (!currentConfig) {
-      console.error('❌ [WebSocketService] Cannot reconnect - no previous config')
+      console.error(
+        "❌ [WebSocketService] Cannot reconnect - no previous config"
+      )
       return
     }
 
@@ -497,7 +560,7 @@ class WebSocketServiceClass extends EventEmitter {
   private startBackgroundRetry(): void {
     if (this.backgroundRetryInterval) return
 
-    console.log('🔄 [WebSocketService] Starting background retry every 60s')
+    console.log("🔄 [WebSocketService] Starting background retry every 60s")
 
     this.backgroundRetryInterval = setInterval(() => {
       if (this.socket?.connected) {
@@ -505,14 +568,19 @@ class WebSocketServiceClass extends EventEmitter {
         return
       }
 
-      console.log('🔄 [WebSocketService] Background retry — attempting fresh connection...')
+      console.log(
+        "🔄 [WebSocketService] Background retry — attempting fresh connection..."
+      )
       this.reconnect()
     }, this.backgroundRetryMs)
   }
 
   private scheduleServerDisconnectRetry(): void {
     this.stopServerDisconnectRetry()
-    if (Date.now() - (this.state.lastConnected ?? 0) >= this.serverDisconnectStableMs) {
+    if (
+      Date.now() - (this.state.lastConnected ?? 0) >=
+      this.serverDisconnectStableMs
+    ) {
       this.serverDisconnects = 0
     }
     const base = Math.min(
@@ -526,8 +594,10 @@ class WebSocketServiceClass extends EventEmitter {
       this.serverDisconnectTimer = null
       // Only the socket that was kicked, and only if it is still down.
       if (socket && this.socket === socket && !socket.connected) {
-        console.log('🔄 [WebSocketService] Reconnecting after a server disconnect')
-        this.state.status = 'connecting'
+        console.log(
+          "🔄 [WebSocketService] Reconnecting after a server disconnect"
+        )
+        this.state.status = "connecting"
         socket.connect()
       }
     }, delay)
@@ -580,11 +650,13 @@ class WebSocketServiceClass extends EventEmitter {
    */
   emitToServer(event: string, data?: any): void {
     if (!this.socket?.connected) {
-      console.warn('⚠️ [WebSocketService] Cannot emit to server - not connected')
+      console.warn(
+        "⚠️ [WebSocketService] Cannot emit to server - not connected"
+      )
       return
     }
 
-    console.log('📤 [WebSocketService] Emitting event to server:', event)
+    console.log("📤 [WebSocketService] Emitting event to server:", event)
     this.socket.emit(event, data)
   }
 }

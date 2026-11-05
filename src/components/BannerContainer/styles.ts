@@ -10,7 +10,7 @@ export default StyleSheet.create({
   },
   textWrap: {
     backgroundColor: colors.red,
-  },  // The box: white, and its padding unless the caller's containerStyle
+  }, // The box: white, and its padding unless the caller's containerStyle
   // gave its own (8 all round otherwise, as `px-[8] py-[8]` was).
   box: {
     backgroundColor: colors.white,

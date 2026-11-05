@@ -45,7 +45,10 @@ const ANSWERS = {
 }
 
 const base = screenState("data")
-const optionsFor = (env: ParityEnv, answer: keyof typeof ANSWERS = "pending") => ({
+const optionsFor = (
+  env: ParityEnv,
+  answer: keyof typeof ANSWERS = "pending"
+) => ({
   ...base,
   api: { ...base.api, updateCustomer: ANSWERS[answer] },
   lang: env.language,
@@ -53,8 +56,10 @@ const optionsFor = (env: ParityEnv, answer: keyof typeof ANSWERS = "pending") =>
   route: { name: "ChangePasswordScreen" },
 })
 
-const type = (index: number, text: string): Step => (root) =>
-  typeInto(root, index, text)
+const type =
+  (index: number, text: string): Step =>
+  (root) =>
+    typeInto(root, index, text)
 const send: Step = (root, env) => pressTitled(root, copy(env, "send"))
 const ok: Step = (root, env) => pressTitled(root, copy(env, "OK"))
 
@@ -67,7 +72,10 @@ type Case = { label: string; answer?: keyof typeof ANSWERS; steps?: Step[] }
 const CASES: Case[] = [
   { label: "as opened" },
   { label: "current password typed", steps: [type(0, "oldpass1")] },
-  { label: "new password too short", steps: [type(0, "oldpass1"), type(1, "abc")] },
+  {
+    label: "new password too short",
+    steps: [type(0, "oldpass1"), type(1, "abc")],
+  },
   {
     label: "repeat does not match",
     steps: [type(0, "oldpass1"), type(1, "newpass12"), type(2, "newpass1")],
@@ -75,10 +83,26 @@ const CASES: Case[] = [
   { label: "short and mismatching", steps: [type(1, "abc"), type(2, "abd")] },
   { label: "all three filled and valid", steps: FILLED },
   { label: "sent, pending", steps: [...FILLED, send] },
-  { label: "refused with a validation error", answer: "validation", steps: [...FILLED, send] },
-  { label: "refused with a message", answer: "message", steps: [...FILLED, send] },
-  { label: "refused with neither", answer: "no message", steps: [...FILLED, send] },
-  { label: "accepted: the fields clear and the success card shows", answer: "accepted", steps: [...FILLED, send] },
+  {
+    label: "refused with a validation error",
+    answer: "validation",
+    steps: [...FILLED, send],
+  },
+  {
+    label: "refused with a message",
+    answer: "message",
+    steps: [...FILLED, send],
+  },
+  {
+    label: "refused with neither",
+    answer: "no message",
+    steps: [...FILLED, send],
+  },
+  {
+    label: "accepted: the fields clear and the success card shows",
+    answer: "accepted",
+    steps: [...FILLED, send],
+  },
 ]
 
 describe("ChangePasswordScreen", () => {
@@ -97,76 +121,91 @@ describe("ChangePasswordScreen", () => {
 describe("ChangePasswordScreen presses", () => {
   const envs = rowsByPlatform([{}], PARITY_MATRIX)
 
-  it.each(envs)("Send is refused while a field is empty or an error shows [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      expect(() => pressTitled(session.root, copy(env, "send"))).toThrow()
-      await session.act(() => {
-        type(1, "abc")(session.root, env)
-      })
-      expect(() => pressTitled(session.root, copy(env, "send"))).toThrow()
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it.each(envs)("Send sends the new password; OK on the success card goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, "accepted"))
-    try {
-      for (const step of [...FILLED, send]) {
-        // eslint-disable-next-line no-await-in-loop
+  it.each(envs)(
+    "Send is refused while a field is empty or an error shows [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        expect(() => pressTitled(session.root, copy(env, "send"))).toThrow()
         await session.act(() => {
-          step(session.root, env)
+          type(1, "abc")(session.root, env)
         })
+        expect(() => pressTitled(session.root, copy(env, "send"))).toThrow()
+      } finally {
+        session.unmount()
       }
-      const sent = session.requests().filter((r) => r.endpoint === "updateCustomer")
-      expect(sent).toHaveLength(1)
-      expect(JSON.stringify(sent[0].args)).toContain('"currentPassword":"oldpass1"')
-      expect(JSON.stringify(sent[0].args)).toContain('"newPassword":"newpass12"')
-      expect(session.navigation.actions).toEqual([])
-      await session.act(() => {
-        ok(session.root, env)
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
     }
-  })
+  )
 
-  it.each(envs)("OK closes the error card; the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, "message"))
-    try {
-      for (const step of [...FILLED, send]) {
-        // eslint-disable-next-line no-await-in-loop
+  it.each(envs)(
+    "Send sends the new password; OK on the success card goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, "accepted"))
+      try {
+        for (const step of [...FILLED, send]) {
+          // eslint-disable-next-line no-await-in-loop
+          await session.act(() => {
+            step(session.root, env)
+          })
+        }
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          '"currentPassword":"oldpass1"'
+        )
+        expect(JSON.stringify(sent[0].args)).toContain(
+          '"newPassword":"newpass12"'
+        )
+        expect(session.navigation.actions).toEqual([])
         await session.act(() => {
-          step(session.root, env)
+          ok(session.root, env)
         })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
       }
-      // The card is the screen's ErrorModal (the outermost element with an
-      // isVisible and a descr; iOS keeps drawing a closed Modal for a while).
-      const card = () =>
-        session.root.findAll(
-          (node) =>
-            typeof node.type !== "string" &&
-            "isVisible" in node.props &&
-            "descr" in node.props
-        )[0].props
-      expect(JSON.stringify(session.tree())).toContain("Too many attempts")
-      expect(card().isVisible).toBe(true)
-      await session.act(() => {
-        ok(session.root, env)
-      })
-      expect(card().isVisible).toBe(false)
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
     }
-  })
+  )
+
+  it.each(envs)(
+    "OK closes the error card; the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, "message"))
+      try {
+        for (const step of [...FILLED, send]) {
+          // eslint-disable-next-line no-await-in-loop
+          await session.act(() => {
+            step(session.root, env)
+          })
+        }
+        // The card is the screen's ErrorModal (the outermost element with an
+        // isVisible and a descr; iOS keeps drawing a closed Modal for a while).
+        const card = () =>
+          session.root.findAll(
+            (node) =>
+              typeof node.type !== "string" &&
+              "isVisible" in node.props &&
+              "descr" in node.props
+          )[0].props
+        expect(JSON.stringify(session.tree())).toContain("Too many attempts")
+        expect(card().isVisible).toBe(true)
+        await session.act(() => {
+          ok(session.root, env)
+        })
+        expect(card().isVisible).toBe(false)
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
 })

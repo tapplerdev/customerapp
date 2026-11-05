@@ -14,9 +14,7 @@ import { Text, a, type NoShorthands } from "@tappler/shared/src/ds"
 // DmView.
 export const BannerTab: React.FC<{ text: string }> = ({ text }) => (
   <DmView style={[a.flex_row, a.justify_start]}>
-    <DmView
-      style={[styles.textWrap, a.px_4, a.py_2, styles.tabRadius]}
-    >
+    <DmView style={[styles.textWrap, a.px_4, a.py_2, styles.tabRadius]}>
       <Text size={10} weight="bold" leading="legacy" color="inverse">
         {text.toUpperCase()}
       </Text>

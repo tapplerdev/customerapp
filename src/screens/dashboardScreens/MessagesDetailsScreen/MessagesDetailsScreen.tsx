@@ -159,10 +159,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
   useEffect(() => {
     const proId = chatPreview.chat.proId
     if (context.jobId && proId && context.offerAmount != null) {
-      prefetchOfferHistory(
-        { jobId: context.jobId, proId },
-        { ifOlderThan: 60 }
-      )
+      prefetchOfferHistory({ jobId: context.jobId, proId }, { ifOlderThan: 60 })
     }
   }, [context.jobId, chatPreview.chat.proId, context.offerAmount])
 
@@ -216,8 +213,10 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
   React.useEffect(() => {
     // willShow/willHide keeps the swap in sync with the KAV slide on iOS;
     // Android only emits did* events.
-    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
-    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
     const onShow = () => {
       if (keyboardVisibleRef.current) return
       keyboardVisibleRef.current = true
@@ -273,7 +272,8 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
     if (context.jobId) repostFromJob(context.jobId)
   }, [context.jobId, repostFromJob])
 
-  const canSend = messageText.trim().length > 0 || attachments.pending.length > 0
+  const canSend =
+    messageText.trim().length > 0 || attachments.pending.length > 0
 
   // Preload recent photos on mount so they're ready when sheet opens
   React.useEffect(() => {
@@ -347,7 +347,13 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
     <>
       {context.isJobInactive && (
         <DmView style={[a.px_18, a.pb_10]}>
-          <Text size={11} leading="legacy" color="tertiary" align="center" style={styles.italic}>
+          <Text
+            size={11}
+            leading="legacy"
+            color="tertiary"
+            align="center"
+            style={styles.italic}
+          >
             {t("attachments_unavailable")}
           </Text>
         </DmView>
@@ -355,11 +361,21 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
 
       <DmView style={context.isJobInactive ? { opacity: 0.3 } : undefined}>
         {/* Photos & videos header */}
-        <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_14, a.pb_10]}>
+        <DmView
+          style={[
+            a.flex_row,
+            a.items_center,
+            a.justify_between,
+            a.px_14,
+            a.pb_10,
+          ]}
+        >
           <Text size={14} weight="semibold" leading="legacy">
             {t("photos_and_videos")}
           </Text>
-          <DmView onPress={context.isJobInactive ? undefined : handleGalleryPress}>
+          <DmView
+            onPress={context.isJobInactive ? undefined : handleGalleryPress}
+          >
             <Text size={13} weight="bold" leading="legacy" color="brand">
               {t("view_library")}
             </Text>
@@ -376,7 +392,13 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
             ListHeaderComponent={
               <DmView
                 onPress={context.isJobInactive ? undefined : handleCameraPress}
-                style={[a.items_center, a.justify_center, styles.iconWrap, a.mr_6, styles.photoStripItem]}
+                style={[
+                  a.items_center,
+                  a.justify_center,
+                  styles.iconWrap,
+                  a.mr_6,
+                  styles.photoStripItem,
+                ]}
               >
                 <CameraIcon width={24} height={20} />
               </DmView>
@@ -388,10 +410,23 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
 
               return (
                 <DmView
-                  onPress={context.isJobInactive || atMax ? undefined : () => attachments.toggleRecentPhoto(item.uri)}
-                  style={[a.mr_6, styles.container, a.overflow_hidden, styles.photoStripItem, atMax && !isSelected ? { opacity: 0.4 } : undefined]}
+                  onPress={
+                    context.isJobInactive || atMax
+                      ? undefined
+                      : () => attachments.toggleRecentPhoto(item.uri)
+                  }
+                  style={[
+                    a.mr_6,
+                    styles.container,
+                    a.overflow_hidden,
+                    styles.photoStripItem,
+                    atMax && !isSelected ? { opacity: 0.4 } : undefined,
+                  ]}
                 >
-                  <RNImage source={{ uri: item.uri }} style={styles.photoStripImage} />
+                  <RNImage
+                    source={{ uri: item.uri }}
+                    style={styles.photoStripImage}
+                  />
                   {isSelected && (
                     <DmView
                       style={[
@@ -401,7 +436,12 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
                         a.justify_center,
                       ]}
                     >
-                      <Text size={10} weight="bold" leading="legacy" color="inverse">
+                      <Text
+                        size={10}
+                        weight="bold"
+                        leading="legacy"
+                        color="inverse"
+                      >
                         {selIndex + 1}
                       </Text>
                     </DmView>
@@ -485,7 +525,9 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         return
       }
       setSendError(
-        code === "CHAT_BLOCK_UNVERIFIED" ? t("chat_block_unverified") : t("failed_to_send")
+        code === "CHAT_BLOCK_UNVERIFIED"
+          ? t("chat_block_unverified")
+          : t("failed_to_send")
       )
     },
     [t, showBlockedModal]
@@ -527,10 +569,16 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         createdAt: new Date().toISOString(),
       } as ChatMessageType)
       const idempotencyKey =
-        failedSendRef.current?.text === text ? failedSendRef.current.key : uuidV4()
+        failedSendRef.current?.text === text
+          ? failedSendRef.current.key
+          : uuidV4()
       failedSendRef.current = null
       try {
-        const newMsg = await sendMessage({ chatId: context.chatId, text, idempotencyKey }).unwrap()
+        const newMsg = await sendMessage({
+          chatId: context.chatId,
+          text,
+          idempotencyKey,
+        }).unwrap()
         pagination.replaceOptimisticMessage(optimisticId, newMsg)
       } catch (e: any) {
         failedSendRef.current = { text, key: idempotencyKey }
@@ -539,12 +587,24 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         handleSendFailure(e)
       }
     }
-  }, [messageText, attachments, context.chatId, sendMessage, pagination, t, handleSendFailure, showBlockedModal])
+  }, [
+    messageText,
+    attachments,
+    context.chatId,
+    sendMessage,
+    pagination,
+    t,
+    handleSendFailure,
+    showBlockedModal,
+  ])
 
   // ── Scroll handlers ──
-  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setShowScrollDown(e.nativeEvent.contentOffset.y > 300)
-  }, [])
+  const handleScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      setShowScrollDown(e.nativeEvent.contentOffset.y > 300)
+    },
+    []
+  )
 
   const scrollToBottom = useCallback(() => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true })
@@ -559,31 +619,34 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
   }, [pagination.hasMore, pagination.loadMore, isLoadingMore])
 
   // ── Location sending ──
-  const sendLocation = useCallback(async (coords: { lat: number; lon: number }) => {
-    const optimisticId = -Date.now()
-    const optimisticMsg: ChatMessageType = {
-      id: optimisticId,
-      ownerType: "customer",
-      createdAt: new Date().toISOString(),
-      location: { id: 0, latitude: coords.lat, longitude: coords.lon },
-    }
+  const sendLocation = useCallback(
+    async (coords: { lat: number; lon: number }) => {
+      const optimisticId = -Date.now()
+      const optimisticMsg: ChatMessageType = {
+        id: optimisticId,
+        ownerType: "customer",
+        createdAt: new Date().toISOString(),
+        location: { id: 0, latitude: coords.lat, longitude: coords.lon },
+      }
 
-    pagination.addOptimisticMessage(optimisticMsg)
+      pagination.addOptimisticMessage(optimisticMsg)
 
-    try {
-      // A key per attempt: a new pick is a new location message.
-      const realMsg = await sendMessage({
-        chatId: context.chatId,
-        location: { latitude: coords.lat, longitude: coords.lon },
-        idempotencyKey: uuidV4(),
-      }).unwrap()
+      try {
+        // A key per attempt: a new pick is a new location message.
+        const realMsg = await sendMessage({
+          chatId: context.chatId,
+          location: { latitude: coords.lat, longitude: coords.lon },
+          idempotencyKey: uuidV4(),
+        }).unwrap()
 
-      pagination.replaceOptimisticMessage(optimisticId, realMsg)
-    } catch (e: any) {
-      pagination.removeOptimisticMessage(optimisticId)
-      handleSendFailure(e)
-    }
-  }, [context.chatId, sendMessage, pagination, t, handleSendFailure])
+        pagination.replaceOptimisticMessage(optimisticId, realMsg)
+      } catch (e: any) {
+        pagination.removeOptimisticMessage(optimisticId)
+        handleSendFailure(e)
+      }
+    },
+    [context.chatId, sendMessage, pagination, t, handleSendFailure]
+  )
 
   // Listen for address picked from PickAddressScreen
   React.useEffect(() => {
@@ -698,10 +761,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
     ? [glanceSlotRaw.start, glanceSlotRaw.end].filter(Boolean).join(" – ")
     : ""
   const glanceWhen = glanceSource?.dates?.[0]?.date
-    ? [
-        format(new Date(glanceSource.dates[0].date), "EEEE, dd MMM"),
-        glanceSlot,
-      ]
+    ? [format(new Date(glanceSource.dates[0].date), "EEEE, dd MMM"), glanceSlot]
         .filter(Boolean)
         .join("  ·  ")
     : glanceSource?.dateType === "asap"
@@ -739,7 +799,9 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
       const optionLabels = qa.options?.length
         ? qa.options
             .map((o: any) =>
-              isAr ? o.labelAr ?? o.valueAr ?? o.label ?? o.value : o.label ?? o.value
+              isAr
+                ? (o.labelAr ?? o.valueAr ?? o.label ?? o.value)
+                : (o.label ?? o.value)
             )
             .filter(Boolean)
             .join(", ")
@@ -758,7 +820,10 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
   const requestSheetContent = (
     <DmView style={[a.flex_1, styles.box4, styles.sheetContentRound]}>
       <DmView style={[a.items_end, a.px_24, a.pt_16, a.pb_2]}>
-        <DmView onPress={closeRequestSheet} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <DmView
+          onPress={closeRequestSheet}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
           <CloseIcon width={13} height={13} />
         </DmView>
       </DmView>
@@ -790,15 +855,28 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
                 longitudeDelta: 0.002,
               }}
             >
-              <MapPinMarker coordinate={{ latitude: glanceLat, longitude: glanceLng }} />
+              <MapPinMarker
+                coordinate={{ latitude: glanceLat, longitude: glanceLng }}
+              />
             </MapView>
           </DmView>
         )}
 
-        <Text size={20} weight="semibold" leading={px(25)} numberOfLines={2} style={[a.mt_16, rtlText]}>
+        <Text
+          size={20}
+          weight="semibold"
+          leading={px(25)}
+          numberOfLines={2}
+          style={[a.mt_16, rtlText]}
+        >
           {moreServiceName}
         </Text>
-        <Text size={13} leading={px(17)} color="tertiary" style={[styles.text, rtlText]}>
+        <Text
+          size={13}
+          leading={px(17)}
+          color="tertiary"
+          style={[styles.text, rtlText]}
+        >
           {context.proName}
         </Text>
         {context.offerAmount != null && (
@@ -810,12 +888,29 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         )}
 
         {!!glanceWhen && (
-          <DmView style={[a.flex_row, a.items_center, a.mt_18, styles.row, a.px_14, a.py_12]}>
-            <DmView style={[styles.iconWrap2, a.items_center, a.justify_center]}>
+          <DmView
+            style={[
+              a.flex_row,
+              a.items_center,
+              a.mt_18,
+              styles.row,
+              a.px_14,
+              a.py_12,
+            ]}
+          >
+            <DmView
+              style={[styles.iconWrap2, a.items_center, a.justify_center]}
+            >
               <ClockIcon width={17} height={17} />
             </DmView>
             <DmView style={[a.flex_1, a.mx_12]}>
-              <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
+              <Text
+                size={11}
+                weight="semibold"
+                leading="tight"
+                color="secondary"
+                style={rtlText}
+              >
                 {t("date_and_time")}
               </Text>
               <Text size={14} weight="semibold" style={[a.mt_2, rtlText]}>
@@ -826,12 +921,29 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         )}
 
         {!!requestAddress && (
-          <DmView style={[a.flex_row, a.items_center, a.mt_10, styles.row, a.px_14, a.py_12]}>
-            <DmView style={[styles.iconWrap2, a.items_center, a.justify_center]}>
+          <DmView
+            style={[
+              a.flex_row,
+              a.items_center,
+              a.mt_10,
+              styles.row,
+              a.px_14,
+              a.py_12,
+            ]}
+          >
+            <DmView
+              style={[styles.iconWrap2, a.items_center, a.justify_center]}
+            >
               <LocationIcon width={17} height={17} />
             </DmView>
             <DmView style={[a.flex_1, a.mx_12]}>
-              <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
+              <Text
+                size={11}
+                weight="semibold"
+                leading="tight"
+                color="secondary"
+                style={rtlText}
+              >
                 {t("address")}
               </Text>
               <Text size={13} style={[a.mt_2, rtlText]}>
@@ -855,9 +967,24 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         {!!glanceFoodItems.length && (
           <>
             {!!glanceJob?.paymentMethod && (
-              <DmView style={[a.flex_row, a.items_center, a.mt_10, styles.row, a.px_14, a.py_12]}>
+              <DmView
+                style={[
+                  a.flex_row,
+                  a.items_center,
+                  a.mt_10,
+                  styles.row,
+                  a.px_14,
+                  a.py_12,
+                ]}
+              >
                 <DmView style={a.flex_1}>
-                  <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
+                  <Text
+                    size={11}
+                    weight="semibold"
+                    leading="tight"
+                    color="secondary"
+                    style={rtlText}
+                  >
                     {t("payment_method")}
                   </Text>
                   <Text size={13} style={[a.mt_2, rtlText]}>
@@ -866,8 +993,12 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
                         The four keys below all exist, and this is exactly what
                         FoodOrderView already does for the same field. */}
                     {glanceJob.paymentMethod === "creditCard"
-                      ? t(glanceIsPickup ? "card_on_pickup" : "card_on_delivery")
-                      : t(glanceIsPickup ? "cash_on_pickup" : "cash_on_delivery")}
+                      ? t(
+                          glanceIsPickup ? "card_on_pickup" : "card_on_delivery"
+                        )
+                      : t(
+                          glanceIsPickup ? "cash_on_pickup" : "cash_on_delivery"
+                        )}
                   </Text>
                 </DmView>
               </DmView>
@@ -875,7 +1006,13 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
 
             {!!glanceJob?.orderNotes && (
               <DmView style={[a.mt_10, styles.row, a.px_14, a.py_12]}>
-                <Text size={11} weight="semibold" leading="tight" color="secondary" style={rtlText}>
+                <Text
+                  size={11}
+                  weight="semibold"
+                  leading="tight"
+                  color="secondary"
+                  style={rtlText}
+                >
                   {t("order_notes")}
                 </Text>
                 <Text size={13} style={[a.mt_2, rtlText]}>
@@ -901,15 +1038,28 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
               {requestQARows.map((row, rowIndex) => (
                 <DmView
                   key={row.key}
-                  style={rowIndex < requestQARows.length - 1 ? styles.containerLength : styles.containerNotLength}
+                  style={
+                    rowIndex < requestQARows.length - 1
+                      ? styles.containerLength
+                      : styles.containerNotLength
+                  }
                 >
                   {!!row.label && (
-                    <Text size={13} weight="semibold" leading={px(17)} style={rtlText}>
+                    <Text
+                      size={13}
+                      weight="semibold"
+                      leading={px(17)}
+                      style={rtlText}
+                    >
                       {row.label}
                     </Text>
                   )}
                   {!!row.value && (
-                    <Text size={13} color="secondary" style={[styles.text, rtlText]}>
+                    <Text
+                      size={13}
+                      color="secondary"
+                      style={[styles.text, rtlText]}
+                    >
                       {row.value}
                     </Text>
                   )}
@@ -930,7 +1080,9 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
       >
         {/* Header */}
         <DmView style={styles.box4}>
-          <DmView style={[a.flex_row, a.items_center, a.px_20, a.pt_10, a.pb_14]}>
+          <DmView
+            style={[a.flex_row, a.items_center, a.px_20, a.pt_10, a.pb_14]}
+          >
             <DmView
               onPress={() => navigation.goBack()}
               style={I18nManager.isRTL && styles.iconWrapRtl}
@@ -943,7 +1095,13 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
               onPress={async () => {
                 if (!context.pro?.id) return
                 try {
-                  await getProProfile({ proId: context.pro.id, serviceCategoryId: context.serviceCategoryId || 0 }, true).unwrap()
+                  await getProProfile(
+                    {
+                      proId: context.pro.id,
+                      serviceCategoryId: context.serviceCategoryId || 0,
+                    },
+                    true
+                  ).unwrap()
                   navigation.navigate("ProProfileScreen", {
                     proId: context.pro.id,
                     serviceCategoryId: context.serviceCategoryId || 0,
@@ -956,14 +1114,29 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
               {context.pro?.profilePhoto150 || context.pro?.profilePhoto ? (
                 <DmView style={[styles.imageWrap, a.overflow_hidden, a.mr_10]}>
                   <FastImage
-                    source={{ uri: context.pro.profilePhoto150 || context.pro.profilePhoto }}
+                    source={{
+                      uri:
+                        context.pro.profilePhoto150 || context.pro.profilePhoto,
+                    }}
                     style={styles.headerAvatar}
                     resizeMode={FastImage.resizeMode.cover}
                   />
                 </DmView>
               ) : (
-                <DmView style={[styles.textWrap3, a.items_center, a.justify_center, a.mr_10]}>
-                  <Text size={14} weight="semibold" leading="legacy" color="inverse">
+                <DmView
+                  style={[
+                    styles.textWrap3,
+                    a.items_center,
+                    a.justify_center,
+                    a.mr_10,
+                  ]}
+                >
+                  <Text
+                    size={14}
+                    weight="semibold"
+                    leading="legacy"
+                    color="inverse"
+                  >
                     {context.proName.charAt(0)}
                   </Text>
                 </DmView>
@@ -1024,15 +1197,43 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
               the PRO's offer, not the reader's. */}
           {context.offerAmount != null && (
             <DmView
-              style={[a.my_4, styles.row3, a.flex_row, a.items_center, a.overflow_hidden, { width: "70%" }]}
+              style={[
+                a.my_4,
+                styles.row3,
+                a.flex_row,
+                a.items_center,
+                a.overflow_hidden,
+                { width: "70%" },
+              ]}
               onPress={() => setOfferHistoryVisible(true)}
             >
-              <DmView style={[styles.offerWrap, a.h_full, a.items_center, a.justify_center]}>
-                <Text size={13} weight="semibold" leading="tight" color="inverse" style={styles.offer}>
+              <DmView
+                style={[
+                  styles.offerWrap,
+                  a.h_full,
+                  a.items_center,
+                  a.justify_center,
+                ]}
+              >
+                <Text
+                  size={13}
+                  weight="semibold"
+                  leading="tight"
+                  color="inverse"
+                  style={styles.offer}
+                >
                   {t("offer")}
                 </Text>
               </DmView>
-              <DmView style={[styles.row4, a.h_full, a.flex_row, a.items_center, a.justify_center]}>
+              <DmView
+                style={[
+                  styles.row4,
+                  a.h_full,
+                  a.flex_row,
+                  a.items_center,
+                  a.justify_center,
+                ]}
+              >
                 <Text size={22} weight="medium" leading="tight">
                   {context.offerAmount}
                 </Text>
@@ -1060,7 +1261,16 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
               sheet rather than navigating to RequestDetailsScreen; the sheet is
               what replaced that flow (see the More sheet's card comment). */}
           {context.hasJob && (
-            <DmView style={[a.px_16, a.pt_8, a.pb_10, a.flex_row, styles.row5, a.items_center]}>
+            <DmView
+              style={[
+                a.px_16,
+                a.pt_8,
+                a.pb_10,
+                a.flex_row,
+                styles.row5,
+                a.items_center,
+              ]}
+            >
               <DmView style={[a.flex_row, a.items_center]}>
                 <CallIcon width={22} height={22} />
                 <Text size={13} leading="legacy" style={styles.call}>
@@ -1148,7 +1358,14 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
             }
             ListEmptyComponent={
               <DmView style={[a.items_center, a.px_30]}>
-                <DmView style={[a.px_20, a.py_16, styles.requestSentToProInfoWrap, styles.emptyBg]}>
+                <DmView
+                  style={[
+                    a.px_20,
+                    a.py_16,
+                    styles.requestSentToProInfoWrap,
+                    styles.emptyBg,
+                  ]}
+                >
                   <Text
                     size={13}
                     leading="loose"
@@ -1167,7 +1384,13 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
           {showScrollDown && (
             <DmView
               onPress={scrollToBottom}
-              style={[a.absolute, styles.iconWrap3, a.items_center, a.justify_center, styles.scrollFab]}
+              style={[
+                a.absolute,
+                styles.iconWrap3,
+                a.items_center,
+                a.justify_center,
+                styles.scrollFab,
+              ]}
             >
               <ChevronDownIcon width={16} height={16} color={colors.black} />
             </DmView>
@@ -1176,8 +1399,17 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Error banner */}
         {sendError && (
-          <DmView style={[styles.tapToDismissWrap, a.px_16, a.py_8]} onPress={() => setSendError(null)}>
-            <Text size={12} weight="medium" leading="legacy" color="inverse" align="center">
+          <DmView
+            style={[styles.tapToDismissWrap, a.px_16, a.py_8]}
+            onPress={() => setSendError(null)}
+          >
+            <Text
+              size={12}
+              weight="medium"
+              leading="legacy"
+              color="inverse"
+              align="center"
+            >
               {sendError} — {t("tap_to_dismiss")}
             </Text>
           </DmView>
@@ -1185,7 +1417,9 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Input bar — the rounded outer sheet (see inputBarSheet) */}
         <DmView
-          style={[a.w_full, styles.box4, 
+          style={[
+            a.w_full,
+            styles.box4,
             styles.inputBarSheet,
             styles.inputBarShadow,
             // Keyboard up: it covers the home-indicator area, so the safe-area
@@ -1236,16 +1470,37 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
                         style={styles.pendingImage}
                       />
                     ) : (
-                      <DmView style={[a.w_full, a.h_full, styles.iconWrap4, a.items_center, a.justify_center]}>
+                      <DmView
+                        style={[
+                          a.w_full,
+                          a.h_full,
+                          styles.iconWrap4,
+                          a.items_center,
+                          a.justify_center,
+                        ]}
+                      >
                         <DocumentIcon width={24} height={30} />
                       </DmView>
                     )}
                   </DmView>
                   <DmView
-                    style={[a.absolute, styles.pendingClose, I18nManager.isRTL ? { left: 5, right: undefined } : undefined]}
+                    style={[
+                      a.absolute,
+                      styles.pendingClose,
+                      I18nManager.isRTL
+                        ? { left: 5, right: undefined }
+                        : undefined,
+                    ]}
                     onPress={() => attachments.remove(index)}
                   >
-                    <DmView style={[styles.iconWrap5, a.border_1, a.items_center, a.justify_center]}>
+                    <DmView
+                      style={[
+                        styles.iconWrap5,
+                        a.border_1,
+                        a.items_center,
+                        a.justify_center,
+                      ]}
+                    >
                       <CloseIcon width={8} height={8} />
                     </DmView>
                   </DmView>

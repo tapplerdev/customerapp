@@ -19,7 +19,10 @@ import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
 const load = () => require("../AboutAppScreen")
 const rows = rowsByPlatform([{ state: "menu" }], PARITY_MATRIX)
 
-const options = (env: { language: "en" | "ar"; platform?: "ios" | "android" }) => ({
+const options = (env: {
+  language: "en" | "ar"
+  platform?: "ios" | "android"
+}) => ({
   ...screenState("data"),
   lang: env.language,
   platform: env.platform ?? "ios",
@@ -27,9 +30,15 @@ const options = (env: { language: "en" | "ar"; platform?: "ios" | "android" }) =
 })
 
 describe("AboutAppScreen", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => {
-    expectParity(parityName(state, env), await treeAfter(load, options(env), env))
-  })
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, env }) => {
+      expectParity(
+        parityName(state, env),
+        await treeAfter(load, options(env), env)
+      )
+    }
+  )
 })
 
 describe("AboutAppScreen presses", () => {

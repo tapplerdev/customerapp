@@ -93,7 +93,9 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
             onPress={onClose}
             disabled={cancel.isSubmitting}
           >
-            <Text size={22} leading="legacy" color="inverse" family="system">✕</Text>
+            <Text size={22} leading="legacy" color="inverse" family="system">
+              ✕
+            </Text>
           </DmView>
 
           <DmView style={[styles.list, a.px_20, a.pt_24, a.pb_20]}>
@@ -101,7 +103,13 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
               <CancelFeedbackIcon width={60} height={60} />
             </DmView>
 
-            <Text size={16} weight="bold" leading="legacy" align="center" style={a.mt_12}>
+            <Text
+              size={16}
+              weight="bold"
+              leading="legacy"
+              align="center"
+              style={a.mt_12}
+            >
               {t("your_opinion_matters")}
             </Text>
 
@@ -121,7 +129,9 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
                     a.border_1,
                     a.items_center,
                     a.justify_center,
-                    cancel.selectedReasons.includes(reason) ? styles.boxReason : styles.boxNotReason,
+                    cancel.selectedReasons.includes(reason)
+                      ? styles.boxReason
+                      : styles.boxNotReason,
                   ]}
                 >
                   {cancel.selectedReasons.includes(reason) && (
@@ -141,7 +151,14 @@ const CancelJobFeedbackModal: React.FC<Props> = ({
                 placeholder={t("write_other_reason")}
                 placeholderTextColor="#999"
                 multiline
-                style={[a.mt_12, a.border_1, styles.input, a.px_12, a.py_10, { textAlignVertical: "top" }]}
+                style={[
+                  a.mt_12,
+                  a.border_1,
+                  styles.input,
+                  a.px_12,
+                  a.py_10,
+                  { textAlignVertical: "top" },
+                ]}
               />
             )}
 

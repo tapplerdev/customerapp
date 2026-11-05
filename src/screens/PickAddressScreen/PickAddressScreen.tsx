@@ -85,8 +85,7 @@ const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       const city = address.address.city
-      const governorate =
-        address.address.county || address.address.state
+      const governorate = address.address.county || address.address.state
 
       const pickedAddressInfo = {
         address: addressLabel,
@@ -132,7 +131,9 @@ const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={[a.w_full, a.flex_1, pickAddressScreenStyles.safeArea]}>
+    <SafeAreaView
+      style={[a.w_full, a.flex_1, pickAddressScreenStyles.safeArea]}
+    >
       <AnimatedScrollView
         style={[a.w_full, a.flex_1]}
         ref={scrollViewRef}

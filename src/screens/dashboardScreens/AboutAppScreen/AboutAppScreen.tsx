@@ -32,7 +32,10 @@ const AboutAppScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -51,19 +54,31 @@ const AboutAppScreen: React.FC<Props> = ({ navigation }) => {
       <DmView>
         {menuItems.map((item, index) => (
           <DmView key={item.key} onPress={() => {}}>
-            <DmView style={[a.flex_row, a.items_center, a.justify_between, a.px_24, a.py_16]}>
+            <DmView
+              style={[
+                a.flex_row,
+                a.items_center,
+                a.justify_between,
+                a.px_24,
+                a.py_16,
+              ]}
+            >
               <DmView style={a.flex_row}>
                 <Text size={13} weight="medium" leading="legacy">
                   {t(item.labelKey)}
                 </Text>
               </DmView>
-              <DmView style={I18nManager.isRTL ? { transform: [{ rotate: "180deg" }] } : undefined}>
+              <DmView
+                style={
+                  I18nManager.isRTL
+                    ? { transform: [{ rotate: "180deg" }] }
+                    : undefined
+                }
+              >
                 <ChevronRightIcon width={18} height={18} color={colors.red} />
               </DmView>
             </DmView>
-            {index < menuItems.length - 1 && (
-              <DmView style={styles.box2} />
-            )}
+            {index < menuItems.length - 1 && <DmView style={styles.box2} />}
           </DmView>
         ))}
       </DmView>

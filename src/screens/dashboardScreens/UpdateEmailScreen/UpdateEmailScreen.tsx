@@ -17,7 +17,10 @@ import { AppScrollView } from "components/scroll"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
-const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
+const disabledLookSubtleInverse = {
+  surface: "subtle",
+  label: "inverse",
+} as const
 
 type Props = RootStackScreenProps<"UpdateEmailScreen">
 
@@ -44,7 +47,10 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
 
   const isFilled = newEmail && password
   const showEmailFormatError = newEmail.length > 0 && !isValidEmail(newEmail)
-  const showSameEmailError = newEmail.length > 0 && isValidEmail(newEmail) && newEmail.toLowerCase() === currentEmail.toLowerCase()
+  const showSameEmailError =
+    newEmail.length > 0 &&
+    isValidEmail(newEmail) &&
+    newEmail.toLowerCase() === currentEmail.toLowerCase()
   const hasClientError = showEmailFormatError || showSameEmailError
 
   const handleSave = async () => {
@@ -58,10 +64,16 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
       const validationErrors = error?.data?.validationErrors
       if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
-        const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
-        setErrorMessage(typeof firstMsg === "string" ? firstMsg : t("an_error_occurred"))
+        const firstMsg = Array.isArray(firstErrors)
+          ? firstErrors[0]
+          : firstErrors
+        setErrorMessage(
+          typeof firstMsg === "string" ? firstMsg : t("an_error_occurred")
+        )
       } else {
-        setErrorMessage(error?.data?.message || error?.message || t("an_error_occurred"))
+        setErrorMessage(
+          error?.data?.message || error?.message || t("an_error_occurred")
+        )
       }
       setErrorModalVisible(true)
     }
@@ -76,7 +88,10 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -92,7 +107,11 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
       <DmView style={styles.box2} />
 
       <AppScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingTop: 24,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Your current email address */}
@@ -124,9 +143,15 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
             autoCapitalize="none"
             textContentType="none"
             autoComplete="off"
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr", minHeight: 36 },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+                minHeight: 36,
+              },
             ]}
           />
           {showEmailFormatError && (
@@ -154,9 +179,14 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
             secureTextEntry
             textContentType="oneTimeCode"
             autoComplete="off"
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>

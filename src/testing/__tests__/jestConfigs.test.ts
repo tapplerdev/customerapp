@@ -57,17 +57,20 @@ describe("every jest config refuses a ../tappler-shared that isn't a real siblin
   const missing = layout("missing", () => undefined)
   const real = layout("real", (shared) => fs.mkdirSync(shared))
 
-  it.each(CONFIGS)("%s: a symlink and a missing sibling are refused, a real one isn't", (config) => {
-    expect(load(symlinked, config)).toMatch(
-      /tappler-shared must be a real sibling worktree, not a symlink/
-    )
-    expect(load(missing, config)).toMatch(
-      /tappler-shared must be a real sibling worktree, not missing/
-    )
-    // Past the check, a config may still need what the layout lacks
-    // (node_modules), but never refuses the sibling.
-    expect(load(real, config)).not.toMatch(/must be a real sibling worktree/)
-  })
+  it.each(CONFIGS)(
+    "%s: a symlink and a missing sibling are refused, a real one isn't",
+    (config) => {
+      expect(load(symlinked, config)).toMatch(
+        /tappler-shared must be a real sibling worktree, not a symlink/
+      )
+      expect(load(missing, config)).toMatch(
+        /tappler-shared must be a real sibling worktree, not missing/
+      )
+      // Past the check, a config may still need what the layout lacks
+      // (node_modules), but never refuses the sibling.
+      expect(load(real, config)).not.toMatch(/must be a real sibling worktree/)
+    }
+  )
 
   it("jest.config.js loads beside a real sibling", () => {
     expect(load(real, "jest.config.js")).toBe("")

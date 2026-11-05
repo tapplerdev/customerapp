@@ -255,7 +255,9 @@ export const pressIcon = (
   options: PressIconOptions = {}
 ): void => {
   const { icon, nth } = options
-  const what = icon ? `an icon-only control drawing ${icon}` : "an icon-only control"
+  const what = icon
+    ? `an icon-only control drawing ${icon}`
+    : "an icon-only control"
   // Something on screen to tap (an element that draws no host, a closed
   // modal's say, isn't), with no words, and the icon when one is named.
   const found = root.findAll(
@@ -355,8 +357,7 @@ export const fireHost = (
 ): void => {
   const found = root.findAll(
     (node) =>
-      (node.type as unknown) === type &&
-      typeof node.props[prop] === "function"
+      (node.type as unknown) === type && typeof node.props[prop] === "function"
   )
   const what = `${type}'s ${prop}`
   if (found.length === 0) throw new Error(`fire ${what}: no ${type} holds it`)
@@ -368,7 +369,9 @@ export const fireHost = (
   }
   const host = found[nth ?? 0]
   if (!host) {
-    throw new Error(`fire ${what}: no view ${String(nth)}, only ${found.length}`)
+    throw new Error(
+      `fire ${what}: no view ${String(nth)}, only ${found.length}`
+    )
   }
   host.props[prop](...args)
 }

@@ -60,10 +60,8 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
   const handleEmail = () => {
     navigation.navigate("SignInEmailScreen")
   }
-  const handleFacebook = () => {
-  }
-  const handleGoogle = () => {
-  }
+  const handleFacebook = () => {}
+  const handleGoogle = () => {}
   const handleGuest = () => {
     navigation.navigate("GuestLocationScreen")
   }
@@ -77,12 +75,31 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
 
   return (
     <SafeAreaView style={[a.flex_1, styles.safeArea]}>
-      <DmView style={[a.flex_row, a.justify_between, a.items_center, a.px_24, a.pt_12]}>
+      <DmView
+        style={[
+          a.flex_row,
+          a.justify_between,
+          a.items_center,
+          a.px_24,
+          a.pt_12,
+        ]}
+      >
         {hasGuestLocation ? (
-          <TouchableOpacity onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.reset({ index: 0, routes: [{ name: "HomeTabs" }] })} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.canGoBack()
+                ? navigation.goBack()
+                : navigation.reset({ index: 0, routes: [{ name: "HomeTabs" }] })
+            }
+            activeOpacity={0.7}
+          >
             <ChevronLeftIcon
               color={colors.red}
-              style={language === "ar" ? { transform: [{ rotate: "180deg" }] } : undefined}
+              style={
+                language === "ar"
+                  ? { transform: [{ rotate: "180deg" }] }
+                  : undefined
+              }
             />
           </TouchableOpacity>
         ) : (
@@ -93,7 +110,13 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
           activeOpacity={0.7}
           style={{ paddingHorizontal: 8, paddingVertical: 4 }}
         >
-          <Text size={15} weight="bold" leading="legacy" color="brand" family={language === "en" ? "arabic" : "latin"}>
+          <Text
+            size={15}
+            weight="bold"
+            leading="legacy"
+            color="brand"
+            family={language === "en" ? "arabic" : "latin"}
+          >
             {toggleLabel}
           </Text>
         </TouchableOpacity>
@@ -104,10 +127,21 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
         showsVerticalScrollIndicator={false}
       >
         <DmView style={[a.items_center, a.mt_20]}>
-          <Text size={20} weight="semibold" leading="legacy" align="center" style={styles.welcomeToTappler}>
+          <Text
+            size={20}
+            weight="semibold"
+            leading="legacy"
+            align="center"
+            style={styles.welcomeToTappler}
+          >
             {t("welcome_to_tappler")}
           </Text>
-          <Text size={12} leading="legacy" align="center" style={[a.mt_8, styles.welcomeToTappler]}>
+          <Text
+            size={12}
+            leading="legacy"
+            align="center"
+            style={[a.mt_8, styles.welcomeToTappler]}
+          >
             {t("choose_signup_method")}
           </Text>
         </DmView>
@@ -178,32 +212,46 @@ const AuthWelcomeScreen: React.FC<Props> = () => {
       </AppScrollView>
 
       {/* Logo + Terms & Version — pinned to bottom */}
-      <DmView style={[a.items_center, a.pb_16, a.pt_8, language === "ar" ? { paddingRight: 20 } : { paddingLeft: 10 }]}>
+      <DmView
+        style={[
+          a.items_center,
+          a.pb_16,
+          a.pt_8,
+          language === "ar" ? { paddingRight: 20 } : { paddingLeft: 10 },
+        ]}
+      >
         <TapplerLogoIcon width={40} height={40} />
       </DmView>
       <DmView style={[a.items_center, a.pb_16]}>
         <DmView style={[a.flex_row, a.items_center, a.justify_center]}>
-          <TouchableOpacity
-            onPress={() => {}}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity onPress={() => {}} activeOpacity={0.7}>
             <Text size={11} weight="semibold" leading="legacy" color="tertiary">
               {t("terms_of_service")}
             </Text>
           </TouchableOpacity>
-          <Text size={11} weight="semibold" leading="legacy" color="tertiary" style={a.mx_10}>
+          <Text
+            size={11}
+            weight="semibold"
+            leading="legacy"
+            color="tertiary"
+            style={a.mx_10}
+          >
             |
           </Text>
-          <TouchableOpacity
-            onPress={() => {}}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity onPress={() => {}} activeOpacity={0.7}>
             <Text size={11} weight="semibold" leading="legacy" color="tertiary">
               {t("privacy_policy")}
             </Text>
           </TouchableOpacity>
         </DmView>
-        <Text size={9} weight="medium" leading="legacy" color="tertiary" align="center" style={styles.text}>
+        <Text
+          size={9}
+          weight="medium"
+          leading="legacy"
+          color="tertiary"
+          align="center"
+          style={styles.text}
+        >
           {`${t("version")} ${APP_VERSION} - ${t("build")}:${APP_BUILD}`}
         </Text>
       </DmView>

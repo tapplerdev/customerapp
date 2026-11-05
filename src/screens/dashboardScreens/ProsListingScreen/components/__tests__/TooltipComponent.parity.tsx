@@ -41,7 +41,8 @@ const load = () => {
 const ALLOW: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
 type Case = { state: string; steps?: Step[] }
-const tick: Step = (root, env) => pressContaining(root, copy(env, "do_not_show_again"))
+const tick: Step = (root, env) =>
+  pressContaining(root, copy(env, "do_not_show_again"))
 
 const CASES: Case[] = [
   { state: "as it opens" },
@@ -50,64 +51,83 @@ const CASES: Case[] = [
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 
 describe("TooltipComponent, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, steps, env }) => {
-    const tree = await treeAfter(
-      load,
-      { ...screenState("data"), lang: env.language, platform: env.platform, navigation: "none", props: { handleStop: () => undefined } },
-      env,
-      steps
-    )
-    expectParity(parityName(state, env), tree, { allow: ALLOW })
-  })
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, steps, env }) => {
+      const tree = await treeAfter(
+        load,
+        {
+          ...screenState("data"),
+          lang: env.language,
+          platform: env.platform,
+          navigation: "none",
+          props: { handleStop: () => undefined },
+        },
+        env,
+        steps
+      )
+      expectParity(parityName(state, env), tree, { allow: ALLOW })
+    }
+  )
 })
 
-describe.each(PARITY_MATRIX)("TooltipComponent presses [$language $platform]", (env: ParityEnv) => {
-  const open = (handleStop: () => void) =>
-    openScreen(load, {
-      ...screenState("data"),
-      state: { auth: { ...screenState("data").state.auth, dontShowBestDealTooltip: false } },
-      lang: env.language,
-      platform: env.platform,
-      navigation: "none",
-      props: { handleStop },
+describe.each(PARITY_MATRIX)(
+  "TooltipComponent presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (handleStop: () => void) =>
+      openScreen(load, {
+        ...screenState("data"),
+        state: {
+          auth: {
+            ...screenState("data").state.auth,
+            dontShowBestDealTooltip: false,
+          },
+        },
+        lang: env.language,
+        platform: env.platform,
+        navigation: "none",
+        props: { handleStop },
+      })
+
+    it("Got it stops the tour once, and forgets the tip only when ticked", async () => {
+      const handleStop = jest.fn()
+      const session = await open(handleStop)
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "got_it"))
+        })
+        expect(handleStop).toHaveBeenCalledTimes(1)
+        expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(
+          false
+        )
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "do_not_show_again"))
+        })
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "got_it"))
+        })
+        expect(handleStop).toHaveBeenCalledTimes(2)
+        expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(true)
+      } finally {
+        session.unmount()
+      }
     })
 
-  it("Got it stops the tour once, and forgets the tip only when ticked", async () => {
-    const handleStop = jest.fn()
-    const session = await open(handleStop)
-    try {
-      await session.act(() => {
-        pressTitled(session.root, copy(env, "got_it"))
-      })
-      expect(handleStop).toHaveBeenCalledTimes(1)
-      expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(false)
-      await session.act(() => {
-        pressContaining(session.root, copy(env, "do_not_show_again"))
-      })
-      await session.act(() => {
-        pressTitled(session.root, copy(env, "got_it"))
-      })
-      expect(handleStop).toHaveBeenCalledTimes(2)
-      expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(true)
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("the checkbox shows its check while ticked", async () => {
-    const session = await open(() => undefined)
-    try {
-      expect(JSON.stringify(session.tree())).not.toContain("✓")
-      await session.act(() => {
-        pressContaining(session.root, copy(env, "do_not_show_again"))
-      })
-      expect(JSON.stringify(session.tree())).toContain("✓")
-      await session.act(() => {
-        pressContaining(session.root, copy(env, "do_not_show_again"))
-      })
-      expect(JSON.stringify(session.tree())).not.toContain("✓")
-    } finally {
-      session.unmount()
-    }
-  })
-})
+    it("the checkbox shows its check while ticked", async () => {
+      const session = await open(() => undefined)
+      try {
+        expect(JSON.stringify(session.tree())).not.toContain("✓")
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "do_not_show_again"))
+        })
+        expect(JSON.stringify(session.tree())).toContain("✓")
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "do_not_show_again"))
+        })
+        expect(JSON.stringify(session.tree())).not.toContain("✓")
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

@@ -13,14 +13,26 @@ import type {
   ServiceType,
 } from "types/cms"
 
-import { CATEGORY, CATEGORY_FOOD, SERVICE, SERVICE_FOOD } from "testing/screenKit/fixtures/entities"
+import {
+  CATEGORY,
+  CATEGORY_FOOD,
+  SERVICE,
+  SERVICE_FOOD,
+} from "testing/screenKit/fixtures/entities"
 
 const option = (
   id: number,
   value: string,
   valueAr: string,
   extra: Partial<QuestionOptionType> = {}
-): QuestionOptionType => ({ id, label: value, labelAr: valueAr, value, valueAr, ...extra })
+): QuestionOptionType => ({
+  id,
+  label: value,
+  labelAr: valueAr,
+  value,
+  valueAr,
+  ...extra,
+})
 
 /** An upfront filter: asked first, a locked parent for the refinement below. */
 export const Q_KIND: ServiceQuestionType = {
@@ -34,8 +46,14 @@ export const Q_KIND: ServiceQuestionType = {
   tier: "primary",
   order: 1,
   options: [
-    option(8011, "Repair", "إصلاح", { serviceCategoryFilterOptionId: 9011, filterOptionKey: "repair" }),
-    option(8012, "Installation", "تركيب", { serviceCategoryFilterOptionId: 9012, filterOptionKey: "install" }),
+    option(8011, "Repair", "إصلاح", {
+      serviceCategoryFilterOptionId: 9011,
+      filterOptionKey: "repair",
+    }),
+    option(8012, "Installation", "تركيب", {
+      serviceCategoryFilterOptionId: 9012,
+      filterOptionKey: "install",
+    }),
   ],
 }
 
@@ -51,9 +69,20 @@ export const Q_BRAND: ServiceQuestionType = {
   tier: "refinement",
   order: 2,
   options: [
-    option(8021, "Any brand", "أي علامة", { serviceCategoryFilterOptionId: 9021, filterOptionKey: "any" }),
-    option(8022, "Ideal Standard", "ايديال ستاندرد", { serviceCategoryFilterOptionId: 9022, filterOptionKey: "ideal", parentFilterOptionKey: "repair" }),
-    option(8023, "Grohe", "غروهي", { serviceCategoryFilterOptionId: 9023, filterOptionKey: "grohe", parentFilterOptionKey: "install" }),
+    option(8021, "Any brand", "أي علامة", {
+      serviceCategoryFilterOptionId: 9021,
+      filterOptionKey: "any",
+    }),
+    option(8022, "Ideal Standard", "ايديال ستاندرد", {
+      serviceCategoryFilterOptionId: 9022,
+      filterOptionKey: "ideal",
+      parentFilterOptionKey: "repair",
+    }),
+    option(8023, "Grohe", "غروهي", {
+      serviceCategoryFilterOptionId: 9023,
+      filterOptionKey: "grohe",
+      parentFilterOptionKey: "install",
+    }),
   ],
 }
 
@@ -66,7 +95,14 @@ export const Q_BUDGET: ServiceQuestionType = {
   textAr: "ميزانيتك",
   isFilter: true,
   tier: "refinement",
-  filter: { id: 91, label: "Budget", labelAr: "الميزانية", valueType: "range", minValue: 100, maxValue: 900 },
+  filter: {
+    id: 91,
+    label: "Budget",
+    labelAr: "الميزانية",
+    valueType: "range",
+    minValue: 100,
+    maxValue: 900,
+  },
   order: 3,
 }
 
@@ -109,7 +145,14 @@ export const Q_DETAILS: ServiceQuestionType = {
   order: 6,
 }
 
-export const QUESTIONS_RICH = [Q_KIND, Q_BRAND, Q_BUDGET, Q_AREA, Q_EXTRAS, Q_DETAILS]
+export const QUESTIONS_RICH = [
+  Q_KIND,
+  Q_BRAND,
+  Q_BUDGET,
+  Q_AREA,
+  Q_EXTRAS,
+  Q_DETAILS,
+]
 
 /** Plumbing again, with three places of service and every question kind. */
 export const CATEGORY_RICH: ServiceCategoryType = {
@@ -118,7 +161,10 @@ export const CATEGORY_RICH: ServiceCategoryType = {
   customerQuestions: QUESTIONS_RICH,
 }
 
-export const SERVICE_RICH: ServiceType = { ...SERVICE, categories: [CATEGORY_RICH] }
+export const SERVICE_RICH: ServiceType = {
+  ...SERVICE,
+  categories: [CATEGORY_RICH],
+}
 
 /** One place of service, one plain question: no place step in the flow. */
 export const CATEGORY_PLAIN: ServiceCategoryType = {
@@ -126,7 +172,10 @@ export const CATEGORY_PLAIN: ServiceCategoryType = {
   placeOfService: ["proToCustomer"],
   customerQuestions: [Q_DETAILS],
 }
-export const SERVICE_PLAIN: ServiceType = { ...SERVICE, categories: [CATEGORY_PLAIN] }
+export const SERVICE_PLAIN: ServiceType = {
+  ...SERVICE,
+  categories: [CATEGORY_PLAIN],
+}
 
 /** The pro-declared filter a food category shows its customers (Cuisines). */
 export const Q_CUISINES: ServiceQuestionType = {
@@ -136,11 +185,22 @@ export const Q_CUISINES: ServiceQuestionType = {
   text: "I make food from…",
   textAr: "أطبخ من…",
   isFilter: true,
-  filter: { id: 93, label: "Cuisines", labelAr: "المطابخ", valueType: "discrete" },
+  filter: {
+    id: 93,
+    label: "Cuisines",
+    labelAr: "المطابخ",
+    valueType: "discrete",
+  },
   order: 1,
   options: [
-    option(8111, "Egyptian", "مصري", { serviceCategoryFilterOptionId: 9111, filterOptionKey: "egyptian" }),
-    option(8112, "Italian", "إيطالي", { serviceCategoryFilterOptionId: 9112, filterOptionKey: "italian" }),
+    option(8111, "Egyptian", "مصري", {
+      serviceCategoryFilterOptionId: 9111,
+      filterOptionKey: "egyptian",
+    }),
+    option(8112, "Italian", "إيطالي", {
+      serviceCategoryFilterOptionId: 9112,
+      filterOptionKey: "italian",
+    }),
     option(8113, "No filter id", "بلا معرف"),
   ],
 }
@@ -149,4 +209,7 @@ export const CATEGORY_FOOD_FILTERS: ServiceCategoryType = {
   ...CATEGORY_FOOD,
   proQuestions: [Q_CUISINES],
 }
-export const SERVICE_FOOD_FILTERS: ServiceType = { ...SERVICE_FOOD, categories: [CATEGORY_FOOD_FILTERS] }
+export const SERVICE_FOOD_FILTERS: ServiceType = {
+  ...SERVICE_FOOD,
+  categories: [CATEGORY_FOOD_FILTERS],
+}

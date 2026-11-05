@@ -48,7 +48,7 @@ if (sharedIs) {
 }
 
 module.exports = {
-  preset: 'react-native',
+  preset: "react-native",
   // tappler-shared is a link: dependency, so its sources resolve from ITS
   // directory — where @babel/runtime is not installed. Without this, any test
   // reaching into the shared package dies on an unresolvable helper import
@@ -57,16 +57,16 @@ module.exports = {
   // the lookup order, ahead of a package's own nested node_modules (proapp's
   // RTK resolved the root's reselect 4 instead of its own 5 that way).
   // modulePaths is consulted last — a fallback, which is all shared needs.
-  modulePaths: ['<rootDir>/node_modules'],
+  modulePaths: ["<rootDir>/node_modules"],
   // The RN preset's own default allowlist, plus what ships ESM it doesn't
   // transform: the true-sheet mock and stand-in's library
   // (https://sheet.lodev09.com/guides/jest says so explicitly) and the Redux
   // Toolkit family, without which any test touching a slice or services/api
   // dies on `Unexpected token 'export'`.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@reduxjs/toolkit|immer|reselect|redux|redux-thunk|react-redux|@lodev09/react-native-true-sheet)/)',
+    "node_modules/(?!((jest-)?react-native|@react-native(-community)?|@reduxjs/toolkit|immer|reselect|redux|redux-thunk|react-redux|@lodev09/react-native-true-sheet)/)",
   ],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   globals: { __PARITY_ENV_STUB__: ENV_STUB },
   // `*.parity.tsx` run under jest.parity.config.js only (the screen kit's
   // mocks and setup, src/testing/screenKit): `yarn test:parity`.
@@ -77,8 +77,5 @@ module.exports = {
   // frozen pins (`*.pass1.test.*`, which needed the plugin) were deleted in
   // W3.4; they live on at the archive tag `archive/ca-pass1-tools`
   // (src/testing/README.md says how to run them).
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '\\.parity\\.tsx?$',
-  ],
-};
+  testPathIgnorePatterns: ["/node_modules/", "\\.parity\\.tsx?$"],
+}

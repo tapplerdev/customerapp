@@ -133,7 +133,9 @@ describe("describeSignInFailure", () => {
       describeSignInFailure(
         {
           status: 400,
-          data: { validationErrors: { password: ["Password does not match!"] } },
+          data: {
+            validationErrors: { password: ["Password does not match!"] },
+          },
         },
         en
       )

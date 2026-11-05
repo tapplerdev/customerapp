@@ -69,7 +69,11 @@ const SvgUriContainer: React.FC<Props> = ({
     : xml
 
   return (
-    <SvgXml xml={processedXml} width={width || 100} {...(height && { height })} />
+    <SvgXml
+      xml={processedXml}
+      width={width || 100}
+      {...(height && { height })}
+    />
   )
 }
 

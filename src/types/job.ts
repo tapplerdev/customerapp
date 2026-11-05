@@ -60,7 +60,12 @@ export type JobAddressType = {
     streetAddress?: string
     city?: string
     governorate?: string
-    location?: { lat?: number; lng?: number; latitude?: number; longitude?: number }
+    location?: {
+      lat?: number
+      lng?: number
+      latitude?: number
+      longitude?: number
+    }
   }
   location?: { lat: number; lng: number }
   latitude?: number
@@ -117,7 +122,12 @@ export type JobProType = {
   id: number
   jobId: number
   proId: number
-  selectionStatus: "selected" | "opportunity" | "offer" | "proRejected" | "customerRejected"
+  selectionStatus:
+    | "selected"
+    | "opportunity"
+    | "offer"
+    | "proRejected"
+    | "customerRejected"
   responseTime?: number
   ratePerHour?: number
   opportunityNotes?: string

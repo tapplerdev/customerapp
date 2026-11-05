@@ -55,7 +55,10 @@ import type { ProType } from "types/pro"
 const load = () => {
   const React = require("react") as typeof import("react")
   const ProCard = require("../ProCard").default
-  const Harness = ({ pro, ...rest }: { pro: ProType } & Record<string, unknown>) =>
+  const Harness = ({
+    pro,
+    ...rest
+  }: { pro: ProType } & Record<string, unknown>) =>
     React.createElement(ProCard, { pro, onSelect: () => undefined, ...rest })
   return { default: Harness }
 }
@@ -77,7 +80,11 @@ const promoLine = {
 const SVG_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 31"><rect width="118" height="31" fill="#CC0000"/></svg>'
 
-const proWith = (changes: Partial<ProType> = {}, subscriptions?: object[], featured = false) =>
+const proWith = (
+  changes: Partial<ProType> = {},
+  subscriptions?: object[],
+  featured = false
+) =>
   ({
     ...PRO_INDIVIDUAL,
     ...changes,
@@ -109,37 +116,132 @@ type Case = {
 const BASE_CASES: Case[] = [
   { state: "an individual, #522 card", pro: proWith() },
   { state: "a company, #522 card", pro: PRO_COMPANY },
-  { state: "an individual, selected, #522 card", pro: proWith(), props: { isSelected: true } },
+  {
+    state: "an individual, selected, #522 card",
+    pro: proWith(),
+    props: { isSelected: true },
+  },
   { state: "featured, #522 card", pro: proWith({}, undefined, true) },
-  { state: "no photo, no location, no description, no response time, #522 card", pro: proWith({ ...PHOTOLESS, address: undefined, informationAbout: undefined, responseTimeHours: undefined }) },
-  { state: "only the full-size photo, #522 card", pro: proWith({ profilePhoto150: undefined }) },
-  { state: "a city only, #522 card", pro: proWith({ address: { address: { city: "Zamalek" } } }) },
-  { state: "a long name and description, #522 card", pro: proWith({ businessName: "Al Salam International Plumbing, Heating and Electrical Maintenance Company", informationAbout: "We have been working across Greater Cairo for more than twenty years, with teams for every trade, a call centre and same-day visits for urgent jobs." }) },
-  { state: "responds in minutes, #522 card", pro: proWith({ responseTimeHours: 0.25 }) },
-  { state: "responds in one hour, #522 card", pro: proWith({ responseTimeHours: 1 }) },
-  { state: "responds in a day, #522 card", pro: proWith({ responseTimeHours: 24 }) },
-  { state: "responds in days, #522 card", pro: proWith({ responseTimeHours: 72 }) },
+  {
+    state: "no photo, no location, no description, no response time, #522 card",
+    pro: proWith({
+      ...PHOTOLESS,
+      address: undefined,
+      informationAbout: undefined,
+      responseTimeHours: undefined,
+    }),
+  },
+  {
+    state: "only the full-size photo, #522 card",
+    pro: proWith({ profilePhoto150: undefined }),
+  },
+  {
+    state: "a city only, #522 card",
+    pro: proWith({ address: { address: { city: "Zamalek" } } }),
+  },
+  {
+    state: "a long name and description, #522 card",
+    pro: proWith({
+      businessName:
+        "Al Salam International Plumbing, Heating and Electrical Maintenance Company",
+      informationAbout:
+        "We have been working across Greater Cairo for more than twenty years, with teams for every trade, a call centre and same-day visits for urgent jobs.",
+    }),
+  },
+  {
+    state: "responds in minutes, #522 card",
+    pro: proWith({ responseTimeHours: 0.25 }),
+  },
+  {
+    state: "responds in one hour, #522 card",
+    pro: proWith({ responseTimeHours: 1 }),
+  },
+  {
+    state: "responds in a day, #522 card",
+    pro: proWith({ responseTimeHours: 24 }),
+  },
+  {
+    state: "responds in days, #522 card",
+    pro: proWith({ responseTimeHours: 72 }),
+  },
   { state: "no reviews", pro: proWith({ reviewScore: undefined }) },
   {
     state: "trust badges: art, words and the fallback, #522 card",
     pro: proWith({
       documents: [
-        trust(1, { pictureEn: "https://example.com/parity/trust-en.svg", pictureAr: "https://example.com/parity/trust-ar.svg" }),
-        trust(2, { descriptionEn: "ID verified", descriptionAr: "الهوية موثقة" }),
+        trust(1, {
+          pictureEn: "https://example.com/parity/trust-en.svg",
+          pictureAr: "https://example.com/parity/trust-ar.svg",
+        }),
+        trust(2, {
+          descriptionEn: "ID verified",
+          descriptionAr: "الهوية موثقة",
+        }),
         trust(3, {}),
-        { id: 4, type: "trust", status: "pending", trustDocumentData: { trustProduct: { descriptionEn: "Pending, hidden", descriptionAr: "قيد المراجعة" } } },
+        {
+          id: 4,
+          type: "trust",
+          status: "pending",
+          trustDocumentData: {
+            trustProduct: {
+              descriptionEn: "Pending, hidden",
+              descriptionAr: "قيد المراجعة",
+            },
+          },
+        },
       ] as never,
     }),
   },
   { state: "a promo line, #522 card", pro: proWith({}, [promoLine]) },
-  { state: "a promo line and stickers, #522 card, #525 offers", pro: proWith({}, [promoLine, sticker(1), sticker(2)]) },
-  { state: "stickers only, #522 card, #525 offers", pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]) },
-  { state: "the food card, both modes, #522 card", pro: PRO_FOOD, props: { foodMode: true } },
-  { state: "the food card, a screen name and metres away, #522 card", pro: { ...PRO_FOOD, screenName: "Laila", distanceKm: 0.35 }, props: { foodMode: true } },
-  { state: "the food card, pickup only, #522 card", pro: { ...PRO_FOOD, isDeliveryEnabled: false, distanceKm: 12.34 }, props: { foodMode: true } },
-  { state: "the food card, delivery only, #522 card", pro: { ...PRO_FOOD, isPickupEnabled: false, distanceKm: undefined }, props: { foodMode: true } },
-  { state: "the food card, neither mode, #522 card", pro: { ...PRO_FOOD, isPickupEnabled: false, isDeliveryEnabled: false }, props: { foodMode: true } },
-  { state: "the food card with a promo line and a sticker, #522 card, #525 offers", pro: { ...PRO_FOOD, serviceCategories: [{ serviceCategoryId: 302, status: "active", isFeatured: true, subscriptions: [promoLine, sticker(1)] }] } as unknown as ProType, props: { foodMode: true } },
+  {
+    state: "a promo line and stickers, #522 card, #525 offers",
+    pro: proWith({}, [promoLine, sticker(1), sticker(2)]),
+  },
+  {
+    state: "stickers only, #522 card, #525 offers",
+    pro: proWith({}, [sticker(1), sticker(2), sticker(3), sticker(4)]),
+  },
+  {
+    state: "the food card, both modes, #522 card",
+    pro: PRO_FOOD,
+    props: { foodMode: true },
+  },
+  {
+    state: "the food card, a screen name and metres away, #522 card",
+    pro: { ...PRO_FOOD, screenName: "Laila", distanceKm: 0.35 },
+    props: { foodMode: true },
+  },
+  {
+    state: "the food card, pickup only, #522 card",
+    pro: { ...PRO_FOOD, isDeliveryEnabled: false, distanceKm: 12.34 },
+    props: { foodMode: true },
+  },
+  {
+    state: "the food card, delivery only, #522 card",
+    pro: { ...PRO_FOOD, isPickupEnabled: false, distanceKm: undefined },
+    props: { foodMode: true },
+  },
+  {
+    state: "the food card, neither mode, #522 card",
+    pro: { ...PRO_FOOD, isPickupEnabled: false, isDeliveryEnabled: false },
+    props: { foodMode: true },
+  },
+  {
+    state:
+      "the food card with a promo line and a sticker, #522 card, #525 offers",
+    pro: {
+      ...PRO_FOOD,
+      serviceCategories: [
+        {
+          serviceCategoryId: 302,
+          status: "active",
+          isFeatured: true,
+          subscriptions: [promoLine, sticker(1)],
+        },
+      ],
+    } as unknown as ProType,
+    props: { foodMode: true },
+  },
   { state: "a non-food card is not a food card, #522 card", pro: PRO_FOOD },
 ]
 
@@ -157,56 +259,81 @@ const options = (env: ParityEnv): RenderScreenOptions => ({
 })
 
 describe("ProCard, captured from the unconverted code", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, pro, props, env }) => {
-    const tree = await renderScreen(load, {
-      ...options(env),
-      props: { pro, isSelected: false, ...props },
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, pro, props, env }) => {
+      const tree = await renderScreen(load, {
+        ...options(env),
+        props: { pro, isSelected: false, ...props },
+      })
+      expectParity(parityName(state, env), tree)
+    }
+  )
+})
+
+describe.each(PARITY_MATRIX)(
+  "ProCard presses [$language $platform]",
+  (env: ParityEnv) => {
+    const open = (props: Record<string, unknown>) =>
+      openScreen(load, {
+        ...options(env),
+        props: { pro: proWith(), isSelected: false, ...props },
+      })
+    type Session = Awaited<ReturnType<typeof open>>
+    const act = (session: Session, press: () => void) =>
+      session.act(() => {
+        press()
+      })
+
+    it("the photo and info area opens the profile, Chat messages, Select me selects", async () => {
+      const onPressProfile = jest.fn()
+      const onMessage = jest.fn()
+      const onSelect = jest.fn()
+      const pro = proWith()
+      const session = await open({ pro, onPressProfile, onMessage, onSelect })
+      try {
+        await act(session, () =>
+          pressContaining(session.root, pro.registeredName)
+        )
+        expect(onPressProfile).toHaveBeenCalledTimes(1)
+        expect(onPressProfile).toHaveBeenCalledWith(pro)
+        await act(session, () =>
+          pressIcon(session.root, { icon: "svg:messages-red" })
+        )
+        expect(onMessage).toHaveBeenCalledTimes(1)
+        expect(onMessage).toHaveBeenCalledWith(pro)
+        await act(session, () =>
+          pressText(session.root, copy(env, "select_me"))
+        )
+        expect(onSelect).toHaveBeenCalledTimes(1)
+        expect(onSelect).toHaveBeenCalledWith(pro)
+        expect(onPressProfile).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
     })
-    expectParity(parityName(state, env), tree)
-  })
-})
 
-describe.each(PARITY_MATRIX)("ProCard presses [$language $platform]", (env: ParityEnv) => {
-  const open = (props: Record<string, unknown>) =>
-    openScreen(load, { ...options(env), props: { pro: proWith(), isSelected: false, ...props } })
-  type Session = Awaited<ReturnType<typeof open>>
-  const act = (session: Session, press: () => void) => session.act(() => { press() })
-
-  it("the photo and info area opens the profile, Chat messages, Select me selects", async () => {
-    const onPressProfile = jest.fn()
-    const onMessage = jest.fn()
-    const onSelect = jest.fn()
-    const pro = proWith()
-    const session = await open({ pro, onPressProfile, onMessage, onSelect })
-    try {
-      await act(session, () => pressContaining(session.root, pro.registeredName))
-      expect(onPressProfile).toHaveBeenCalledTimes(1)
-      expect(onPressProfile).toHaveBeenCalledWith(pro)
-      await act(session, () => pressIcon(session.root, { icon: "svg:messages-red" }))
-      expect(onMessage).toHaveBeenCalledTimes(1)
-      expect(onMessage).toHaveBeenCalledWith(pro)
-      await act(session, () => pressText(session.root, copy(env, "select_me")))
-      expect(onSelect).toHaveBeenCalledTimes(1)
-      expect(onSelect).toHaveBeenCalledWith(pro)
-      expect(onPressProfile).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
-    }
-  })
-
-  it("the food card's action opens the menu and Select me is gone", async () => {
-    const onViewMenu = jest.fn()
-    const onSelect = jest.fn()
-    const session = await open({ pro: PRO_FOOD, foodMode: true, onViewMenu, onSelect })
-    try {
-      const tree = JSON.stringify(session.tree())
-      expect(tree).not.toContain(copy(env, "select_me"))
-      await act(session, () => pressContaining(session.root, copy(env, "food_menu")))
-      expect(onViewMenu).toHaveBeenCalledTimes(1)
-      expect(onViewMenu).toHaveBeenCalledWith(PRO_FOOD)
-      expect(onSelect).not.toHaveBeenCalled()
-    } finally {
-      session.unmount()
-    }
-  })
-})
+    it("the food card's action opens the menu and Select me is gone", async () => {
+      const onViewMenu = jest.fn()
+      const onSelect = jest.fn()
+      const session = await open({
+        pro: PRO_FOOD,
+        foodMode: true,
+        onViewMenu,
+        onSelect,
+      })
+      try {
+        const tree = JSON.stringify(session.tree())
+        expect(tree).not.toContain(copy(env, "select_me"))
+        await act(session, () =>
+          pressContaining(session.root, copy(env, "food_menu"))
+        )
+        expect(onViewMenu).toHaveBeenCalledTimes(1)
+        expect(onViewMenu).toHaveBeenCalledWith(PRO_FOOD)
+        expect(onSelect).not.toHaveBeenCalled()
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

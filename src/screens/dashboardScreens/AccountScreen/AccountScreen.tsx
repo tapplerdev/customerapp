@@ -37,7 +37,8 @@ const APP_BUILD = "25"
 const AccountScreen: React.FC = () => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const dispatch = useDispatch()
   const { isAuth, user } = useTypedSelector((store) => store.auth)
 
@@ -47,7 +48,13 @@ const AccountScreen: React.FC = () => {
   // once the auth flip lands. Until then both buttons must be dead: a No
   // tapped in that window would look like a cancel that then signs out anyway.
   const [isSigningOut, setSigningOut] = useState(false)
-  const { modalVisible: isLogoutModalVisible, openModal: openLogoutModal, closeModal: closeLogoutModal, onModalHide: onLogoutModalHide, queueNextAction } = useModalHandler()
+  const {
+    modalVisible: isLogoutModalVisible,
+    openModal: openLogoutModal,
+    closeModal: closeLogoutModal,
+    onModalHide: onLogoutModalHide,
+    queueNextAction,
+  } = useModalHandler()
 
   const rootNavigation = navigation.getParent()
 
@@ -67,17 +74,20 @@ const AccountScreen: React.FC = () => {
     navigation.navigate("AccountDetailsScreen")
   }, [navigation])
 
-  const handleChangeLanguage = useCallback(async (lng: "en" | "ar") => {
-    setLangModalVisible(false)
-    if (lng === i18n.language) return
+  const handleChangeLanguage = useCallback(
+    async (lng: "en" | "ar") => {
+      setLangModalVisible(false)
+      if (lng === i18n.language) return
 
-    dispatch(setCurrentScreen("home"))
-    dispatch(setLanguage(lng))
+      dispatch(setCurrentScreen("home"))
+      dispatch(setLanguage(lng))
 
-    setTimeout(() => {
-      RNRestart.restart()
-    }, 100)
-  }, [i18n.language, dispatch])
+      setTimeout(() => {
+        RNRestart.restart()
+      }, 100)
+    },
+    [i18n.language, dispatch]
+  )
 
   if (!isAuth) {
     return (
@@ -93,10 +103,22 @@ const AccountScreen: React.FC = () => {
               style={{ width: 220, height: 146 }}
               resizeMode="contain"
             />
-            <Text size={20} weight="semibold" leading="legacy" align="center" style={a.mt_24}>
+            <Text
+              size={20}
+              weight="semibold"
+              leading="legacy"
+              align="center"
+              style={a.mt_24}
+            >
               {t("sign_in_for_full_experience")}
             </Text>
-            <Text size={13} leading="legacy" color="tertiary" align="center" style={a.mt_8}>
+            <Text
+              size={13}
+              leading="legacy"
+              color="tertiary"
+              align="center"
+              style={a.mt_8}
+            >
               {t("guest_account_benefits")}
             </Text>
 
@@ -151,13 +173,23 @@ const AccountScreen: React.FC = () => {
           {/* Footer */}
           <DmView style={[a.items_center, a.mt_32, a.mb_16]}>
             <DmView onPress={() => {}}>
-              <Text size={12} leading="legacy" align="center" style={styles.offeringServices}>
+              <Text
+                size={12}
+                leading="legacy"
+                align="center"
+                style={styles.offeringServices}
+              >
                 {t("offering_services")}
               </Text>
             </DmView>
             <DmView style={[a.mt_24, a.items_center]}>
               <TapplerLogoIcon width={100} height={24} />
-              <Text size={10} leading="legacy" align="center" style={[a.mt_4, styles.offeringServices]}>
+              <Text
+                size={10}
+                leading="legacy"
+                align="center"
+                style={[a.mt_4, styles.offeringServices]}
+              >
                 {t("version")}: {APP_VERSION} {t("build")}: {APP_BUILD}
               </Text>
             </DmView>
@@ -276,13 +308,23 @@ const AccountScreen: React.FC = () => {
         {/* Footer */}
         <DmView style={[a.items_center, a.mt_32, a.mb_16]}>
           <DmView onPress={() => {}}>
-            <Text size={12} leading="legacy" align="center" style={styles.offeringServices}>
+            <Text
+              size={12}
+              leading="legacy"
+              align="center"
+              style={styles.offeringServices}
+            >
               {t("offering_services")}
             </Text>
           </DmView>
           <DmView style={[a.mt_24, a.items_center]}>
             <TapplerLogoIcon width={100} height={24} />
-            <Text size={10} leading="legacy" align="center" style={[a.mt_4, styles.offeringServices]}>
+            <Text
+              size={10}
+              leading="legacy"
+              align="center"
+              style={[a.mt_4, styles.offeringServices]}
+            >
               {t("version")}: {APP_VERSION} {t("build")}: {APP_BUILD}
             </Text>
           </DmView>

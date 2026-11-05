@@ -205,7 +205,9 @@ const CalendarTimePicker: React.FC<Props> = ({
                   a.py_10,
                   styles.container,
                   a.border_1,
-                  isSelected ? styles.containerSelected : styles.containerNotSelected,
+                  isSelected
+                    ? styles.containerSelected
+                    : styles.containerNotSelected,
                   tooEarly ? { opacity: 0.35 } : undefined,
                   styles.gapChild,
                 ]}
@@ -232,7 +234,9 @@ const CalendarTimePicker: React.FC<Props> = ({
               a.py_12,
               styles.container,
               a.border_1,
-              isAnyTime ? styles.containerSelected : styles.containerNotSelected,
+              isAnyTime
+                ? styles.containerSelected
+                : styles.containerNotSelected,
             ]}
             onPress={handleAnyTimePress}
           >

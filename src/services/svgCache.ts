@@ -65,7 +65,11 @@ export const collectProStickerUrls = (
   slice.forEach((pro: any) => {
     pro?.serviceCategories?.[0]?.subscriptions?.forEach((sub: any) => {
       if (sub?.product?.subType === "motivational") {
-        urls.push(isAr ? sub.product?.pictureAr || sub.product?.pictureEn : sub.product?.pictureEn)
+        urls.push(
+          isAr
+            ? sub.product?.pictureAr || sub.product?.pictureEn
+            : sub.product?.pictureEn
+        )
       }
     })
     pro?.documents?.forEach((doc: any) => {

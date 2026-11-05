@@ -35,10 +35,7 @@ const SplashOverlay: React.FC<Props> = ({ isReady, onFinish }) => {
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        { opacity, transform: [{ scale }] },
-      ]}
+      style={[styles.container, { opacity, transform: [{ scale }] }]}
     >
       <LottieView
         source={splashAnimation}

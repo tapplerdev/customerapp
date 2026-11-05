@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   safeArea: {
@@ -14,7 +14,7 @@ export default StyleSheet.create({
     marginTop: 21,
   },
   rowRtl: {
-    flexDirection: 'row-reverse',
+    flexDirection: "row-reverse",
   },
   buttonRtl: {
     marginLeft: 10,
@@ -35,7 +35,7 @@ export default StyleSheet.create({
     fontSize: 13,
     lineHeight: 22,
     color: colors.grey,
-    fontFamily: 'TheSans-Regular',
-    textAlign: 'center',
+    fontFamily: "TheSans-Regular",
+    textAlign: "center",
   },
-});
+})

@@ -43,7 +43,12 @@ export const useChatSocket = () => {
   // --- Connection lifecycle (auth-driven) ---------------------------------
   useEffect(() => {
     if (isAuth && token && user?.id) {
-      WebSocketService.connect({ token, getToken, userId: user.id, userType: "customer" })
+      WebSocketService.connect({
+        token,
+        getToken,
+        userId: user.id,
+        userType: "customer",
+      })
     } else {
       WebSocketService.disconnect()
     }
@@ -59,7 +64,12 @@ export const useChatSocket = () => {
       const step = planAppState.current(next)
       if (step.connectIfDown) {
         if (isAuth && token && user?.id && !WebSocketService.isConnected()) {
-          WebSocketService.connect({ token, getToken, userId: user.id, userType: "customer" })
+          WebSocketService.connect({
+            token,
+            getToken,
+            userId: user.id,
+            userType: "customer",
+          })
         }
       }
       if (step.refetch) {
@@ -79,7 +89,11 @@ export const useChatSocket = () => {
     const handler = (data: { eventName: string; args: any[] }) => {
       if (data.eventName === "message.created") {
         const wsMessage = data.args?.[0]?.body
-        const applied = applyIncomingMessage(dispatch, store.getState, wsMessage)
+        const applied = applyIncomingMessage(
+          dispatch,
+          store.getState,
+          wsMessage
+        )
         // Unknown chat (brand-new conversation not in any cached list) or a
         // slim payload — one targeted refetch of the list.
         if (!applied) {
@@ -102,11 +116,20 @@ export const useChatSocket = () => {
         // the customer is NOT already looking at that chat. Look the chat up
         // in the getChats cache so the banner can open it on tap.
         const chatId = wsMessage?.chatId
-        if (wsMessage?.ownerType === "pro" && chatId && chatId !== getActiveChat()) {
-          const chats = api.endpoints.getChats.select(undefined)(store.getState() as any)?.data?.data
+        if (
+          wsMessage?.ownerType === "pro" &&
+          chatId &&
+          chatId !== getActiveChat()
+        ) {
+          const chats = api.endpoints.getChats.select(undefined)(
+            store.getState() as any
+          )?.data?.data
           const chatPreview = chats?.find((c) => c.chat.id === chatId)
           if (chatPreview && wsMessage.text) {
-            messageBannerEventBus.emit("message:new", { chatPreview, body: wsMessage.text })
+            messageBannerEventBus.emit("message:new", {
+              chatPreview,
+              body: wsMessage.text,
+            })
           }
         }
       } else if (data.eventName === "message.updatedMany") {
@@ -172,7 +195,9 @@ export const useChatSocket = () => {
           body: payload.body,
           jobId: typeof payload?.jobId === "number" ? payload.jobId : undefined,
           jobStatus:
-            typeof payload?.job?.status === "string" ? payload.job.status : undefined,
+            typeof payload?.job?.status === "string"
+              ? payload.job.status
+              : undefined,
           // Top-level, not payload.job.pros — the backend omits `pros` from
           // the job it sends, so digging for it there always yields undefined.
           foodStatus:

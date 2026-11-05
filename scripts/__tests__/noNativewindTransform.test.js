@@ -173,11 +173,14 @@ describe("a canary under src comes out with no nativewind in it", () => {
     expect(code.match(/nativewind/gi)).toBeNull()
   })
 
-  it.each(ENVS)("control, nativewind/babel put back wraps it: %s", (envName) => {
-    const code = out(envName, true)
-    expect(code).toMatch(/require\(["']nativewind["']\)/)
-    expect(code).toContain("StyledComponent")
-  })
+  it.each(ENVS)(
+    "control, nativewind/babel put back wraps it: %s",
+    (envName) => {
+      const code = out(envName, true)
+      expect(code).toMatch(/require\(["']nativewind["']\)/)
+      expect(code).toContain("StyledComponent")
+    }
+  )
 })
 
 describe("the build declares no NativeWind, tailwind or clsx", () => {

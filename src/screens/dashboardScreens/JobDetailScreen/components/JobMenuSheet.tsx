@@ -68,7 +68,12 @@ const JobMenuSheet: React.FC<Props> = ({
           sheet), no divider between rows, and each icon in a fixed 24pt column
           so the labels line up whatever the glyph's intrinsic width. */}
       <DmView
-        style={[jobMenuSheetStyles.box, a.px_24, a.pt_20, { paddingBottom: insets.bottom + 12 }]}
+        style={[
+          jobMenuSheetStyles.box,
+          a.px_24,
+          a.pt_20,
+          { paddingBottom: insets.bottom + 12 },
+        ]}
       >
         {!!onShowDetails && (
           <DmView
@@ -81,10 +86,7 @@ const JobMenuSheet: React.FC<Props> = ({
             {/* marginStart, not ml-: logical, so it becomes a right-hand gap
                 under force-RTL without pre-flipping. textAlign left for the
                 same reason — RN swaps it in Arabic. */}
-            <Text
-              size={14}
-              style={rtlRow}
-            >
+            <Text size={14} style={rtlRow}>
               {t("my_request_details")}
             </Text>
           </DmView>
@@ -98,38 +100,35 @@ const JobMenuSheet: React.FC<Props> = ({
             <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <TrashRedIcon width={20} height={24} />
             </DmView>
-            <Text
-              size={14}
-              style={rtlRow}
-            >
+            <Text size={14} style={rtlRow}>
               {cancelLabel}
             </Text>
           </DmView>
         )}
 
         {!!onBlock && (
-          <DmView style={[a.flex_row, a.items_center, a.py_14]} onPress={onBlock}>
+          <DmView
+            style={[a.flex_row, a.items_center, a.py_14]}
+            onPress={onBlock}
+          >
             <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <BlockIcon width={20} height={20} />
             </DmView>
-            <Text
-              size={14}
-              style={rtlRow}
-            >
+            <Text size={14} style={rtlRow}>
               {t("block_pro")}
             </Text>
           </DmView>
         )}
 
         {!!onReport && (
-          <DmView style={[a.flex_row, a.items_center, a.py_14]} onPress={onReport}>
+          <DmView
+            style={[a.flex_row, a.items_center, a.py_14]}
+            onPress={onReport}
+          >
             <DmView style={[jobMenuSheetStyles.iconWrap, a.items_center]}>
               <ComplaintIcon width={18} height={20} />
             </DmView>
-            <Text
-              size={14}
-              style={rtlRow}
-            >
+            <Text size={14} style={rtlRow}>
               {t("file_a_complain_against_pro")}
             </Text>
           </DmView>

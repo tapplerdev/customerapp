@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   box: {
@@ -12,7 +12,7 @@ export default StyleSheet.create({
     marginRight: 19,
     paddingLeft: 39,
     paddingRight: 39,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   text: {
     marginTop: 11,
@@ -23,4 +23,4 @@ export default StyleSheet.create({
   button: {
     marginTop: 17,
   },
-});
+})

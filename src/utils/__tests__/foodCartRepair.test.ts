@@ -71,7 +71,10 @@ const menuOf = (...dishes: FoodMenuItemType[]): FoodMenuType => ({
 // What FoodItemScreen puts in the basket for Molokhia, Large, with bread.
 const molokhiaLine = (over: Partial<CartItemType> = {}): CartItemType => {
   const selectedOptions = [
-    { optionName: "Size", choices: [{ name: "Large", price: 25, originalPrice: 30 }] },
+    {
+      optionName: "Size",
+      choices: [{ name: "Large", price: 25, originalPrice: 30 }],
+    },
     {
       optionName: "Extras",
       choices: [{ name: "Extra bread", price: 10, originalPrice: 10 }],
@@ -130,7 +133,9 @@ describe("repairCart", () => {
   it("reprices a line when a chosen choice's price moved", () => {
     const large = { id: 12, name: "Large", price: 40, discountPrice: 0 }
     const menu = menuOf(
-      dish({ options: [{ ...SIZE, choices: [SIZE.choices[0], large] }, EXTRAS] })
+      dish({
+        options: [{ ...SIZE, choices: [SIZE.choices[0], large] }, EXTRAS],
+      })
     )
     const result = repairCart([molokhiaLine()], menu)
 
@@ -148,13 +153,19 @@ describe("repairCart", () => {
   })
 
   it("reprices a line when the dish's price moved, and reads a discount as the server does", () => {
-    const result = repairCart([plainLine()], menuOf(chicken({ discountPrice: 100 })))
+    const result = repairCart(
+      [plainLine()],
+      menuOf(chicken({ discountPrice: 100 }))
+    )
     expect(result.lines[0].price).toBe(100)
     expect(result.lines[0].originalPrice).toBe(150)
     expect(result.repriced).toHaveLength(1)
 
     // 0 is "no discount", not a price of zero.
-    const noDiscount = repairCart([plainLine()], menuOf(chicken({ discountPrice: 0 })))
+    const noDiscount = repairCart(
+      [plainLine()],
+      menuOf(chicken({ discountPrice: 0 }))
+    )
     expect(noDiscount.lines[0].price).toBe(150)
   })
 
@@ -166,7 +177,9 @@ describe("repairCart", () => {
     expect(result.repriced).toEqual([])
     expect(result.changed).toBe(true)
     expect(result.lines.map((l) => l.menuItemId)).toEqual([911, 912])
-    expect(result.lines[0].uid).toBe(cartLineUid(911, result.lines[0].selectedOptions!))
+    expect(result.lines[0].uid).toBe(
+      cartLineUid(911, result.lines[0].selectedOptions!)
+    )
     expect(result.lines[1].uid).toBe("912:")
     // The order check would now accept these lines.
     expect(buildFoodOrderItems(result.lines)[0]).toMatchObject({
@@ -186,7 +199,10 @@ describe("repairCart", () => {
   })
 
   it("removes a line whose dish is out of stock", () => {
-    const result = repairCart([plainLine()], menuOf(chicken({ inStock: false })))
+    const result = repairCart(
+      [plainLine()],
+      menuOf(chicken({ inStock: false }))
+    )
     expect(result.removed.map((r) => r.reason)).toEqual(["outOfStock"])
     expect(result.lines).toEqual([])
   })
@@ -202,7 +218,10 @@ describe("repairCart", () => {
   })
 
   it("trusts the id when it is still there, even if the name is shared", () => {
-    const menu = menuOf(chicken(), chicken({ id: 802, price: 99, discountPrice: 0 }))
+    const menu = menuOf(
+      chicken(),
+      chicken({ id: 802, price: 99, discountPrice: 0 })
+    )
     const result = repairCart([plainLine()], menu)
     expect(result.removed).toEqual([])
     expect(result.lines[0].menuItemId).toBe(412)
@@ -274,9 +293,9 @@ describe("repairCart", () => {
       { name: "Pickles", price: 5, originalPrice: 5 },
     ]
     const capped = menuOf(dish({ options: [SIZE, { ...EXTRAS, maxQty: 1 }] }))
-    expect(repairCart([twoBreads], capped).removed.map((r) => r.reason)).toEqual([
-      "rulesBroken",
-    ])
+    expect(
+      repairCart([twoBreads], capped).removed.map((r) => r.reason)
+    ).toEqual(["rulesBroken"])
   })
 
   it("removes a line when an option became required and the basket never answered it", () => {
@@ -381,7 +400,10 @@ describe("buildFoodOrderItems", () => {
         quantity: 2,
         selectedOptions: [
           { optionName: "Size", choices: [{ name: "Large", price: 25 }] },
-          { optionName: "Extras", choices: [{ name: "Extra bread", price: 10 }] },
+          {
+            optionName: "Extras",
+            choices: [{ name: "Extra bread", price: 10 }],
+          },
         ],
       },
     ])

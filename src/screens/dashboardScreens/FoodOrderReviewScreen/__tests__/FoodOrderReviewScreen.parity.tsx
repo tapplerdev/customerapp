@@ -362,9 +362,13 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
         await session.act(() => {
           pressTitled(session.root, copy(env, "submit_order"))
         })
-        expectParity(parityName("menu changed: repriced", env), session.tree(), {
-          allow: BUTTON,
-        })
+        expectParity(
+          parityName("menu changed: repriced", env),
+          session.tree(),
+          {
+            allow: BUTTON,
+          }
+        )
         expect(JSON.stringify(session.tree())).toContain(
           copy(env, "food_menu_changed_repriced")
         )
@@ -519,15 +523,24 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
           pressTitled(session.root, copy(env, "submit_order"))
         })
         const orders = sentOrders(session) as unknown as {
-          args: { body: { foodOrderItems: { name: string; selectedOptions?: { choices: { price: number }[] }[] }[] } }
+          args: {
+            body: {
+              foodOrderItems: {
+                name: string
+                selectedOptions?: { choices: { price: number }[] }[]
+              }[]
+            }
+          }
         }[]
         expect(orders).toHaveLength(2)
         // First the lines the customer built, then the repaired ones.
         expect(
-          orders[0].args.body.foodOrderItems[0].selectedOptions![0].choices[0].price
+          orders[0].args.body.foodOrderItems[0].selectedOptions![0].choices[0]
+            .price
         ).toBe(25)
         expect(
-          orders[1].args.body.foodOrderItems[0].selectedOptions![0].choices[0].price
+          orders[1].args.body.foodOrderItems[0].selectedOptions![0].choices[0]
+            .price
         ).toBe(35)
         expect(session.navigation.actions).toMatchObject([
           { type: "NAVIGATE", payload: { name: "RequestSuccessScreen" } },
@@ -661,7 +674,10 @@ const draftOf = (store: { getState: () => unknown }) =>
   (
     store.getState() as {
       cart: {
-        carts: Record<number, { submitKey?: string; submitKeyRefused?: boolean }>
+        carts: Record<
+          number,
+          { submitKey?: string; submitKeyRefused?: boolean }
+        >
       }
     }
   ).cart.carts[PRO_FOOD.id]
@@ -793,7 +809,9 @@ describe("FoodOrderReviewScreen, the order's Idempotency-Key", () => {
           createJob: {
             error: {
               status: 400,
-              data: { validationErrors: { items: ["Grilled chicken is sold out"] } },
+              data: {
+                validationErrors: { items: ["Grilled chicken is sold out"] },
+              },
             },
           },
         })
@@ -870,9 +888,13 @@ describe("FoodOrderReviewScreen, an earlier order answered for a changed one", (
         expect(text).toContain(copy(env, "earlier_order_went_through"))
         expect(text).toContain(copy(env, "already_sent"))
         expect(session.navigation.actions).toEqual([])
-        expectParity(parityName("an earlier order answered for a changed one", env), session.tree(), {
-          allow: BUTTON,
-        })
+        expectParity(
+          parityName("an earlier order answered for a changed one", env),
+          session.tree(),
+          {
+            allow: BUTTON,
+          }
+        )
         await session.act(() => {
           pressTitled(session.root, copy(env, "OK"))
         })

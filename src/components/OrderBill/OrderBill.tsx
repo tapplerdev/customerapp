@@ -82,7 +82,8 @@ const OrderBill: React.FC<Props> = ({
     )
 
   const subtotal = items.reduce(
-    (sum, line) => sum + (Number(line.price) + choicesTotalFor(line)) * line.quantity,
+    (sum, line) =>
+      sum + (Number(line.price) + choicesTotalFor(line)) * line.quantity,
     0
   )
   const deliveryFee = job?.deliveryFee ?? 0
@@ -90,7 +91,10 @@ const OrderBill: React.FC<Props> = ({
   const orderTotal = subtotal + deliveryFee - orderDiscount
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
-    <DmView key={label} style={[a.flex_row, a.items_center, a.justify_between, a.mb_6]}>
+    <DmView
+      key={label}
+      style={[a.flex_row, a.items_center, a.justify_between, a.mb_6]}
+    >
       <Text
         size={13}
         weight={bold ? "bold" : "regular"}
@@ -132,7 +136,12 @@ const OrderBill: React.FC<Props> = ({
             style={[a.flex_row, a.items_start, a.justify_between, a.mb_8]}
           >
             <DmView style={[a.flex_1, a.mr_10]}>
-              <Text size={13} weight="medium" leading={px(17)} style={textStyle}>
+              <Text
+                size={13}
+                weight="medium"
+                leading={px(17)}
+                style={textStyle}
+              >
                 {line.quantity}× {line.name}
               </Text>
               {!!choiceNames.length && (
@@ -142,7 +151,9 @@ const OrderBill: React.FC<Props> = ({
               )}
             </DmView>
             <Text size={13} weight="medium" leading={px(17)} style={textStyle}>
-              {formatMoney((Number(line.price) + choicesTotalFor(line)) * line.quantity)}{" "}
+              {formatMoney(
+                (Number(line.price) + choicesTotalFor(line)) * line.quantity
+              )}{" "}
               {t("EGP")}
             </Text>
           </DmView>
@@ -158,7 +169,11 @@ const OrderBill: React.FC<Props> = ({
         )}
       {orderDiscount > 0 &&
         totalsRow(t("discount"), `- ${formatMoney(orderDiscount)} ${t("EGP")}`)}
-      {totalsRow(t("order_total"), `${formatMoney(orderTotal)} ${t("EGP")}`, true)}
+      {totalsRow(
+        t("order_total"),
+        `${formatMoney(orderTotal)} ${t("EGP")}`,
+        true
+      )}
     </DmView>
   )
 }

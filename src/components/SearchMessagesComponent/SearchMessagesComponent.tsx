@@ -24,7 +24,18 @@ const SearchMessagesComponent: React.FC<Props> = ({
   })
 
   return (
-    <DmView style={[styles.container, { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 }]}>
+    <DmView
+      style={[
+        styles.container,
+        {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          elevation: 2,
+        },
+      ]}
+    >
       <Controller
         control={control}
         rules={{ required: true }}

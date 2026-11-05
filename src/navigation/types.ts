@@ -105,13 +105,15 @@ export type RootStackParamList = {
   UpdateEmailScreen: undefined
   DeleteAccountScreen: undefined
   MySavedAddressesScreen: { selectionMode?: boolean } | undefined
-  AddNewAddressScreen: {
-    address?: string
-    city?: string
-    governorate?: string
-    coords?: { lat: number; lon: number }
-    fromSuccess?: boolean
-  } | undefined
+  AddNewAddressScreen:
+    | {
+        address?: string
+        city?: string
+        governorate?: string
+        coords?: { lat: number; lon: number }
+        fromSuccess?: boolean
+      }
+    | undefined
   ViewAddressScreen: {
     addressId: number
     name: string
@@ -246,12 +248,16 @@ export type RootStackParamList = {
   RequestDetailsScreen: {
     jobId: number
   }
-  RequestSuccessScreen: {
-    address?: AddressInfo
-  } | undefined
-  SaveAddressSheetScreen: {
-    address?: AddressInfo
-  } | undefined
+  RequestSuccessScreen:
+    | {
+        address?: AddressInfo
+      }
+    | undefined
+  SaveAddressSheetScreen:
+    | {
+        address?: AddressInfo
+      }
+    | undefined
 }
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

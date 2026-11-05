@@ -33,10 +33,23 @@ const TooltipComponent: React.FC<TooltipProps> = ({ handleStop }) => {
       <DmView style={[isAr ? { transform: [{ scaleX: -1 }] } : undefined]}>
         <TutorialArrowIcon width={140} height={140} />
       </DmView>
-      <Text size={13} weight="semibold" leading="loose" color="inverse" align="center" style={tooltipComponentStyles.howToGetBestDeal}>
+      <Text
+        size={13}
+        weight="semibold"
+        leading="loose"
+        color="inverse"
+        align="center"
+        style={tooltipComponentStyles.howToGetBestDeal}
+      >
         {t("how_to_get_best_deal")}
       </Text>
-      <Text size={11} leading="loose" color="inverse" align="center" style={[a.mt_4, a.px_10]}>
+      <Text
+        size={11}
+        leading="loose"
+        color="inverse"
+        align="center"
+        style={[a.mt_4, a.px_10]}
+      >
         {t("best_deal_tip_text")}
       </Text>
 
@@ -47,10 +60,18 @@ const TooltipComponent: React.FC<TooltipProps> = ({ handleStop }) => {
         activeOpacity={0.7}
       >
         <DmView
-          style={[tooltipComponentStyles.box, a.border_1, a.items_center, a.justify_center, dontShow ? { backgroundColor: "white" } : undefined]}
+          style={[
+            tooltipComponentStyles.box,
+            a.border_1,
+            a.items_center,
+            a.justify_center,
+            dontShow ? { backgroundColor: "white" } : undefined,
+          ]}
         >
           {dontShow && (
-            <Text size={10} weight="bold" leading="legacy" color="brand">✓</Text>
+            <Text size={10} weight="bold" leading="legacy" color="brand">
+              ✓
+            </Text>
           )}
         </DmView>
         <Text size={11} leading="legacy" color="inverse" style={a.ml_6}>

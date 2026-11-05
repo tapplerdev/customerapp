@@ -4,7 +4,12 @@
 import { describe, expect, it } from "@jest/globals"
 import type { ReactTestInstance } from "react-test-renderer"
 
-import { copy, openScreen, pressTitled, rowsByPlatform } from "testing/screenKit"
+import {
+  copy,
+  openScreen,
+  pressTitled,
+  rowsByPlatform,
+} from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
 import { DATA } from "testing/screenKit/fixtures/api"
 import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
@@ -33,11 +38,19 @@ import { SERVICE_FOOD_FILTERS, SERVICE_PLAIN } from "../__fixtures__/discover"
  */
 
 const load = () => require("../ProsListingScreen")
-const page = (rows: unknown[]) => ({ data: rows, page: 1, perPage: 20, total: rows.length })
+const page = (rows: unknown[]) => ({
+  data: rows,
+  page: 1,
+  perPage: 20,
+  total: rows.length,
+})
 
 const options = (
   env: (typeof PARITY_MATRIX)[number],
-  { food = false, dontShow = false }: { food?: boolean; dontShow?: boolean } = {}
+  {
+    food = false,
+    dontShow = false,
+  }: { food?: boolean; dontShow?: boolean } = {}
 ) => {
   const base = screenState("data")
   return {
@@ -135,14 +148,17 @@ describe("ProsListingScreen, the best-deal tip", () => {
         })
         // The mark is up: its tooltip is the tip's own.
         expect(
-          session.root.findAll((n) => n.props.title === copy(env, "got_it")).length
+          session.root.findAll((n) => n.props.title === copy(env, "got_it"))
+            .length
         ).toBeGreaterThan(0)
 
         await session.act(() => {
           mark(session.root).props.onDismiss()
         })
         expect(mark(session.root).props.visible).toBe(false)
-        expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(false)
+        expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(
+          false
+        )
       } finally {
         session.unmount()
       }
@@ -165,7 +181,9 @@ describe("ProsListingScreen, the best-deal tip", () => {
           pressTitled(session.root, copy(env, "got_it"))
         })
         expect(mark(session.root).props.visible).toBe(false)
-        expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(false)
+        expect(session.store.getState().auth.dontShowBestDealTooltip).toBe(
+          false
+        )
       } finally {
         session.unmount()
       }

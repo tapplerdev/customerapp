@@ -10,11 +10,7 @@
  * area's tests, built from these, and move here when a second area wants them.
  */
 import type { CartDraft } from "store/cart/slice"
-import type {
-  ChatMessageType,
-  ChatPreviewType,
-  ChatType,
-} from "types/chat"
+import type { ChatMessageType, ChatPreviewType, ChatType } from "types/chat"
 import type {
   PresetType,
   ServiceCategoryType,
@@ -73,7 +69,12 @@ export const QUESTION_PLACE: ServiceQuestionType = {
   order: 1,
   options: [
     { id: 7011, label: "A leaking tap", labelAr: "صنبور يسرب", value: "tap" },
-    { id: 7012, label: "A blocked drain", labelAr: "صرف مسدود", value: "drain" },
+    {
+      id: 7012,
+      label: "A blocked drain",
+      labelAr: "صرف مسدود",
+      value: "drain",
+    },
   ],
 }
 
@@ -303,7 +304,9 @@ export const JOB_PRO_OFFER: JobProType = {
   ratePerHour: 150,
   proOfferSentAt: HOURS_AGO(2),
   pro: PRO_INDIVIDUAL,
-  offers: [{ id: 1, jobProId: 9001, ratePerHour: 150, createdAt: HOURS_AGO(2) }],
+  offers: [
+    { id: 1, jobProId: 9001, ratePerHour: 150, createdAt: HOURS_AGO(2) },
+  ],
   review: null,
 }
 

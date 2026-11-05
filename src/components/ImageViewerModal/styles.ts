@@ -1,6 +1,6 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
-import dsColors from 'styles/dsColors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
+import dsColors from "styles/dsColors"
 
 export default StyleSheet.create({
   list: {
@@ -20,4 +20,4 @@ export default StyleSheet.create({
     marginLeft: 3,
     marginRight: 3,
   },
-});
+})

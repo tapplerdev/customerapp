@@ -67,7 +67,14 @@ const OffersSection: React.FC<OffersSectionProps> = ({
           <BannerTab text={t("offers")} />
         </DmView>
         <DmView
-          style={[a.flex_row, a.flex_wrap, a.items_center, a.py_8, a.px_10, STRIP_STYLE]}
+          style={[
+            a.flex_row,
+            a.flex_wrap,
+            a.items_center,
+            a.py_8,
+            a.px_10,
+            STRIP_STYLE,
+          ]}
         >
           {stickerProducts.map((sub: any, idx: number) => {
             const uri = stickerUri(sub)
@@ -108,9 +115,7 @@ const OffersSection: React.FC<OffersSectionProps> = ({
       containerStyle={compact ? styles.boxCompact : styles.box}
     >
       {stickerProducts.map((sub: any, idx: number) => {
-        const imageUrl = isAr
-          ? sub.product?.pictureAr
-          : sub.product?.pictureEn
+        const imageUrl = isAr ? sub.product?.pictureAr : sub.product?.pictureEn
         return imageUrl ? (
           <SvgUriContainer
             key={sub.id || idx}

@@ -62,8 +62,7 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
         )
         goToHome()
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }, [getCurrentLocation, dispatch, goToHome])
 
   const handleChoose = useCallback(() => {
@@ -111,11 +110,23 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
       <DmView style={[a.flex_1, a.px_24, a.items_center, a.justify_center]}>
         <HiThereIcon width={303} height={202} />
 
-        <Text size={24} weight="semibold" leading="legacy" align="center" style={[a.mt_24, dsStyles.hiThere]}>
+        <Text
+          size={24}
+          weight="semibold"
+          leading="legacy"
+          align="center"
+          style={[a.mt_24, dsStyles.hiThere]}
+        >
           {t("hi_there")}
         </Text>
 
-        <Text size={14} leading="legacy" color="tertiary" align="center" style={[a.mt_12, a.px_8]}>
+        <Text
+          size={14}
+          leading="legacy"
+          color="tertiary"
+          align="center"
+          style={[a.mt_12, a.px_8]}
+        >
           {t("before_using_app_location")}
         </Text>
 
@@ -141,7 +152,13 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
               ) : (
                 <>
                   <LocationIcon width={20} height={20} />
-                  <Text size={13} weight="medium" leading="legacy" color="inverse" style={a.ml_8}>
+                  <Text
+                    size={13}
+                    weight="medium"
+                    leading="legacy"
+                    color="inverse"
+                    style={a.ml_8}
+                  >
                     {t("enable_your_location")}
                   </Text>
                 </>

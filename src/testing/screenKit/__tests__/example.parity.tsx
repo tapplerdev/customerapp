@@ -112,8 +112,7 @@ compareOnly("each mutant fails where its change draws", () => {
     "an Arabic-only value: the RTL branch's margin, which only Arabic rows draw [$env.language $env.platform]",
     async ({ env }) => {
       const tree = await render(mutant("arabicOnly"), env)
-      const compare = () =>
-        expectParity(picker(env), tree, { allow: ALLOW })
+      const compare = () => expectParity(picker(env), tree, { allow: ALLOW })
       if (env.language === "ar") {
         expect(compare).toThrow(/marginLeft/)
       } else {

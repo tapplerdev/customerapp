@@ -15,7 +15,10 @@ const CASES = [
   { name: "its own words", props: {} },
   {
     name: "a call site's words",
-    props: { title: "Couldn't save", descr: "Check your connection and retry." },
+    props: {
+      title: "Couldn't save",
+      descr: "Check your connection and retry.",
+    },
   },
 ]
 

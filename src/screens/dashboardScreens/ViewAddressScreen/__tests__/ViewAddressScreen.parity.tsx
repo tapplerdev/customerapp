@@ -111,59 +111,81 @@ describe("ViewAddressScreen presses", () => {
     }
   }
 
-  it.each(envs)("Delete asks, No closes the card [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      expect(card(session).isVisible).toBe(false)
-      await run(session, env, [askDelete])
-      expect(card(session).isVisible).toBe(true)
-      await run(session, env, [no])
-      expect(card(session).isVisible).toBe(false)
-      expect(session.requests().filter((r) => r.type === "mutation")).toEqual([])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Delete asks, No closes the card [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        expect(card(session).isVisible).toBe(false)
+        await run(session, env, [askDelete])
+        expect(card(session).isVisible).toBe(true)
+        await run(session, env, [no])
+        expect(card(session).isVisible).toBe(false)
+        expect(session.requests().filter((r) => r.type === "mutation")).toEqual(
+          []
+        )
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Yes deletes this address and goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, COMPLETE, "accepted"))
-    try {
-      await run(session, env, [askDelete, yes])
-      const sent = session.requests().filter((r) => r.endpoint === "deleteCustomerAddress")
-      expect(sent).toHaveLength(1)
-      expect(JSON.stringify(sent[0].args)).toContain(
-        String((COMPLETE as { addressId: number }).addressId)
+  it.each(envs)(
+    "Yes deletes this address and goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        optionsFor(env, COMPLETE, "accepted")
       )
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+      try {
+        await run(session, env, [askDelete, yes])
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "deleteCustomerAddress")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          String((COMPLETE as { addressId: number }).addressId)
+        )
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("a refused delete keeps the card and stays [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, COMPLETE, "refused"))
-    try {
-      await run(session, env, [askDelete, yes])
-      expect(card(session).isVisible).toBe(true)
-      expect(session.navigation.actions).toEqual([])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "a refused delete keeps the card and stays [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        optionsFor(env, COMPLETE, "refused")
+      )
+      try {
+        await run(session, env, [askDelete, yes])
+        expect(card(session).isVisible).toBe(true)
+        expect(session.navigation.actions).toEqual([])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

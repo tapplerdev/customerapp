@@ -3,7 +3,11 @@
 import { describe, expect, it, jest } from "@jest/globals"
 import path from "path"
 
-import { networkAttempts, openScreen, type ScreenSession } from "testing/screenKit"
+import {
+  networkAttempts,
+  openScreen,
+  type ScreenSession,
+} from "testing/screenKit"
 import { DATA } from "testing/screenKit/fixtures/api"
 import {
   freshInstallState,
@@ -152,7 +156,10 @@ describe("the Latin faces the app's entry registers", () => {
   it("control: an entry that registers Poppins through an aliased import is seen", () => {
     expect(
       facesAfter(
-        path.join(__dirname, "../src/testing/screenKit/__fixtures__/AliasedFacesEntry")
+        path.join(
+          __dirname,
+          "../src/testing/screenKit/__fixtures__/AliasedFacesEntry"
+        )
       )
     ).toMatchObject({ "600": "Poppins-SemiBold" })
   })

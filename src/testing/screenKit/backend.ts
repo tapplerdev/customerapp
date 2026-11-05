@@ -197,8 +197,8 @@ export const fetchBaseQuery =
     const path = pathOf(args)
     const endpoint =
       path === "/auth/refresh" || path.startsWith("/auth/refresh/")
-      ? AUTH_REFRESH
-      : api.endpoint
+        ? AUTH_REFRESH
+        : api.endpoint
     const fixture = fixtures[endpoint]
     const request: BackendRequest = {
       endpoint,
@@ -239,8 +239,9 @@ export const fetchBaseQuery =
  */
 export const httpKey = (url: string) =>
   url
-    .replace(/([?&])apiKey=[^&]*(&?)/, (_match, before: string, after: string) =>
-      after ? before : ""
+    .replace(
+      /([?&])apiKey=[^&]*(&?)/,
+      (_match, before: string, after: string) => (after ? before : "")
     )
     .replace(/[?&]$/, "")
 

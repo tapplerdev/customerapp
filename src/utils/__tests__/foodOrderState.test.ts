@@ -14,7 +14,7 @@ const pro = (more: Partial<JobProType> = {}): JobProType =>
     proId: 2,
     selectionStatus: "offer",
     ...more,
-  } as JobProType)
+  }) as JobProType
 
 const job = (
   status: string,
@@ -27,7 +27,7 @@ const job = (
     serviceCategory: { hasMenu: true },
     pros: jobPro ? [pro(jobPro)] : [],
     ...more,
-  } as JobType)
+  }) as JobType
 
 describe("foodOrderEnd", () => {
   it.each([

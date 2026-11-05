@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   safeArea: {
@@ -23,7 +23,7 @@ export default StyleSheet.create({
     height: 0.7,
     backgroundColor: colors.grey19,
   },
-});
+})
 
 export const notificationsSkeletonStyles = StyleSheet.create({
   skeletonLoaderWrap: {
@@ -33,4 +33,4 @@ export const notificationsSkeletonStyles = StyleSheet.create({
     height: 0.5,
     backgroundColor: colors.grey19,
   },
-});
+})

@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   container: {
@@ -39,7 +39,7 @@ export default StyleSheet.create({
     borderBottomColor: colors.red,
     borderLeftColor: colors.red,
   },
-});
+})
 
 export const gateRegisterScreenStyles = StyleSheet.create({
   safeArea: {
@@ -96,7 +96,7 @@ export const gateRegisterScreenStyles = StyleSheet.create({
     paddingLeft: 53,
     paddingRight: 53,
   },
-});
+})
 
 export const gateSignInScreenStyles = StyleSheet.create({
   safeArea: {
@@ -110,4 +110,4 @@ export const gateSignInScreenStyles = StyleSheet.create({
     paddingLeft: 34,
     paddingRight: 34,
   },
-});
+})

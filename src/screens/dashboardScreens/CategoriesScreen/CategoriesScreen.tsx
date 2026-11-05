@@ -55,14 +55,20 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
   // keywords — same contract the pro app uses); the plain list stays on the
   // unfiltered cache. Both subscriptions stay warm so clearing the search is
   // instant and navigation payloads always carry the FULL service object.
-  const { data, isLoading, isFetching } = useGetServicesQuery(isSearching ? searchTerm : undefined)
+  const { data, isLoading, isFetching } = useGetServicesQuery(
+    isSearching ? searchTerm : undefined
+  )
   const { data: allData } = useGetServicesQuery()
   const services = data?.data || []
 
   // One flat list: matching categories first, then matching subcategories
   type RowItem =
     | { kind: "category"; service: ServiceType }
-    | { kind: "subCategory"; category: ServiceCategoryType; parentService: ServiceType }
+    | {
+        kind: "subCategory"
+        category: ServiceCategoryType
+        parentService: ServiceType
+      }
 
   const listData = useMemo<RowItem[]>(() => {
     if (!isSearching) {
@@ -70,7 +76,11 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
     }
     const query = searchTerm.toLowerCase()
     const categoryHits = services
-      .filter((s) => s.nameEn.toLowerCase().includes(query) || s.nameAr.toLowerCase().includes(query))
+      .filter(
+        (s) =>
+          s.nameEn.toLowerCase().includes(query) ||
+          s.nameAr.toLowerCase().includes(query)
+      )
       .map((s) => ({ kind: "category" as const, service: s }))
     const subCategoryHits = services.flatMap((s) =>
       (s.categories || [])
@@ -80,7 +90,11 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
             c.nameAr?.toLowerCase().includes(query) ||
             c.keywords?.toLowerCase().includes(query)
         )
-        .map((c) => ({ kind: "subCategory" as const, category: c, parentService: s }))
+        .map((c) => ({
+          kind: "subCategory" as const,
+          category: c,
+          parentService: s,
+        }))
     )
     return [...categoryHits, ...subCategoryHits]
   }, [services, searchTerm, isSearching])
@@ -89,10 +103,14 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate("SubCategoriesScreen", { service })
   }
 
-  const handleSubCategoryPress = (category: ServiceCategoryType, parentService: ServiceType) => {
+  const handleSubCategoryPress = (
+    category: ServiceCategoryType,
+    parentService: ServiceType
+  ) => {
     // Prefer the full service from the unfiltered cache — the search response
     // may carry a pruned category list.
-    const fullService = allData?.data?.find((s) => s.id === parentService.id) ?? parentService
+    const fullService =
+      allData?.data?.find((s) => s.id === parentService.id) ?? parentService
     // Open the address sheet in place — no hop through SubCategoriesScreen.
     openAddressFor(category, fullService)
   }
@@ -136,7 +154,6 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
 
   const showSkeleton = (!data && isLoading) || (isSearching && isFetching)
 
-
   return (
     // No entering animation on the screen ROOT. The native stack is already
     // animating this screen in, and a reanimated `entering` applies its initial
@@ -159,15 +176,23 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
           />
         </DmView>
         <DmView
-          style={[a.flex_1, a.flex_row, a.items_center, a.mx_8, styles.row2, a.px_14, {
-            borderWidth: 1,
-            borderColor: "#E0E0E0",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.12,
-            shadowRadius: 4,
-            elevation: 3,
-          }]}
+          style={[
+            a.flex_1,
+            a.flex_row,
+            a.items_center,
+            a.mx_8,
+            styles.row2,
+            a.px_14,
+            {
+              borderWidth: 1,
+              borderColor: "#E0E0E0",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.12,
+              shadowRadius: 4,
+              elevation: 3,
+            },
+          ]}
         >
           <SearchIcon width={14} height={14} />
           <TextInput
@@ -175,7 +200,17 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={handleSearchChange}
             placeholder={t("search_for_a_service")}
             placeholderTextColor={colors.grey3}
-            style={[fontStyles, { flex: 1, marginHorizontal: 8, fontSize: 14, color: colors.black, textAlign: isAr ? "right" : "left", padding: 0 }]}
+            style={[
+              fontStyles,
+              {
+                flex: 1,
+                marginHorizontal: 8,
+                fontSize: 14,
+                color: colors.black,
+                textAlign: isAr ? "right" : "left",
+                padding: 0,
+              },
+            ]}
             returnKeyType="search"
           />
           {searchText.length > 0 && (
@@ -209,15 +244,33 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
             data={listData}
             renderItem={renderItem}
             keyExtractor={(item) =>
-              item.kind === "category" ? `c-${item.service.id}` : `s-${item.category.id}`
+              item.kind === "category"
+                ? `c-${item.service.id}`
+                : `s-${item.category.id}`
             }
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
-            getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
+            getItemLayout={(_, index) => ({
+              length: 50,
+              offset: 50 * index,
+              index,
+            })}
             ListEmptyComponent={
-              <DmView style={[a.flex_1, a.items_center, a.justify_center, styles.noResultsFoundWrap]}>
-                <Text size={14} weight="medium" leading="legacy" color="tertiary">
+              <DmView
+                style={[
+                  a.flex_1,
+                  a.items_center,
+                  a.justify_center,
+                  styles.noResultsFoundWrap,
+                ]}
+              >
+                <Text
+                  size={14}
+                  weight="medium"
+                  leading="legacy"
+                  color="tertiary"
+                >
                   {t("no_results_found")}
                 </Text>
               </DmView>

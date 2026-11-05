@@ -94,11 +94,17 @@ const SIGNED = screenState("data")
 
 const CASES: Case[] = [
   { state: "the services", options: SIGNED },
-  { state: "the services, a wide one", options: { ...SIGNED, api: { ...DATA, ...WITH_WIDE } } },
+  {
+    state: "the services, a wide one",
+    options: { ...SIGNED, api: { ...DATA, ...WITH_WIDE } },
+  },
   { state: "loading", options: screenState("loading") },
   // A failed list and an empty one draw the same: no results (the screen
   // doesn't tell them apart), and a guest's list is a signed-in one's.
-  { state: "a server error or nothing published", options: screenState("error") },
+  {
+    state: "a server error or nothing published",
+    options: screenState("error"),
+  },
   {
     state: "search: a service matches",
     options: { ...SIGNED, api: { ...DATA, ...WITH_WIDE } },
@@ -127,7 +133,9 @@ const CASES: Case[] = [
       api: {
         ...DATA,
         getServices: (args) =>
-          urlOf(args).includes("search=") ? "loading" : DATA.getServices as never,
+          urlOf(args).includes("search=")
+            ? "loading"
+            : (DATA.getServices as never),
       },
     },
     steps: typed("home"),
@@ -209,7 +217,9 @@ describe.each(PARITY_MATRIX)(
         await act(session, () => pressText(session.root, name(CATEGORY)))
         // The sheet is up: the saved addresses are on offer.
         expect(JSON.stringify(session.tree())).toContain("12 Tahrir Street")
-        await act(session, () => pressContaining(session.root, "12 Tahrir Street"))
+        await act(session, () =>
+          pressContaining(session.root, "12 Tahrir Street")
+        )
         expect(navigated(session)).toEqual([
           expect.objectContaining({
             name: "SearchAnimationScreen",
@@ -230,13 +240,17 @@ describe.each(PARITY_MATRIX)(
     it("the back chevron goes back and the clear X empties the search", async () => {
       const session = await open()
       try {
-        await act(session, () => pressIcon(session.root, { icon: "svg:chevron-left", nth: 0 }))
+        await act(session, () =>
+          pressIcon(session.root, { icon: "svg:chevron-left", nth: 0 })
+        )
         expect(navigated(session)).toEqual([
           expect.objectContaining({ type: "GO_BACK" }),
         ])
         await act(session, () => typeInto(session.root, 0, "zzz"))
         await session.settle(400)
-        expect(JSON.stringify(session.tree())).toContain(copy(env, "no_results_found"))
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "no_results_found")
+        )
         await act(session, () => pressIcon(session.root, { icon: "svg:close" }))
         await session.settle(400)
         const tree = JSON.stringify(session.tree())
@@ -286,7 +300,11 @@ describe("what the search rows drew", () => {
   it("no match says so, and the unfiltered list has every service", async () => {
     expect(await draw(typed("zzz"))).toContain("No results found")
     const all = await draw([])
-    for (const words of ["Home repairs", "Food", "Cleaning and household help"]) {
+    for (const words of [
+      "Home repairs",
+      "Food",
+      "Cleaning and household help",
+    ]) {
       expect(all).toContain(words)
     }
   })

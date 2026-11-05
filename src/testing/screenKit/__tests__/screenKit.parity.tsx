@@ -53,8 +53,9 @@ const text = (tree: HostNode | null, testID: string): string =>
   (find(tree, testID)?.children ?? []).join("")
 
 const press = (session: ScreenSession, testID: string) =>
-  (session.root.findByProps({ testID }).props as { onPress: () => void })
-    .onPress()
+  (
+    session.root.findByProps({ testID }).props as { onPress: () => void }
+  ).onPress()
 
 const hosts = (tree: HostNode | null, type: string): HostNode[] => {
   const out: HostNode[] = []
@@ -118,20 +119,23 @@ describe("a render's layout direction is decided before its modules load", () =>
     { lang: "ar", platform: "android", drawn: "rtl rtl", textAlign: "right" },
     { lang: "en", platform: "android", drawn: "ltr ltr", textAlign: "left" },
   ]
-  it.each(rows)("$lang $platform", async ({ lang, platform, drawn, textAlign }) => {
-    const tree = await renderScreen(
-      () => require("../__fixtures__/RtlAtImport"),
-      { lang, platform, navigation: "none" }
-    )
-    expect(loadedDirection()).toBe(lang === "ar" ? "rtl" : "ltr")
-    expect(tree?.children).toEqual([drawn])
-    expect(tree?.props.style).toEqual({ textAlign })
-    const { I18nManager } = require("react-native") as {
-      I18nManager: { isRTL: boolean }
+  it.each(rows)(
+    "$lang $platform",
+    async ({ lang, platform, drawn, textAlign }) => {
+      const tree = await renderScreen(
+        () => require("../__fixtures__/RtlAtImport"),
+        { lang, platform, navigation: "none" }
+      )
+      expect(loadedDirection()).toBe(lang === "ar" ? "rtl" : "ltr")
+      expect(tree?.children).toEqual([drawn])
+      expect(tree?.props.style).toEqual({ textAlign })
+      const { I18nManager } = require("react-native") as {
+        I18nManager: { isRTL: boolean }
+      }
+      // put back to the registry's after the render
+      expect(I18nManager.isRTL).toBe(lang === "ar")
     }
-    // put back to the registry's after the render
-    expect(I18nManager.isRTL).toBe(lang === "ar")
-  })
+  )
 })
 
 describe("what a render sets up", () => {
@@ -200,7 +204,9 @@ describe("what a render sets up", () => {
   it("a fresh store per render, from the render's state, behind `store` too", async () => {
     const mona = await renderScreen(probe, screenState("data"))
     const other = await renderScreen(probe, {
-      state: { auth: signedIn({ ...CUSTOMER, firstName: "Sara", lastName: "Nabil" }) },
+      state: {
+        auth: signedIn({ ...CUSTOMER, firstName: "Sara", lastName: "Nabil" }),
+      },
     })
     expect(text(mona, "user")).toBe("Mona Adel")
     expect(text(other, "user")).toBe("Sara Nabil")
@@ -320,10 +326,15 @@ describe("what a render sets up", () => {
     try {
       expect(text(session.tree(), "chats")).toBe("chats 1 unread 1")
       expect(
-        session.requests().map((r) => r.endpoint).filter((e) => e !== "getNotifications")
+        session
+          .requests()
+          .map((r) => r.endpoint)
+          .filter((e) => e !== "getNotifications")
       ).toEqual(["getChats", AUTH_REFRESH, "getChats"])
       // POST with the token in the body (backend #419), never in the URL.
-      const refresh = session.requests().find((r) => r.endpoint === AUTH_REFRESH)
+      const refresh = session
+        .requests()
+        .find((r) => r.endpoint === AUTH_REFRESH)
       expect(refresh?.args).toMatchObject({
         url: "/auth/refresh",
         method: "POST",
@@ -365,7 +376,9 @@ describe("what a render sets up", () => {
     ).toBe(
       "https://revgeocode.search.hereapi.com/v1/revgeocode?at=30.0444,31.2357&lang=en-US&limit=5"
     )
-    expect(httpKey("https://x.example/a?apiKey=SECRET")).toBe("https://x.example/a")
+    expect(httpKey("https://x.example/a?apiKey=SECRET")).toBe(
+      "https://x.example/a"
+    )
     expect(httpKey("https://x.example/a?q=1&apiKey=SECRET")).toBe(
       "https://x.example/a?q=1"
     )
@@ -396,7 +409,10 @@ describe("what a render sets up", () => {
       let found: { title: string }[] = []
       let art: string | null = null
       await session.act(async () => {
-        found = await here.searchAddressByPosition({ lat: 30.0444, lng: 31.2357 })
+        found = await here.searchAddressByPosition({
+          lat: 30.0444,
+          lng: 31.2357,
+        })
         art = await svg.loadSvg(BADGE)
       })
       expect(found).toEqual([{ title: "12 Tahrir Street, Dokki" }])
@@ -511,13 +527,18 @@ describe("module state is fresh for every row (rowState)", () => {
   })
 
   it("setup.ts mocks exactly the PER_ROW modules", () => {
-    const setup = fs.readFileSync(path.join(__dirname, "..", "setup.ts"), "utf8")
+    const setup = fs.readFileSync(
+      path.join(__dirname, "..", "setup.ts"),
+      "utf8"
+    )
     const mocked = [...setup.matchAll(/perRow\(\s*"([^"]+)"\s*\)/g)].map(
       (match) => match[1]
     )
-    const named = [...setup.matchAll(/jest\.mock\("([^"]+)", \(\) =>\s*require\("testing\/screenKit\/rowState"\)/g)].map(
-      (match) => match[1]
-    )
+    const named = [
+      ...setup.matchAll(
+        /jest\.mock\("([^"]+)", \(\) =>\s*require\("testing\/screenKit\/rowState"\)/g
+      ),
+    ].map((match) => match[1])
     expect(mocked.sort()).toEqual(Object.keys(PER_ROW).sort())
     expect(named.sort()).toEqual(Object.keys(PER_ROW).sort())
   })
@@ -559,15 +580,20 @@ describe("the device's answers, per row", () => {
     try {
       await session.act(() => {
         fireHost(session.root, "MapView", "onRegionChangeComplete", [
-          { latitude: 30.05, longitude: 31.23, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+          {
+            latitude: 30.05,
+            longitude: 31.23,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
         ])
         fireHost(session.root, "LottieView", "onAnimationFinish", [false])
       })
       expect(text(session.tree(), "region")).toBe("settled 30.05")
       expect(text(session.tree(), "animation")).toBe("finished")
-      expect(() =>
-        fireHost(session.root, "MapView", "onPress")
-      ).toThrow(/no MapView holds it/)
+      expect(() => fireHost(session.root, "MapView", "onPress")).toThrow(
+        /no MapView holds it/
+      )
       // Lottie's animation JSON is named (its `nm`), not drawn
       const animation = require("assets/animations/search-animation.json") as {
         nm: string
@@ -643,7 +669,11 @@ describe("the sheet stand-in draws what true-sheet hands its native views", () =
   it.each([
     ["dismissable={false}", { dismissable: false }, "attempts 1"],
     // NativeSheet doesn't forward onDismissAttempt for these
-    ["interceptBackPress (QuestionFlowSheet)", { interceptBackPress: true }, "attempts 0"],
+    [
+      "interceptBackPress (QuestionFlowSheet)",
+      { interceptBackPress: true },
+      "attempts 0",
+    ],
   ])(
     "a sheet that isn't dismissible refuses the customer's swipe: %s",
     async (_label, locked, attempts) => {

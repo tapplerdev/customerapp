@@ -19,7 +19,9 @@ const clock = (value: string, am: string, pm: string) => {
 export const formatSlot = (slot: Slot, am: string, pm: string): string => {
   const from = clock(slot.start, am, pm)
   const endsAtMidnight = slot.end.startsWith("00:")
-  const to = endsAtMidnight ? { text: "12", suffix: am } : clock(slot.end, am, pm)
+  const to = endsAtMidnight
+    ? { text: "12", suffix: am }
+    : clock(slot.end, am, pm)
   return !endsAtMidnight && from.suffix === to.suffix
     ? `${from.text} - ${to.text} ${to.suffix}`
     : `${from.text} ${from.suffix} - ${to.text} ${to.suffix}`

@@ -143,7 +143,11 @@ const STEPS_FOR = (isPickup: boolean) =>
     "delivered",
   ] as const
 
-const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) => {
+const FoodOrderView: React.FC<Props> = ({
+  job,
+  unreadCount = 0,
+  onOpenChat,
+}) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
@@ -219,7 +223,9 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   const pro = jobPro?.pro
   const isCompany = pro?.proType === "company"
   const proName =
-    pro?.screenName || (isCompany ? pro?.businessName : pro?.registeredName) || ""
+    pro?.screenName ||
+    (isCompany ? pro?.businessName : pro?.registeredName) ||
+    ""
   const trustDocs = (pro?.documents ?? []).filter(
     (doc: any) => doc.type === "trust" && doc.status === "approved"
   )
@@ -284,7 +290,8 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
       .flatMap((option) => option.choices.map((choice) => choice.name))
       .join(", ")
     const choicesTotal = (line.selectedOptions ?? []).reduce(
-      (s, option) => s + option.choices.reduce((cs, c) => cs + (c.price || 0), 0),
+      (s, option) =>
+        s + option.choices.reduce((cs, c) => cs + (c.price || 0), 0),
       0
     )
     return (
@@ -297,12 +304,7 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
             {line.quantity}× {line.name}
           </Text>
           {!!optionsSummary && (
-            <Text
-              size={11}
-              color="secondary"
-              style={a.mt_2}
-              numberOfLines={2}
-            >
+            <Text size={11} color="secondary" style={a.mt_2} numberOfLines={2}>
               {optionsSummary}
             </Text>
           )}
@@ -320,7 +322,9 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
   const detailRow = (label: string, value?: string | null) =>
     !!value && (
       <DmView style={a.mt_14}>
-        <Text size={13} weight="bold" leading={px(17)}>{label}</Text>
+        <Text size={13} weight="bold" leading={px(17)}>
+          {label}
+        </Text>
         <Text size={13} style={styles.text}>
           {value}
         </Text>
@@ -366,7 +370,9 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
     }
     const from = clock(slot.start)
     const endsAtMidnight = slot.end.startsWith("00:")
-    const to = endsAtMidnight ? { text: "12", suffix: t("am") } : clock(slot.end)
+    const to = endsAtMidnight
+      ? { text: "12", suffix: t("am") }
+      : clock(slot.end)
     const window =
       !endsAtMidnight && from.suffix === to.suffix
         ? `${from.text} - ${to.text} ${to.suffix}`
@@ -430,14 +436,17 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
               // Green is for an order that is alive and moving. Declined is
               // neither, so it reads red like cancelled — the two are the same
               // news to the customer: this order is not happening.
-              style={[a.flex_1, {
-                color:
-                  isCancelled || isDeclined
-                    ? colors.red
-                    : isEndedByClock
-                      ? colors.grey2
-                      : colors.green,
-              }]}
+              style={[
+                a.flex_1,
+                {
+                  color:
+                    isCancelled || isDeclined
+                      ? colors.red
+                      : isEndedByClock
+                        ? colors.grey2
+                        : colors.green,
+                },
+              ]}
               numberOfLines={1}
             >
               {headlineStatus}
@@ -456,8 +465,21 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
               <DmView style={a.pl_8} onPress={onOpenChat}>
                 <MailIcon width={24} height={24} />
                 {unreadCount > 0 && (
-                  <DmView style={[a.absolute, styles.textWrap, a.px_4, a.items_center, a.justify_center]}>
-                    <Text size={9} weight="bold" leading="legacy" color="inverse">
+                  <DmView
+                    style={[
+                      a.absolute,
+                      styles.textWrap,
+                      a.px_4,
+                      a.items_center,
+                      a.justify_center,
+                    ]}
+                  >
+                    <Text
+                      size={9}
+                      weight="bold"
+                      leading="legacy"
+                      color="inverse"
+                    >
                       {unreadCount}
                     </Text>
                   </DmView>
@@ -546,17 +568,25 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
               <React.Fragment key={step}>
                 {idx > 0 && (
                   <DmView
-                    style={[a.flex_1, styles.box3, a.mx_4, {
-                      backgroundColor:
-                        idx <= currentStep ? colors.red : colors.grey14,
-                    }]}
+                    style={[
+                      a.flex_1,
+                      styles.box3,
+                      a.mx_4,
+                      {
+                        backgroundColor:
+                          idx <= currentStep ? colors.red : colors.grey14,
+                      },
+                    ]}
                   />
                 )}
                 <DmView
-                  style={[styles.box4, {
-                    backgroundColor:
-                      idx <= currentStep ? colors.red : colors.grey14,
-                  }]}
+                  style={[
+                    styles.box4,
+                    {
+                      backgroundColor:
+                        idx <= currentStep ? colors.red : colors.grey14,
+                    },
+                  ]}
                 />
               </React.Fragment>
             ))}
@@ -618,7 +648,9 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
           {!isPickup &&
             totalsRow(
               t("delivery_fee"),
-              deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
+              deliveryFee
+                ? `${formatMoney(deliveryFee)} ${t("EGP")}`
+                : t("free")
             )}
           {orderDiscount > 0 &&
             totalsRow(
@@ -627,10 +659,13 @@ const FoodOrderView: React.FC<Props> = ({ job, unreadCount = 0, onOpenChat }) =>
               false,
               true
             )}
-          {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
+          {totalsRow(
+            t("order_total"),
+            `${formatMoney(total)} ${t("EGP")}`,
+            true
+          )}
         </DmView>
       )}
-
     </AppScrollView>
   )
 }

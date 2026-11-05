@@ -44,7 +44,17 @@ const ItemAddress = (props: {
       style={[a.mr_16, a.border_b_1, searchViewStyles.container]}
       onPress={() => props.onPress(props.item)}
     >
-      <DmView style={[a.pb_16, a.pt_24, a.pl_16, a.w_full, a.flex_row, a.items_center, a.justify_center]}>
+      <DmView
+        style={[
+          a.pb_16,
+          a.pt_24,
+          a.pl_16,
+          a.w_full,
+          a.flex_row,
+          a.items_center,
+          a.justify_center,
+        ]}
+      >
         <LocationRedIcon />
         <Text size={13} leading="loose" style={[a.ml_12, a.flex_1]}>
           {props.item.title}
@@ -149,7 +159,15 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
 
   return (
     <KeyboardAvoidingView style={[a.w_full, a.flex_1, a.pt_8]}>
-      <DmView style={[a.w_full, a.px_16, a.flex_row, a.items_center, a.justify_center]}>
+      <DmView
+        style={[
+          a.w_full,
+          a.px_16,
+          a.flex_row,
+          a.items_center,
+          a.justify_center,
+        ]}
+      >
         <DmInput
           isAnimText={false}
           Icon={<SearchIcon />}
@@ -179,9 +197,14 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
             <AppFlatList
               data={searchResults}
               renderItem={renderListItem}
-              keyExtractor={(item) => item.id || String(item.position?.lat) + String(item.position?.lng)}
+              keyExtractor={(item) =>
+                item.id ||
+                String(item.position?.lat) + String(item.position?.lng)
+              }
               ListEmptyComponent={
-                <DmView style={[a.flex_1, a.items_center, a.justify_center, a.pt_18]}>
+                <DmView
+                  style={[a.flex_1, a.items_center, a.justify_center, a.pt_18]}
+                >
                   <Text size={14} color="brand">
                     {t("no_address_found")}
                   </Text>
@@ -203,7 +226,12 @@ const SearchView: React.FC<Props> = ({ onClose, onLocationSelect }) => {
           onPress={onUseMyLocation}
         >
           <LocationIcon />
-          <Text size={15} weight="medium" leading="tight" style={[a.flex_1, a.ml_6]}>
+          <Text
+            size={15}
+            weight="medium"
+            leading="tight"
+            style={[a.flex_1, a.ml_6]}
+          >
             {t("use_current_location")}
           </Text>
         </DmView>

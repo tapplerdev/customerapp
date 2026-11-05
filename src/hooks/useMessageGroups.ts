@@ -45,11 +45,11 @@ const useMessageGroups = (messages: ChatMessageType[]) => {
     const sortedMessages = [...messages]
       .filter(
         (m) =>
-          !(m.ownerType === "system" && m.text === "offer_sent_to_customer"),
+          !(m.ownerType === "system" && m.text === "offer_sent_to_customer")
       )
       .sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       )
 
     sortedMessages.forEach((msg) => {
@@ -63,7 +63,9 @@ const useMessageGroups = (messages: ChatMessageType[]) => {
       } else {
         const yesterday = new Date()
         yesterday.setDate(yesterday.getDate() - 1)
-        if (format(msgDateObj, "yyyy-MM-dd") === format(yesterday, "yyyy-MM-dd")) {
+        if (
+          format(msgDateObj, "yyyy-MM-dd") === format(yesterday, "yyyy-MM-dd")
+        ) {
           label = t("yesterday")
         } else {
           label = format(msgDateObj, "MMMM d, yyyy")
@@ -91,21 +93,15 @@ const useMessageGroups = (messages: ChatMessageType[]) => {
             ? group.messages[originalIdx + 1]
             : undefined
         const prevMsg =
-          originalIdx > 0
-            ? group.messages[originalIdx - 1]
-            : undefined
+          originalIdx > 0 ? group.messages[originalIdx - 1] : undefined
 
-        const isFirstInGroup =
-          !prevMsg || prevMsg.ownerType !== msg.ownerType
-        const isLastInGroup =
-          !nextMsg || nextMsg.ownerType !== msg.ownerType
+        const isFirstInGroup = !prevMsg || prevMsg.ownerType !== msg.ownerType
+        const isLastInGroup = !nextMsg || nextMsg.ownerType !== msg.ownerType
 
         const showReadReceipt =
           msg.ownerType === "customer" &&
           !!msg.readAt &&
-          (!nextMsg ||
-            nextMsg.ownerType !== "customer" ||
-            !nextMsg.readAt)
+          (!nextMsg || nextMsg.ownerType !== "customer" || !nextMsg.readAt)
 
         items.push({
           type: "message" as const,

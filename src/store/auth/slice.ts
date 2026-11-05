@@ -24,7 +24,14 @@ export interface AuthState {
   isAuth: boolean
   token?: string
   refreshToken?: string
-  user?: { id?: number; firstName?: string; lastName?: string; email?: string; mobileNumber?: string; gender?: "male" | "female" }
+  user?: {
+    id?: number
+    firstName?: string
+    lastName?: string
+    email?: string
+    mobileNumber?: string
+    gender?: "male" | "female"
+  }
   language: "en" | "ar"
   hasPickedLanguage: boolean
   currentScreen?: CurrentScreen
@@ -104,34 +111,43 @@ export const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addMatcher(api.endpoints.auth.matchFulfilled, (state, { payload }) => {
-      state.token = payload.token
-      state.refreshToken = payload.refreshToken
-      state.user = { ...state.user, id: payload.id }
-      state.isAuth = true
-    })
-    builder.addMatcher(api.endpoints.getCustomerMe.matchFulfilled, (state, { payload }) => {
-      state.user = {
-        ...state.user,
-        id: payload.id,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        email: payload.email,
-        mobileNumber: payload.mobileNumber,
-        gender: payload.gender,
+    builder.addMatcher(
+      api.endpoints.auth.matchFulfilled,
+      (state, { payload }) => {
+        state.token = payload.token
+        state.refreshToken = payload.refreshToken
+        state.user = { ...state.user, id: payload.id }
+        state.isAuth = true
       }
-    })
-    builder.addMatcher(api.endpoints.updateCustomer.matchFulfilled, (state, { payload }) => {
-      state.user = {
-        ...state.user,
-        id: payload.id,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        email: payload.email,
-        mobileNumber: payload.mobileNumber,
-        gender: payload.gender,
+    )
+    builder.addMatcher(
+      api.endpoints.getCustomerMe.matchFulfilled,
+      (state, { payload }) => {
+        state.user = {
+          ...state.user,
+          id: payload.id,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          email: payload.email,
+          mobileNumber: payload.mobileNumber,
+          gender: payload.gender,
+        }
       }
-    })
+    )
+    builder.addMatcher(
+      api.endpoints.updateCustomer.matchFulfilled,
+      (state, { payload }) => {
+        state.user = {
+          ...state.user,
+          id: payload.id,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          email: payload.email,
+          mobileNumber: payload.mobileNumber,
+          gender: payload.gender,
+        }
+      }
+    )
   },
 })
 

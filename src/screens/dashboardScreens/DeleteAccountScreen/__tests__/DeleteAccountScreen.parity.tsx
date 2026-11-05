@@ -70,35 +70,40 @@ describe("DeleteAccountScreen", () => {
 describe("DeleteAccountScreen presses", () => {
   const envs = rowsByPlatform([{}], PARITY_MATRIX)
 
-  it.each(envs)("Delete opens the card, No closes it; the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      // The screen's MainModal: the outermost element with isVisible and a title.
-      const card = () =>
-        session.root.findAll(
-          (node) =>
-            typeof node.type !== "string" &&
-            "isVisible" in node.props &&
-            "isBtnsTwo" in node.props
-        )[0].props
-      expect(card().isVisible).toBe(false)
-      await session.act(() => {
-        askDelete(session.root, env)
-      })
-      expect(card().isVisible).toBe(true)
-      await session.act(() => {
-        pressTitled(session.root, copy(env, "no"))
-      })
-      expect(card().isVisible).toBe(false)
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-      expect(session.requests().filter((r) => r.type === "mutation")).toEqual([])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Delete opens the card, No closes it; the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        // The screen's MainModal: the outermost element with isVisible and a title.
+        const card = () =>
+          session.root.findAll(
+            (node) =>
+              typeof node.type !== "string" &&
+              "isVisible" in node.props &&
+              "isBtnsTwo" in node.props
+          )[0].props
+        expect(card().isVisible).toBe(false)
+        await session.act(() => {
+          askDelete(session.root, env)
+        })
+        expect(card().isVisible).toBe(true)
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "no"))
+        })
+        expect(card().isVisible).toBe(false)
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+        expect(session.requests().filter((r) => r.type === "mutation")).toEqual(
+          []
+        )
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

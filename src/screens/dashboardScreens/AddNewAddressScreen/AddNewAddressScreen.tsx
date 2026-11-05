@@ -13,7 +13,10 @@ import { AppKeyboardAwareScrollView } from "components/scroll"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
-const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
+const disabledLookSubtleInverse = {
+  surface: "subtle",
+  label: "inverse",
+} as const
 
 type Props = RootStackScreenProps<"AddNewAddressScreen">
 
@@ -90,7 +93,10 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -117,7 +123,11 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         manifest's adjustResize already shrinks the window there.
       */}
       <AppKeyboardAwareScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 24 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingTop: 24,
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -133,9 +143,14 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             onChangeText={setNickname}
             placeholder={t("place_nick_name_placeholder")}
             placeholderTextColor={colors.grey15}
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>
@@ -152,9 +167,14 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             onChangeText={setAddress}
             placeholder={t("address_placeholder")}
             placeholderTextColor={colors.grey15}
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>
@@ -171,9 +191,14 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             onChangeText={setCity}
             placeholder={t("city_placeholder")}
             placeholderTextColor={colors.grey15}
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>
@@ -190,9 +215,14 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             onChangeText={setGovernorate}
             placeholder={t("governorate")}
             placeholderTextColor={colors.grey15}
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[20px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>
@@ -217,7 +247,9 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
                     a.py_8,
                     styles.container,
                     a.border_1,
-                    isSelected ? styles.containerSelected : styles.containerNotSelected,
+                    isSelected
+                      ? styles.containerSelected
+                      : styles.containerNotSelected,
                   ]}
                   onPress={() => setPlaceType(pt.key)}
                 >
@@ -244,7 +276,13 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
             label="sm"
             labelWeight="semibold"
             labelLeading={px(21)}
-            disabledLook={isFilled ? isLoading ? undefined : disabledLookSubtleInverse : disabledLookSubtleInverse}
+            disabledLook={
+              isFilled
+                ? isLoading
+                  ? undefined
+                  : disabledLookSubtleInverse
+                : disabledLookSubtleInverse
+            }
             loadingSurface={isFilled ? "brand" : undefined}
             style={a.w_full}
             title={t("add_address")}

@@ -387,7 +387,9 @@ describe("JobDetailScreen's food order: presses", () => {
         try {
           const before = sent(session, "getCustomerJobById").length
           await run(session, env, confirm)
-          expect(text(session)).toContain(copy(env, "food_order_no_longer_active"))
+          expect(text(session)).toContain(
+            copy(env, "food_order_no_longer_active")
+          )
           expect(text(session)).not.toContain(copy(env, "an_error_occurred"))
           expect(sent(session, "getCustomerJobById").length).toBe(before + 1)
           await run(session, env, [titled("OK"), wait(SETTLED)])

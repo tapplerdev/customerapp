@@ -17,34 +17,37 @@ const CASES = [
   { name: "selected", isSelected: true, imageUrl: "" },
 ]
 
-describe.each(PARITY_MATRIX)("ImageWithTextButton's press [$language $platform]", (env) => {
-  it.each(CASES)("calls onPress once, $name", async (row) => {
-    const onPress = jest.fn()
-    const load = () => {
-      const React = require("react") as typeof import("react")
-      const Card = require("../ImageWithTextButton").default
-      const Harness = () =>
-        React.createElement(Card, {
-          label: "Leaking tap",
-          imageUrl: row.imageUrl,
-          isSelected: row.isSelected,
-          onPress,
-        })
-      return { default: Harness }
-    }
-    const session = await openScreen(load, {
-      lang: env.language,
-      platform: env.platform,
-      navigation: "none",
-    })
-    try {
-      expect(onPress).not.toHaveBeenCalled()
-      await session.act(() => {
-        pressIcon(session.root)
+describe.each(PARITY_MATRIX)(
+  "ImageWithTextButton's press [$language $platform]",
+  (env) => {
+    it.each(CASES)("calls onPress once, $name", async (row) => {
+      const onPress = jest.fn()
+      const load = () => {
+        const React = require("react") as typeof import("react")
+        const Card = require("../ImageWithTextButton").default
+        const Harness = () =>
+          React.createElement(Card, {
+            label: "Leaking tap",
+            imageUrl: row.imageUrl,
+            isSelected: row.isSelected,
+            onPress,
+          })
+        return { default: Harness }
+      }
+      const session = await openScreen(load, {
+        lang: env.language,
+        platform: env.platform,
+        navigation: "none",
       })
-      expect(onPress).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
-    }
-  })
-})
+      try {
+        expect(onPress).not.toHaveBeenCalled()
+        await session.act(() => {
+          pressIcon(session.root)
+        })
+        expect(onPress).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

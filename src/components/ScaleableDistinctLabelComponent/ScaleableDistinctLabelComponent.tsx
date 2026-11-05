@@ -15,9 +15,7 @@ const MAX_HEIGHT = 21
 const MAX_TITLE_FONT_SIZE = 12
 const MAX_FONT_SIZE = 9
 
-const ScaleableDistinctLabelComponent: React.FC<Props> = ({
-  title,
-}) => {
+const ScaleableDistinctLabelComponent: React.FC<Props> = ({ title }) => {
   const [layout, setLayout] = useState({
     viewWidth: 0,
     viewHeight: 0,
@@ -39,9 +37,17 @@ const ScaleableDistinctLabelComponent: React.FC<Props> = ({
   }, [])
 
   return (
-    <DmView style={[a.w_full, styles.container, a.justify_end]} onLayout={onLayoutChange}>
+    <DmView
+      style={[a.w_full, styles.container, a.justify_end]}
+      onLayout={onLayoutChange}
+    >
       <DmView
-        style={[a.items_center, a.justify_center, styles.textWrap, { width: layout.viewWidth, height: layout.viewHeight }]}
+        style={[
+          a.items_center,
+          a.justify_center,
+          styles.textWrap,
+          { width: layout.viewWidth, height: layout.viewHeight },
+        ]}
       >
         {/* A size that follows the layout is no ds size: LegacyText */}
         <LegacyText

@@ -19,16 +19,19 @@ const load = () => require("../JobDetailScreen")
 const rows = rowsByPlatform([{ state: "loading" }], PARITY_MATRIX)
 
 describe("JobDetailScreen loading skeleton, captured before the dead classNames went", () => {
-  it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => {
-    const tree = await renderScreen(load, {
-      ...screenState("loading"),
-      lang: env.language,
-      platform: env.platform,
-      route: {
-        name: "JobDetailScreen",
-        params: ROUTE_PARAMS.JobDetailScreen,
-      },
-    })
-    expectParity(parityName(state, env), tree)
-  })
+  it.each(rows)(
+    "$state [$env.language $env.platform]",
+    async ({ state, env }) => {
+      const tree = await renderScreen(load, {
+        ...screenState("loading"),
+        lang: env.language,
+        platform: env.platform,
+        route: {
+          name: "JobDetailScreen",
+          params: ROUTE_PARAMS.JobDetailScreen,
+        },
+      })
+      expectParity(parityName(state, env), tree)
+    }
+  )
 })

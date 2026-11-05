@@ -10,7 +10,11 @@ import {
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import Animated, { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated"
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated"
 import { parse, format } from "date-fns"
 
 import { DmView } from "@tappler/shared/src/components/UI"
@@ -71,7 +75,13 @@ const thumbnailUri = (media: ProWorkPhotoType) =>
 type Props = RootStackScreenProps<"ProProfileScreen">
 
 const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { proId, serviceCategoryId, serviceCategories: passedServiceCategories, chatJobId, foodMenu } = route.params
+  const {
+    proId,
+    serviceCategoryId,
+    serviceCategories: passedServiceCategories,
+    chatJobId,
+    foodMenu,
+  } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const insets = useSafeAreaInsets()
@@ -80,7 +90,10 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const [viewerIndex, setViewerIndex] = useState(0)
   const carouselRef = useRef<ICarouselInstance>(null)
 
-  const { data: pro, isLoading } = useGetProProfileQuery({ proId, serviceCategoryId })
+  const { data: pro, isLoading } = useGetProProfileQuery({
+    proId,
+    serviceCategoryId,
+  })
   const [openChat] = useLazyOpenChatQuery()
 
   const handleMessage = async () => {
@@ -107,7 +120,8 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const isCompany = pro?.proType === "company"
   const overallScore = pro?.reviewScore?.overallScore || 0
   const reviewsCount = pro?.reviewScore?.reviewsCount || 0
-  const proServiceCat = passedServiceCategories?.[0] || pro?.serviceCategories?.[0]
+  const proServiceCat =
+    passedServiceCategories?.[0] || pro?.serviceCategories?.[0]
   // Already scoped by the backend to this service and to approved items only.
   const workPhotos = useMemo(() => pro?.workPhotos ?? [], [pro?.workPhotos])
 
@@ -192,7 +206,14 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Animated header — fades in when scrolled past photo */}
       <Animated.View
-        style={[a.absolute, a.w_full, styles.animated, a.overflow_hidden, styles.headerZIndex, animatedStyle]}
+        style={[
+          a.absolute,
+          a.w_full,
+          styles.animated,
+          a.overflow_hidden,
+          styles.headerZIndex,
+          animatedStyle,
+        ]}
       >
         <Animated.View
           style={[a.pb_12, a.px_16, { paddingTop: (insets.top || 35) + 4 }]}
@@ -213,7 +234,13 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               {/* One line here: the name gives way ("...") before the
                   sticker does. */}
               <DmView style={[a.flex_row, a.items_center]}>
-                <Text size={16} weight="bold" leading="legacy" style={styles.text} numberOfLines={1}>
+                <Text
+                  size={16}
+                  weight="bold"
+                  leading="legacy"
+                  style={styles.text}
+                  numberOfLines={1}
+                >
                   {displayName}
                 </Text>
                 {featuredUri && (
@@ -243,23 +270,39 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Close button — overlays photo */}
       <DmView
-        style={[a.absolute, a.mt_10, styles.iconWrap2, a.items_center, a.justify_center, closeViewStyle]}
+        style={[
+          a.absolute,
+          a.mt_10,
+          styles.iconWrap2,
+          a.items_center,
+          a.justify_center,
+          closeViewStyle,
+        ]}
         onPress={handleGoBack}
         hitSlop={HIT_SLOP_DEFAULT}
       >
         <CloseIcon fill={colors.red} />
       </DmView>
 
-
       <AppKeyboardAwareScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100, backgroundColor: colors.white }}
+        contentContainerStyle={{
+          paddingBottom: 100,
+          backgroundColor: colors.white,
+        }}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         bounces={false}
       >
         {/* Hero photo — absolutely positioned */}
-        <DmView style={[a.absolute, a.w_full, styles.heroZIndex, { height: 275 + (insets.top || 0) }]}>
+        <DmView
+          style={[
+            a.absolute,
+            a.w_full,
+            styles.heroZIndex,
+            { height: 275 + (insets.top || 0) },
+          ]}
+        >
           {pro.profilePhoto ? (
             <CachedImage
               uri={pro.profilePhoto}
@@ -268,7 +311,14 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               withSkeleton
             />
           ) : (
-            <DmView style={[a.flex_1, styles.textWrap, a.items_center, a.justify_center]}>
+            <DmView
+              style={[
+                a.flex_1,
+                styles.textWrap,
+                a.items_center,
+                a.justify_center,
+              ]}
+            >
               <Text size={14} weight="bold" leading="legacy" color="tertiary">
                 {displayName?.charAt(0)}
               </Text>
@@ -277,7 +327,13 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
 
         {/* Name + Type + Rating + Featured */}
-        <DmView style={[a.px_12, a.py_16, { marginTop: 275 + (insets.top || 0), gap: 10 }]}>
+        <DmView
+          style={[
+            a.px_12,
+            a.py_16,
+            { marginTop: 275 + (insets.top || 0), gap: 10 },
+          ]}
+        >
           {/* The name on its own line; Featured moved down beside the
               account type (#522). KEEP IN SYNC with the pro app's preview
               (AccountUpgradesViewMyProfileModal). */}
@@ -437,7 +493,12 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                     )}
                     {isVideo && (
                       <DmView
-                        style={[a.absolute, a.items_center, a.justify_center, { width: tileWidth, height: tileHeight, top: 10 }]}
+                        style={[
+                          a.absolute,
+                          a.items_center,
+                          a.justify_center,
+                          { width: tileWidth, height: tileHeight, top: 10 },
+                        ]}
                         pointerEvents="none"
                       >
                         <PlayIcon width={28} height={28} />
@@ -457,20 +518,41 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               <Text size={14} weight="semibold">
                 {t("working_hours")}
               </Text>
-              {["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((day) => {
-                const hour = pro.hours.find((h) => h.dayOfWeek?.toLowerCase() === day)
+              {[
+                "sunday",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+              ].map((day) => {
+                const hour = pro.hours.find(
+                  (h) => h.dayOfWeek?.toLowerCase() === day
+                )
                 const dayAbbr = day.substring(0, 3)
                 const openingTime = hour?.openingTime
-                  ? format(parse(hour.openingTime, "HH:mm", new Date()), "h:mm a")
+                  ? format(
+                      parse(hour.openingTime, "HH:mm", new Date()),
+                      "h:mm a"
+                    )
                   : undefined
                 const closingTime = hour?.closingTime
-                  ? format(parse(hour.closingTime, "HH:mm", new Date()), "h:mm a")
+                  ? format(
+                      parse(hour.closingTime, "HH:mm", new Date()),
+                      "h:mm a"
+                    )
                   : undefined
                 return (
-                  <DmView key={day} style={[a.flex_row, a.items_center, a.pt_10]}>
+                  <DmView
+                    key={day}
+                    style={[a.flex_row, a.items_center, a.pt_10]}
+                  >
                     <DmView style={[a.mr_8, styles.box3]} />
                     <DmView style={a.flex_row}>
-                      <DmView style={isAr ? styles.textWrapAr : styles.textWrapNotAr}>
+                      <DmView
+                        style={isAr ? styles.textWrapAr : styles.textWrapNotAr}
+                      >
                         <Text size={13} leading="tight" numberOfLines={1}>
                           {t(dayAbbr).toUpperCase()}
                         </Text>
@@ -517,9 +599,18 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
                 {t("social_media")}
               </Text>
               {pro.socials.map((social) => (
-                <DmView key={social.id} style={[a.flex_row, a.items_center, a.pt_10]}>
+                <DmView
+                  key={social.id}
+                  style={[a.flex_row, a.items_center, a.pt_10]}
+                >
                   {renderSocialIcon(social.socialMedia)}
-                  <Text size={12} leading="loose" family="system" style={a.ml_10} numberOfLines={1}>
+                  <Text
+                    size={12}
+                    leading="loose"
+                    family="system"
+                    style={a.ml_10}
+                    numberOfLines={1}
+                  >
                     {social.socialLink}
                   </Text>
                 </DmView>

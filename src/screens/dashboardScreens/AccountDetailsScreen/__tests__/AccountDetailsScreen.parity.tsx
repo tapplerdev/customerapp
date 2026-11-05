@@ -38,7 +38,10 @@ describe("AccountDetailsScreen", () => {
   it.each(rowsByPlatform([{ state: "menu" }], PARITY_MATRIX))(
     "$state [$env.language $env.platform]",
     async ({ state, env }) => {
-      expectParity(parityName(state, env), await treeAfter(load, options(env), env))
+      expectParity(
+        parityName(state, env),
+        await treeAfter(load, options(env), env)
+      )
     }
   )
 })
@@ -52,7 +55,12 @@ const ROWS = [
 ] as const
 
 describe("AccountDetailsScreen presses", () => {
-  it.each(rowsByPlatform(ROWS.map(([key, route]) => ({ key, route })), PARITY_MATRIX))(
+  it.each(
+    rowsByPlatform(
+      ROWS.map(([key, route]) => ({ key, route })),
+      PARITY_MATRIX
+    )
+  )(
     "$key opens $route [$env.language $env.platform]",
     async ({ key, route, env }) => {
       const session = await openScreen(load, options(env))

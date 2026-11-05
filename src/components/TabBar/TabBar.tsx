@@ -30,50 +30,53 @@ const TabBar = ({
       so the shadow has an opaque shape to cast from.
     */
     <DropShadow style={styles.shadow}>
-    <DmView
-      style={[styles.box, {
-        paddingBottom:
-          insets.bottom > 31
-            ? insets.bottom - (insets.bottom - 31)
-            : 31 - insets.bottom,
-      }]}
-    >
-      <DmView style={styles.box2} />
-      <DmView style={[a.flex_row, a.justify_between]}>
-        {state.routes.map((route, index) => {
-          const focused = state.index === index
-          const { options } = descriptors[route.key]
-          return (
-            <DmView
-              onPress={() => {
-                const event = navigation.emit({
-                  type: "tabPress",
-                  target: route.key,
-                  canPreventDefault: true,
-                })
+      <DmView
+        style={[
+          styles.box,
+          {
+            paddingBottom:
+              insets.bottom > 31
+                ? insets.bottom - (insets.bottom - 31)
+                : 31 - insets.bottom,
+          },
+        ]}
+      >
+        <DmView style={styles.box2} />
+        <DmView style={[a.flex_row, a.justify_between]}>
+          {state.routes.map((route, index) => {
+            const focused = state.index === index
+            const { options } = descriptors[route.key]
+            return (
+              <DmView
+                onPress={() => {
+                  const event = navigation.emit({
+                    type: "tabPress",
+                    target: route.key,
+                    canPreventDefault: true,
+                  })
 
-                if (!focused && !event.defaultPrevented) {
-                  navigation.navigate(route.name)
-                }
-              }}
-              key={route.key}
-              style={[a.items_center, a.justify_center, styles.item]}
-            >
-              {!!options.tabBarIcon &&
-                options.tabBarIcon({ focused, color: "", size: 24 })}
-              <Text
-                size={11}
-                weight={focused ? "semibold" : "medium"}
-                leading={px(18)}
-                style={[a.mt_2, styles.text, focused && styles.textFocused]}
+                  if (!focused && !event.defaultPrevented) {
+                    navigation.navigate(route.name)
+                  }
+                }}
+                key={route.key}
+                style={[a.items_center, a.justify_center, styles.item]}
               >
-                {t(route.name)}
-              </Text>
-            </DmView>
-          )
-        })}
+                {!!options.tabBarIcon &&
+                  options.tabBarIcon({ focused, color: "", size: 24 })}
+                <Text
+                  size={11}
+                  weight={focused ? "semibold" : "medium"}
+                  leading={px(18)}
+                  style={[a.mt_2, styles.text, focused && styles.textFocused]}
+                >
+                  {t(route.name)}
+                </Text>
+              </DmView>
+            )
+          })}
+        </DmView>
       </DmView>
-    </DmView>
     </DropShadow>
   )
 }

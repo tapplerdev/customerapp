@@ -7,9 +7,18 @@ import { useFocusEffect } from "@react-navigation/native"
 import FastImage from "react-native-fast-image"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import CoachMark, { useCoachMarkTarget } from "@tappler/shared/src/components/CoachMark"
+import CoachMark, {
+  useCoachMarkTarget,
+} from "@tappler/shared/src/components/CoachMark"
 import { RootStackScreenProps } from "navigation/types"
-import { api, useLazyGetProsForCategoryQuery, useLazyGetProProfileQuery, useGetServiceByIdQuery, useLazyOpenChatQuery, useLazyGetChatMessagesQuery } from "services/api"
+import {
+  api,
+  useLazyGetProsForCategoryQuery,
+  useLazyGetProProfileQuery,
+  useGetServiceByIdQuery,
+  useLazyOpenChatQuery,
+  useLazyGetChatMessagesQuery,
+} from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
 import { useDispatch } from "react-redux"
 import { store, useTypedSelector } from "store"
@@ -24,7 +33,10 @@ import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import { useAfterTransition } from "@tappler/shared/src/hooks/useAfterTransition"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
-import { FiltersSheet, FilterValues } from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
+import {
+  FiltersSheet,
+  FilterValues,
+} from "screens/dashboardScreens/FiltersScreen/FiltersScreen"
 import { QuestionFlowSheet } from "screens/dashboardScreens/QuestionStepScreen/QuestionStepScreen"
 import { AllQuestionsSheet } from "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen"
 import SearchLocationModal from "components/SearchLocationModal/SearchLocationModal"
@@ -44,7 +56,8 @@ type Props = RootStackScreenProps<"ProsListingScreen">
 
 const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const dispatch = useDispatch()
-  const { placeOfService: initialPlaceOfService, forceQuestionFlow } = route.params
+  const { placeOfService: initialPlaceOfService, forceQuestionFlow } =
+    route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { dontShowBestDealTooltip } = useTypedSelector((store) => store.auth)
@@ -57,7 +70,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [address, setAddress] = useState(route.params.address)
 
   const [selectedPros, setSelectedPros] = useState<number[]>([])
-  const [getPros, { data, isLoading, isError }] = useLazyGetProsForCategoryQuery()
+  const [getPros, { data, isLoading, isError }] =
+    useLazyGetProsForCategoryQuery()
   const [getProProfile] = useLazyGetProProfileQuery()
   const [openChat] = useLazyOpenChatQuery()
   const [getChatMessages] = useLazyGetChatMessagesQuery()
@@ -88,9 +102,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [allQuestionsVisible, setAllQuestionsVisible] = useState(false)
   const [allQuestionsOpenCount, setAllQuestionsOpenCount] = useState(0)
   // Service filter option ids: primary (from the upfront flow) + refinement (from the filters modal)
-  const [questionFilterOptionIds, setQuestionFilterOptionIds] = useState<number[]>([])
-  const [refinementFilterOptionIds, setRefinementFilterOptionIds] = useState<number[]>([])
-  const [rangeFilters, setRangeFilters] = useState<{ filterId: number; min?: number; max?: number }[]>([])
+  const [questionFilterOptionIds, setQuestionFilterOptionIds] = useState<
+    number[]
+  >([])
+  const [refinementFilterOptionIds, setRefinementFilterOptionIds] = useState<
+    number[]
+  >([])
+  const [rangeFilters, setRangeFilters] = useState<
+    { filterId: number; min?: number; max?: number }[]
+  >([])
 
   // Question flow state
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
@@ -107,10 +127,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     // placeOfService — it opens pre-filled, so the arrival feels brand-new.
     !!initialPlaceOfService && !forceQuestionFlow
   )
-  const [currentPlaceOfService, setCurrentPlaceOfService] = useState<string | undefined>(initialPlaceOfService)
+  const [currentPlaceOfService, setCurrentPlaceOfService] = useState<
+    string | undefined
+  >(initialPlaceOfService)
   // Food only: broad-first fulfillment mode. "all" shows every pro (any-mode)
   // with capability badges; delivery/pickup narrows. Rides to checkout via cart.
-  const [foodFulfillment, setFoodFulfillment] = useState<"all" | "delivery" | "pickup">("all")
+  const [foodFulfillment, setFoodFulfillment] = useState<
+    "all" | "delivery" | "pickup"
+  >("all")
   // Repost arrivals seed the previous job's answers so the question flow and
   // request-details steps open pre-filled instead of blank. The listing stays
   // broad until the customer opens/edits questions — normal broad-first rules.
@@ -145,7 +169,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const sortBy = isFoodCategory ? ("distance" as const) : undefined
 
   // Compute answered count for the banner
-  const allCustomerQuestions = customerQuestions.filter((q) => q.assignee === "customer")
+  const allCustomerQuestions = customerQuestions.filter(
+    (q) => q.assignee === "customer"
+  )
   // Food's filter questions are PRO-declared (assignee='pro', e.g. Cuisines),
   // which the backend strips from customerQuestions — so pull them from
   // proQuestions for the Filters modal. Regular services surface only their
@@ -166,21 +192,33 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             !!o.filterOptionKey &&
             questionFilterOptionIds.includes(o.serviceCategoryFilterOptionId)
         )
-        .map((o) => ({ key: o.filterOptionKey!, label: o.label, labelAr: o.labelAr })),
+        .map((o) => ({
+          key: o.filterOptionKey!,
+          label: o.label,
+          labelAr: o.labelAr,
+        })),
     }))
     .filter((s) => s.options.length > 0)
   // Refinement filters live in the Filters modal, not the upfront flow, so exclude them from the banner count
-  const upfrontQuestions = allCustomerQuestions.filter((q) => !(q.isFilter && q.tier === "refinement"))
-  const totalQuestions = upfrontQuestions.length + (placeOfServiceOptions.length > 1 ? 1 : 0)
+  const upfrontQuestions = allCustomerQuestions.filter(
+    (q) => !(q.isFilter && q.tier === "refinement")
+  )
+  const totalQuestions =
+    upfrontQuestions.length + (placeOfServiceOptions.length > 1 ? 1 : 0)
   const answeredCount = useMemo(() => {
     let count = currentPlaceOfService ? 1 : 0
     upfrontQuestions.forEach((q) => {
       const ans = allAnswers.find((a) => a.questionId === q.id)
       if (!ans) return
-      if (q.type === "shortAnswer" || q.type === "paragraph") { if (ans.answer) count++ }
-      else if (q.type === "oneChoice") { if (ans.optionId) count++ }
-      else if (q.type === "multipleChoice") { if (ans.optionsIds?.length) count++ }
-      else if (q.type === "dateTime") { if (ans.date || ans.startDate) count++ }
+      if (q.type === "shortAnswer" || q.type === "paragraph") {
+        if (ans.answer) count++
+      } else if (q.type === "oneChoice") {
+        if (ans.optionId) count++
+      } else if (q.type === "multipleChoice") {
+        if (ans.optionsIds?.length) count++
+      } else if (q.type === "dateTime") {
+        if (ans.date || ans.startDate) count++
+      }
     })
     return count
   }, [allAnswers, upfrontQuestions, currentPlaceOfService])
@@ -215,9 +253,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // at submission) — the question flow then narrows the list further.
   useEffect(() => {
     const skipAddress =
-      initialPlaceOfService === "remoteOrOnline" || initialPlaceOfService === "fixedLocations"
-    const customerAddress =
-      skipAddress ? undefined : address?.coords ? { latitude: address.coords.lat, longitude: address.coords.lon } : undefined
+      initialPlaceOfService === "remoteOrOnline" ||
+      initialPlaceOfService === "fixedLocations"
+    const customerAddress = skipAddress
+      ? undefined
+      : address?.coords
+        ? { latitude: address.coords.lat, longitude: address.coords.lon }
+        : undefined
 
     getPros(
       {
@@ -288,18 +330,33 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     const list = data?.data
     if (!list?.length) return
     list.slice(0, 10).forEach((p) => {
-      prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+      prefetchProfile(
+        { proId: p.id, serviceCategoryId: categoryId },
+        { ifOlderThan: 120 }
+      )
       preloadProImages(p)
     })
     // Food: the card's primary action opens the MENU (not the profile), so warm
     // the first few menus too — tapping "Food Menu" then renders from cache.
     // Fewer than profiles (menu payloads are heavier); scroll warms the rest.
     if (isFoodCategory) {
-      list.slice(0, 5).forEach((p) =>
-        prefetchMenu({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
-      )
+      list
+        .slice(0, 5)
+        .forEach((p) =>
+          prefetchMenu(
+            { proId: p.id, serviceCategoryId: categoryId },
+            { ifOlderThan: 120 }
+          )
+        )
     }
-  }, [data?.data, categoryId, prefetchProfile, preloadProImages, isFoodCategory, prefetchMenu])
+  }, [
+    data?.data,
+    categoryId,
+    prefetchProfile,
+    preloadProImages,
+    isFoodCategory,
+    prefetchMenu,
+  ])
 
   // Warm EVERY loaded card's sticker/trust SVGs into svgCache (fire-and-forget;
   // a few KB each). By the time a card can scroll into view its artwork is
@@ -327,8 +384,17 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       // matching the initial fetch — dropping them would fall back to the
       // backend's legacy UNFILTERED list and show pros the submission guard
       // rejects.
-      const placeOfService = 'pos' in opts ? opts.pos : (isFoodCategory ? (foodFulfillment === "all" ? undefined : foodFulfillment) : currentPlaceOfService)
-      const skipAddress = placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
+      const placeOfService =
+        "pos" in opts
+          ? opts.pos
+          : isFoodCategory
+            ? foodFulfillment === "all"
+              ? undefined
+              : foodFulfillment
+            : currentPlaceOfService
+      const skipAddress =
+        placeOfService === "remoteOrOnline" ||
+        placeOfService === "fixedLocations"
       const customerAddress = skipAddress
         ? undefined
         : address?.coords
@@ -347,27 +413,48 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           categoryId,
           placeOfService,
           customerAddress,
-          filterOptionsIds: mergedFilterOptionIds.length ? mergedFilterOptionIds : undefined,
+          filterOptionsIds: mergedFilterOptionIds.length
+            ? mergedFilterOptionIds
+            : undefined,
           filterRanges: opts.ranges ?? rangeFilters,
           proType: f.proType,
           distanceKm: f.distanceKm,
           minRating: f.minRating,
           maxResponseTimeHours: f.maxResponseTimeHours,
           creditCardPayment: f.creditCardPayment,
-          sortBy: 'sortBy' in opts ? opts.sortBy : sortBy,
+          sortBy: "sortBy" in opts ? opts.sortBy : sortBy,
         },
         true
       )
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [categoryId, address, getPros, currentPlaceOfService, isFoodCategory, foodFulfillment, sortBy, currentFilters, questionFilterOptionIds, refinementFilterOptionIds, rangeFilters]
+    [
+      categoryId,
+      address,
+      getPros,
+      currentPlaceOfService,
+      isFoodCategory,
+      foodFulfillment,
+      sortBy,
+      currentFilters,
+      questionFilterOptionIds,
+      refinementFilterOptionIds,
+      rangeFilters,
+    ]
   )
 
   const refetchWithFilters = useCallback(
-    (result: { placeOfService?: string; filterOptionIds: number[]; filtersChanged: boolean }) => {
+    (result: {
+      placeOfService?: string
+      filterOptionIds: number[]
+      filtersChanged: boolean
+    }) => {
       if (!result.filtersChanged) return
-      doRefetch({ pos: result.placeOfService, questionFilterOptionIds: result.filterOptionIds })
+      doRefetch({
+        pos: result.placeOfService,
+        questionFilterOptionIds: result.filterOptionIds,
+      })
     },
     [doRefetch]
   )
@@ -433,9 +520,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       return kept
     })
   }, [data?.data, showShortlistNotice])
-  useEffect(() => () => {
-    if (noticeTimer.current) clearTimeout(noticeTimer.current)
-  }, [])
+  useEffect(
+    () => () => {
+      if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    },
+    []
+  )
 
   // Details-stage redirect: a late filter answer excluded a selected pro.
   // Merge the final answers, recompute filter ids, refetch — the prune
@@ -451,7 +541,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         const sel = a?.optionsIds ?? (a?.optionId ? [a.optionId] : [])
         sel.forEach((oid) => {
           const opt = q.options?.find((o) => o.id === oid)
-          if (opt?.serviceCategoryFilterOptionId) ids.push(opt.serviceCategoryFilterOptionId)
+          if (opt?.serviceCategoryFilterOptionId)
+            ids.push(opt.serviceCategoryFilterOptionId)
         })
       })
       setQuestionFilterOptionIds(ids)
@@ -500,8 +591,19 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle pro-level filters dismiss
   const handleFiltersDismiss = useCallback(
-    (filters: FilterValues & { refinementFilterOptionIds: number[]; ranges: { filterId: number; min?: number; max?: number }[]; fulfillment?: "all" | "delivery" | "pickup" }) => {
-      const { refinementFilterOptionIds: refinementIds, ranges, fulfillment, ...rest } = filters
+    (
+      filters: FilterValues & {
+        refinementFilterOptionIds: number[]
+        ranges: { filterId: number; min?: number; max?: number }[]
+        fulfillment?: "all" | "delivery" | "pickup"
+      }
+    ) => {
+      const {
+        refinementFilterOptionIds: refinementIds,
+        ranges,
+        fulfillment,
+        ...rest
+      } = filters
       setCurrentFilters(rest)
       setRefinementFilterOptionIds(refinementIds)
       setRangeFilters(ranges)
@@ -511,7 +613,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         refinementFilterOptionIds: refinementIds,
         ranges,
         // Food fulfillment drives placeOfService; "all" → broad (undefined)
-        ...(fulfillment && { pos: fulfillment === "all" ? undefined : fulfillment }),
+        ...(fulfillment && {
+          pos: fulfillment === "all" ? undefined : fulfillment,
+        }),
       })
     },
     [doRefetch]
@@ -568,11 +672,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       // remoteOrOnline/fixedLocations must not send coords — the backend DTO
       // validator 400s on customerAddress for those modes.
       const skipAddress =
-        currentPlaceOfService === "remoteOrOnline" || currentPlaceOfService === "fixedLocations"
+        currentPlaceOfService === "remoteOrOnline" ||
+        currentPlaceOfService === "fixedLocations"
       const customerAddress = skipAddress
         ? undefined
         : newAddress?.coords
-          ? { latitude: newAddress.coords.lat, longitude: newAddress.coords.lon }
+          ? {
+              latitude: newAddress.coords.lat,
+              longitude: newAddress.coords.lon,
+            }
           : undefined
       setIsRefetching(true)
       getPros(
@@ -612,7 +720,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       // Guarded on the coords actually differing: handleSelectNewAddress
       // dispatches the same value straight back, which would otherwise loop.
       const current = address?.coords
-      if (current && current.lat === next.lat && current.lon === next.lon) return
+      if (current && current.lat === next.lat && current.lon === next.lon)
+        return
       handleSelectNewAddress(browsingAddress)
     }, [browsingAddress, address, dispatch, handleSelectNewAddress])
   )
@@ -646,11 +755,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // a customer to do something the screen will not let them do is worse than
   // saying nothing, and it costs them a tap to dismiss.
   useEffect(() => {
-    if (
-      !isFoodCategory &&
-      !dontShowBestDealTooltip &&
-      data?.data?.length
-    ) {
+    if (!isFoodCategory && !dontShowBestDealTooltip && data?.data?.length) {
       const timer = setTimeout(() => setTipOpen(true), 500)
       return () => clearTimeout(timer)
     }
@@ -668,26 +773,32 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     )
   }, [])
 
-  const handleMessage = useCallback(async (pro: ProType) => {
-    // Open (or resume) a direct chat with this pro — backend creates a bare
-    // chat (no job) or returns the existing customer/pro/category thread.
-    setIsProfileLoading(true)
-    try {
-      const chat = await openChat({ categoryId, recipientId: pro.id }, true).unwrap()
-      // Prefetch page 1 of messages (same arg the chat screen queries) so it
-      // mounts straight onto content — failure here shouldn't block the chat.
-      await getChatMessages({ chatId: chat.id, page: 1, perPage: 20 }, true)
-        .unwrap()
-        .catch(() => {})
-      navigation.navigate("MessagesDetailsScreen", {
-        chatPreview: { chat, notReadMessages: 0 },
-      })
-    } catch (e) {
-      setErrorModalVisible(true)
-    } finally {
-      setIsProfileLoading(false)
-    }
-  }, [categoryId, navigation, openChat, getChatMessages])
+  const handleMessage = useCallback(
+    async (pro: ProType) => {
+      // Open (or resume) a direct chat with this pro — backend creates a bare
+      // chat (no job) or returns the existing customer/pro/category thread.
+      setIsProfileLoading(true)
+      try {
+        const chat = await openChat(
+          { categoryId, recipientId: pro.id },
+          true
+        ).unwrap()
+        // Prefetch page 1 of messages (same arg the chat screen queries) so it
+        // mounts straight onto content — failure here shouldn't block the chat.
+        await getChatMessages({ chatId: chat.id, page: 1, perPage: 20 }, true)
+          .unwrap()
+          .catch(() => {})
+        navigation.navigate("MessagesDetailsScreen", {
+          chatPreview: { chat, notReadMessages: 0 },
+        })
+      } catch (e) {
+        setErrorModalVisible(true)
+      } finally {
+        setIsProfileLoading(false)
+      }
+    },
+    [categoryId, navigation, openChat, getChatMessages]
+  )
 
   // Food listing: card action opens the pro's menu straight away
   const handleViewMenu = useCallback(
@@ -698,54 +809,71 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         serviceId,
         proName: pro.screenName || pro.businessName || pro.registeredName || "",
         categoryName,
-        fulfillmentMode: foodFulfillment === "all" ? undefined : foodFulfillment,
+        fulfillmentMode:
+          foodFulfillment === "all" ? undefined : foodFulfillment,
       })
     },
     [navigation, categoryId, serviceId, categoryName, address, foodFulfillment]
   )
 
-  const handlePressProfile = useCallback(async (pro: ProType) => {
-    const arg = { proId: pro.id, serviceCategoryId: categoryId }
-    const goToProfile = () =>
-      navigation.navigate("ProProfileScreen", {
-        proId: pro.id,
-        serviceCategoryId: categoryId,
-        serviceCategories: pro.serviceCategories,
-        // Food category: the profile shows a floating "Food Menu" pill
-        ...(isFoodCategory && {
-          foodMenu: { serviceId, categoryName, address: address ?? null },
-        }),
-      })
+  const handlePressProfile = useCallback(
+    async (pro: ProType) => {
+      const arg = { proId: pro.id, serviceCategoryId: categoryId }
+      const goToProfile = () =>
+        navigation.navigate("ProProfileScreen", {
+          proId: pro.id,
+          serviceCategoryId: categoryId,
+          serviceCategories: pro.serviceCategories,
+          // Food category: the profile shows a floating "Food Menu" pill
+          ...(isFoodCategory && {
+            foodMenu: { serviceId, categoryName, address: address ?? null },
+          }),
+        })
 
-    // Already prefetched (strategy C) → open instantly, no overlay, no delay
-    const cached = api.endpoints.getProProfile.select(arg)(store.getState()).data
-    if (cached) {
-      preloadProImages(cached as unknown as ProType) // head start for any not-yet-cached bytes
-      goToProfile()
-      return
-    }
+      // Already prefetched (strategy C) → open instantly, no overlay, no delay
+      const cached = api.endpoints.getProProfile.select(arg)(
+        store.getState()
+      ).data
+      if (cached) {
+        preloadProImages(cached as unknown as ProType) // head start for any not-yet-cached bytes
+        goToProfile()
+        return
+      }
 
-    // Cold cache → fetch with overlay, then navigate as soon as it resolves
-    setIsProfileLoading(true)
-    try {
-      const profile = await getProProfile(arg, true).unwrap()
-      preloadProImages(profile as unknown as ProType) // images load during the transition
-      goToProfile()
-    } catch (e) {
-      setErrorModalVisible(true)
-    } finally {
-      setIsProfileLoading(false)
-    }
-  }, [navigation, categoryId, getProProfile, preloadProImages, isFoodCategory, serviceId, categoryName, address])
+      // Cold cache → fetch with overlay, then navigate as soon as it resolves
+      setIsProfileLoading(true)
+      try {
+        const profile = await getProProfile(arg, true).unwrap()
+        preloadProImages(profile as unknown as ProType) // images load during the transition
+        goToProfile()
+      } catch (e) {
+        setErrorModalVisible(true)
+      } finally {
+        setIsProfileLoading(false)
+      }
+    },
+    [
+      navigation,
+      categoryId,
+      getProProfile,
+      preloadProImages,
+      isFoodCategory,
+      serviceId,
+      categoryName,
+      address,
+    ]
+  )
 
   const pros = data?.data || []
 
   const handleContinue = () => {
     // Resolve pro data now while we have it
-    const proNames = selectedPros.map((id) => {
-      const pro = pros.find((p) => p.id === id)
-      return pro?.businessName || pro?.registeredName || `#${id}`
-    }).join(", ")
+    const proNames = selectedPros
+      .map((id) => {
+        const pro = pros.find((p) => p.id === id)
+        return pro?.businessName || pro?.registeredName || `#${id}`
+      })
+      .join(", ")
 
     const prosInfo = selectedPros.map((id) => {
       const pro = pros.find((p) => p.id === id)
@@ -787,20 +915,39 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => {
     prefetchVisibleRef.current = (items) =>
       items.forEach((p) => {
-        prefetchProfile({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+        prefetchProfile(
+          { proId: p.id, serviceCategoryId: categoryId },
+          { ifOlderThan: 120 }
+        )
         preloadProImages(p)
         // Food: warm each menu as its card scrolls into view (Strategy B for menus)
         if (isFoodCategory) {
-          prefetchMenu({ proId: p.id, serviceCategoryId: categoryId }, { ifOlderThan: 120 })
+          prefetchMenu(
+            { proId: p.id, serviceCategoryId: categoryId },
+            { ifOlderThan: 120 }
+          )
         }
       })
-  }, [prefetchProfile, categoryId, preloadProImages, isFoodCategory, prefetchMenu])
+  }, [
+    prefetchProfile,
+    categoryId,
+    preloadProImages,
+    isFoodCategory,
+    prefetchMenu,
+  ])
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-    prefetchVisibleRef.current(viewableItems.map((v) => v.item).filter(Boolean) as ProType[])
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      prefetchVisibleRef.current(
+        viewableItems.map((v) => v.item).filter(Boolean) as ProType[]
+      )
+    }
+  ).current
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+    minimumViewTime: 200,
   }).current
-
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 200 }).current
 
   const renderItem = useCallback(
     ({ item, index }: { item: ProType; index: number }) => {
@@ -817,7 +964,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         />
       )
     },
-    [selectedPros, handleToggleSelect, handleMessage, handlePressProfile, isFoodCategory, handleViewMenu, tourTarget]
+    [
+      selectedPros,
+      handleToggleSelect,
+      handleMessage,
+      handlePressProfile,
+      isFoodCategory,
+      handleViewMenu,
+      tourTarget,
+    ]
   )
 
   return (
@@ -825,121 +980,175 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       {/* White status bar area */}
       <View style={{ backgroundColor: "#FFFFFF", paddingTop: insets.top }} />
       <DmView style={atoms.flex_1}>
-      {/* Header */}
-      <DmView style={[atoms.flex_row, atoms.items_center, atoms.px_12, atoms.py_10, styles.row]}>
+        {/* Header */}
         <DmView
-          style={[styles.iconWrap, atoms.items_center, atoms.justify_center]}
-          hitSlop={HIT_SLOP_DEFAULT}
-          onPress={handleGoBack}
+          style={[
+            atoms.flex_row,
+            atoms.items_center,
+            atoms.px_12,
+            atoms.py_10,
+            styles.row,
+          ]}
         >
-          <ChevronLeftIcon
-            color={colors.red}
-            style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
-          />
-        </DmView>
-        {/* Search pill */}
-        <DmView
-          style={[atoms.flex_1, atoms.flex_row, atoms.items_center, styles.row2, atoms.mx_8, atoms.px_12, styles.searchPill]}
-          onPress={() => setSearchModalVisible(true)}
-        >
-          <SearchIcon width={14} height={14} />
-          <Text size={13} weight="medium" leading="tight" numberOfLines={1} style={[atoms.ml_6, { flexShrink: 1 }]}>
-            {categoryName}
-          </Text>
-          <Text size={13} leading="tight" numberOfLines={1}>
-            {" • "}{address?.city || address?.governorate || ""}
-          </Text>
-        </DmView>
-        <DmView style={[atoms.flex_row, atoms.items_center]}>
           <DmView
-            onPress={() => {
-              setFiltersOpenCount((c) => c + 1)
-              setFiltersVisible(true)
-            }}
             style={[styles.iconWrap, atoms.items_center, atoms.justify_center]}
             hitSlop={HIT_SLOP_DEFAULT}
+            onPress={handleGoBack}
           >
-            <FilterSlidersIcon width={22} height={22} color={colors.black} />
+            <ChevronLeftIcon
+              color={colors.red}
+              style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
+            />
           </DmView>
-        </DmView>
-      </DmView>
-      <DmView style={styles.box} />
-
-      {/* Job details banner + matches heading */}
-      <DmView style={[atoms.px_16, atoms.pt_14, atoms.pb_8, styles.row]}>
-        {totalQuestions > 0 && !isFoodCategory && (
+          {/* Search pill */}
           <DmView
-            onPress={() => {
-              setAllQuestionsOpenCount((c) => c + 1)
-              setAllQuestionsVisible(true)
-            }}
-            style={[atoms.flex_row, atoms.items_center, atoms.mb_12]}
+            style={[
+              atoms.flex_1,
+              atoms.flex_row,
+              atoms.items_center,
+              styles.row2,
+              atoms.mx_8,
+              atoms.px_12,
+              styles.searchPill,
+            ]}
+            onPress={() => setSearchModalVisible(true)}
           >
-            <JobDetailsIcon width={18} height={18} color={colors.red} />
-            <Text size={13} weight="semibold" leading="tight" color="brand" style={atoms.ml_6}>
-              {t("job_details_added", { answered: answeredCount, total: totalQuestions })}
+            <SearchIcon width={14} height={14} />
+            <Text
+              size={13}
+              weight="medium"
+              leading="tight"
+              numberOfLines={1}
+              style={[atoms.ml_6, { flexShrink: 1 }]}
+            >
+              {categoryName}
+            </Text>
+            <Text size={13} leading="tight" numberOfLines={1}>
+              {" • "}
+              {address?.city || address?.governorate || ""}
             </Text>
           </DmView>
-        )}
-        {pros.length > 0 && (
-          <Text size={px(19)} weight="bold" leading={px(24)}>
-            {pros.length}{" "}
-            {isFoodCategory
-              ? foodFulfillment === "pickup"
-                ? t("available_for_pickup")
-                : foodFulfillment === "delivery"
-                  ? t("available_for_delivery")
-                  : t("available_pros")
-              : t("matches_based_on_answers")}
-          </Text>
-        )}
-      </DmView>
-
-      {/* Content */}
-      {isLoading && !pros.length ? (
-        <DmView style={atoms.flex_1}>
-          <LoadingOverlay />
+          <DmView style={[atoms.flex_row, atoms.items_center]}>
+            <DmView
+              onPress={() => {
+                setFiltersOpenCount((c) => c + 1)
+                setFiltersVisible(true)
+              }}
+              style={[
+                styles.iconWrap,
+                atoms.items_center,
+                atoms.justify_center,
+              ]}
+              hitSlop={HIT_SLOP_DEFAULT}
+            >
+              <FilterSlidersIcon width={22} height={22} color={colors.black} />
+            </DmView>
+          </DmView>
         </DmView>
-      ) : !isRefetching && (isError || pros.length === 0) ? (
-        <DmView style={[atoms.flex_1, atoms.items_center, atoms.justify_center, atoms.px_40]}>
-          <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
-            {t("no_pros_found")}
-          </Text>
-          <Text size={12} leading="legacy" color="tertiary" align="center" style={atoms.mt_8}>
-            {t("no_pros_found_descr")}
-          </Text>
-        </DmView>
-      ) : (
-        <FlashList
-          data={pros}
-          renderItem={renderItem}
-          keyExtractor={(item) => String(item.id)}
-          extraData={selectedPros}
-          // flash-list v2 removed estimatedItemSize and dropped `size` from
-          // overrideItemLayout's layout object (it is { span } now) — v2 measures
-          // item heights itself, so the old estimate is not just unnecessary, it
-          // no longer type-checks. estimateProCardHeight existed only to feed it
-          // and has been deleted with it.
-          contentContainerStyle={{ paddingTop: 12, paddingBottom: 90 }}
-          showsVerticalScrollIndicator={false}
-          // FlashList renders its own ScrollView, so the App* wrappers in
-          // components/scroll cannot cover it. This is a plain prop because
-          // FlashListProps extends ScrollViewProps (FlashListProps.d.ts:21) —
-          // that declaration IS the public contract, and it is type-checked.
-          // NOT overrideProps: that is typed `object` and its own doc says it is
-          // "for debugging and exception use cases".
-          // The runtime route is worth knowing though, because it is indirect:
-          // the prop is not in FlashList.js:382's destructure, so it rides
-          // restProps onto ProgressiveListView (:392) and reaches the ScrollView
-          // only because recyclerlistview spreads unknown props two levels down.
-          // RE-VERIFY THIS AT THE flash-list v2 BUMP — v2 dropped recyclerlistview
-          // entirely, so the path changes even if the declared contract does not.
-          alwaysBounceVertical={false}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={viewabilityConfig}
-        />
-      )}
+        <DmView style={styles.box} />
 
+        {/* Job details banner + matches heading */}
+        <DmView style={[atoms.px_16, atoms.pt_14, atoms.pb_8, styles.row]}>
+          {totalQuestions > 0 && !isFoodCategory && (
+            <DmView
+              onPress={() => {
+                setAllQuestionsOpenCount((c) => c + 1)
+                setAllQuestionsVisible(true)
+              }}
+              style={[atoms.flex_row, atoms.items_center, atoms.mb_12]}
+            >
+              <JobDetailsIcon width={18} height={18} color={colors.red} />
+              <Text
+                size={13}
+                weight="semibold"
+                leading="tight"
+                color="brand"
+                style={atoms.ml_6}
+              >
+                {t("job_details_added", {
+                  answered: answeredCount,
+                  total: totalQuestions,
+                })}
+              </Text>
+            </DmView>
+          )}
+          {pros.length > 0 && (
+            <Text size={px(19)} weight="bold" leading={px(24)}>
+              {pros.length}{" "}
+              {isFoodCategory
+                ? foodFulfillment === "pickup"
+                  ? t("available_for_pickup")
+                  : foodFulfillment === "delivery"
+                    ? t("available_for_delivery")
+                    : t("available_pros")
+                : t("matches_based_on_answers")}
+            </Text>
+          )}
+        </DmView>
+
+        {/* Content */}
+        {isLoading && !pros.length ? (
+          <DmView style={atoms.flex_1}>
+            <LoadingOverlay />
+          </DmView>
+        ) : !isRefetching && (isError || pros.length === 0) ? (
+          <DmView
+            style={[
+              atoms.flex_1,
+              atoms.items_center,
+              atoms.justify_center,
+              atoms.px_40,
+            ]}
+          >
+            <Text
+              size={16}
+              weight="semibold"
+              leading="legacy"
+              color="tertiary"
+              align="center"
+            >
+              {t("no_pros_found")}
+            </Text>
+            <Text
+              size={12}
+              leading="legacy"
+              color="tertiary"
+              align="center"
+              style={atoms.mt_8}
+            >
+              {t("no_pros_found_descr")}
+            </Text>
+          </DmView>
+        ) : (
+          <FlashList
+            data={pros}
+            renderItem={renderItem}
+            keyExtractor={(item) => String(item.id)}
+            extraData={selectedPros}
+            // flash-list v2 removed estimatedItemSize and dropped `size` from
+            // overrideItemLayout's layout object (it is { span } now) — v2 measures
+            // item heights itself, so the old estimate is not just unnecessary, it
+            // no longer type-checks. estimateProCardHeight existed only to feed it
+            // and has been deleted with it.
+            contentContainerStyle={{ paddingTop: 12, paddingBottom: 90 }}
+            showsVerticalScrollIndicator={false}
+            // FlashList renders its own ScrollView, so the App* wrappers in
+            // components/scroll cannot cover it. This is a plain prop because
+            // FlashListProps extends ScrollViewProps (FlashListProps.d.ts:21) —
+            // that declaration IS the public contract, and it is type-checked.
+            // NOT overrideProps: that is typed `object` and its own doc says it is
+            // "for debugging and exception use cases".
+            // The runtime route is worth knowing though, because it is indirect:
+            // the prop is not in FlashList.js:382's destructure, so it rides
+            // restProps onto ProgressiveListView (:392) and reaches the ScrollView
+            // only because recyclerlistview spreads unknown props two levels down.
+            // RE-VERIFY THIS AT THE flash-list v2 BUMP — v2 dropped recyclerlistview
+            // entirely, so the path changes even if the declared contract does not.
+            alwaysBounceVertical={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+          />
+        )}
       </DmView>
 
       {/* Continue button - absolute, slides up from bottom */}
@@ -967,7 +1176,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           pointerEvents="none"
         >
           <DmView
-            style={[styles.shortlistUpdatedNoticeWrap, atoms.px_14, atoms.py_10, { backgroundColor: "rgba(28,25,23,0.92)" }]}
+            style={[
+              styles.shortlistUpdatedNoticeWrap,
+              atoms.px_14,
+              atoms.py_10,
+              { backgroundColor: "rgba(28,25,23,0.92)" },
+            ]}
           >
             <Text size={12} weight="semibold" color="inverse" align="center">
               {t("shortlist_updated_notice")}
@@ -980,12 +1194,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           style={[
             styles.continueContainer,
             {
-              transform: [{
-                translateY: slideAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [150, 0],
-                }),
-              }],
+              transform: [
+                {
+                  translateY: slideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [150, 0],
+                  }),
+                },
+              ],
             },
           ]}
         >
@@ -998,7 +1214,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           />
         </Animated.View>
       )}
-
 
       <SearchLocationModal
         isVisible={isSearchModalVisible}
@@ -1022,7 +1237,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           navigation.navigate("MySavedAddressesScreen", { selectionMode: true })
         }}
       />
-
 
       {/* Refetching overlay — over existing results */}
       {isRefetching && (
@@ -1051,8 +1265,22 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           onStartShouldSetResponder={() => true}
         >
           {isServiceError ? (
-            <DmView style={[atoms.flex_1, styles.row, atoms.items_center, atoms.justify_center, atoms.px_40]}>
-              <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+            <DmView
+              style={[
+                atoms.flex_1,
+                styles.row,
+                atoms.items_center,
+                atoms.justify_center,
+                atoms.px_40,
+              ]}
+            >
+              <Text
+                size={16}
+                weight="semibold"
+                leading="legacy"
+                color="tertiary"
+                align="center"
+              >
                 {t("an_error_occurred")}
               </Text>
               <Button
@@ -1118,7 +1346,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         upfrontSelections={upfrontSelections}
         onApply={handleFiltersDismiss}
       />
-
 
       {/* The "best deal" tip, over the first card. Tapping the dim does
           nothing (as before); Got it, or Android back, closes it. */}

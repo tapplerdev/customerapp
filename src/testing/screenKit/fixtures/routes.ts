@@ -138,7 +138,12 @@ export const ROUTE_PARAMS: RouteParams = {
       placeOfService: "customerPlace",
       questionsAnswers: [],
       foodOrderItems: [
-        { menuItemId: 411, name: "Molokhia with chicken", price: 185, quantity: 1 },
+        {
+          menuItemId: 411,
+          name: "Molokhia with chicken",
+          price: 185,
+          quantity: 1,
+        },
       ],
       paymentMethod: "cash",
     },
@@ -171,7 +176,9 @@ export const ROUTE_PARAMS: RouteParams = {
   NotificationDetailsScreen: { notification: NOTIFICATION_UNREAD },
   RequestDetailsScreen: { jobId: JOB.id },
   // Saved already: an unsaved address opens the save sheet after 3 s.
-  RequestSuccessScreen: { address: { ...ADDRESS, savedAddressId: SAVED_HOME.id } },
+  RequestSuccessScreen: {
+    address: { ...ADDRESS, savedAddressId: SAVED_HOME.id },
+  },
   SaveAddressSheetScreen: { address: ADDRESS },
 }
 

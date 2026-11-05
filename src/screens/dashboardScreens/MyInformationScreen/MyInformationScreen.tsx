@@ -15,7 +15,10 @@ import { AppScrollView } from "components/scroll"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
-const disabledLookSubtleInverse = { surface: "subtle", label: "inverse" } as const
+const disabledLookSubtleInverse = {
+  surface: "subtle",
+  label: "inverse",
+} as const
 
 type Props = RootStackScreenProps<"MyInformationScreen">
 
@@ -26,7 +29,9 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
 
   const [firstName, setFirstName] = useState(user?.firstName || "")
   const [lastName, setLastName] = useState(user?.lastName || "")
-  const [gender, setGender] = useState<"female" | "male">(user?.gender || "male")
+  const [gender, setGender] = useState<"female" | "male">(
+    user?.gender || "male"
+  )
 
   const [updateCustomer, { isLoading }] = useUpdateCustomerMutation()
   const [isErrorModalVisible, setErrorModalVisible] = useState(false)
@@ -58,7 +63,10 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[a.flex_1, styles.safeArea]}>
       {/* Header */}
       <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12]}>
-        <DmView onPress={onGoBack} style={[styles.iconWrap, a.items_center, a.justify_center]}>
+        <DmView
+          onPress={onGoBack}
+          style={[styles.iconWrap, a.items_center, a.justify_center]}
+        >
           <ChevronLeftIcon
             color={colors.red}
             style={isAr ? { transform: [{ rotate: "180deg" }] } : undefined}
@@ -87,9 +95,14 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             value={firstName}
             onChangeText={setFirstName}
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>
@@ -104,9 +117,14 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             value={lastName}
             onChangeText={setLastName}
-            style={[styles.input, a.pb_8, 
+            style={[
+              styles.input,
+              a.pb_8,
               takeFontStyles("font-custom400 leading-[16px]", i18n.language),
-              { textAlign: isAr ? "right" : "left", writingDirection: isAr ? "rtl" : "ltr" },
+              {
+                textAlign: isAr ? "right" : "left",
+                writingDirection: isAr ? "rtl" : "ltr",
+              },
             ]}
           />
         </DmView>

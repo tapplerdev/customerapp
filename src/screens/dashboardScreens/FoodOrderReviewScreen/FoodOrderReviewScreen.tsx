@@ -190,7 +190,10 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       setSubmitting(true)
       // The lines come from the basket on screen, not from the payload checkout
       // built, so a repaired basket is what gets sent next time.
-      const sent = { ...payload, foodOrderItems: buildFoodOrderItems(cart.items) }
+      const sent = {
+        ...payload,
+        foodOrderItems: buildFoodOrderItems(cart.items),
+      }
       const job = await createJob({ ...sent, idempotencyKey }).unwrap()
       const successAddress = cartState.address ?? undefined
       dispatch(clearCart(proId))
@@ -240,18 +243,10 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const totalsRow = (label: string, value: string, bold?: boolean) => (
     <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mt_8]}>
-      <Text
-        size={13}
-        weight={bold ? "bold" : "regular"}
-        leading={px(17)}
-      >
+      <Text size={13} weight={bold ? "bold" : "regular"} leading={px(17)}>
         {label}
       </Text>
-      <Text
-        size={13}
-        weight={bold ? "bold" : "regular"}
-        leading={px(17)}
-      >
+      <Text size={13} weight={bold ? "bold" : "regular"} leading={px(17)}>
         {value}
       </Text>
     </DmView>
@@ -260,7 +255,9 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <SafeAreaView style={[a.flex_1, styles.safeArea]} edges={["top"]}>
       {/* Same header as checkout, so the flow does not change shape mid-way */}
-      <DmView style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row]}>
+      <DmView
+        style={[a.flex_row, a.items_center, a.px_12, a.py_10, styles.row]}
+      >
         <DmView
           style={[styles.iconWrap, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
@@ -297,7 +294,13 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
         <OrderLocationMap coords={mapCoords} isPickup={isPickup} />
 
         <DmView style={a.px_16}>
-          <Text size={16} weight="bold" color="brand" align="center" style={a.mt_16}>
+          <Text
+            size={16}
+            weight="bold"
+            color="brand"
+            align="center"
+            style={a.mt_16}
+          >
             {t("review_order")}
           </Text>
 
@@ -322,7 +325,11 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
               <DmView key={line.uid} style={a.mt_10}>
                 <DmView style={[a.flex_row, a.justify_between]}>
                   <Text size={13} weight="medium" style={[a.flex_1, a.pr_10]}>
-                    {line.quantity}×  {line.name}
+                    {/* Both spaces as a string: Prettier collapses repeated
+                        spaces in JSX text, and RN Text draws every one. */}
+                    {line.quantity}
+                    {"×  "}
+                    {line.name}
                   </Text>
                   <Text size={13}>
                     {formatMoney(cartLineTotal(line))} {t("EGP")}
@@ -351,20 +358,32 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
             {!isPickup &&
               totalsRow(
                 t("delivery_fee"),
-                deliveryFee ? `${formatMoney(deliveryFee)} ${t("EGP")}` : t("free")
+                deliveryFee
+                  ? `${formatMoney(deliveryFee)} ${t("EGP")}`
+                  : t("free")
               )}
             {orderDiscount > 0 &&
               totalsRow(
                 t("discount"),
                 `-${formatMoney(orderDiscount)} ${t("EGP")}`
               )}
-            {totalsRow(t("order_total"), `${formatMoney(total)} ${t("EGP")}`, true)}
+            {totalsRow(
+              t("order_total"),
+              `${formatMoney(total)} ${t("EGP")}`,
+              true
+            )}
           </DmView>
         </DmView>
       </AppScrollView>
 
       <DmView
-        style={[a.px_16, a.pt_14, styles.safeArea, styles.footerShadow, { paddingBottom: insets.bottom + 12 }]}
+        style={[
+          a.px_16,
+          a.pt_14,
+          styles.safeArea,
+          styles.footerShadow,
+          { paddingBottom: insets.bottom + 12 },
+        ]}
       >
         <Button
           title={t("submit_order")}
@@ -400,7 +419,11 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
           navigation.popTo("FoodMenuScreen", params)
         }}
         title={errorTitle}
-        Icon={errorTitle ? <WarningTriangleIcon width={48} height={43} /> : undefined}
+        Icon={
+          errorTitle ? (
+            <WarningTriangleIcon width={48} height={43} />
+          ) : undefined
+        }
         descr={errorMessage}
       />
     </SafeAreaView>

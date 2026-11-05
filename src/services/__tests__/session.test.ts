@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals"
 
 /*
  * The sign-out order is the whole point of services/session: backend call
@@ -209,7 +216,9 @@ describe("signOut", () => {
     mockDeleteToken.mockImplementation(never)
     const done = signOut()
     await jest.advanceTimersByTimeAsync(
-      REMOVE_TOKEN_TIMEOUT_MS + Math.max(LOGOUT_TIMEOUT_MS, REMOVE_TOKEN_TIMEOUT_MS) + 1
+      REMOVE_TOKEN_TIMEOUT_MS +
+        Math.max(LOGOUT_TIMEOUT_MS, REMOVE_TOKEN_TIMEOUT_MS) +
+        1
     )
     await done
     expect(dispatchedTypes()).toEqual(["remove", "logout", ...LOCAL])

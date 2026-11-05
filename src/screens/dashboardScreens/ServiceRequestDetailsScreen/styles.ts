@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import colors from '@tappler/shared/src/styles/colors';
+import { StyleSheet } from "react-native"
+import colors from "@tappler/shared/src/styles/colors"
 
 export default StyleSheet.create({
   textWrap: {
@@ -38,4 +38,4 @@ export default StyleSheet.create({
     paddingLeft: 17,
     paddingRight: 17,
   },
-});
+})

@@ -87,7 +87,8 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
   const optionsPrice = useMemo(() => {
     return Object.values(selected).reduce(
       (sum, choices) =>
-        sum + choices.reduce((s, choice) => s + effectiveChoicePrice(choice), 0),
+        sum +
+        choices.reduce((s, choice) => s + effectiveChoicePrice(choice), 0),
       0
     )
   }, [selected])
@@ -207,7 +208,12 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
             </Text>
           </DmView>
         </DmView>
-        <Text size={11} leading="tight" color="secondary" style={[a.mt_10, a.mb_14]}>
+        <Text
+          size={11}
+          leading="tight"
+          color="secondary"
+          style={[a.mt_10, a.mb_14]}
+        >
           {renderChoiceLimitText(option)}
         </Text>
         {option.choices.map((choice, idx) => {
@@ -230,7 +236,12 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
                 {!!Number(choice.price) && (
                   <>
                     {hasDiscount(choice) && (
-                      <Text size={13} leading="tight" color="brand" style={a.mx_10}>
+                      <Text
+                        size={13}
+                        leading="tight"
+                        color="brand"
+                        style={a.mx_10}
+                      >
                         + {formatMoney(effectiveUnitPrice(choice))} {t("EGP")}
                       </Text>
                     )}
@@ -267,8 +278,22 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (!menuItem) {
     return (
-      <SafeAreaView style={[a.flex_1, styles.safeArea, a.items_center, a.justify_center, a.px_40]}>
-        <Text size={16} weight="semibold" leading="legacy" color="tertiary" align="center">
+      <SafeAreaView
+        style={[
+          a.flex_1,
+          styles.safeArea,
+          a.items_center,
+          a.justify_center,
+          a.px_40,
+        ]}
+      >
+        <Text
+          size={16}
+          weight="semibold"
+          leading="legacy"
+          color="tertiary"
+          align="center"
+        >
           {t("menu_unavailable")}
         </Text>
         <Button
@@ -288,10 +313,22 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <SafeAreaView
       edges={["bottom"]}
-      style={[a.flex_1, styles.safeArea, a.justify_between, { paddingBottom: insets.bottom > 45 ? 0 : 45 - insets.bottom }]}
+      style={[
+        a.flex_1,
+        styles.safeArea,
+        a.justify_between,
+        { paddingBottom: insets.bottom > 45 ? 0 : 45 - insets.bottom },
+      ]}
     >
       <DmView
-        style={[a.absolute, styles.iconWrap, a.items_center, a.justify_center, styles.closeButton, { top: (insets.top || 35) + 10 }]}
+        style={[
+          a.absolute,
+          styles.iconWrap,
+          a.items_center,
+          a.justify_center,
+          styles.closeButton,
+          { top: (insets.top || 35) + 10 },
+        ]}
         onPress={() => navigation.goBack()}
       >
         <CloseIcon fill={colors.red} />
@@ -325,9 +362,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
                   weight={menuItemDiscounted ? "regular" : "medium"}
                   leading="tight"
                   color={menuItemDiscounted ? "secondary" : undefined}
-                  style={
-                    menuItemDiscounted ? styles.eGPStruck : undefined
-                  }
+                  style={menuItemDiscounted ? styles.eGPStruck : undefined}
                 >
                   {menuItem.price} {t("EGP")}
                 </Text>
@@ -355,7 +390,11 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
               labelWeight="bold"
               style={styles.button}
             />
-            <Text size={14} weight="semibold" style={[a.flex_1, styles.itemPreparedOnOrderOnly]}>
+            <Text
+              size={14}
+              weight="semibold"
+              style={[a.flex_1, styles.itemPreparedOnOrderOnly]}
+            >
               {t("item_prepared_on_order_only")}
             </Text>
           </DmView>

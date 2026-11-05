@@ -59,7 +59,16 @@ interface Props {
   onViewMenu?: (pro: ProType) => void
 }
 
-const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPressProfile, tourTarget, foodMode, onViewMenu }) => {
+const ProCard: React.FC<Props> = ({
+  pro,
+  isSelected,
+  onSelect,
+  onMessage,
+  onPressProfile,
+  tourTarget,
+  foodMode,
+  onViewMenu,
+}) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
@@ -96,7 +105,10 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
           : []
   // Nested: ProAddressDto wraps an AddressDto. Read flat, this was always
   // undefined and the card silently rendered no location.
-  const location = [pro.address?.address?.city, pro.address?.address?.governorate]
+  const location = [
+    pro.address?.address?.city,
+    pro.address?.address?.governorate,
+  ]
     .filter(Boolean)
     .join(", ")
   const photoUrl = pro.profilePhoto150 || pro.profilePhoto
@@ -109,23 +121,22 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
   const reviewsCount = pro.reviewScore?.reviewsCount || 0
 
   const subscriptions = pro.serviceCategories?.[0]?.subscriptions || []
-  const motivational = subscriptions.filter((s: any) => s.product?.subType === "motivational")
+  const motivational = subscriptions.filter(
+    (s: any) => s.product?.subType === "motivational"
+  )
 
-  const trustDocs = pro.documents?.filter(
-    (d) => d.type === "trust" && d.status === "approved"
-  ) || []
+  const trustDocs =
+    pro.documents?.filter(
+      (d) => d.type === "trust" && d.status === "approved"
+    ) || []
 
   const innerCard = (
-    <DmView
-      style={[styles.list, a.pb_12, styles.cardShadow]}
-    >
+    <DmView style={[styles.list, a.pb_12, styles.cardShadow]}>
       {/* Top section: photo + info — tappable for profile */}
       <DmView style={a.flex_row} onPress={() => onPressProfile?.(pro)}>
         {/* Profile photo */}
         <DmView>
-          <DmView
-            style={[styles.box, a.overflow_hidden]}
-          >
+          <DmView style={[styles.box, a.overflow_hidden]}>
             {hasPhoto && (
               <FastImage
                 source={{ uri: photoUrl }}
@@ -137,7 +148,13 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
           {isFeatured && (
             <DmView style={[a.absolute, styles.boxWrap, a.self_center]}>
               <DmView
-                style={[styles.featuredWrap, a.px_6, a.items_center, a.justify_center, styles.featuredBadgeBorder]}
+                style={[
+                  styles.featuredWrap,
+                  a.px_6,
+                  a.items_center,
+                  a.justify_center,
+                  styles.featuredBadgeBorder,
+                ]}
               >
                 <Text size={10} weight="bold" style={styles.featured}>
                   {t("featured")}
@@ -169,11 +186,7 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
                 <DmView style={a.mx_6}>
                   <LocationIcon width={10} height={10} />
                 </DmView>
-                <Text
-                  size={10}
-                  style={styles.text}
-                  numberOfLines={1}
-                >
+                <Text size={10} style={styles.text} numberOfLines={1}>
                   {location}
                 </Text>
               </>
@@ -203,7 +216,11 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
           {pro.responseTimeHours != null && (
             <DmView style={[a.flex_row, a.mt_4]}>
               <ReplyIcon width={14} height={14} />
-              <Text size={10} weight="semibold" style={[a.ml_4, { alignSelf: "flex-end" }]}>
+              <Text
+                size={10}
+                weight="semibold"
+                style={[a.ml_4, { alignSelf: "flex-end" }]}
+              >
                 {formatResponseTime(pro.responseTimeHours)}
               </Text>
             </DmView>
@@ -213,7 +230,17 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
           {(!!distanceLabel || modeBadges.length > 0) && (
             <DmView style={[a.flex_row, a.items_center, a.flex_wrap, a.mt_6]}>
               {!!distanceLabel && (
-                <DmView style={[a.flex_row, a.items_center, a.mr_6, a.mb_4, a.px_8, a.py_4, styles.row]}>
+                <DmView
+                  style={[
+                    a.flex_row,
+                    a.items_center,
+                    a.mr_6,
+                    a.mb_4,
+                    a.px_8,
+                    a.py_4,
+                    styles.row,
+                  ]}
+                >
                   <LocationIcon width={11} height={11} />
                   <Text size={10} weight="bold" style={a.ml_4}>
                     {distanceLabel}
@@ -234,7 +261,9 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
                       a.px_8,
                       a.py_4,
                       styles.container,
-                      badge.accent ? styles.containerAccent : styles.containerNotAccent,
+                      badge.accent
+                        ? styles.containerAccent
+                        : styles.containerNotAccent,
                     ]}
                   >
                     <Icon
@@ -258,11 +287,7 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
 
           {/* Description */}
           {!!pro.informationAbout && (
-            <Text
-              size={10}
-              style={a.mt_6}
-              numberOfLines={2}
-            >
+            <Text size={10} style={a.mt_6} numberOfLines={2}>
               {pro.informationAbout}
             </Text>
           )}
@@ -287,11 +312,16 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
                     uri={imageUrl}
                   />
                 ) : (
-                  <Text size={10} weight="semibold" leading="legacy" color="tertiary">
+                  <Text
+                    size={10}
+                    weight="semibold"
+                    leading="legacy"
+                    color="tertiary"
+                  >
                     {isAr
                       ? doc.trustDocumentData?.trustProduct?.descriptionAr
-                      : doc.trustDocumentData?.trustProduct?.descriptionEn
-                      || t("background_checked")}
+                      : doc.trustDocumentData?.trustProduct?.descriptionEn ||
+                        t("background_checked")}
                   </Text>
                 )}
               </DmView>
@@ -324,23 +354,37 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
       )}
 
       {/* Promo line */}
-      {subscriptions.find((s: any) => s.product?.subType === "promoLine")?.promoStickerMessage && (
+      {subscriptions.find((s: any) => s.product?.subType === "promoLine")
+        ?.promoStickerMessage && (
         <PromoLine
-          promoMessage={subscriptions.find((s: any) => s.product?.subType === "promoLine").promoStickerMessage}
+          promoMessage={
+            subscriptions.find((s: any) => s.product?.subType === "promoLine")
+              .promoStickerMessage
+          }
         />
       )}
 
       {/* Buttons: Chat + Select */}
       <DmView style={[a.mt_12, a.flex_row, a.items_center]}>
         <DmView
-          style={[styles.iconWrap, a.items_center, a.justify_center, styles.buttonShadow, { flex: 1 }]}
+          style={[
+            styles.iconWrap,
+            a.items_center,
+            a.justify_center,
+            styles.buttonShadow,
+            { flex: 1 },
+          ]}
           onPress={() => onMessage?.(pro)}
         >
           <MessagesRedIcon width={18} height={18} />
         </DmView>
         {foodMode ? (
           <DmView
-            style={[a.ml_8, styles.iconWrap, a.items_center, a.justify_center, 
+            style={[
+              a.ml_8,
+              styles.iconWrap,
+              a.items_center,
+              a.justify_center,
               styles.buttonShadow,
               { flex: 2, borderColor: colors.red, backgroundColor: colors.red },
             ]}
@@ -352,7 +396,11 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
           </DmView>
         ) : (
           <DmView
-            style={[a.ml_8, styles.iconWrap, a.items_center, a.justify_center, 
+            style={[
+              a.ml_8,
+              styles.iconWrap,
+              a.items_center,
+              a.justify_center,
               styles.buttonShadow,
               {
                 flex: 2,
@@ -362,7 +410,12 @@ const ProCard: React.FC<Props> = ({ pro, isSelected, onSelect, onMessage, onPres
             ]}
             onPress={() => onSelect(pro)}
           >
-            <Text size={13} weight="medium" leading="legacy" color={isSelected ? "inverse" : "primary"}>
+            <Text
+              size={13}
+              weight="medium"
+              leading="legacy"
+              color={isSelected ? "inverse" : "primary"}
+            >
               {isSelected ? t("selected") : t("select_me")}
             </Text>
           </DmView>

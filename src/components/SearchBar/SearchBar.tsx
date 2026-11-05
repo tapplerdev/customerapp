@@ -36,16 +36,23 @@ const SearchBar: React.FC<Props> = ({
     <DmView style={[a.flex_row, a.items_center, a.mt_10, a.mx_16]}>
       <DmView
         onPress={onPress}
-        style={[a.flex_1, styles.row, a.flex_row, a.items_center, a.px_14, {
-          borderRadius: 21,
-          borderWidth: 1,
-          borderColor: "#E0E0E0",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.12,
-          shadowRadius: 4,
-          elevation: 3,
-        }]}
+        style={[
+          a.flex_1,
+          styles.row,
+          a.flex_row,
+          a.items_center,
+          a.px_14,
+          {
+            borderRadius: 21,
+            borderWidth: 1,
+            borderColor: "#E0E0E0",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.12,
+            shadowRadius: 4,
+            elevation: 3,
+          },
+        ]}
       >
         <SearchIcon width={16} height={16} />
         {onPress ? (
@@ -90,7 +97,11 @@ const SearchBar: React.FC<Props> = ({
         onPress={onFilterPress}
         style={[styles.iconWrap, a.items_center, a.justify_center]}
       >
-        <CategoriesIcon width={32} height={30} style={isAr ? { transform: [{ scaleX: -1 }] } : undefined} />
+        <CategoriesIcon
+          width={32}
+          height={30}
+          style={isAr ? { transform: [{ scaleX: -1 }] } : undefined}
+        />
       </TouchableOpacity>
     </DmView>
   )

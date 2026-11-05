@@ -35,11 +35,7 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [auth] = useAuthMutation()
   const [getCustomerMe] = useLazyGetCustomerMeQuery()
 
-  const {
-    control,
-    handleSubmit,
-    getValues,
-  } = useForm({
+  const { control, handleSubmit, getValues } = useForm({
     defaultValues: {
       email: "",
       password: "",
@@ -54,11 +50,13 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
     setPasswordVisible((prev) => !prev)
   }
 
-  const handleForgotPassword = () => {
-  }
+  const handleForgotPassword = () => {}
 
   const handleGoRegister = () => {
-    navigation.navigate("RegisterScreen" as any, returnTo ? { returnTo: true } : undefined)
+    navigation.navigate(
+      "RegisterScreen" as any,
+      returnTo ? { returnTo: true } : undefined
+    )
   }
 
   const onSubmit = async () => {
@@ -71,7 +69,9 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
         rememberMe: true,
       }).unwrap()
 
-      dispatch(setTokens({ token: authRes.token, refreshToken: authRes.refreshToken }))
+      dispatch(
+        setTokens({ token: authRes.token, refreshToken: authRes.refreshToken })
+      )
       await getCustomerMe().unwrap()
 
       if (returnTo) {
@@ -93,7 +93,9 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
         setErrorMessage(failure)
       } else if (validationErrors) {
         const firstErrors = Object.values(validationErrors)[0]
-        const firstMsg = Array.isArray(firstErrors) ? firstErrors[0] : firstErrors
+        const firstMsg = Array.isArray(firstErrors)
+          ? firstErrors[0]
+          : firstErrors
         if (typeof firstMsg === "string") {
           if (firstMsg.includes("Password does not match")) {
             setErrorMessage(t("incorrect_password"))
@@ -139,7 +141,12 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Title */}
-          <Text size={16} weight="semibold" leading="tight" style={styles.logInToYourAccount}>
+          <Text
+            size={16}
+            weight="semibold"
+            leading="tight"
+            style={styles.logInToYourAccount}
+          >
             {t("log_in_to_your_account")}
           </Text>
 
@@ -190,7 +197,10 @@ const SignInEmailScreen: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
 
           {/* Forgot password */}
-          <DmView style={styles.forgotYourPasswordWrap} onPress={handleForgotPassword}>
+          <DmView
+            style={styles.forgotYourPasswordWrap}
+            onPress={handleForgotPassword}
+          >
             <Text size={12} leading="tight" color="brand">
               {t("forgot_your_password")}
             </Text>

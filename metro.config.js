@@ -1,10 +1,10 @@
-const path = require('path')
+const path = require("path")
 const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config")
 
 const defaultConfig = getDefaultConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
 
-const sharedPath = path.resolve(__dirname, '../tappler-shared')
+const sharedPath = path.resolve(__dirname, "../tappler-shared")
 
 /**
  * Metro configuration
@@ -23,7 +23,7 @@ const config = {
   // file it transformed with the plugin, and none needs --reset-cache (which
   // empties the cache all the Metros on a machine share). Bump it again after
   // any change to babel.config.js.
-  cacheVersion: `ds-w3-app-env-${process.env.APP_ENV || 'default'}`,
+  cacheVersion: `ds-w3-app-env-${process.env.APP_ENV || "default"}`,
   watchFolders: [sharedPath],
   transformer: {
     babelTransformerPath: require.resolve("react-native-svg-transformer"),
@@ -31,9 +31,7 @@ const config = {
   resolver: {
     assetExts: assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...sourceExts, "svg"],
-    nodeModulesPaths: [
-      path.resolve(__dirname, 'node_modules'),
-    ],
+    nodeModulesPaths: [path.resolve(__dirname, "node_modules")],
   },
 }
 

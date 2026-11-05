@@ -39,7 +39,13 @@ const MessageBlockedModal: React.FC<Props> = ({
 
   const content = (
     <DmView
-      style={[styles.box, a.items_center, a.px_24, a.pt_28, { paddingBottom: insets.bottom + 16 }]}
+      style={[
+        styles.box,
+        a.items_center,
+        a.px_24,
+        a.pt_28,
+        { paddingBottom: insets.bottom + 16 },
+      ]}
     >
       <WarningTriangleIcon width={48} height={43} />
       <Text size={13} leading="loose" align="center" style={a.mt_16}>
@@ -71,7 +77,11 @@ const MessageBlockedModal: React.FC<Props> = ({
    * a per-platform branch quietly gets wrong.
    */
   return (
-    <NativeActionSheet isVisible={isVisible} onClose={onClose} onClosed={onClosed}>
+    <NativeActionSheet
+      isVisible={isVisible}
+      onClose={onClose}
+      onClosed={onClosed}
+    >
       {content}
     </NativeActionSheet>
   )

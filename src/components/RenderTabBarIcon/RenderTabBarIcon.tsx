@@ -36,7 +36,15 @@ const RenderTabBarIcon: React.FC<Props> = ({ type, focused, badge }) => {
     <DmView style={[styles.container, a.items_center, a.justify_center]}>
       {renderIcon()}
       {!!badge && badge > 0 && (
-        <DmView style={[a.absolute, styles.textWrap, a.items_center, a.justify_center, a.px_4]}>
+        <DmView
+          style={[
+            a.absolute,
+            styles.textWrap,
+            a.items_center,
+            a.justify_center,
+            a.px_4,
+          ]}
+        >
           <Text size={10} weight="bold" color="inverse">
             {badge > 99 ? "99+" : badge}
           </Text>

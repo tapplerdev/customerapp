@@ -41,31 +41,40 @@ describe("replayedChanges", () => {
   it("the same job, whatever order the dishes and pros come back in", () => {
     expect(replayedChanges(SENT, JOB)).toEqual([])
     expect(
-      replayedChanges(
-        { ...SENT, prosIds: [2, 1] },
-        { ...JOB, pros: [{ proId: 1 }, { proId: 2 }] } as unknown as JobType
-      )
+      replayedChanges({ ...SENT, prosIds: [2, 1] }, {
+        ...JOB,
+        pros: [{ proId: 1 }, { proId: 2 }],
+      } as unknown as JobType)
     ).toEqual([])
   })
 
   it("a dish's quantity, an added or a removed dish", () => {
     expect(
       replayedChanges(
-        { ...SENT, foodOrderItems: [{ menuItemId: 411, quantity: 3 }, { menuItemId: 412, quantity: 1 }] },
+        {
+          ...SENT,
+          foodOrderItems: [
+            { menuItemId: 411, quantity: 3 },
+            { menuItemId: 412, quantity: 1 },
+          ],
+        },
         JOB
       )
     ).toEqual(["foodOrderItems"])
     expect(
-      replayedChanges({ ...SENT, foodOrderItems: [{ menuItemId: 411, quantity: 2 }] }, JOB)
+      replayedChanges(
+        { ...SENT, foodOrderItems: [{ menuItemId: 411, quantity: 2 }] },
+        JOB
+      )
     ).toEqual(["foodOrderItems"])
   })
 
   it("a pro taken off a job post", () => {
     expect(
-      replayedChanges(
-        { serviceCategoryId: 301, prosIds: [1001] },
-        { serviceCategoryId: 301, pros: [{ proId: 1001 }, { proId: 1002 }] } as unknown as JobType
-      )
+      replayedChanges({ serviceCategoryId: 301, prosIds: [1001] }, {
+        serviceCategoryId: 301,
+        pros: [{ proId: 1001 }, { proId: 1002 }],
+      } as unknown as JobType)
     ).toEqual(["prosIds"])
   })
 
@@ -86,14 +95,22 @@ describe("replayedChanges", () => {
   it("a float round trip is still the same point", () => {
     expect(
       replayedChanges(
-        { ...SENT, address: { ...SENT.address, location: { lat: 30.04440000001, lng: 31.2357 } } },
+        {
+          ...SENT,
+          address: {
+            ...SENT.address,
+            location: { lat: 30.04440000001, lng: 31.2357 },
+          },
+        },
         JOB
       )
     ).toEqual([])
   })
 
   it("compares only what the answer carries", () => {
-    expect(replayedChanges(SENT, { id: 8301 } as unknown as JobType)).toEqual([])
+    expect(replayedChanges(SENT, { id: 8301 } as unknown as JobType)).toEqual(
+      []
+    )
     expect(replayedChanges(SENT, undefined)).toEqual([])
     expect(
       replayedChanges({ serviceCategoryId: 301, prosIds: [1001] }, {

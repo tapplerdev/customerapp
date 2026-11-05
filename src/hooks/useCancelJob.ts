@@ -46,7 +46,14 @@ const useCancelJob = (params: {
     } finally {
       setIsSubmitting(false)
     }
-  }, [selectedReasons, otherReasonText, jobId, cancelJobMutation, onSuccess, onError])
+  }, [
+    selectedReasons,
+    otherReasonText,
+    jobId,
+    cancelJobMutation,
+    onSuccess,
+    onError,
+  ])
 
   const reset = useCallback(() => {
     setSelectedReasons([])

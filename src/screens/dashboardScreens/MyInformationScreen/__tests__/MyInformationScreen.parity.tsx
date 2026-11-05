@@ -50,7 +50,9 @@ const BLANK = {
 
 const SAVE = {
   pending: "loading" as const,
-  rejected: { error: { status: 400, data: { message: "Name is not allowed" } } },
+  rejected: {
+    error: { status: 400, data: { message: "Name is not allowed" } },
+  },
   "rejected, no message": { error: { status: 500, data: {} } },
   accepted: { data: CUSTOMER },
 }
@@ -90,10 +92,22 @@ const CASES: Case[] = [
   { label: "first name edited", steps: [typeFirst] },
   { label: "both names edited", steps: [typeFirst, typeLast] },
   { label: "male picked", steps: [pickMale] },
-  { label: "blank names, male then female picked", who: BLANK, steps: [pickMale, pickFemale] },
+  {
+    label: "blank names, male then female picked",
+    who: BLANK,
+    steps: [pickMale, pickFemale],
+  },
   { label: "edited, save pending", steps: [typeFirst, save] },
-  { label: "edited, save refused with a message", save: "rejected", steps: [typeFirst, save] },
-  { label: "edited, save refused without one", save: "rejected, no message", steps: [typeFirst, save] },
+  {
+    label: "edited, save refused with a message",
+    save: "rejected",
+    steps: [typeFirst, save],
+  },
+  {
+    label: "edited, save refused without one",
+    save: "rejected, no message",
+    steps: [typeFirst, save],
+  },
 ]
 
 describe("MyInformationScreen", () => {
@@ -112,60 +126,71 @@ describe("MyInformationScreen", () => {
 describe("MyInformationScreen presses", () => {
   const envs = rowsByPlatform([{}], PARITY_MATRIX)
 
-  it.each(envs)("Save is refused until something changes [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      expect(() => pressTitled(session.root, copy(env, "save"))).toThrow()
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Save is refused until something changes [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        expect(() => pressTitled(session.root, copy(env, "save"))).toThrow()
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Save sends the edited name and gender [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env, base, "accepted"))
-    try {
-      await session.act(() => {
-        typeFirst(session.root, env)
-      })
-      await session.act(() => {
-        pickMale(session.root, env)
-      })
-      await session.act(() => {
-        save(session.root, env)
-      })
-      const sent = session.requests().filter((r) => r.endpoint === "updateCustomer")
-      expect(sent).toHaveLength(1)
-      expect(JSON.stringify(sent[0].args)).toContain('"firstName":"Monica"')
-      expect(JSON.stringify(sent[0].args)).toContain('"gender":"male"')
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({ type: "GO_BACK" }),
-      ])
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Save sends the edited name and gender [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env, base, "accepted"))
+      try {
+        await session.act(() => {
+          typeFirst(session.root, env)
+        })
+        await session.act(() => {
+          pickMale(session.root, env)
+        })
+        await session.act(() => {
+          save(session.root, env)
+        })
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain('"firstName":"Monica"')
+        expect(JSON.stringify(sent[0].args)).toContain('"gender":"male"')
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 
-  it.each(envs)("Change opens the email screen; the chevron goes back [$env.language $env.platform]", async ({ env }) => {
-    const session = await openScreen(load, optionsFor(env))
-    try {
-      await session.act(() => {
-        pressText(session.root, copy(env, "change"))
-      })
-      expect(session.navigation.actions).toEqual([
-        expect.objectContaining({
-          type: "NAVIGATE",
-          payload: expect.objectContaining({ name: "UpdateEmailScreen" }),
-        }),
-      ])
-      await session.act(() => {
-        pressIcon(session.root, { icon: "svg:chevron-left" })
-      })
-      expect(session.navigation.actions).toHaveLength(2)
-      expect(session.navigation.actions[1]).toEqual(
-        expect.objectContaining({ type: "GO_BACK" })
-      )
-    } finally {
-      session.unmount()
+  it.each(envs)(
+    "Change opens the email screen; the chevron goes back [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(load, optionsFor(env))
+      try {
+        await session.act(() => {
+          pressText(session.root, copy(env, "change"))
+        })
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({
+            type: "NAVIGATE",
+            payload: expect.objectContaining({ name: "UpdateEmailScreen" }),
+          }),
+        ])
+        await session.act(() => {
+          pressIcon(session.root, { icon: "svg:chevron-left" })
+        })
+        expect(session.navigation.actions).toHaveLength(2)
+        expect(session.navigation.actions[1]).toEqual(
+          expect.objectContaining({ type: "GO_BACK" })
+        )
+      } finally {
+        session.unmount()
+      }
     }
-  })
+  )
 })

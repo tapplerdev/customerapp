@@ -768,9 +768,7 @@ describe("MessagesDetailsScreen: the order's mode and kind in its system lines",
     "a moderated order is not called a request; a moderated request still is [$language $platform]",
     async (env) => {
       const food = await thread("system lines, a delivery order", env)
-      expect(food).toContain(
-        copy(env, "food_order_cancelled_by_tappler_descr")
-      )
+      expect(food).toContain(copy(env, "food_order_cancelled_by_tappler_descr"))
       expect(food).not.toContain(copy(env, "job_cancelled_by_tappler"))
 
       const request = await thread(
@@ -851,11 +849,9 @@ describe("MessagesDetailsScreen, the send's Idempotency-Key", () => {
         await sendAgain(session, "On my way, 5 minutes")
         const sent = requests(session, "sendMessage")
         expect(sent).toHaveLength(3)
-        expect(sent.map((r) => (r.args as { body: { text: string } }).body.text)).toEqual([
-          "On my way",
-          "On my way",
-          "On my way, 5 minutes",
-        ])
+        expect(
+          sent.map((r) => (r.args as { body: { text: string } }).body.text)
+        ).toEqual(["On my way", "On my way", "On my way, 5 minutes"])
         expect(keyOf(sent[0])).toMatch(
           /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
         )
@@ -947,10 +943,7 @@ describe("MessagesDetailsScreen, switching to another chat in place", () => {
     root.findAll(
       (n) =>
         typeof n.type === "string" &&
-        [n.props.children]
-          .flat()
-          .join("")
-          .includes(copy(env, "tap_to_dismiss"))
+        [n.props.children].flat().join("").includes(copy(env, "tap_to_dismiss"))
     ).length > 0
   const send = async (
     session: Awaited<ReturnType<typeof open>>,

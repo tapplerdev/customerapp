@@ -23,13 +23,13 @@ type Props = {
 // address, so there is nothing to hide. Pickup outlines the pro's curated
 // service area and shows no pin: they haven't accepted yet.
 const OrderLocationMap: React.FC<Props> = ({ coords, isPickup }) => {
-  const hasPoint =
-    Number.isFinite(coords?.lat) && Number.isFinite(coords?.lon)
+  const hasPoint = Number.isFinite(coords?.lat) && Number.isFinite(coords?.lon)
 
-  const { data: pointAreas, isLoading: isResolvingArea } = useGetPointAreasQuery(
-    { latitude: coords?.lat ?? 0, longitude: coords?.lon ?? 0 },
-    { skip: !isPickup || !hasPoint }
-  )
+  const { data: pointAreas, isLoading: isResolvingArea } =
+    useGetPointAreasQuery(
+      { latitude: coords?.lat ?? 0, longitude: coords?.lon ?? 0 },
+      { skip: !isPickup || !hasPoint }
+    )
 
   // Outside the curated districts we draw nothing rather than something
   // misleading — see isAreaWorthDrawing.

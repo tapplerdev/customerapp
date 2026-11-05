@@ -56,7 +56,12 @@ export const PER_ROW: Record<string, string> = {
 /** Where a PER_ROW name's source is. */
 export const sourceOf = (name: string) => {
   const base = name.startsWith("@tappler/shared/")
-    ? path.join(ROOT, "..", "tappler-shared", name.slice("@tappler/shared/".length))
+    ? path.join(
+        ROOT,
+        "..",
+        "tappler-shared",
+        name.slice("@tappler/shared/".length)
+      )
     : path.join(ROOT, "src", name)
   const file = [".ts", ".tsx", ".js"]
     .map((ext) => base + ext)
@@ -89,7 +94,8 @@ const transformed = (file: string): string => {
       supportsTopLevelAwait: false,
     } as never,
   })
-  if (!result?.code) throw new Error(`screenKit rowState: ${file} didn't transform`)
+  if (!result?.code)
+    throw new Error(`screenKit rowState: ${file} didn't transform`)
   cache.set(file, { mtime, code: result.code })
   return result.code
 }

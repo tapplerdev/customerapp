@@ -157,7 +157,10 @@ export type PermissionAnswer =
   | "blocked"
   | "unavailable"
 
-type Mocked = { mockImplementation: (fn: unknown) => void; mockClear: () => void }
+type Mocked = {
+  mockImplementation: (fn: unknown) => void
+  mockClear: () => void
+}
 
 /**
  * The device's permission answers for this row, through the library's own
@@ -372,7 +375,10 @@ const unansweredRefreshError = (request: BackendRequest) =>
   new Error(
     `screenKit: this row's 401 sent the app's token refresh (${String(
       (request.args as { url?: unknown } | null)?.url ?? "/auth/refresh"
-    ).replace(/\/auth\/refresh\/.+$/, "/auth/refresh/<token>")}, baseQueryWithReauth in services/api.ts), and the row has no \`authRefresh\` answer.\n` +
+    ).replace(
+      /\/auth\/refresh\/.+$/,
+      "/auth/refresh/<token>"
+    )}, baseQueryWithReauth in services/api.ts), and the row has no \`authRefresh\` answer.\n` +
       "Answer it in the row's `api`, with AUTH_REFRESH from testing/screenKit:\n" +
       "  { data: { token, refreshToken } }: the refresh works and the 401'd request is retried\n" +
       "  { error: { status: 401 } } (or 403, 404): the session is dead and the app signs out\n" +
@@ -488,7 +494,8 @@ export const openScreen = async (
     // The registry's direction (index.ts), which is this row's: a module the
     // screen loads now that reads I18nManager.isRTL at import reads it.
     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-    const { I18nManager } = require("react-native") as typeof import("react-native")
+    const { I18nManager } =
+      require("react-native") as typeof import("react-native")
     if (I18nManager.isRTL !== (options.lang === "ar")) {
       throw new Error(
         `screenKit: a ${options.lang} render in a registry loaded ${I18nManager.isRTL ? "RTL" : "LTR"} (use the kit's openScreen/renderScreen, not the engine)`

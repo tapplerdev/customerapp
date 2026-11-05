@@ -367,7 +367,10 @@ export const TALABATI_FOOD_JOBS: JobType[] = [
   // moderation
   listedFood(8305, 5, "cancelledByTappler", { status: "cancelledByTappler" }),
   // the clock: never answered, accepted and never finished
-  listedFood(8306, 6, "ended", { selectionStatus: "selected", status: "ended" }),
+  listedFood(8306, 6, "ended", {
+    selectionStatus: "selected",
+    status: "ended",
+  }),
   listedFood(8307, 7, "ended", { status: "ended" }),
   // the customer's own cancel, after an accept
   listedFood(8308, 8, "cancelled", { status: "accepted" }),

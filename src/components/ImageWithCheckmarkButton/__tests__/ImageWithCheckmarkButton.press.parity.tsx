@@ -17,36 +17,39 @@ const CASES = [
   { name: "selected", isSelected: true, imageUrl: "" },
 ]
 
-describe.each(PARITY_MATRIX)("ImageWithCheckmarkButton's press [$language $platform]", (env) => {
-  it.each(CASES)("calls onPress once, $name", async (row) => {
-    const onPress = jest.fn()
-    const load = () => {
-      const React = require("react") as typeof import("react")
-      const Card = require("../ImageWithCheckmarkButton").default
-      const Harness = () =>
-        React.createElement(Card, {
-          label: "Leaking tap",
-          imageUrl: row.imageUrl,
-          isSelected: row.isSelected,
-          onPress,
-        })
-      return { default: Harness }
-    }
-    const session = await openScreen(load, {
-      lang: env.language,
-      platform: env.platform,
-      navigation: "none",
-    })
-    try {
-      expect(onPress).not.toHaveBeenCalled()
-      await session.act(() => {
-        // A selected card draws its checkmark, the only words on it.
-        if (row.isSelected) pressText(session.root, "✓")
-        else pressIcon(session.root)
+describe.each(PARITY_MATRIX)(
+  "ImageWithCheckmarkButton's press [$language $platform]",
+  (env) => {
+    it.each(CASES)("calls onPress once, $name", async (row) => {
+      const onPress = jest.fn()
+      const load = () => {
+        const React = require("react") as typeof import("react")
+        const Card = require("../ImageWithCheckmarkButton").default
+        const Harness = () =>
+          React.createElement(Card, {
+            label: "Leaking tap",
+            imageUrl: row.imageUrl,
+            isSelected: row.isSelected,
+            onPress,
+          })
+        return { default: Harness }
+      }
+      const session = await openScreen(load, {
+        lang: env.language,
+        platform: env.platform,
+        navigation: "none",
       })
-      expect(onPress).toHaveBeenCalledTimes(1)
-    } finally {
-      session.unmount()
-    }
-  })
-})
+      try {
+        expect(onPress).not.toHaveBeenCalled()
+        await session.act(() => {
+          // A selected card draws its checkmark, the only words on it.
+          if (row.isSelected) pressText(session.root, "✓")
+          else pressIcon(session.root)
+        })
+        expect(onPress).toHaveBeenCalledTimes(1)
+      } finally {
+        session.unmount()
+      }
+    })
+  }
+)

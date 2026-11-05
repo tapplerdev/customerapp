@@ -21,7 +21,9 @@ const ChipButton: React.FC<ChipButtonProps> = ({
     <DmView
       onPress={onPress}
       style={[
-        compact ? [a.px_14, a.py_8, a.self_start] : [a.px_20, a.py_12, a.self_start],
+        compact
+          ? [a.px_14, a.py_8, a.self_start]
+          : [a.px_20, a.py_12, a.self_start],
         isSelected ? styles.selected : styles.notSelected,
         {
           borderColor: isSelected ? "#CC0000" : "#000000",

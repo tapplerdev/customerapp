@@ -70,7 +70,9 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isLoading, setLoading] = useState(false)
   const [isErrorVisible, setErrorVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
-  const [prosState, setProsState] = useState<SelectedProInfo[]>(selectedProsInfo || [])
+  const [prosState, setProsState] = useState<SelectedProInfo[]>(
+    selectedProsInfo || []
+  )
   // One Idempotency-Key per visit to this summary, made when it opens and
   // sent with every Submit from it. A retry after a timeout or a dropped
   // answer then gets the job the first attempt created (be#416 answers 201
@@ -89,17 +91,17 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   const handleSubmit = async () => {
-    console.log('[RequestSummary] handleSubmit called')
-    console.log('[RequestSummary] isAuth:', isAuth)
-    console.log('[RequestSummary] token:', useTypedSelector ? 'exists' : 'none')
+    console.log("[RequestSummary] handleSubmit called")
+    console.log("[RequestSummary] isAuth:", isAuth)
+    console.log("[RequestSummary] token:", useTypedSelector ? "exists" : "none")
 
     if (!isAuth) {
-      console.log('[RequestSummary] Not auth — navigating to AuthGateScreen')
+      console.log("[RequestSummary] Not auth — navigating to AuthGateScreen")
       navigation.navigate("AuthGateScreen")
       return
     }
 
-    console.log('[RequestSummary] Auth check passed, building payload...')
+    console.log("[RequestSummary] Auth check passed, building payload...")
 
     try {
       setLoading(true)
@@ -119,10 +121,17 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         ...(placeOfService && { placeOfService }),
         ...(dateType && { dateType: dateType as CreateJobRequest["dateType"] }),
         ...(selectedDate && { dates: [{ date: selectedDate }] }),
-        ...(selectedTimeSlot && { timeSlots: [{ start: selectedTimeSlot.start, end: selectedTimeSlot.end }] }),
+        ...(selectedTimeSlot && {
+          timeSlots: [
+            { start: selectedTimeSlot.start, end: selectedTimeSlot.end },
+          ],
+        }),
         ...(notes && { orderNotes: notes }),
       }
-      console.log('[RequestSummary] Submitting job payload:', JSON.stringify(jobPayload, null, 2))
+      console.log(
+        "[RequestSummary] Submitting job payload:",
+        JSON.stringify(jobPayload, null, 2)
+      )
       const job = await createJob({ ...jobPayload, idempotencyKey }).unwrap()
       // Sent again with this visit's key after a timeout or a 5xx, with a pro
       // taken off in between, the first attempt having landed: the server
@@ -135,7 +144,10 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       }
       navigation.navigate("RequestSuccessScreen", { address })
     } catch (error: any) {
-      console.log('[RequestSummary] Job creation error:', JSON.stringify(error?.data || error, null, 2))
+      console.log(
+        "[RequestSummary] Job creation error:",
+        JSON.stringify(error?.data || error, null, 2)
+      )
       const validationErrors = error?.data?.validationErrors
       const errorMsg = validationErrors
         ? Object.values(validationErrors).flat().join(", ")
@@ -150,34 +162,57 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   // ── When card variant ──
   const renderWhenCard = () => {
     let iconBg = PINK2
-    let iconContent = <Text size={20} leading="legacy" family="system">📅</Text>
+    let iconContent = (
+      <Text size={20} leading="legacy" family="system">
+        📅
+      </Text>
+    )
     let title = ""
     let subtitle = ""
     let titleColor: "primary" | "brand" = "primary"
 
     if (dateType === "asap") {
       iconBg = RED
-      iconContent = <Text size={20} leading="legacy" family="system">⚡</Text>
+      iconContent = (
+        <Text size={20} leading="legacy" family="system">
+          ⚡
+        </Text>
+      )
       title = t("as_soon_as_possible")
-      subtitle = t("pros_respond_fastest") || "Pros respond fastest in this mode"
+      subtitle =
+        t("pros_respond_fastest") || "Pros respond fastest in this mode"
       titleColor = "brand"
     } else if (dateType === "hours48") {
       iconBg = PINK2
-      iconContent = <Text size={20} leading="legacy" family="system">🕐</Text>
+      iconContent = (
+        <Text size={20} leading="legacy" family="system">
+          🕐
+        </Text>
+      )
       title = t("within_48_hours")
       const deadline = moment().add(48, "hours").format("ddd, MMM D · h:mm A")
       subtitle = `By ${deadline}`
     } else if (dateType === "week") {
       iconBg = PINK2
-      iconContent = <Text size={20} leading="legacy" family="system">📅</Text>
+      iconContent = (
+        <Text size={20} leading="legacy" family="system">
+          📅
+        </Text>
+      )
       title = t("within_a_week")
       const deadline = moment().add(7, "days").format("ddd, MMM D")
       subtitle = `By ${deadline}`
     } else if (dateType === "notDecided" || !dateType) {
       iconBg = BG2
-      iconContent = <Text size={20} leading="legacy" color="tertiary" family="system">?</Text>
+      iconContent = (
+        <Text size={20} leading="legacy" color="tertiary" family="system">
+          ?
+        </Text>
+      )
       title = t("havent_decided_yet")
-      subtitle = t("pros_will_suggest_time") || "Pros will suggest a time when they reply"
+      subtitle =
+        t("pros_will_suggest_time") ||
+        "Pros will suggest a time when they reply"
     } else if (selectedDate) {
       // Specific date
       const d = moment(selectedDate)
@@ -185,40 +220,83 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       iconContent = (
         <DmView style={a.items_center}>
           <DmView style={[dsStyles.textWrap, a.px_6, a.py_2]}>
-            <Text size={px(8)} color="inverse" family="system" style={dsStyles.text}>
+            <Text
+              size={px(8)}
+              color="inverse"
+              family="system"
+              style={dsStyles.text}
+            >
               {d.format("MMM").toUpperCase()}
             </Text>
           </DmView>
           <Text size={16} leading="legacy" family="system">
             {d.format("D")}
           </Text>
-          <Text size={px(8)} weight="bold" color="tertiary" style={dsStyles.text}>
+          <Text
+            size={px(8)}
+            weight="bold"
+            color="tertiary"
+            style={dsStyles.text}
+          >
             {d.format("ddd").toUpperCase()}
           </Text>
         </DmView>
       )
       title = d.format("ddd, MMM D, YYYY")
-      subtitle = selectedTimeSlot ? `${selectedTimeSlot.start} – ${selectedTimeSlot.end}` : ""
+      subtitle = selectedTimeSlot
+        ? `${selectedTimeSlot.start} – ${selectedTimeSlot.end}`
+        : ""
     }
 
     return (
-      <DmView style={[dsStyles.container, a.overflow_hidden, { borderColor: BORDER1 }]}>
+      <DmView
+        style={[
+          dsStyles.container,
+          a.overflow_hidden,
+          { borderColor: BORDER1 },
+        ]}
+      >
         <DmView style={[a.flex_row, a.items_center, a.p_14]}>
           <DmView
-            style={[dsStyles.box, a.items_center, a.justify_center, a.mr_12, {
-              backgroundColor: iconBg,
-              ...(dateType === "notDecided" || !dateType ? { borderWidth: 1, borderStyle: "dashed", borderColor: "#D9D9D9" } : {}),
-              ...(selectedDate && !dateType ? { borderWidth: 1, borderColor: BORDER1 } : {}),
-            }]}
+            style={[
+              dsStyles.box,
+              a.items_center,
+              a.justify_center,
+              a.mr_12,
+              {
+                backgroundColor: iconBg,
+                ...(dateType === "notDecided" || !dateType
+                  ? {
+                      borderWidth: 1,
+                      borderStyle: "dashed",
+                      borderColor: "#D9D9D9",
+                    }
+                  : {}),
+                ...(selectedDate && !dateType
+                  ? { borderWidth: 1, borderColor: BORDER1 }
+                  : {}),
+              },
+            ]}
           >
             {iconContent}
           </DmView>
           <DmView style={a.flex_1}>
-            <Text size={15} leading="legacy" family="system" color={titleColor} style={{ letterSpacing: -0.2 }}>
+            <Text
+              size={15}
+              leading="legacy"
+              family="system"
+              color={titleColor}
+              style={{ letterSpacing: -0.2 }}
+            >
               {title}
             </Text>
             {!!subtitle && (
-              <Text size={12} weight="medium" leading="legacy" style={[a.mt_2, { color: FG3 }]}>
+              <Text
+                size={12}
+                weight="medium"
+                leading="legacy"
+                style={[a.mt_2, { color: FG3 }]}
+              >
                 {subtitle}
               </Text>
             )}
@@ -236,13 +314,25 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   // ── Pro row ──
-  const renderProRow = (pro: SelectedProInfo, index: number, isLast: boolean) => {
+  const renderProRow = (
+    pro: SelectedProInfo,
+    index: number,
+    isLast: boolean
+  ) => {
     const initial = pro.name.charAt(0).toUpperCase()
     return (
       <DmView
         key={pro.id}
         onPress={() => handleProPress(pro)}
-        style={[a.flex_row, a.items_center, a.px_12, a.py_14, !isLast ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER } : undefined]}
+        style={[
+          a.flex_row,
+          a.items_center,
+          a.px_12,
+          a.py_14,
+          !isLast
+            ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER }
+            : undefined,
+        ]}
       >
         {/* Avatar */}
         {pro.photo ? (
@@ -251,23 +341,44 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
             style={[dsStyles.image, a.mr_12]}
           />
         ) : (
-          <DmView style={[dsStyles.image, a.mr_12, a.items_center, a.justify_center, { backgroundColor: PINK }]}>
-            <Text size={16} weight="bold" leading="legacy" color="brand">{initial}</Text>
+          <DmView
+            style={[
+              dsStyles.image,
+              a.mr_12,
+              a.items_center,
+              a.justify_center,
+              { backgroundColor: PINK },
+            ]}
+          >
+            <Text size={16} weight="bold" leading="legacy" color="brand">
+              {initial}
+            </Text>
           </DmView>
         )}
 
         {/* Name + rating */}
         <DmView style={a.flex_1}>
-          <Text size={14} weight="bold" leading="legacy">{pro.name}</Text>
+          <Text size={14} weight="bold" leading="legacy">
+            {pro.name}
+          </Text>
           <DmView style={[a.flex_row, a.items_center, a.mt_2]}>
             {pro.rating ? (
               <>
                 <StarIcon width={12} height={12} color="#FF9D00" />
-                <Text size={12} weight="bold" leading="legacy" style={[dsStyles.text2, { color: FG3 }]}>
+                <Text
+                  size={12}
+                  weight="bold"
+                  leading="legacy"
+                  style={[dsStyles.text2, { color: FG3 }]}
+                >
                   {pro.rating.toFixed(1)}
                 </Text>
                 {pro.reviewsCount ? (
-                  <Text size={12} leading="legacy" style={[a.ml_2, { color: FG3 }]}>
+                  <Text
+                    size={12}
+                    leading="legacy"
+                    style={[a.ml_2, { color: FG3 }]}
+                  >
                     · {pro.reviewsCount} {t("reviews")}
                   </Text>
                 ) : null}
@@ -287,7 +398,12 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         {prosState.length > 1 && (
           <DmView
             onPress={() => handleRemovePro(pro.id)}
-            style={[dsStyles.iconWrap, a.items_center, a.justify_center, { borderColor: BORDER1 }]}
+            style={[
+              dsStyles.iconWrap,
+              a.items_center,
+              a.justify_center,
+              { borderColor: BORDER1 },
+            ]}
             hitSlop={HIT_SLOP_DEFAULT}
           >
             <CloseIcon width={10} height={10} color={FG3} />
@@ -298,14 +414,26 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   // ── Section header ──
-  const renderSectionHeader = (label: string, count?: number, showEdit?: boolean) => (
+  const renderSectionHeader = (
+    label: string,
+    count?: number,
+    showEdit?: boolean
+  ) => (
     <DmView style={[a.flex_row, a.items_center, a.justify_between, a.mb_8]}>
-      <Text size={11} weight="bold" leading="legacy" style={[dsStyles.text, { color: FG3, textTransform: "uppercase" }]}>
-        {label}{count !== undefined ? ` · ${count}` : ""}
+      <Text
+        size={11}
+        weight="bold"
+        leading="legacy"
+        style={[dsStyles.text, { color: FG3, textTransform: "uppercase" }]}
+      >
+        {label}
+        {count !== undefined ? ` · ${count}` : ""}
       </Text>
       {showEdit && (
         <DmView onPress={handleGoBack} hitSlop={HIT_SLOP_DEFAULT}>
-          <Text size={12} weight="bold" leading="legacy" color="brand">{t("edit")}</Text>
+          <Text size={12} weight="bold" leading="legacy" color="brand">
+            {t("edit")}
+          </Text>
         </DmView>
       )}
     </DmView>
@@ -313,13 +441,29 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // ── Q&A answers ──
   const answeredQuestions = questionsAnswers.filter((qa) => {
-    return qa.answer || qa.optionId || qa.optionsIds?.length || qa.date || qa.startTime || qa.files?.length
+    return (
+      qa.answer ||
+      qa.optionId ||
+      qa.optionsIds?.length ||
+      qa.date ||
+      qa.startTime ||
+      qa.files?.length
+    )
   })
 
   return (
     <SafeAreaView style={[a.flex_1, dsStyles.safeArea]} edges={["top"]}>
       {/* Header */}
-      <DmView style={[a.flex_row, a.items_center, a.px_16, a.py_12, dsStyles.row, { borderBottomColor: BORDER1 }]}>
+      <DmView
+        style={[
+          a.flex_row,
+          a.items_center,
+          a.px_16,
+          a.py_12,
+          dsStyles.row,
+          { borderBottomColor: BORDER1 },
+        ]}
+      >
         <DmView
           style={[dsStyles.iconWrap2, a.items_center, a.justify_center]}
           hitSlop={HIT_SLOP_DEFAULT}
@@ -344,7 +488,12 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         style={{ backgroundColor: BG2 }}
       >
         {/* Hero — Map with fade + service title */}
-        <DmView style={[dsStyles.safeArea, { borderBottomWidth: 1, borderBottomColor: BORDER1 }]}>
+        <DmView
+          style={[
+            dsStyles.safeArea,
+            { borderBottomWidth: 1, borderBottomColor: BORDER1 },
+          ]}
+        >
           <DmView style={dsStyles.box3} pointerEvents="none">
             <MapView
               style={a.flex_1}
@@ -375,18 +524,44 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Title block overlapping the map fade */}
           <DmView style={[a.px_16, a.pb_16, { marginTop: -60 }]}>
-            <DmView style={[a.flex_row, a.items_center, dsStyles.yourRequestRow, a.px_10, a.self_start, a.mb_8]}>
-              <Text size={11} weight="bold" leading="legacy" color="inverse" style={[dsStyles.text, { textTransform: "uppercase" }]}>
+            <DmView
+              style={[
+                a.flex_row,
+                a.items_center,
+                dsStyles.yourRequestRow,
+                a.px_10,
+                a.self_start,
+                a.mb_8,
+              ]}
+            >
+              <Text
+                size={11}
+                weight="bold"
+                leading="legacy"
+                color="inverse"
+                style={[dsStyles.text, { textTransform: "uppercase" }]}
+              >
                 {t("your_request")}
               </Text>
             </DmView>
-            <Text size={24} leading={{ fixed: px(28) }} family="system" style={{ letterSpacing: -0.3 }}>
+            <Text
+              size={24}
+              leading={{ fixed: px(28) }}
+              family="system"
+              style={{ letterSpacing: -0.3 }}
+            >
               {categoryName}
             </Text>
             <DmView style={[a.flex_row, a.items_center, a.mt_6]}>
               <LocationIcon width={12} height={12} />
-              <Text size={13} weight="medium" leading="legacy" style={[a.ml_4, { color: FG3 }]}>
-                {address.address}{address.city ? ` · ${address.city}` : ""}
+              <Text
+                size={13}
+                weight="medium"
+                leading="legacy"
+                style={[a.ml_4, { color: FG3 }]}
+              >
+                {address.address}
+                {address.city ? ` · ${address.city}` : ""}
               </Text>
             </DmView>
           </DmView>
@@ -401,8 +576,16 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* Selected professionals */}
           <DmView style={a.mt_24}>
             {renderSectionHeader(t("selected_pros"), prosState.length, true)}
-            <DmView style={[dsStyles.container, a.overflow_hidden, { borderColor: BORDER1 }]}>
-              {prosState.map((pro, idx) => renderProRow(pro, idx, idx === prosState.length - 1))}
+            <DmView
+              style={[
+                dsStyles.container,
+                a.overflow_hidden,
+                { borderColor: BORDER1 },
+              ]}
+            >
+              {prosState.map((pro, idx) =>
+                renderProRow(pro, idx, idx === prosState.length - 1)
+              )}
             </DmView>
           </DmView>
 
@@ -410,24 +593,44 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
           {answeredQuestions.length > 0 && (
             <DmView style={a.mt_24}>
               {renderSectionHeader(t("your_answers"), answeredQuestions.length)}
-              <DmView style={[dsStyles.container, a.overflow_hidden, { borderColor: BORDER1 }]}>
+              <DmView
+                style={[
+                  dsStyles.container,
+                  a.overflow_hidden,
+                  { borderColor: BORDER1 },
+                ]}
+              >
                 {answeredQuestions.map((qa, idx) => {
-                  const question = customerQuestions.find((q) => q.id === qa.questionId)
+                  const question = customerQuestions.find(
+                    (q) => q.id === qa.questionId
+                  )
                   const questionText = question
-                    ? (isAr ? question.textAr || question.text : question.text)
+                    ? isAr
+                      ? question.textAr || question.text
+                      : question.text
                     : `#${qa.questionId}`
 
                   let displayValue = ""
                   if (qa.answer) {
                     displayValue = qa.answer
                   } else if (qa.optionId && question) {
-                    const opt = question.options?.find((o) => o.id === qa.optionId)
-                    displayValue = opt ? (isAr ? opt.valueAr || opt.value : opt.value) : ""
+                    const opt = question.options?.find(
+                      (o) => o.id === qa.optionId
+                    )
+                    displayValue = opt
+                      ? isAr
+                        ? opt.valueAr || opt.value
+                        : opt.value
+                      : ""
                   } else if (qa.optionsIds?.length && question) {
                     displayValue = qa.optionsIds
                       .map((id) => {
                         const opt = question.options?.find((o) => o.id === id)
-                        return opt ? (isAr ? opt.valueAr || opt.value : opt.value) : ""
+                        return opt
+                          ? isAr
+                            ? opt.valueAr || opt.value
+                            : opt.value
+                          : ""
                       })
                       .filter(Boolean)
                       .join(", ")
@@ -444,17 +647,50 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                   return (
                     <DmView
                       key={qa.questionId}
-                      style={[a.flex_row, a.p_14, idx < answeredQuestions.length - 1 ? { borderBottomWidth: 1, borderBottomColor: BORDER_DIVIDER } : undefined]}
+                      style={[
+                        a.flex_row,
+                        a.p_14,
+                        idx < answeredQuestions.length - 1
+                          ? {
+                              borderBottomWidth: 1,
+                              borderBottomColor: BORDER_DIVIDER,
+                            }
+                          : undefined,
+                      ]}
                     >
                       {/* Numbered circle */}
-                      <DmView style={[dsStyles.textWrap2, a.items_center, a.justify_center, a.mr_12]}>
-                        <Text size={11} leading="legacy" color="inverse" family="system">{idx + 1}</Text>
+                      <DmView
+                        style={[
+                          dsStyles.textWrap2,
+                          a.items_center,
+                          a.justify_center,
+                          a.mr_12,
+                        ]}
+                      >
+                        <Text
+                          size={11}
+                          leading="legacy"
+                          color="inverse"
+                          family="system"
+                        >
+                          {idx + 1}
+                        </Text>
                       </DmView>
                       <DmView style={a.flex_1}>
-                        <Text size={12} weight="semibold" leading="legacy" style={{ color: FG3 }}>
+                        <Text
+                          size={12}
+                          weight="semibold"
+                          leading="legacy"
+                          style={{ color: FG3 }}
+                        >
                           {questionText}
                         </Text>
-                        <Text size={14} weight="semibold" leading="legacy" style={a.mt_4}>
+                        <Text
+                          size={14}
+                          weight="semibold"
+                          leading="legacy"
+                          style={a.mt_4}
+                        >
                           {displayValue}
                         </Text>
                       </DmView>
@@ -469,8 +705,17 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
           {!!notes && (
             <DmView style={a.mt_24}>
               {renderSectionHeader(t("notes"))}
-              <DmView style={[dsStyles.container, a.p_14, a.overflow_hidden, { borderColor: BORDER1 }]}>
-                <Text size={13} leading="legacy">{notes}</Text>
+              <DmView
+                style={[
+                  dsStyles.container,
+                  a.p_14,
+                  a.overflow_hidden,
+                  { borderColor: BORDER1 },
+                ]}
+              >
+                <Text size={13} leading="legacy">
+                  {notes}
+                </Text>
               </DmView>
             </DmView>
           )}
@@ -479,7 +724,12 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Sticky footer */}
       <DmView
-        style={[dsStyles.buttonWrap, a.pt_12, styles.footerShadow, { paddingBottom: insets.bottom + 15 }]}
+        style={[
+          dsStyles.buttonWrap,
+          a.pt_12,
+          styles.footerShadow,
+          { paddingBottom: insets.bottom + 15 },
+        ]}
       >
         <Button
           title={t("send_request")}
@@ -496,7 +746,11 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         onClose={() => setErrorVisible(false)}
         descr={errorMessage}
         title={replayedJobId ? t("already_sent") : undefined}
-        Icon={replayedJobId ? <WarningTriangleIcon width={48} height={43} /> : undefined}
+        Icon={
+          replayedJobId ? (
+            <WarningTriangleIcon width={48} height={43} />
+          ) : undefined
+        }
         // After the pop-up has closed, never beside it: onto that request.
         onModalHide={
           replayedJobId

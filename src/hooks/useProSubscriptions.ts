@@ -12,9 +12,10 @@ const useProSubscriptions = (params: {
     (s: any) => s.product?.subType === "promoLine"
   )
 
-  const trustDocs = documents?.filter(
-    (d: any) => d.type === "trust" && d.status === "approved"
-  ) || []
+  const trustDocs =
+    documents?.filter(
+      (d: any) => d.type === "trust" && d.status === "approved"
+    ) || []
 
   return { featureSubscription, promoLine, trustDocs }
 }

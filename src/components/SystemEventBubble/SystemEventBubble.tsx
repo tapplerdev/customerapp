@@ -45,13 +45,18 @@ const SystemEventBubble: React.FC<{
 
   return (
     <DmView
-      style={[a.overflow_hidden, a.py_8, a.px_14, {
-        backgroundColor: isAlert ? colors.red : colors.pink5,
-        borderTopLeftRadius: RADIUS,
-        borderTopRightRadius: RADIUS,
-        borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
-        borderBottomRightRadius: tailLeft ? RADIUS : TAIL,
-      }]}
+      style={[
+        a.overflow_hidden,
+        a.py_8,
+        a.px_14,
+        {
+          backgroundColor: isAlert ? colors.red : colors.pink5,
+          borderTopLeftRadius: RADIUS,
+          borderTopRightRadius: RADIUS,
+          borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
+          borderBottomRightRadius: tailLeft ? RADIUS : TAIL,
+        },
+      ]}
     >
       <Text
         size={13}
@@ -64,10 +69,13 @@ const SystemEventBubble: React.FC<{
       {time ? (
         <Text
           size={10}
-          style={[styles.text, {
-            color: isAlert ? "rgba(255,255,255,0.75)" : colors.grey3,
-            textAlign: "left",
-          }]}
+          style={[
+            styles.text,
+            {
+              color: isAlert ? "rgba(255,255,255,0.75)" : colors.grey3,
+              textAlign: "left",
+            },
+          ]}
         >
           {time}
         </Text>

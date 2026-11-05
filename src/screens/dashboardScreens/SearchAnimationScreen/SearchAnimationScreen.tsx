@@ -6,7 +6,10 @@ import LottieView from "lottie-react-native"
 import FastImage from "react-native-fast-image"
 
 import { RootStackScreenProps } from "navigation/types"
-import { useLazyGetProsForCategoryQuery, useLazyGetServiceByIdQuery } from "services/api"
+import {
+  useLazyGetProsForCategoryQuery,
+  useLazyGetServiceByIdQuery,
+} from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
 
 import LogoIconEn from "assets/icons/logo-en.svg"
@@ -26,8 +29,13 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => {
     const { categoryId, serviceId, placeOfService, address } = nextParams
-    const skipAddress = placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
-    const customerAddress = skipAddress ? undefined : address?.coords ? { latitude: address.coords.lat, longitude: address.coords.lon } : undefined
+    const skipAddress =
+      placeOfService === "remoteOrOnline" || placeOfService === "fixedLocations"
+    const customerAddress = skipAddress
+      ? undefined
+      : address?.coords
+        ? { latitude: address.coords.lat, longitude: address.coords.lon }
+        : undefined
 
     const minDelay = new Promise((resolve) => setTimeout(resolve, 3000))
     // Once the pros payload lands, warm the FIRST screen's artwork inside the
@@ -40,7 +48,9 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
       .then((res) => {
         const pros = res?.data ?? []
         pros.slice(0, 6).forEach((p) => {
-          const photos = [p.profilePhoto150, p.profilePhoto].filter(Boolean) as string[]
+          const photos = [p.profilePhoto150, p.profilePhoto].filter(
+            Boolean
+          ) as string[]
           if (photos.length) FastImage.preload(photos.map((uri) => ({ uri })))
         })
         const svgWarm = prefetchSvgs(
@@ -54,7 +64,9 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
     // normal pros (registered name, no screen name / distance / capability
     // badges, "Select me" button) until it loads. Cache-served instantly on
     // repeat searches; only the first search pays the fetch (well under 3s).
-    const fetchService = getService(serviceId, true).unwrap().catch(() => null)
+    const fetchService = getService(serviceId, true)
+      .unwrap()
+      .catch(() => null)
 
     // Only while this screen is still on top: a replace without a target
     // replaces whatever IS on top, so after a back (Android's button; the iOS

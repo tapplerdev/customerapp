@@ -16,7 +16,14 @@ interface Props {
   onModalHide?: () => void
 }
 
-const ErrorModal: React.FC<Props> = ({ onClose, isVisible, title, descr, Icon, onModalHide }) => {
+const ErrorModal: React.FC<Props> = ({
+  onClose,
+  isVisible,
+  title,
+  descr,
+  Icon,
+  onModalHide,
+}) => {
   const { t } = useTranslation()
 
   return (

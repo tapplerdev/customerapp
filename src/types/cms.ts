@@ -33,7 +33,13 @@ export type QuestionLayoutStyleType = "horizontal" | "onePerRow" | "wrap"
 export type ServiceQuestionType = {
   id: number
   assignee: "pro" | "customer"
-  type: "shortAnswer" | "paragraph" | "oneChoice" | "multipleChoice" | "dateTime" | "files"
+  type:
+    | "shortAnswer"
+    | "paragraph"
+    | "oneChoice"
+    | "multipleChoice"
+    | "dateTime"
+    | "files"
   style?: QuestionStyleType
   text: string
   textAr?: string
@@ -56,7 +62,6 @@ export type ServiceQuestionType = {
   timeText?: string
   order: number
 }
-
 
 export type ServiceCategoryType = {
   id: number
