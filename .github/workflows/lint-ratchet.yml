@@ -1,0 +1,23 @@
+name: Lint ratchet
+
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+
+jobs:
+  lint-ratchet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      # --ignore-scripts skips patch-package, whose patches are native code
+      # ESLint never reads. @tappler/shared is a link: to a sibling checkout CI
+      # doesn't have; the dangling link is fine, since none of the ratcheted
+      # rules resolve imports.
+      - run: yarn install --frozen-lockfile --ignore-scripts
+      - run: node scripts/lint-ratchet.js
