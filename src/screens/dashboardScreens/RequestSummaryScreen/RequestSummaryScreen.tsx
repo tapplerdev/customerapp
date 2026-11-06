@@ -17,6 +17,13 @@ import ErrorModal from "components/ErrorModal"
 import { CreateJobRequest } from "types/job"
 import { uuidV4 } from "utils/uuid"
 import { replayedChanges } from "utils/jobReplay"
+import {
+  JobRequestRefusal,
+  JobRequestRefusalCode,
+  jobRequestRefusalCopy,
+  jobRequestRefusalOf,
+} from "utils/jobRequestRefusal"
+import { questionFlowEventBus } from "events/questionFlowEventBus"
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -81,6 +88,10 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   // Set when the answer was an earlier request (see utils/jobReplay): the
   // pop-up closes onto that request.
   const [replayedJobId, setReplayedJobId] = useState<number | null>(null)
+  // Set when the request was refused because a pro no longer serves it or its
+  // place of service is gone (utils/jobRequestRefusal): the pop-up closes onto
+  // the listing, which fetches its list again and drops what no longer fits.
+  const [refusal, setRefusal] = useState<JobRequestRefusalCode | null>(null)
 
   const handleGoBack = () => {
     navigation.goBack()
@@ -148,6 +159,13 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         "[RequestSummary] Job creation error:",
         JSON.stringify(error?.data || error, null, 2)
       )
+      const refused = jobRequestRefusalOf(error)
+      if (refused) {
+        setRefusal(refused)
+        setErrorMessage(t(jobRequestRefusalCopy[refused]))
+        setErrorVisible(true)
+        return
+      }
       const validationErrors = error?.data?.validationErrors
       const errorMsg = validationErrors
         ? Object.values(validationErrors).flat().join(", ")
@@ -751,7 +769,8 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
             <WarningTriangleIcon width={48} height={43} />
           ) : undefined
         }
-        // After the pop-up has closed, never beside it: onto that request.
+        // After the pop-up has closed, never beside it: onto that request,
+        // or back to the list for a refusal.
         onModalHide={
           replayedJobId
             ? () => {
@@ -765,7 +784,27 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                   ],
                 })
               }
-            : undefined
+            : refusal
+              ? () => {
+                  const clearPlaceOfService =
+                    refusal === JobRequestRefusal.placeOfServiceNotOffered
+                  setRefusal(null)
+                  // The listing is still mounted below this stack: it
+                  // refetches from the network and prunes the selection.
+                  questionFlowEventBus.emit("request:refused", {
+                    clearPlaceOfService,
+                  })
+                  navigation.popTo("ProsListingScreen", {
+                    categoryId,
+                    categoryName,
+                    serviceId,
+                    address,
+                    placeOfService: clearPlaceOfService
+                      ? undefined
+                      : placeOfService,
+                  })
+                }
+              : undefined
         }
       />
     </SafeAreaView>

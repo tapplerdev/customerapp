@@ -377,6 +377,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       ranges?: { filterId: number; min?: number; max?: number }[]
       filters?: FilterValues
       sortBy?: "distance" | "rating" | "responseTime"
+      // From the network, never the cache (RTK's preferCacheValue off): the
+      // server just refused a pro this list showed, and the same arguments
+      // may already be cached with that pro in them.
+      network?: boolean
     }) => {
       // 'pos' in opts distinguishes "explicitly cleared" (Reset all → back to
       // the ANY-MODE serveability list) from "not provided" (keep the current
@@ -424,7 +428,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           creditCardPayment: f.creditCardPayment,
           sortBy: "sortBy" in opts ? opts.sortBy : sortBy,
         },
-        true
+        !opts.network
       )
         .unwrap()
         .finally(() => setIsRefetching(false))
@@ -553,6 +557,30 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       questionFlowEventBus.off("details:answersChanged", handler)
     }
   }, [customerQuestions, doRefetch])
+
+  // Summary-stage redirect: POST /jobs refused the request because a selected
+  // pro no longer serves it, or the place of service is no longer offered
+  // (RequestSummaryScreen, utils/jobRequestRefusal). The list is fetched again
+  // from the network, without the place when it was the place, and the prune
+  // effect above drops the refused pros and shows the notice.
+  useEffect(() => {
+    const handler = ({
+      clearPlaceOfService,
+    }: {
+      clearPlaceOfService: boolean
+    }) => {
+      if (clearPlaceOfService) {
+        setCurrentPlaceOfService(undefined)
+        doRefetch({ pos: undefined, network: true })
+        return
+      }
+      doRefetch({ network: true })
+    }
+    questionFlowEventBus.on("request:refused", handler)
+    return () => {
+      questionFlowEventBus.off("request:refused", handler)
+    }
+  }, [doRefetch])
 
   // Handle all-questions modal dismiss
   const handleAllQuestionsDismiss = useCallback(
