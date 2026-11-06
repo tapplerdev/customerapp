@@ -422,6 +422,8 @@
   "shortlist_updated_notice": "Shortlist updated — pros who no longer match your answers were removed",
   "pros_cannot_do_job": "Certain pros can’t do this job based on your answers. We’ve updated your shortlist.",
   "see_matching_pros": "See matching pros",
+  "request_pros_not_serving": "Some of the pros you picked can’t take this request anymore. We’ve updated your shortlist.",
+  "request_place_not_offered": "This service isn’t offered this way anymore. Please choose again.",
   "opportunity_accepted": "You accepted this pro's offer",
   "offer_sent_to_customer": "Pro sent you an offer",
   "job_cancelled_by_customer": "You cancelled this request",
