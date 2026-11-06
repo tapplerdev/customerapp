@@ -82,6 +82,12 @@ const createdFrom = (args: unknown) => {
 // (in flight, refused, and the empty basket draw them as the others do).
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
+/*
+ * #532 groups thousands in every price ("1,800 EGP", "2,133 EGP"). The
+ * states whose basket comes to four digits are drawn again under a
+ * "#532 commas" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../FoodOrderReviewScreen")
 const PARAMS = ROUTE_PARAMS.FoodOrderReviewScreen!
 const auth = screenState("data").state.auth!
@@ -105,7 +111,10 @@ const PICKUP = {
 const CASES: Case[] = [
   { name: "delivery", drafts: [DRAFT_ONE_LINE] },
   { name: "pickup", drafts: [DRAFT_PICKUP], params: PICKUP },
-  { name: "long basket, order discount, notes", drafts: [DRAFT_RICH] },
+  {
+    name: "long basket, order discount, notes, #532 commas",
+    drafts: [DRAFT_RICH],
+  },
   {
     name: "destination left blank",
     drafts: [DRAFT_ONE_LINE],
@@ -363,7 +372,7 @@ describe("FoodOrderReviewScreen, a menu that moved under the basket", () => {
           pressTitled(session.root, copy(env, "submit_order"))
         })
         expectParity(
-          parityName("menu changed: repriced", env),
+          parityName("menu changed: repriced, #532 commas", env),
           session.tree(),
           {
             allow: BUTTON,

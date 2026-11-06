@@ -129,6 +129,11 @@ const jobWith = (pros: JobProType[], more: Partial<JobType> = {}): JobType => ({
 })
 
 export const JOB_NO_PROS = jobWith([])
+/** The kit's JOB with its offer at 60000: the card's amount grouped (#532). */
+export const JOB_OFFER_60000 = jobWith([
+  { ...SELECTED_OFFER, ratePerHour: 60000 },
+  SELECTED_WAITING,
+])
 export const JOB_DECLINED_ONE = jobWith([SELECTED_OFFER, SELECTED_DECLINED])
 export const JOB_OPPORTUNITIES = jobWith([
   SELECTED_OFFER,

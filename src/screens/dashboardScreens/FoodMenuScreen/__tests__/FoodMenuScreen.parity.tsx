@@ -65,6 +65,12 @@ import {
  * ones; loading and unavailable draw no pills and kept their names.
  */
 
+/*
+ * #532 groups thousands in every price (the basket bar's "2,370 EGP"). The
+ * states whose basket comes to four digits are drawn again under a
+ * "#532 commas" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../FoodMenuScreen")
 const PARAMS = ROUTE_PARAMS.FoodMenuScreen!
 
@@ -98,18 +104,18 @@ const CASES: Case[] = [
     api: menu(),
   },
   {
-    name: "menu, basket, hero a11y, white chips",
+    name: "menu, basket, hero a11y, white chips, #532 commas",
     base: withCart(DRAFT_RICH),
     api: menu(),
   },
   {
-    name: "basket, no bottom inset, hero a11y, white chips",
+    name: "basket, no bottom inset, hero a11y, white chips, #532 commas",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 0 },
   },
   {
-    name: "basket, bottom inset 48, hero a11y, white chips",
+    name: "basket, bottom inset 48, hero a11y, white chips, #532 commas",
     base: withCart(DRAFT_RICH),
     api: menu(),
     insets: { bottom: 48 },
@@ -340,7 +346,7 @@ describe("FoodMenuScreen, the sweep and the controls", () => {
           [431, 30],
         ])
         expectParity(
-          parityName("trash twice, hero a11y, white chips", env),
+          parityName("trash twice, hero a11y, white chips, #532 commas", env),
           session.tree()
         )
       } finally {

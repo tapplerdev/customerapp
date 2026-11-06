@@ -71,6 +71,13 @@ import {
  * "#525 equal slots" name and captured beside the frozen ones, which no row
  * draws any more.
  */
+/*
+ * #532 groups thousands in every price ("1,250 EGP"), and the card's amount
+ * takes the app's own EGP word (it was a hard-coded "EGP", so Arabic read
+ * "450 EGP"). The states that draw an amount are drawn again under a
+ * "#532 commas" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */
@@ -123,7 +130,7 @@ const PROMO = {
 /** The data a card is handed (what JobDetail reads off the pro and the offer). */
 const DATA: { name: string; props: Record<string, unknown> }[] = [
   {
-    name: "bare individual, #522 card",
+    name: "bare individual, #522 card, #532 commas",
     props: {
       displayName: "Omar Hassan",
       isCompany: false,
@@ -135,7 +142,7 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   {
-    name: "company with everything, #522 card, #525 offers, #525 equal slots",
+    name: "company with everything, #522 card, #525 offers, #525 equal slots, #532 commas",
     props: {
       displayName: "Nile Plumbing Co.",
       photoUrl: "https://example.com/parity/pro.jpg",

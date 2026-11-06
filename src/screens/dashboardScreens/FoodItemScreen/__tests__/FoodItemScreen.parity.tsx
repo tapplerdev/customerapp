@@ -23,6 +23,7 @@ import {
 } from "testing/hostTreeParity"
 
 import {
+  MENU_FOUR_DIGITS,
   RICH_MENU,
   checkedBoxes,
   pressCheckbox,
@@ -47,6 +48,10 @@ import {
  * rows in FoodItemScreen.addToCart.parity.tsx. Every row here that draws the
  * button (the dishes without a required group, and the dish once chosen) is
  * unchanged.
+ *
+ * #532 groups thousands: the dish with a required choice, priced in four
+ * digits (the dish, a discounted choice and its struck price, a plain
+ * extra), is a row of its own, added beside the others, which don't change.
  */
 
 // The Add to cart, pre-order badge and Back buttons were ActionBtns: Button's
@@ -72,6 +77,11 @@ const CASES: Case[] = [
   { name: "no price, photo or description", menuItemId: 421, allow: ENABLED },
   { name: "loading", menuItemId: 411, api: {} },
   { name: "unavailable", menuItemId: 999, allow: ENABLED },
+  {
+    name: "four-digit prices, #532 commas",
+    menuItemId: 411,
+    api: { ...DATA, getProMenu: { data: MENU_FOUR_DIGITS } },
+  },
 ]
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)
 

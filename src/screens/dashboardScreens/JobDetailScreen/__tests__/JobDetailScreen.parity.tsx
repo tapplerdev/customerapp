@@ -33,6 +33,7 @@ import {
   JOB_DECLINED_ONE,
   JOB_ENDED,
   JOB_NO_PROS,
+  JOB_OFFER_60000,
   JOB_OPPORTUNITIES,
   JOB_STRANDED,
   PRO_FEATURED,
@@ -77,6 +78,13 @@ const NAME = "JobDetailScreen"
  * start edge. The states that draw the box are drawn again under a
  * "#525 equal slots" name and captured beside the frozen ones, which no row
  * draws any more.
+ */
+/*
+ * #532: the Other Pros cards (ProCardBase) print the app's own EGP word, so
+ * Arabic reads "220 جنية" where it read "220 EGP", and every amount groups
+ * thousands. The states that draw an offer on an Other Pros card are drawn
+ * again under a "#532 commas" name and captured beside the frozen ones,
+ * which no row draws any more.
  */
 const load = () => require("../JobDetailScreen")
 
@@ -159,20 +167,21 @@ const CASES: Case[] = [
   },
   {
     state:
-      "the Other Pros tab with offers, #522 card, #525 offers, #525 equal slots",
+      "the Other Pros tab with offers, #522 card, #525 offers, #525 equal slots, #532 commas",
     job: JOB_OPPORTUNITIES,
     steps: [otherTab],
   },
   { state: "the Other Pros tab, no offers yet", steps: [otherTab] },
   {
-    state: "Select pressed: the moved banner, #522 card",
+    state: "Select pressed: the moved banner, #522 card, #532 commas",
     job: JOB_OPPORTUNITIES,
     steps: [otherTab, selectFirst],
   },
   {
     // 100 ms later the offers count changed, which re-arms the new-offers
     // banner, and it replaces the moved one (noted for pass 2).
-    state: "Select pressed: the pro joined the selected ones, #522 card",
+    state:
+      "Select pressed: the pro joined the selected ones, #522 card, #532 commas",
     job: JOB_OPPORTUNITIES,
     steps: [
       otherTab,
@@ -240,6 +249,8 @@ const CASES: Case[] = [
     api: { cancelJob: SERVER_ERROR },
     steps: [...confirmCancel, reason(), submitReasons, wait(SETTLED)],
   },
+  // #532 groups thousands: the selected pro's card reads "60,000 EGP".
+  { state: "an offer of 60000, #532 commas", job: JOB_OFFER_60000 },
 ]
 
 const rows = rowsByPlatform(CASES, PARITY_MATRIX)

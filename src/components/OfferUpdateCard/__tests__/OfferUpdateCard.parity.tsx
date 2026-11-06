@@ -37,6 +37,11 @@ import {
  *   yarn ds:parity:capture <this file> --force  recapture, on the old code only
  */
 
+/*
+ * #532 groups thousands ("1,200 → 1,250"), so the four-digit update is drawn
+ * again under a "#532 commas" name and captured beside the frozen one, which
+ * no row draws any more.
+ */
 const load = () => require("../OfferUpdateCard")
 
 const FILES = harvestFilesFor(__dirname, "OfferUpdateCard")
@@ -56,7 +61,7 @@ const UPDATES = [
   { name: "a rise, with time", previous: 450, next: 500, time: "10:30 AM" },
   { name: "a fall, no time", previous: 500, next: 450, time: undefined },
   {
-    name: "four digits, with time",
+    name: "four digits, with time, #532 commas",
     previous: 1200,
     next: 1250,
     time: "9:05 PM",

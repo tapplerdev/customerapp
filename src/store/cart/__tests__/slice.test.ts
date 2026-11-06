@@ -1,9 +1,11 @@
 import { describe, expect, it, jest } from "@jest/globals"
+import { formatMoney as sharedFormatMoney } from "@tappler/shared/src/helpers/money"
 
 import reducer, {
   CART_STALE_MS,
   addCartItem,
   clearCart,
+  formatMoney,
   markSubmitKeyRefused,
   removeCartItem,
   replaceCartLines,
@@ -36,6 +38,15 @@ const withBasket = (): CartState =>
     reducer(undefined, addCartItem({ context, item: line(1) })),
     addCartItem({ context, item: line(2) })
   )
+
+describe("formatMoney", () => {
+  it("is tappler-shared's, so the food flow groups thousands as proapp does (#532)", () => {
+    expect(formatMoney).toBe(sharedFormatMoney)
+    expect(formatMoney(185)).toBe("185")
+    expect(formatMoney(2370)).toBe("2,370")
+    expect(formatMoney(1822.5)).toBe("1,822.50")
+  })
+})
 
 describe("replaceCartLines", () => {
   it("stores the repaired lines and keeps the rest of the draft", () => {

@@ -49,6 +49,12 @@ import {
 // row that draws one.
 const BUTTON: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 
+/*
+ * #532 groups thousands in every price ("1,800 EGP", "2,370 EGP"). The
+ * states whose basket comes to four digits are drawn again under a
+ * "#532 commas" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../FoodCartScreen")
 const route = { name: "FoodCartScreen", params: ROUTE_PARAMS.FoodCartScreen }
 const auth = screenState("data").state.auth!
@@ -64,7 +70,7 @@ type Case = {
 const CASES: Case[] = [
   { name: "one line, delivery fee", drafts: [DRAFT_ONE_LINE] },
   {
-    name: "three lines, free delivery and an order discount",
+    name: "three lines, free delivery and an order discount, #532 commas",
     drafts: [DRAFT_RICH],
   },
   { name: "pickup", drafts: [DRAFT_PICKUP] },
@@ -75,7 +81,7 @@ const CASES: Case[] = [
   // Phase 3c: the basket after Order Review repaired it against a menu that
   // moved (utils/foodCartRepair), beside that menu.
   {
-    name: "after a repair, a price moved",
+    name: "after a repair, a price moved, #532 commas",
     drafts: [DRAFT_RICH_REPRICED],
     api: { ...DATA, getProMenu: { data: MENU_LARGE_DEARER } },
   },
@@ -181,9 +187,13 @@ describe("FoodCartScreen, the controls", () => {
           [412, 1],
           [431, 30],
         ])
-        expectParity(parityName("molokhia down to one", env), session.tree(), {
-          allow: BUTTON,
-        })
+        expectParity(
+          parityName("molokhia down to one, #532 commas", env),
+          session.tree(),
+          {
+            allow: BUTTON,
+          }
+        )
         // A last trash removes the line; at thirty the plus has no handler.
         await session.act(() => {
           pressIcon(session.root, { icon: "svg:trash-red", nth: 1 })
@@ -195,9 +205,13 @@ describe("FoodCartScreen, the controls", () => {
         expect(() =>
           pressIcon(session.root, { icon: "svg:plus", nth: 1 })
         ).toThrow()
-        expectParity(parityName("chicken removed", env), session.tree(), {
-          allow: BUTTON,
-        })
+        expectParity(
+          parityName("chicken removed, #532 commas", env),
+          session.tree(),
+          {
+            allow: BUTTON,
+          }
+        )
       } finally {
         session.unmount()
       }
