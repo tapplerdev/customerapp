@@ -10,6 +10,7 @@ import moment from "moment"
 
 import { useGetOfferHistoryQuery } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
+import { formatMoney } from "@tappler/shared/src/helpers/money"
 import TagRedIcon from "assets/icons/tag-red.svg"
 import { Text, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
@@ -105,7 +106,7 @@ const OfferHistorySheet: React.FC<Props> = ({
                       leading={{ fixed: px(21) }}
                       style={{ color: isCurrent ? "#1A1A1A" : "#6A6A6A" }}
                     >
-                      {`${offer.ratePerHour} `}
+                      {`${formatMoney(offer.ratePerHour)} `}
                     </Text>
                     <Text
                       size={11}
@@ -161,7 +162,7 @@ const OfferHistorySheet: React.FC<Props> = ({
                       leading={{ fixed: px(15) }}
                       style={{ color: "#0F6E56" }}
                     >
-                      {`${delta > 0 ? "+" : "−"}${Math.abs(delta)} ${t("EGP")}`}
+                      {`${delta > 0 ? "+" : "−"}${formatMoney(Math.abs(delta))} ${t("EGP")}`}
                     </Text>
                   </DmView>
                 ) : isFirst ? (

@@ -11,6 +11,7 @@ import { ChatPreviewType } from "types/chat"
 import LocationIcon from "assets/icons/location-red.svg"
 import DocumentIcon from "assets/icons/my-documents.svg"
 import { parseOfferUpdate } from "components/OfferUpdateCard/OfferUpdateCard"
+import { formatMoney } from "@tappler/shared/src/helpers/money"
 import { localizeDateString } from "helpers/digits"
 
 import styles from "./styles"
@@ -232,7 +233,7 @@ const MessagesComponent: React.FC<Props> = React.memo(
                             ? parseOfferUpdate(lastMsg.text)
                             : null
                         const displayText = offerUpdate
-                          ? `${t("offer_updated")} · ${offerUpdate.next} ${t("EGP")}`
+                          ? `${t("offer_updated")} · ${formatMoney(offerUpdate.next)} ${t("EGP")}`
                           : lastMsg.ownerType === "system"
                             ? t(lastMsg.text)
                             : lastMsg.text

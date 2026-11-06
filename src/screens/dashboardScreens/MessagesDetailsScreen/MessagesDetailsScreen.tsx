@@ -47,6 +47,7 @@ import { ChatMessageType } from "types/chat"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 import { checkProfanity } from "@tappler/shared/src/profanity"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
+import { formatMoney } from "@tappler/shared/src/helpers/money"
 import { scheduleLayoutAnimation } from "helpers/layoutAnimation"
 import { chatBlockCodeOf } from "utils/chatBlockCode"
 import { uuidV4 } from "utils/uuid"
@@ -883,7 +884,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         {context.offerAmount != null && (
           <DmView style={[a.self_start, styles.textWrap2, a.px_10, a.mt_8]}>
             <Text size={11} weight="semibold" leading="tight" color="inverse">
-              {`${t("offer")} · ${context.offerAmount} ${t("EGP")}`}
+              {`${t("offer")} · ${formatMoney(context.offerAmount)} ${t("EGP")}`}
             </Text>
           </DmView>
         )}
@@ -1236,7 +1237,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
                 ]}
               >
                 <Text size={22} weight="medium" leading="tight">
-                  {context.offerAmount}
+                  {formatMoney(context.offerAmount)}
                 </Text>
                 <Text
                   size={11}

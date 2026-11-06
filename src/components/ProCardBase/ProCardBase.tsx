@@ -4,6 +4,7 @@ import FastImage from "react-native-fast-image"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
+import { formatMoney } from "@tappler/shared/src/helpers/money"
 import RateComponent from "components/RateComponent/RateComponent"
 import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
@@ -189,7 +190,9 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
                   </Text>
                 </DmView>
                 <Text size={14} weight="bold" leading="legacy">
-                  {offerAmount ? `${offerAmount} EGP` : t("no_offer_yet")}
+                  {offerAmount
+                    ? `${formatMoney(offerAmount)} ${t("EGP")}`
+                    : t("no_offer_yet")}
                 </Text>
               </DmView>
 

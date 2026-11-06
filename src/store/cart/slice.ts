@@ -241,13 +241,13 @@ export const {
   sweepStaleCarts,
 } = cartSlice.actions
 
-// One formatter for every amount in the food flow. Whole values print bare
-// ("185 EGP"), which is what the design shows and what each screen previously
-// re-implemented on its own. A genuinely fractional amount still shows its
-// decimals — rounding those away would misstate a price, and the order
-// discount (round(subtotal * rate) / 100) can legitimately land on one.
-export const formatMoney = (value: number): string =>
-  value % 1 === 0 ? String(value) : value.toFixed(2)
+// One formatter for every amount in the food flow, tappler-shared's, so this
+// app and proapp print one order's amounts alike. Whole values print bare
+// ("185 EGP"), which is what the design shows. A genuinely fractional amount
+// still shows its decimals — rounding those away would misstate a price, and
+// the order discount (round(subtotal * rate) / 100) can legitimately land on
+// one. Thousands are grouped ("2,370 EGP", #532).
+export { formatMoney } from "@tappler/shared/src/helpers/money"
 
 // A discount exists only when discountPrice is above zero. 0 is this system's
 // "no discount" sentinel, not a giveaway: proapp submits Number("") → 0 for a
