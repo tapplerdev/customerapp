@@ -32,6 +32,9 @@ import {
  * none. The sizes 9.5 and 10.5 (:110, :149) are in the rows with the current
  * chip and the first offer. The kit, for the sheet, the store and the query.
  *
+ * #532 groups thousands: a 60000 offer up from 1250 (the amounts and the
+ * delta) is a row of its own, added beside the others, which don't change.
+ *
  * The prop sets are harvested from the call site (testing/harvest) and
  * frozen in __fixtures__/OfferHistorySheet.cases.json. The trees in
  * __parity__ were captured from the component before its conversion (each
@@ -80,6 +83,10 @@ const ANSWERS: { name: string; api: Record<string, unknown> }[] = [
     api: { ...DATA, getOfferHistory: { data: history(450, 450) } },
   },
   { name: "none", api: { ...DATA, getOfferHistory: { data: history() } } },
+  {
+    name: "a 60000 offer, #532 commas",
+    api: { ...DATA, getOfferHistory: { data: history(60000, 1250) } },
+  },
 ]
 
 if (harvesting()) {

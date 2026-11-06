@@ -250,7 +250,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
                       leading="tight"
                       style={hasDiscount(choice) ? styles.eGPChoice : undefined}
                     >
-                      + {choice.price} {t("EGP")}
+                      + {formatMoney(choice.price)} {t("EGP")}
                     </Text>
                   </>
                 )}
@@ -364,7 +364,7 @@ const FoodItemScreen: React.FC<Props> = ({ route, navigation }) => {
                   color={menuItemDiscounted ? "secondary" : undefined}
                   style={menuItemDiscounted ? styles.eGPStruck : undefined}
                 >
-                  {menuItem.price} {t("EGP")}
+                  {formatMoney(menuItem.price)} {t("EGP")}
                 </Text>
               </>
             ) : (

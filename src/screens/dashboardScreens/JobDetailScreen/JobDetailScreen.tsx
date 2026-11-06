@@ -28,6 +28,7 @@ import useRepostRequest from "hooks/useRepostRequest"
 import { MainModal } from "@tappler/shared/src/components"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
+import { formatMoney } from "@tappler/shared/src/helpers/money"
 import { JobProType } from "types/job"
 import RateComponent from "components/RateComponent/RateComponent"
 
@@ -567,7 +568,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   </DmView>
                   <Text size={14} weight="bold" leading="legacy">
                     {offerAmount
-                      ? `${offerAmount} ${t("EGP")}`
+                      ? `${formatMoney(offerAmount)} ${t("EGP")}`
                       : t("no_offer_yet")}
                   </Text>
                 </DmView>

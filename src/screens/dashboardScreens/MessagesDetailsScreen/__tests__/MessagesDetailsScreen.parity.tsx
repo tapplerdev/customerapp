@@ -44,6 +44,7 @@ import {
   SYSTEM_EVENTS,
   THREAD,
   WITH_OFFER,
+  WITH_OFFER_60000,
 } from "../__fixtures__/chat"
 
 /*
@@ -58,6 +59,10 @@ import {
  * My request; the ••• menu, then cancel, yes, and the reasons), the offer pill's
  * history sheet, the scroll-down button, a send that is blocked, fails or
  * goes, the header, the back chevron.
+ *
+ * #532 groups thousands: a request with an offer of 60000 (the header's offer
+ * strip, and the request sheet's offer pill) has rows of its own, added
+ * beside the others, which don't change.
  */
 
 const load = () => require("../MessagesDetailsScreen")
@@ -160,6 +165,10 @@ const CASES: Case[] = [
     name: "bottom inset 48",
     preview: WITH_OFFER,
     insets: { bottom: 48 },
+  },
+  {
+    name: "request with a 60000 offer, #532 commas",
+    preview: WITH_OFFER_60000,
   },
 ]
 // A window is part of a registry: keep a window's rows together.
@@ -524,6 +533,27 @@ describe("MessagesDetailsScreen, the sheets", () => {
           pressIcon(session.root, { icon: "svg:close" })
         })
         expectParity(parityName("request sheet closed", env), session.tree())
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "My Request with an offer of 60000: the pill's amount grouped, #532 [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(
+        byName("request with a 60000 offer, #532 commas"),
+        env
+      )
+      try {
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "my_request"))
+        })
+        expectParity(
+          parityName("request sheet, a 60000 offer, #532 commas", env),
+          session.tree()
+        )
       } finally {
         session.unmount()
       }

@@ -61,6 +61,12 @@ import {
 const ENABLED: ParityAllowance[] = ["buttonHeight", "buttonAccessibility"]
 const DISABLED: ParityAllowance[] = ["buttonHeight", "buttonDisabledView"]
 
+/*
+ * #532 groups thousands in every price (the totals' "2,370 EGP"). The
+ * states whose basket comes to four digits are drawn again under a
+ * "#532 commas" name and captured beside the frozen ones, which no row draws
+ * any more.
+ */
 const load = () => require("../FoodCheckoutScreen")
 const PARAMS = ROUTE_PARAMS.FoodCheckoutScreen
 const auth = screenState("data").state.auth!
@@ -157,13 +163,13 @@ const CASES: Case[] = [
     allow: ENABLED,
   },
   {
-    name: "needs notice, scheduling offered",
+    name: "needs notice, scheduling offered, #532 commas",
     drafts: [DRAFT_RICH],
     api: api({ getServiceById: { data: service(["asap", "date"]) } }),
     allow: DISABLED,
   },
   {
-    name: "needs notice, the pro confirms",
+    name: "needs notice, the pro confirms, #532 commas",
     drafts: [DRAFT_RICH],
     api: api(),
     allow: ENABLED,

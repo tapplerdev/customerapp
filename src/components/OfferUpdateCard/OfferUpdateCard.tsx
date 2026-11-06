@@ -4,6 +4,7 @@ import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
 import colors from "@tappler/shared/src/styles/colors"
+import { formatMoney } from "@tappler/shared/src/helpers/money"
 import { Text, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
@@ -48,7 +49,8 @@ const TAIL = 2
  *
  * Bidi: every segment is its OWN Text node with unambiguous content (a digit
  * run, a lone arrow, a single word) — mixed-script strings ("→ 60 جنية") get
- * internally reordered by the bidi engine. The amounts row mirrors naturally
+ * internally reordered by the bidi engine. A grouped amount ("60,000") is
+ * still one digit run: a comma between two digits takes their direction. The amounts row mirrors naturally
  * under force-RTL, and the arrow flips per language so the progression reads
  * old → new in English and old ← new (right-to-left) in Arabic.
  */
@@ -87,7 +89,7 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
 
       <DmView style={[a.flex_row, styles.row]}>
         <Text size={13} leading={{ fixed: px(17) }} style={styles.text}>
-          {`${previous}`}
+          {formatMoney(previous)}
         </Text>
         <Text size={13} leading={{ fixed: px(17) }} style={styles.text2}>
           {isAr ? "  ←  " : "  →  "}
@@ -98,7 +100,7 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
           leading={{ fixed: px(19) }}
           style={styles.text3}
         >
-          {`${next}`}
+          {formatMoney(next)}
         </Text>
         <Text
           size={13}

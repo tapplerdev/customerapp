@@ -16,6 +16,8 @@ import {
   HOURS_AGO,
   JOB,
   JOB_FOOD,
+  JOB_PRO_OFFER,
+  JOB_PRO_WAITING,
   some,
 } from "testing/screenKit/fixtures/entities"
 
@@ -31,6 +33,11 @@ const preview = (
 export const DIRECT = CHAT_PREVIEW
 /** A request that is open, with an offer of 150 in. */
 export const WITH_OFFER = preview(JOB)
+/** The same request with an offer of 60000 in: the amount grouped (#532). */
+export const WITH_OFFER_60000 = preview({
+  ...JOB,
+  pros: [{ ...JOB_PRO_OFFER, ratePerHour: 60000 }, JOB_PRO_WAITING],
+})
 /** The same request, ended: the repost strip, attachments dimmed. */
 export const ENDED = preview({ ...JOB, status: "ended" })
 /** A food order a kitchen is preparing (no hourly offer). */

@@ -230,6 +230,14 @@ const ITEMS: Record<string, unknown> = {
       createdAt: HOURS_AGO(1),
     }),
   }),
+  // #532 groups thousands: "Offer updated · 60,000 EGP".
+  "an offer revision to 60000, #532 commas": preview({
+    lastMessage: message({
+      ownerType: "system",
+      text: "offer_updated:1250:60000",
+      createdAt: HOURS_AGO(1),
+    }),
+  }),
 }
 const VARIANTS = Object.fromEntries(
   Object.keys(ITEMS).map((name) => [name, name])

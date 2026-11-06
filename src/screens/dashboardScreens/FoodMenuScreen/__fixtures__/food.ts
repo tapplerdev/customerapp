@@ -245,6 +245,32 @@ export const MENU_LARGE_DEARER: FoodMenuType = {
   })),
 }
 
+/**
+ * Four-digit prices (#532): Molokhia at 2400, its Large size 1500 with 1250
+ * off, and Extra bread 1000. Everything else is RICH_MENU.
+ */
+const FOUR_DIGIT_OPTIONS = MOLOKHIA_OPTIONS.map((option) => ({
+  ...option,
+  choices: option.choices.map((choice) =>
+    choice.name === "Large"
+      ? { ...choice, price: 1500, discountPrice: 1250 }
+      : choice.name === "Extra bread"
+        ? { ...choice, price: 1000 }
+        : choice
+  ),
+}))
+export const MENU_FOUR_DIGITS: FoodMenuType = {
+  ...RICH_MENU,
+  menuSections: RICH_MENU.menuSections.map((section) => ({
+    ...section,
+    menuItems: section.menuItems.map((item) =>
+      item.id === 411
+        ? { ...item, price: 2400, options: FOUR_DIGIT_OPTIONS }
+        : item
+    ),
+  })),
+}
+
 /** The pro took Basbousa off the menu after the customer added thirty. */
 export const MENU_WITHOUT_BASBOUSA: FoodMenuType = {
   ...RICH_MENU,
