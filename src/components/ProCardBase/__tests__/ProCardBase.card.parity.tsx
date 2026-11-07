@@ -123,9 +123,10 @@ const sticker = (id: number) => ({
 })
 // #533: a sticker with an icon (one for both languages) and a caption in each,
 // its legacy pictures kept as the fallback. A caption left empty is one the
-// sticker doesn't have in that language. Its product's id, its place in the
-// catalogue (the order stickers are drawn in), is the subscription's unless
-// `product` gives one.
+// sticker doesn't have in that language. Its product has no id unless
+// `product` gives one (its place in the catalogue, the order stickers are
+// drawn in): the sort keeps stickers with no id in the order given, so a row
+// whose order isn't the point lists them in the order they're drawn.
 const iconSticker = (
   id: number,
   labelEn: string,
@@ -140,7 +141,6 @@ const iconSticker = (
     icon: `https://example.com/parity/icon-${id}.svg`,
     labelEn,
     labelAr,
-    id,
     ...product,
   },
 })
@@ -235,11 +235,11 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
     },
   },
   // #533: icon stickers (the icon above the caption, top-aligned in its
-  // cell), in catalogue order (product id; the first capture went oldest
-  // subscription first and stays beside it), one captioned in English only
-  // (its picture in Arabic), an icon that fails to load drawn as its
-  // picture, and one whose picture fails too drawn as its caption alone.
-  // New, under a "#533 offers" name; the rows above draw what they drew.
+  // cell), in catalogue order (newest product first, as the catalogue lists
+  // them), one captioned in English only (its picture in Arabic), an icon
+  // that fails to load drawn as its picture, and one whose picture fails too
+  // drawn as its caption alone. New, under a "#533 offers" name; the rows
+  // above draw what they drew.
   {
     name: "icon stickers, in catalogue order, #533 offers",
     props: {
@@ -249,13 +249,13 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
       reviewsCount: 3,
       subscriptions: [
         // Neither the order given nor the subscriptions' (11, 12, 15): the
-        // catalogue's, Fast Response (3), Installments (22), Free delivery
-        // on orders (40).
+        // catalogue's, Fast Response (40), Installments (22), Free delivery
+        // on orders (3).
         iconSticker(12, "Free delivery on orders", "توصيل مجاني لكل الطلبات", {
-          id: 40,
+          id: 3,
         }),
         iconSticker(11, "Installments", "الدفع بالتقسيط", { id: 22 }),
-        iconSticker(15, "Fast Response", "", { id: 3 }),
+        iconSticker(15, "Fast Response", "", { id: 40 }),
       ],
       trustDocs: [],
       offerAmount: 450,

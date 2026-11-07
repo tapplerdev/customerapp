@@ -57,21 +57,22 @@ describe("withoutFailedPicture", () => {
 })
 
 describe("stickersOf", () => {
-  const subs = [sub(9, PICTURE), sub(4, ICON)]
+  // Given oldest subscription first; the catalogue lists PICTURE (12) first.
+  const subs = [sub(4, ICON), sub(9, PICTURE)]
 
   it("draws an icon sticker whose icon and picture failed as its caption alone, in catalogue order", () => {
     const failed = new Set(["icon-1.svg", "en-1.svg", "en-2.svg"])
 
     expect(stickersOf(subs, false, failed)).toEqual([
-      { kind: "stacked", icon: "", label: "Installments", key: "4" },
       { kind: "picture", picture: "en-2.svg", key: "9" },
+      { kind: "stacked", icon: "", label: "Installments", key: "4" },
     ])
   })
 
   it("falls back to the picture while it hasn't failed", () => {
     expect(stickersOf(subs, true, new Set(["icon-1.svg"]))).toEqual([
-      { kind: "picture", picture: "ar-1.svg", key: "4" },
       { kind: "picture", picture: "ar-2.svg", key: "9" },
+      { kind: "picture", picture: "ar-1.svg", key: "4" },
     ])
   })
 })

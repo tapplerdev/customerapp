@@ -5,8 +5,8 @@ import { collectProStickerUrls, loadSvg, peekSvg } from "../svgCache"
 /*
  * What the listing warms before the cards draw (#533): each sticker's art as
  * the card draws it, the icon when it has one and a caption in the language,
- * else its picture for the language, in catalogue order (product id); then
- * the approved trust badges, as before.
+ * else its picture for the language, in catalogue order (newest product
+ * first); then the approved trust badges, as before.
  */
 
 const ICON = "https://example.com/icon.svg"
@@ -27,8 +27,8 @@ const proWith = (subscriptions: object[], documents: object[] = []) => ({
 describe("collectProStickerUrls", () => {
   it("warms the icon a sticker is drawn with, else its picture, in catalogue order", () => {
     const pro = proWith([
-      sticker(4, { id: 61 }),
-      sticker(9, { id: 18, icon: ICON, labelEn: "Installments", labelAr: "" }),
+      sticker(4, { id: 18 }),
+      sticker(9, { id: 61, icon: ICON, labelEn: "Installments", labelAr: "" }),
       { id: 1, product: { subType: "promoLine" } },
     ])
 
