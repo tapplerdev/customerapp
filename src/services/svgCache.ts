@@ -1,3 +1,5 @@
+import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
+
 /**
  * Session-lifetime cache for remote SVG artwork (subscription stickers, trust
  * badges). SvgUriContainer used to fetch(uri) on EVERY mount — with FlashList
@@ -51,7 +53,9 @@ export const prefetchSvgs = (
 
 /**
  * All remote SVG urls a pro card can render, in the CURRENT language only:
- * motivational subscription stickers (OffersSection) + approved trust badges.
+ * the offers stickers as the card draws them (#533, offerStickersOf: the icon
+ * when it has one and a caption for the language, else the picture for the
+ * language) + approved trust badges.
  * Loosely typed on purpose — callers hold ProType but this only touches the
  * exact accessors the card renderers use.
  */
@@ -63,15 +67,11 @@ export const collectProStickerUrls = (
   const urls: Array<string | undefined> = []
   const slice = limit != null ? pros.slice(0, limit) : pros
   slice.forEach((pro: any) => {
-    pro?.serviceCategories?.[0]?.subscriptions?.forEach((sub: any) => {
-      if (sub?.product?.subType === "motivational") {
-        urls.push(
-          isAr
-            ? sub.product?.pictureAr || sub.product?.pictureEn
-            : sub.product?.pictureEn
-        )
+    offerStickersOf(pro?.serviceCategories?.[0]?.subscriptions, isAr).forEach(
+      (item) => {
+        urls.push(item.kind === "stacked" ? item.icon : item.picture)
       }
-    })
+    )
     pro?.documents?.forEach((doc: any) => {
       if (doc?.type === "trust" && doc?.status === "approved") {
         const tp = doc.trustDocumentData?.trustProduct

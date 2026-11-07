@@ -17,9 +17,10 @@ import MailIcon from "assets/icons/mail.svg"
 import styles from "./styles"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import RatingSummary from "@tappler/shared/src/components/RatingSummary"
-import OffersBox, {
-  OFFER_STICKER_HEIGHT,
-} from "@tappler/shared/src/components/OffersBox"
+import OffersBox from "@tappler/shared/src/components/OffersBox"
+import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
+import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
+import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
 // A trust sticker's slot, only as tall as its art (#522), one copy for both
 // apps' cards.
 import {
@@ -87,9 +88,10 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
   const promoLine = subscriptions.find(
     (s: any) => s.product?.subType === "promoLine"
   )
-  const motivational = subscriptions.filter(
-    (s: any) => s.product?.subType === "motivational"
-  )
+  // The stickers as drawn (#533): icon and caption, else the picture for the
+  // language, oldest first; an icon that failed to load falls back too.
+  const { failedIcons, onIconError } = useFailedIcons()
+  const stickers = offerStickersOf(subscriptions, isAr, failedIcons)
 
   return (
     <DmView
@@ -281,23 +283,15 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
       {/* The OFFERS box (#522): the red tab over a white bordered box, the
           stickers in thirds, or halves for a pair, from the start edge
           (#525), thin dividers between them, after the trust stickers as on the pro's
-          own card. It replaces the pink footer band. Each is the
-          product's single picture, centred, untrimmed: the CMS template's
-          group translate is what centres the drawing in its box (see
-          OffersSection's strip). */}
-      {motivational.length > 0 && (
+          own card. It replaces the pink footer band. Each is the icon
+          above its caption (#533), or the product's single picture,
+          centred, untrimmed: the CMS template's group translate is what
+          centres the drawing in its box (see OffersSection's strip). */}
+      {stickers.length > 0 && (
         <OffersBox style={a.mt_12}>
-          {motivational.map((sub: any, idx: number) => {
-            const uri = isAr ? sub.product?.pictureAr : sub.product?.pictureEn
-            return uri ? (
-              <SvgUriContainer
-                key={sub.id || idx}
-                width="100%"
-                height={OFFER_STICKER_HEIGHT}
-                uri={uri}
-              />
-            ) : null
-          })}
+          {stickers.map((item) =>
+            offerStickerCell(item, SvgUriContainer, onIconError)
+          )}
         </OffersBox>
       )}
 

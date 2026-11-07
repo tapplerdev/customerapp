@@ -58,9 +58,10 @@ import { AppFlatList, AppKeyboardAwareScrollView } from "components/scroll"
 import { Text, a } from "@tappler/shared/src/ds"
 import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import NoReviewsBox from "@tappler/shared/src/components/NoReviewsBox"
-import OffersBox, {
-  OFFER_STICKER_HEIGHT,
-} from "@tappler/shared/src/components/OffersBox"
+import OffersBox from "@tappler/shared/src/components/OffersBox"
+import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
+import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
+import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -138,8 +139,13 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     subscriptions: proServiceCat?.subscriptions,
     documents: pro?.documents,
   })
-  const motivational = (proServiceCat?.subscriptions || []).filter(
-    (sub: any) => sub.product?.subType === "motivational"
+  // The stickers as drawn (#533): icon and caption, else the picture for the
+  // language, oldest first; an icon that failed to load falls back too.
+  const { failedIcons, onIconError } = useFailedIcons()
+  const stickers = offerStickersOf(
+    proServiceCat?.subscriptions,
+    isAr,
+    failedIcons
   )
   const featuredArt = isAr
     ? featureSubscription?.product?.pictureAr
@@ -404,19 +410,12 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* The OFFERS box (#522), the card's own: the red tab over a
               white bordered box, the stickers in thirds, or halves for a
               pair, from the start edge (#525), thin dividers between them.
-              Each is the product's single picture, centred. */}
+              Each is the icon above its caption (#533), or the product's
+              single picture, centred. */}
           <OffersBox>
-            {motivational.map((sub: any, idx: number) => {
-              const uri = isAr ? sub.product?.pictureAr : sub.product?.pictureEn
-              return uri ? (
-                <SvgUriContainer
-                  key={sub.id || idx}
-                  width="100%"
-                  height={OFFER_STICKER_HEIGHT}
-                  uri={uri}
-                />
-              ) : null
-            })}
+            {stickers.map((item) =>
+              offerStickerCell(item, SvgUriContainer, onIconError)
+            )}
           </OffersBox>
         </DmView>
 
