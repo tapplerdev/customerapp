@@ -138,12 +138,19 @@ const iconSticker = (
   },
 })
 const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// An icon whose pictures fail to load too (#533).
+const BROKEN_ART = {
+  ...BROKEN_ICON,
+  pictureEn: "https://example.com/parity/picture-broken-en.svg",
+  pictureAr: "https://example.com/parity/picture-broken-ar.svg",
+}
 // The icon art: a circle, so an icon is told apart from a picture in a tree.
 const ICON_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
-// The icons answer with ICON_ART, a broken one with a 404, the rest SVG_ART.
+// The icons answer with ICON_ART, a broken icon or picture with a 404, the
+// rest SVG_ART.
 const ICON_HTTP = (key: string) =>
-  /icon-broken/.test(key)
+  /-broken/.test(key)
     ? { status: 404, text: "Not Found" }
     : /\/icon-/.test(key)
       ? { text: ICON_ART }
@@ -285,8 +292,9 @@ const openViewer =
  * #533 draws a sticker that has an icon and a caption in the language as the
  * icon above the caption, top-aligned in its cell, else as its picture as
  * before; the stickers go oldest first; an icon that fails to load falls back
- * to the picture, else the caption alone. Those states are new, under a
- * "#533 offers" name; every state above draws what it drew.
+ * to the picture, and when there's no picture or it fails too, to the caption
+ * alone. Those states are new, under a "#533 offers" name; every state above
+ * draws what it drew.
  */
 const withStickers = (subscriptions: object[]) => ({
   ...withPro(withCategory(PRO_COMPANY, subscriptions)),
@@ -498,6 +506,14 @@ const CASES: Case[] = [
         pictureEn: "",
         pictureAr: "",
       }),
+    ]),
+  },
+  {
+    state:
+      "a failed icon whose picture fails too, its caption alone, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(18, "Free Manicure", "مانيكير مجاني", BROKEN_ART),
     ]),
   },
 ]

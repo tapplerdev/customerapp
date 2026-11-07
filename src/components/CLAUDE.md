@@ -16,7 +16,7 @@ Used in search results when a customer browses pros for a service category. Loca
    - Star rating via `RateComponent`
    - Description (text-10, 2 lines max, only if `informationAbout` exists)
 4. **Trust badges** — approved trust documents (`type === "trust" && status === "approved"`), rendered as SVG stickers via `SvgUriContainer`, horizontal flex-wrap
-5. **OFFERS box** — tappler-shared's `OffersBox`, only if pro has `motivational` subscriptions with art to draw. Each sticker comes from shared's `offerStickersOf` + `offerStickerCell` (#533): its icon above its caption (`OfferSticker`) when the product has an icon and a caption in the language, else its picture for the language, else dropped; oldest subscription first; an icon that fails to load falls back to the picture (`useFailedIcons`)
+5. **OFFERS box** — tappler-shared's `OffersBox`, only if pro has `motivational` subscriptions with art to draw. Each sticker comes from `utils/offerStickers` (`stickersOf` + `stickerCell`, over shared's `offerStickersOf` + `offerStickerCell`, #533): its icon above its caption (`OfferSticker`) when the product has an icon and a caption in the language, else its picture for the language, else dropped; oldest subscription first; an icon that fails to load falls back to the picture, and when that fails too to the caption alone (`useFailedIcons` keeps both)
 6. **Promo line** — `PromoLine` component, only if pro has a `promoLine` subscription with `promoStickerMessage`
 7. **Action buttons** — Chat (message icon, flex: 1) + Select Me (flex: 2, toggles selected state)
 
@@ -99,6 +99,6 @@ Subscriptions come from `pro.serviceCategories[0].subscriptions`. Relevant `prod
 
 | subType | What it renders | Component |
 |---------|----------------|-----------|
-| `motivational` | Stickers in the OFFERS box: icon + caption, else the picture (#533) | shared `OffersBox` + `offerStickersOf` (FoodOrderView: OffersSection) |
+| `motivational` | Stickers in the OFFERS box: icon + caption, else the picture (#533) | shared `OffersBox` + `utils/offerStickers` (FoodOrderView: OffersSection) |
 | `promoLine` | Text message in pink banner | PromoLine |
 | `featuredPro` | Featured badge image in profile header | ProProfileScreen only |

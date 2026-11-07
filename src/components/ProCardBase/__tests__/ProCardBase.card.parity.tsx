@@ -142,12 +142,19 @@ const iconSticker = (
   },
 })
 const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// An icon whose pictures fail to load too (#533).
+const BROKEN_ART = {
+  ...BROKEN_ICON,
+  pictureEn: "https://example.com/parity/picture-broken-en.svg",
+  pictureAr: "https://example.com/parity/picture-broken-ar.svg",
+}
 // The icon art: a circle, so an icon is told apart from a picture in a tree.
 const ICON_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
-// The icons answer with ICON_ART, a broken one with a 404, the rest SVG_ART.
+// The icons answer with ICON_ART, a broken icon or picture with a 404, the
+// rest SVG_ART.
 const ICON_HTTP = (key: string) =>
-  /icon-broken/.test(key)
+  /-broken/.test(key)
     ? { status: 404, text: "Not Found" }
     : /\/icon-/.test(key)
       ? { text: ICON_ART }
@@ -226,8 +233,9 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
   },
   // #533: icon stickers (the icon above the caption, top-aligned in its
   // cell), oldest first, one captioned in English only (its picture in
-  // Arabic), and an icon that fails to load drawn as its picture. New, under
-  // a "#533 offers" name; the rows above draw what they drew.
+  // Arabic), an icon that fails to load drawn as its picture, and one whose
+  // picture fails too drawn as its caption alone. New, under a "#533 offers"
+  // name; the rows above draw what they drew.
   {
     name: "icon stickers, oldest first, #533 offers",
     props: {
@@ -254,6 +262,21 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
       subscriptions: [
         iconSticker(11, "Installments", "الدفع بالتقسيط"),
         iconSticker(16, "Free Manicure", "مانيكير مجاني", BROKEN_ICON),
+      ],
+      trustDocs: [],
+      offerAmount: 450,
+    },
+  },
+  {
+    name: "a failed icon whose picture fails too, its caption alone, #533 offers",
+    props: {
+      displayName: "Mona Adel",
+      isCompany: false,
+      overallScore: 4,
+      reviewsCount: 3,
+      subscriptions: [
+        iconSticker(11, "Installments", "الدفع بالتقسيط"),
+        iconSticker(18, "Free Manicure", "مانيكير مجاني", BROKEN_ART),
       ],
       trustDocs: [],
       offerAmount: 450,

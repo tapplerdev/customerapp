@@ -59,9 +59,8 @@ import { Text, a } from "@tappler/shared/src/ds"
 import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import NoReviewsBox from "@tappler/shared/src/components/NoReviewsBox"
 import OffersBox from "@tappler/shared/src/components/OffersBox"
-import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
-import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
 import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
+import { stickerCell, stickersOf } from "utils/offerStickers"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -140,12 +139,14 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     documents: pro?.documents,
   })
   // The stickers as drawn (#533): icon and caption, else the picture for the
-  // language, oldest first; an icon that failed to load falls back too.
-  const { failedIcons, onIconError } = useFailedIcons()
-  const stickers = offerStickersOf(
+  // language, oldest first; an icon that failed to load falls back to the
+  // picture, and when that fails too to the caption alone.
+  const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
+    useFailedIcons()
+  const stickers = stickersOf(
     proServiceCat?.subscriptions,
     isAr,
-    failedIcons
+    failedStickerArt
   )
   const featuredArt = isAr
     ? featureSubscription?.product?.pictureAr
@@ -413,9 +414,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               Each is the icon above its caption (#533), or the product's
               single picture, centred. */}
           <OffersBox>
-            {stickers.map((item) =>
-              offerStickerCell(item, SvgUriContainer, onIconError)
-            )}
+            {stickers.map((item) => stickerCell(item, onStickerArtError))}
           </OffersBox>
         </DmView>
 

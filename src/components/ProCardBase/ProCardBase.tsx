@@ -18,9 +18,8 @@ import styles from "./styles"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
 import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import OffersBox from "@tappler/shared/src/components/OffersBox"
-import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
-import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
 import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
+import { stickerCell, stickersOf } from "utils/offerStickers"
 // A trust sticker's slot, only as tall as its art (#522), one copy for both
 // apps' cards.
 import {
@@ -89,9 +88,11 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
     (s: any) => s.product?.subType === "promoLine"
   )
   // The stickers as drawn (#533): icon and caption, else the picture for the
-  // language, oldest first; an icon that failed to load falls back too.
-  const { failedIcons, onIconError } = useFailedIcons()
-  const stickers = offerStickersOf(subscriptions, isAr, failedIcons)
+  // language, oldest first; an icon that failed to load falls back to the
+  // picture, and when that fails too to the caption alone.
+  const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
+    useFailedIcons()
+  const stickers = stickersOf(subscriptions, isAr, failedStickerArt)
 
   return (
     <DmView
@@ -289,9 +290,7 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           centres the drawing in its box (see OffersSection's strip). */}
       {stickers.length > 0 && (
         <OffersBox style={a.mt_12}>
-          {stickers.map((item) =>
-            offerStickerCell(item, SvgUriContainer, onIconError)
-          )}
+          {stickers.map((item) => stickerCell(item, onStickerArtError))}
         </OffersBox>
       )}
 
