@@ -16,7 +16,7 @@ Used in search results when a customer browses pros for a service category. Loca
    - Star rating via `RateComponent`
    - Description (text-10, 2 lines max, only if `informationAbout` exists)
 4. **Trust badges** — approved trust documents (`type === "trust" && status === "approved"`), rendered as SVG stickers via `SvgUriContainer`, horizontal flex-wrap
-5. **OFFERS banner** — `OffersSection` component, only if pro has `motivational` subscriptions
+5. **OFFERS box** — tappler-shared's `OffersBox`, only if pro has `motivational` subscriptions with art to draw. Each sticker comes from tappler-shared's `components/OfferSticker` (`stickersOf` over `offerStickersOf`, drawn by `offerStickerCell` with this app's `SvgUriContainer`, #533): its icon above its caption (`OfferSticker`) when the product has an icon and a caption in the language, else its picture for the language, else dropped; in catalogue order (newest product first, as the catalogue lists them, so a renewal doesn't move a sticker); an icon that fails to load falls back to the picture, and when that fails too to the caption alone (`useFailedIcons` keeps both)
 6. **Promo line** — `PromoLine` component, only if pro has a `promoLine` subscription with `promoStickerMessage`
 7. **Action buttons** — Chat (message icon, flex: 1) + Select Me (flex: 2, toggles selected state)
 
@@ -43,7 +43,7 @@ Used when viewing a job's "Other Pros" — opportunity pros who found the job an
 4. **Opportunity notes bubble** — speech bubble with CSS triangle pointer, grey background (#E4E4E4), only if `showOpportunityNotes && opportunityNotes`
 5. **Trust badges** — same as ProCard
 6. **Promo line** — same as ProCard
-7. **OFFERS banner** — same as ProCard (compact mode)
+7. **OFFERS box** — same as ProCard
 8. **SELECT ME / PASS buttons** — two `ActionBtn` bordered buttons, only if `showSelectPassButtons && !isRejected`
 9. **"Passed" label** — italic grey text, only if `isRejected`
 
@@ -75,6 +75,7 @@ Wrapper used by both OffersSection and PromoLine:
 - Tab has top-rounded corners, content box has `borderTopRightRadius` on right side (creating the tab-detached effect)
 
 ### OffersSection (`components/OffersSection/`)
+- Only FoodOrderView still uses it (stickers only, no promo line); the cards and the profile use shared's `OffersBox`
 - Filters subscriptions for `subType === "motivational"`
 - Returns null if no motivational subscriptions
 - Renders each subscription's product picture as SVG sticker inside BannerContainer
@@ -98,6 +99,6 @@ Subscriptions come from `pro.serviceCategories[0].subscriptions`. Relevant `prod
 
 | subType | What it renders | Component |
 |---------|----------------|-----------|
-| `motivational` | SVG sticker badges in OFFERS banner | OffersSection |
+| `motivational` | Stickers in the OFFERS box: icon + caption, else the picture (#533) | shared `OffersBox` + `utils/offerStickers` (FoodOrderView: OffersSection) |
 | `promoLine` | Text message in pink banner | PromoLine |
 | `featuredPro` | Featured badge image in profile header | ProProfileScreen only |

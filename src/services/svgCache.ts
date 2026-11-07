@@ -1,3 +1,7 @@
+import { parse } from "react-native-svg"
+
+import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
+
 /**
  * Session-lifetime cache for remote SVG artwork (subscription stickers, trust
  * badges). SvgUriContainer used to fetch(uri) on EVERY mount — with FlashList
@@ -14,6 +18,22 @@
 const cache = new Map<string, string>()
 const inflight = new Map<string, Promise<string | null>>()
 
+/*
+ * Art SvgXml can draw (#533). SvgXml parses the body when it renders, and one
+ * that contains <svg but doesn't parse (cut short, a broken upload) is drawn
+ * as nothing, with no error to its caller. So a body is parsed once, the way
+ * SvgXml will, before it's cached: one that fails is a failed load like a 404
+ * (SvgUriContainer's onError fires, so a sticker's icon falls back) and isn't
+ * kept for the session.
+ */
+const isDrawable = (body: string) => {
+  try {
+    return body.includes("<svg") && parse(body) !== null
+  } catch {
+    return false
+  }
+}
+
 export const peekSvg = (uri?: string | null): string | null =>
   (uri && cache.get(uri)) || null
 
@@ -27,7 +47,7 @@ export const loadSvg = (uri: string): Promise<string | null> => {
   const request = fetch(uri)
     .then((res) => res.text())
     .then((text) => {
-      if (text.includes("<svg")) {
+      if (isDrawable(text)) {
         cache.set(uri, text)
         return text
       }
@@ -51,7 +71,9 @@ export const prefetchSvgs = (
 
 /**
  * All remote SVG urls a pro card can render, in the CURRENT language only:
- * motivational subscription stickers (OffersSection) + approved trust badges.
+ * the offers stickers as the card draws them (#533, offerStickersOf: the icon
+ * when it has one and a caption for the language, else the picture for the
+ * language) + approved trust badges.
  * Loosely typed on purpose — callers hold ProType but this only touches the
  * exact accessors the card renderers use.
  */
@@ -63,15 +85,11 @@ export const collectProStickerUrls = (
   const urls: Array<string | undefined> = []
   const slice = limit != null ? pros.slice(0, limit) : pros
   slice.forEach((pro: any) => {
-    pro?.serviceCategories?.[0]?.subscriptions?.forEach((sub: any) => {
-      if (sub?.product?.subType === "motivational") {
-        urls.push(
-          isAr
-            ? sub.product?.pictureAr || sub.product?.pictureEn
-            : sub.product?.pictureEn
-        )
+    offerStickersOf(pro?.serviceCategories?.[0]?.subscriptions, isAr).forEach(
+      (item) => {
+        urls.push(item.kind === "stacked" ? item.icon : item.picture)
       }
-    })
+    )
     pro?.documents?.forEach((doc: any) => {
       if (doc?.type === "trust" && doc?.status === "approved") {
         const tp = doc.trustDocumentData?.trustProduct

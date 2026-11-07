@@ -117,6 +117,48 @@ const sticker = (id: number, subType: string, extra: object = {}) => ({
 const SVG_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 31"><rect width="118" height="31" fill="#CC0000"/></svg>'
 
+// #533: a sticker with an icon (one for both languages) and a caption in each,
+// its legacy pictures kept as the fallback. A caption left empty is one the
+// sticker doesn't have in that language. Its product has no id unless
+// `product` gives one (its place in the catalogue, the order stickers are
+// drawn in): the sort keeps stickers with no id in the order given, so a row
+// whose order isn't the point lists them in the order they're drawn.
+const iconSticker = (
+  id: number,
+  labelEn: string,
+  labelAr: string,
+  product: object = {}
+) => ({
+  id,
+  product: {
+    subType: "motivational",
+    pictureEn: `https://example.com/parity/motivational-${id}-en.svg`,
+    pictureAr: `https://example.com/parity/motivational-${id}-ar.svg`,
+    icon: `https://example.com/parity/icon-${id}.svg`,
+    labelEn,
+    labelAr,
+    ...product,
+  },
+})
+const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// An icon whose pictures fail to load too (#533).
+const BROKEN_ART = {
+  ...BROKEN_ICON,
+  pictureEn: "https://example.com/parity/picture-broken-en.svg",
+  pictureAr: "https://example.com/parity/picture-broken-ar.svg",
+}
+// The icon art: a circle, so an icon is told apart from a picture in a tree.
+const ICON_ART =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
+// The icons answer with ICON_ART, a broken icon or picture with a 404, the
+// rest SVG_ART.
+const ICON_HTTP = (key: string) =>
+  /-broken/.test(key)
+    ? { status: 404, text: "Not Found" }
+    : /\/icon-/.test(key)
+      ? { text: ICON_ART }
+      : { text: SVG_ART }
+
 const withCategory = (
   pro: ProType,
   subscriptions: object[] = [],
@@ -248,6 +290,20 @@ const openViewer =
   (nth: number): Step =>
   (root) =>
     pressIcon(root, { icon: "FastImage", nth })
+
+/*
+ * #533 draws a sticker that has an icon and a caption in the language as the
+ * icon above the caption, top-aligned in its cell, else as its picture as
+ * before; the stickers go in catalogue order (newest product first, as the
+ * catalogue lists them, Omar 2026-11-07); an icon that fails to load falls
+ * back to the picture, and when there's no picture or it fails too, to the
+ * caption alone. Those states are new, under a "#533 offers" name; every
+ * state above draws what it drew.
+ */
+const withStickers = (subscriptions: object[]) => ({
+  ...withPro(withCategory(PRO_COMPANY, subscriptions)),
+  http: ICON_HTTP,
+})
 
 type Case = {
   state: string
@@ -401,6 +457,70 @@ const CASES: Case[] = [
           ? { status: 404, text: "Not Found" }
           : { text: SVG_ART },
     },
+  },
+  {
+    state: "an icon sticker, #533 offers",
+    options: withStickers([iconSticker(11, "Installments", "الدفع بالتقسيط")]),
+  },
+  {
+    state: "two icon stickers, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+  },
+  {
+    state: "three icon stickers, in catalogue order, #533 offers",
+    options: withStickers([
+      // Neither the order given nor the subscriptions' (11, 12, 13): the
+      // catalogue's, Installments (30), Discounts (9), Free Shoot (5).
+      iconSticker(13, "Discounts", "خصومات فورية", { id: 9 }),
+      iconSticker(11, "Installments", "الدفع بالتقسيط", { id: 30 }),
+      iconSticker(12, "Free Shoot", "تصوير مجاني", { id: 5 }),
+    ]),
+  },
+  {
+    state: "a caption long enough to wrap, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+      iconSticker(14, "Free delivery on orders", "توصيل مجاني لكل الطلبات"),
+    ]),
+  },
+  {
+    state:
+      "an icon sticker, a picture sticker and one captioned in English only, #533 offers",
+    options: withStickers([
+      sticker(2, "motivational"),
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(15, "Fast Response", ""),
+    ]),
+  },
+  {
+    state: "an icon that fails to load, drawn as its picture, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(16, "Free Manicure", "مانيكير مجاني", BROKEN_ICON),
+    ]),
+  },
+  {
+    state: "a failed icon with no picture, its caption alone, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(17, "Free Manicure", "مانيكير مجاني", {
+        ...BROKEN_ICON,
+        pictureEn: "",
+        pictureAr: "",
+      }),
+    ]),
+  },
+  {
+    state:
+      "a failed icon whose picture fails too, its caption alone, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(18, "Free Manicure", "مانيكير مجاني", BROKEN_ART),
+    ]),
   },
 ]
 
