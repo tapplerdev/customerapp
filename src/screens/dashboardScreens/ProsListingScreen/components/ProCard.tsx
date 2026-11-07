@@ -23,7 +23,8 @@ import { Text, a } from "@tappler/shared/src/ds"
 import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import OffersBox from "@tappler/shared/src/components/OffersBox"
 import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
-import { stickerCell, stickersOf } from "utils/offerStickers"
+import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
+import { stickersOf } from "@tappler/shared/src/components/OfferSticker/offerStickers"
 // A trust sticker's slot, only as tall as its art (#522), one copy for both
 // apps' cards.
 import {
@@ -346,7 +347,9 @@ const ProCard: React.FC<Props> = ({
           box under the one tab, after the stickers if there are any. With
           neither, the box draws nothing. */}
       <OffersBox style={a.mt_12} promoMessage={promoMessage}>
-        {stickers.map((item) => stickerCell(item, onStickerArtError))}
+        {stickers.map((item) =>
+          offerStickerCell(item, SvgUriContainer, onStickerArtError)
+        )}
       </OffersBox>
 
       {/* Buttons: Chat + Select */}

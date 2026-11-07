@@ -59,7 +59,8 @@ import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import NoReviewsBox from "@tappler/shared/src/components/NoReviewsBox"
 import OffersBox from "@tappler/shared/src/components/OffersBox"
 import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
-import { stickerCell, stickersOf } from "utils/offerStickers"
+import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
+import { stickersOf } from "@tappler/shared/src/components/OfferSticker/offerStickers"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -410,7 +411,9 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
               offer in the same box (#533), after the stickers as on the
               card; it was a banner of its own above them. */}
           <OffersBox promoMessage={promoLine?.promoStickerMessage}>
-            {stickers.map((item) => stickerCell(item, onStickerArtError))}
+            {stickers.map((item) =>
+              offerStickerCell(item, SvgUriContainer, onStickerArtError)
+            )}
           </OffersBox>
         </DmView>
 
