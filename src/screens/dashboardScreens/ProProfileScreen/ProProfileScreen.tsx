@@ -139,8 +139,8 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     documents: pro?.documents,
   })
   // The stickers as drawn (#533): icon and caption, else the picture for the
-  // language, oldest first; an icon that failed to load falls back to the
-  // picture, and when that fails too to the caption alone.
+  // language, in catalogue order; an icon that failed to load falls back to
+  // the picture, and when that fails too to the caption alone.
   const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
     useFailedIcons()
   const stickers = stickersOf(

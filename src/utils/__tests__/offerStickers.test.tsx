@@ -17,13 +17,14 @@ jest.mock("components/SvgUriContainer/SvgUriContainer", () => {
 })
 
 const ICON = {
+  id: 7,
   pictureEn: "en-1.svg",
   pictureAr: "ar-1.svg",
   icon: "icon-1.svg",
   labelEn: "Installments",
   labelAr: "الدفع بالتقسيط",
 }
-const PICTURE = { pictureEn: "en-2.svg", pictureAr: "ar-2.svg" }
+const PICTURE = { id: 12, pictureEn: "en-2.svg", pictureAr: "ar-2.svg" }
 const sub = (id: number, product: object) => ({
   id,
   product: { subType: "motivational", ...product },
@@ -58,7 +59,7 @@ describe("withoutFailedPicture", () => {
 describe("stickersOf", () => {
   const subs = [sub(9, PICTURE), sub(4, ICON)]
 
-  it("draws an icon sticker whose icon and picture failed as its caption alone, oldest first", () => {
+  it("draws an icon sticker whose icon and picture failed as its caption alone, in catalogue order", () => {
     const failed = new Set(["icon-1.svg", "en-1.svg", "en-2.svg"])
 
     expect(stickersOf(subs, false, failed)).toEqual([

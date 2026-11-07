@@ -119,7 +119,9 @@ const SVG_ART =
 
 // #533: a sticker with an icon (one for both languages) and a caption in each,
 // its legacy pictures kept as the fallback. A caption left empty is one the
-// sticker doesn't have in that language.
+// sticker doesn't have in that language. Its product's id, its place in the
+// catalogue (the order stickers are drawn in), is the subscription's unless
+// `product` gives one.
 const iconSticker = (
   id: number,
   labelEn: string,
@@ -134,8 +136,14 @@ const iconSticker = (
     icon: `https://example.com/parity/icon-${id}.svg`,
     labelEn,
     labelAr,
+    id,
     ...product,
   },
+})
+// A picture-only sticker with its product's id, its place in the catalogue.
+const withProductId = <S extends { product: object }>(sub: S, id: number) => ({
+  ...sub,
+  product: { ...sub.product, id },
 })
 const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
 // An icon whose pictures fail to load too (#533).
@@ -291,7 +299,10 @@ const openViewer =
 /*
  * #533 draws a sticker that has an icon and a caption in the language as the
  * icon above the caption, top-aligned in its cell, else as its picture as
- * before; the stickers go oldest first; an icon that fails to load falls back
+ * before; the stickers go in catalogue order (product id, Omar 2026-11-07,
+ * where the first captures went oldest subscription first: the states whose
+ * order that changed are captured again under new names, beside them); an
+ * icon that fails to load falls back
  * to the picture, and when there's no picture or it fails too, to the caption
  * alone. Those states are new, under a "#533 offers" name; every state above
  * draws what it drew.
@@ -466,11 +477,13 @@ const CASES: Case[] = [
     ]),
   },
   {
-    state: "three icon stickers, oldest first, #533 offers",
+    state: "three icon stickers, in catalogue order, #533 offers",
     options: withStickers([
-      iconSticker(13, "Discounts", "خصومات فورية"),
-      iconSticker(11, "Installments", "الدفع بالتقسيط"),
-      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+      // Neither the order given nor the subscriptions' (11, 12, 13): the
+      // catalogue's, Free Shoot (5), Discounts (9), Installments (30).
+      iconSticker(13, "Discounts", "خصومات فورية", { id: 9 }),
+      iconSticker(11, "Installments", "الدفع بالتقسيط", { id: 30 }),
+      iconSticker(12, "Free Shoot", "تصوير مجاني", { id: 5 }),
     ]),
   },
   {
@@ -486,7 +499,7 @@ const CASES: Case[] = [
       "an icon sticker, a picture sticker and one captioned in English only, #533 offers",
     options: withStickers([
       iconSticker(11, "Installments", "الدفع بالتقسيط"),
-      sticker(2, "motivational"),
+      withProductId(sticker(2, "motivational"), 2),
       iconSticker(15, "Fast Response", ""),
     ]),
   },

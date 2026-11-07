@@ -88,8 +88,8 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
     (s: any) => s.product?.subType === "promoLine"
   )
   // The stickers as drawn (#533): icon and caption, else the picture for the
-  // language, oldest first; an icon that failed to load falls back to the
-  // picture, and when that fails too to the caption alone.
+  // language, in catalogue order; an icon that failed to load falls back to
+  // the picture, and when that fails too to the caption alone.
   const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
     useFailedIcons()
   const stickers = stickersOf(subscriptions, isAr, failedStickerArt)
