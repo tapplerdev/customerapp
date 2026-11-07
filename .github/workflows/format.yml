@@ -2,11 +2,23 @@ name: Format
 
 on:
   pull_request:
-  push:
-    branches: [dev, main]
+    # Draft PRs run nothing (see the job's `if`) until marked ready.
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  # No run on merge: the PR's runs already checked its merge with the base
+  # branch. Manual runs from the Actions tab.
+  workflow_dispatch:
+
+# A new push to a PR cancels the run still going for the old one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   prettier:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
