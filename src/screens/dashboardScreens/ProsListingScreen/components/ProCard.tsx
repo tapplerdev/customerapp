@@ -8,7 +8,6 @@ import type { CoachMarkTarget } from "@tappler/shared/src/components/CoachMark"
 import colors from "@tappler/shared/src/styles/colors"
 import { ProType } from "types/pro"
 import RateComponent from "components/RateComponent/RateComponent"
-import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 
 import LocationIcon from "assets/icons/location-red.svg"
@@ -127,6 +126,9 @@ const ProCard: React.FC<Props> = ({
   const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
     useFailedIcons()
   const stickers = stickersOf(subscriptions, isAr, failedStickerArt)
+  const promoMessage = subscriptions.find(
+    (s: any) => s.product?.subType === "promoLine"
+  )?.promoStickerMessage
 
   const trustDocs =
     pro.documents?.filter(
@@ -339,23 +341,13 @@ const ProCard: React.FC<Props> = ({
           own card. It replaces the pink footer band. Each is the icon
           above its caption (#533), or the product's single picture,
           centred, untrimmed: the CMS template's group translate is what
-          centres the drawing in its box (see OffersSection's strip). */}
-      {stickers.length > 0 && (
-        <OffersBox style={a.mt_12}>
-          {stickers.map((item) => stickerCell(item, onStickerArtError))}
-        </OffersBox>
-      )}
-
-      {/* Promo line */}
-      {subscriptions.find((s: any) => s.product?.subType === "promoLine")
-        ?.promoStickerMessage && (
-        <PromoLine
-          promoMessage={
-            subscriptions.find((s: any) => s.product?.subType === "promoLine")
-              .promoStickerMessage
-          }
-        />
-      )}
+          centres the drawing in its box (see OffersSection's strip). The
+          pro's promo line is their text offer in the same box (#533): a pink
+          box under the one tab, after the stickers if there are any. With
+          neither, the box draws nothing. */}
+      <OffersBox style={a.mt_12} promoMessage={promoMessage}>
+        {stickers.map((item) => stickerCell(item, onStickerArtError))}
+      </OffersBox>
 
       {/* Buttons: Chat + Select */}
       <DmView style={[a.mt_12, a.flex_row, a.items_center]}>

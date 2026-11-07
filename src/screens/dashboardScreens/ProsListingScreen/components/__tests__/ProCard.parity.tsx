@@ -71,6 +71,15 @@ import type { ProType } from "types/pro"
  * alone. Those states are new, under a "#533 offers" name; every state above
  * draws what it drew.
  */
+/*
+ * #533's text offer: the promo line is drawn in the OFFERS box's frame, its
+ * text in a pink box under the one OFFERS tab (it was a banner with an OFFER
+ * tab of its own, under the stickers' box), after the stickers when there
+ * are any. The states above that draw a promo line are captured again in
+ * place (recipe B); the three under a "#533 text offer" name are new. A
+ * pro's text is shown as they typed it, so an Arabic one draws in English
+ * rows too.
+ */
 const load = () => {
   const React = require("react") as typeof import("react")
   const ProCard = require("../ProCard").default
@@ -95,6 +104,15 @@ const promoLine = {
   promoStickerMessage: "20% off on Tuesdays",
   product: { subType: "promoLine" },
 }
+// #533: a promo line with its own text, and the longest a pro can write
+// (PROMO_LINE_MAX_LENGTH, 50), in Arabic.
+const textOffer = (promoStickerMessage: string) => ({
+  id: 7,
+  promoStickerMessage,
+  product: { subType: "promoLine" },
+})
+const DESIGN_OFFER = "20% off your service on Tuesdays and Wednesdays"
+const LONG_ARABIC_OFFER = "خصم 25% على كل الخدمات يومي الثلاثاء والأربعاء فقط"
 // The sticker art the screen fetches: a plain rectangle, so the stickers draw.
 const SVG_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 31"><rect width="118" height="31" fill="#CC0000"/></svg>'
@@ -383,6 +401,23 @@ const BASE_CASES: Case[] = [
       iconSticker(18, "Free Manicure", "مانيكير مجاني", BROKEN_ART),
     ]),
     http: ICON_HTTP,
+  },
+  {
+    state: "a text offer, #533 text offer",
+    pro: proWith({}, [textOffer(DESIGN_OFFER)]),
+  },
+  {
+    state: "icon stickers and a text offer, #533 text offer",
+    pro: proWith({}, [
+      textOffer(DESIGN_OFFER),
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+    http: ICON_HTTP,
+  },
+  {
+    state: "a long Arabic text offer that wraps, #533 text offer",
+    pro: proWith({}, [textOffer(LONG_ARABIC_OFFER)]),
   },
 ]
 

@@ -307,6 +307,23 @@ const openViewer =
  * alone. Those states are new, under a "#533 offers" name; every state above
  * draws what it drew.
  */
+/*
+ * #533's text offer: the promo line is drawn in the OFFERS box's frame, its
+ * text in a pink box under the one OFFERS tab, after the stickers (it was a
+ * banner with an OFFER tab of its own, above the stickers' box). The states
+ * above that draw a promo line are captured again in place (recipe B); the
+ * three under a "#533 text offer" name are new. A pro's text is shown as they
+ * typed it, so an Arabic one draws in English rows too.
+ */
+const textOffer = (promoStickerMessage: string) => ({
+  id: 8,
+  promoStickerMessage,
+  product: { subType: "promoLine" },
+})
+const DESIGN_OFFER = "20% off your service on Tuesdays and Wednesdays"
+// The longest a pro can write (PROMO_LINE_MAX_LENGTH, 50), in Arabic.
+const LONG_ARABIC_OFFER = "خصم 25% على كل الخدمات يومي الثلاثاء والأربعاء فقط"
+
 const withStickers = (subscriptions: object[]) => ({
   ...withPro(withCategory(PRO_COMPANY, subscriptions)),
   http: ICON_HTTP,
@@ -528,6 +545,22 @@ const CASES: Case[] = [
       iconSticker(11, "Installments", "الدفع بالتقسيط"),
       iconSticker(18, "Free Manicure", "مانيكير مجاني", BROKEN_ART),
     ]),
+  },
+  {
+    state: "a text offer, #533 text offer",
+    options: withStickers([textOffer(DESIGN_OFFER)]),
+  },
+  {
+    state: "icon stickers and a text offer, #533 text offer",
+    options: withStickers([
+      textOffer(DESIGN_OFFER),
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+  },
+  {
+    state: "a long Arabic text offer that wraps, #533 text offer",
+    options: withStickers([textOffer(LONG_ARABIC_OFFER)]),
   },
 ]
 

@@ -6,7 +6,6 @@ import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import { formatMoney } from "@tappler/shared/src/helpers/money"
 import RateComponent from "components/RateComponent/RateComponent"
-import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 
 import ChatBubbleIcon from "assets/icons/chat-bubble.svg"
@@ -287,17 +286,13 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           own card. It replaces the pink footer band. Each is the icon
           above its caption (#533), or the product's single picture,
           centred, untrimmed: the CMS template's group translate is what
-          centres the drawing in its box (see OffersSection's strip). */}
-      {stickers.length > 0 && (
-        <OffersBox style={a.mt_12}>
-          {stickers.map((item) => stickerCell(item, onStickerArtError))}
-        </OffersBox>
-      )}
-
-      {/* Promo line */}
-      {promoLine && promoLine.promoStickerMessage && (
-        <PromoLine promoMessage={promoLine.promoStickerMessage} />
-      )}
+          centres the drawing in its box (see OffersSection's strip). The
+          pro's promo line is their text offer in the same box (#533): a pink
+          box under the one tab, after the stickers if there are any. With
+          neither, the box draws nothing. */}
+      <OffersBox style={a.mt_12} promoMessage={promoLine?.promoStickerMessage}>
+        {stickers.map((item) => stickerCell(item, onStickerArtError))}
+      </OffersBox>
 
       {/* SELECT ME / PASS buttons */}
       {showSelectPassButtons && !isRejected && (
