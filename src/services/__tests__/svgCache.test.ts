@@ -1,6 +1,6 @@
-import { describe, expect, it } from "@jest/globals"
+import { afterAll, describe, expect, it, jest } from "@jest/globals"
 
-import { collectProStickerUrls } from "../svgCache"
+import { collectProStickerUrls, loadSvg, peekSvg } from "../svgCache"
 
 /*
  * What the listing warms before the cards draw (#533): each sticker's art as
@@ -76,5 +76,47 @@ describe("collectProStickerUrls", () => {
     expect(collectProStickerUrls(pros, false, 1)).toEqual([
       "https://example.com/1-en.svg",
     ])
+  })
+})
+
+/*
+ * What loadSvg keeps (#533): only a body SvgXml can draw. One without <svg
+ * (an error page answered with a 200) or one that doesn't parse (cut short)
+ * resolves to nothing, so SvgUriContainer reports a failed load and a
+ * sticker's icon falls back, and it isn't cached for the session. The parse
+ * is react-native-svg's own, the one SvgXml runs.
+ */
+describe("loadSvg", () => {
+  const realFetch = global.fetch
+  const answer = (body: string) => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({ text: () => Promise.resolve(body) })
+    ) as unknown as typeof fetch
+  }
+
+  afterAll(() => {
+    global.fetch = realFetch
+  })
+
+  it("keeps an SVG that parses", async () => {
+    const svg = '<svg viewBox="0 0 24 24"><path d="M0 0L24 24"/></svg>'
+    answer(svg)
+
+    await expect(loadSvg("https://example.com/ok.svg")).resolves.toBe(svg)
+    expect(peekSvg("https://example.com/ok.svg")).toBe(svg)
+  })
+
+  it("keeps nothing for a body without <svg", async () => {
+    answer("<html><body>Bad gateway</body></html>")
+
+    await expect(loadSvg("https://example.com/html.svg")).resolves.toBeNull()
+    expect(peekSvg("https://example.com/html.svg")).toBeNull()
+  })
+
+  it("keeps nothing for an SVG that doesn't parse", async () => {
+    answer('<svg viewBox="0 0 24 24"><path d="M0 0L24')
+
+    await expect(loadSvg("https://example.com/cut.svg")).resolves.toBeNull()
+    expect(peekSvg("https://example.com/cut.svg")).toBeNull()
   })
 })

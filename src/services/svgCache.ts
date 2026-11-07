@@ -1,3 +1,5 @@
+import { parse } from "react-native-svg"
+
 import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
 
 /**
@@ -16,6 +18,22 @@ import { offerStickersOf } from "@tappler/shared/src/helpers/offerSticker"
 const cache = new Map<string, string>()
 const inflight = new Map<string, Promise<string | null>>()
 
+/*
+ * Art SvgXml can draw (#533). SvgXml parses the body when it renders, and one
+ * that contains <svg but doesn't parse (cut short, a broken upload) is drawn
+ * as nothing, with no error to its caller. So a body is parsed once, the way
+ * SvgXml will, before it's cached: one that fails is a failed load like a 404
+ * (SvgUriContainer's onError fires, so a sticker's icon falls back) and isn't
+ * kept for the session.
+ */
+const isDrawable = (body: string) => {
+  try {
+    return body.includes("<svg") && parse(body) !== null
+  } catch {
+    return false
+  }
+}
+
 export const peekSvg = (uri?: string | null): string | null =>
   (uri && cache.get(uri)) || null
 
@@ -29,7 +47,7 @@ export const loadSvg = (uri: string): Promise<string | null> => {
   const request = fetch(uri)
     .then((res) => res.text())
     .then((text) => {
-      if (text.includes("<svg")) {
+      if (isDrawable(text)) {
         cache.set(uri, text)
         return text
       }
