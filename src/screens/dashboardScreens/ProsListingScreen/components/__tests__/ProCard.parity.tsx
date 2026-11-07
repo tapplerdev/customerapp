@@ -60,6 +60,13 @@ import type { ProType } from "types/pro"
  * "#525 equal slots" name and captured beside the frozen ones, which no row
  * draws any more.
  */
+/*
+ * #533 draws a sticker that has an icon and a caption in the language as the
+ * icon above the caption, top-aligned in its cell, else as its picture as
+ * before; the stickers go oldest first; an icon that fails to load falls back
+ * to the picture, else the caption alone. Those states are new, under a
+ * "#533 offers" name; every state above draws what it drew.
+ */
 const load = () => {
   const React = require("react") as typeof import("react")
   const ProCard = require("../ProCard").default
@@ -87,6 +94,38 @@ const promoLine = {
 // The sticker art the screen fetches: a plain rectangle, so the stickers draw.
 const SVG_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 31"><rect width="118" height="31" fill="#CC0000"/></svg>'
+
+// #533: a sticker with an icon (one for both languages) and a caption in each,
+// its legacy pictures kept as the fallback. A caption left empty is one the
+// sticker doesn't have in that language.
+const iconSticker = (
+  id: number,
+  labelEn: string,
+  labelAr: string,
+  product: object = {}
+) => ({
+  id,
+  product: {
+    subType: "motivational",
+    pictureEn: `https://example.com/parity/sticker-${id}-en.svg`,
+    pictureAr: `https://example.com/parity/sticker-${id}-ar.svg`,
+    icon: `https://example.com/parity/icon-${id}.svg`,
+    labelEn,
+    labelAr,
+    ...product,
+  },
+})
+const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// The icon art: a circle, so an icon is told apart from a picture in a tree.
+const ICON_ART =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
+// The icons answer with ICON_ART, a broken one with a 404, the rest SVG_ART.
+const ICON_HTTP = (key: string) =>
+  /icon-broken/.test(key)
+    ? { status: 404, text: "Not Found" }
+    : /\/icon-/.test(key)
+      ? { text: ICON_ART }
+      : { text: SVG_ART }
 
 const proWith = (
   changes: Partial<ProType> = {},
@@ -119,6 +158,8 @@ type Case = {
   state: string
   pro: ProType
   props?: Record<string, unknown>
+  /** The art's answers, when not SVG_ART for every url (#533's icons). */
+  http?: (key: string) => { status?: number; text: string }
 }
 
 const BASE_CASES: Case[] = [
@@ -252,6 +293,67 @@ const BASE_CASES: Case[] = [
     props: { foodMode: true },
   },
   { state: "a non-food card is not a food card, #522 card", pro: PRO_FOOD },
+  {
+    state: "an icon sticker, #533 offers",
+    pro: proWith({}, [iconSticker(11, "Installments", "الدفع بالتقسيط")]),
+    http: ICON_HTTP,
+  },
+  {
+    state: "two icon stickers, #533 offers",
+    pro: proWith({}, [
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+    http: ICON_HTTP,
+  },
+  {
+    state: "three icon stickers, oldest first, #533 offers",
+    pro: proWith({}, [
+      iconSticker(13, "Discounts", "خصومات فورية"),
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+    http: ICON_HTTP,
+  },
+  {
+    state: "a caption long enough to wrap, #533 offers",
+    pro: proWith({}, [
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(14, "Free delivery on orders", "توصيل مجاني لكل الطلبات"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+    http: ICON_HTTP,
+  },
+  {
+    state:
+      "an icon sticker, a picture sticker and one captioned in English only, #533 offers",
+    pro: proWith({}, [
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      sticker(2),
+      iconSticker(15, "Fast Response", ""),
+    ]),
+    http: ICON_HTTP,
+  },
+  {
+    state: "an icon that fails to load, drawn as its picture, #533 offers",
+    pro: proWith({}, [
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(16, "Free Manicure", "مانيكير مجاني", BROKEN_ICON),
+    ]),
+    http: ICON_HTTP,
+  },
+  {
+    state: "a failed icon with no picture, its caption alone, #533 offers",
+    pro: proWith({}, [
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(17, "Free Manicure", "مانيكير مجاني", {
+        ...BROKEN_ICON,
+        pictureEn: "",
+        pictureAr: "",
+      }),
+    ]),
+    http: ICON_HTTP,
+  },
 ]
 
 // No 390-wide rows: OffersSection reads the window as it loads, but its strip
@@ -270,9 +372,10 @@ const options = (env: ParityEnv): RenderScreenOptions => ({
 describe("ProCard, captured from the unconverted code", () => {
   it.each(rows)(
     "$state [$env.language $env.platform]",
-    async ({ state, pro, props, env }) => {
+    async ({ state, pro, props, http, env }) => {
       const tree = await renderScreen(load, {
         ...options(env),
+        ...(http && { http }),
         props: { pro, isSelected: false, ...props },
       })
       expectParity(parityName(state, env), tree)

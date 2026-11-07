@@ -117,6 +117,38 @@ const sticker = (id: number, subType: string, extra: object = {}) => ({
 const SVG_ART =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 31"><rect width="118" height="31" fill="#CC0000"/></svg>'
 
+// #533: a sticker with an icon (one for both languages) and a caption in each,
+// its legacy pictures kept as the fallback. A caption left empty is one the
+// sticker doesn't have in that language.
+const iconSticker = (
+  id: number,
+  labelEn: string,
+  labelAr: string,
+  product: object = {}
+) => ({
+  id,
+  product: {
+    subType: "motivational",
+    pictureEn: `https://example.com/parity/motivational-${id}-en.svg`,
+    pictureAr: `https://example.com/parity/motivational-${id}-ar.svg`,
+    icon: `https://example.com/parity/icon-${id}.svg`,
+    labelEn,
+    labelAr,
+    ...product,
+  },
+})
+const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// The icon art: a circle, so an icon is told apart from a picture in a tree.
+const ICON_ART =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
+// The icons answer with ICON_ART, a broken one with a 404, the rest SVG_ART.
+const ICON_HTTP = (key: string) =>
+  /icon-broken/.test(key)
+    ? { status: 404, text: "Not Found" }
+    : /\/icon-/.test(key)
+      ? { text: ICON_ART }
+      : { text: SVG_ART }
+
 const withCategory = (
   pro: ProType,
   subscriptions: object[] = [],
@@ -248,6 +280,18 @@ const openViewer =
   (nth: number): Step =>
   (root) =>
     pressIcon(root, { icon: "FastImage", nth })
+
+/*
+ * #533 draws a sticker that has an icon and a caption in the language as the
+ * icon above the caption, top-aligned in its cell, else as its picture as
+ * before; the stickers go oldest first; an icon that fails to load falls back
+ * to the picture, else the caption alone. Those states are new, under a
+ * "#533 offers" name; every state above draws what it drew.
+ */
+const withStickers = (subscriptions: object[]) => ({
+  ...withPro(withCategory(PRO_COMPANY, subscriptions)),
+  http: ICON_HTTP,
+})
 
 type Case = {
   state: string
@@ -401,6 +445,60 @@ const CASES: Case[] = [
           ? { status: 404, text: "Not Found" }
           : { text: SVG_ART },
     },
+  },
+  {
+    state: "an icon sticker, #533 offers",
+    options: withStickers([iconSticker(11, "Installments", "الدفع بالتقسيط")]),
+  },
+  {
+    state: "two icon stickers, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+  },
+  {
+    state: "three icon stickers, oldest first, #533 offers",
+    options: withStickers([
+      iconSticker(13, "Discounts", "خصومات فورية"),
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+  },
+  {
+    state: "a caption long enough to wrap, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(14, "Free delivery on orders", "توصيل مجاني لكل الطلبات"),
+      iconSticker(12, "Free Shoot", "تصوير مجاني"),
+    ]),
+  },
+  {
+    state:
+      "an icon sticker, a picture sticker and one captioned in English only, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      sticker(2, "motivational"),
+      iconSticker(15, "Fast Response", ""),
+    ]),
+  },
+  {
+    state: "an icon that fails to load, drawn as its picture, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(16, "Free Manicure", "مانيكير مجاني", BROKEN_ICON),
+    ]),
+  },
+  {
+    state: "a failed icon with no picture, its caption alone, #533 offers",
+    options: withStickers([
+      iconSticker(11, "Installments", "الدفع بالتقسيط"),
+      iconSticker(17, "Free Manicure", "مانيكير مجاني", {
+        ...BROKEN_ICON,
+        pictureEn: "",
+        pictureAr: "",
+      }),
+    ]),
   },
 ]
 

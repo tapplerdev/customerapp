@@ -121,6 +121,38 @@ const sticker = (id: number) => ({
     pictureAr: art(`sticker-${id}-ar`),
   },
 })
+// #533: a sticker with an icon (one for both languages) and a caption in each,
+// its legacy pictures kept as the fallback. A caption left empty is one the
+// sticker doesn't have in that language.
+const iconSticker = (
+  id: number,
+  labelEn: string,
+  labelAr: string,
+  product: object = {}
+) => ({
+  id,
+  product: {
+    subType: "motivational",
+    pictureEn: `https://example.com/parity/sticker-${id}-en.svg`,
+    pictureAr: `https://example.com/parity/sticker-${id}-ar.svg`,
+    icon: `https://example.com/parity/icon-${id}.svg`,
+    labelEn,
+    labelAr,
+    ...product,
+  },
+})
+const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// The icon art: a circle, so an icon is told apart from a picture in a tree.
+const ICON_ART =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
+// The icons answer with ICON_ART, a broken one with a 404, the rest SVG_ART.
+const ICON_HTTP = (key: string) =>
+  /icon-broken/.test(key)
+    ? { status: 404, text: "Not Found" }
+    : /\/icon-/.test(key)
+      ? { text: ICON_ART }
+      : { text: SVG_ART }
+
 const PROMO = {
   id: 7,
   promoStickerMessage: "20% off on Tuesdays",
@@ -192,6 +224,41 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
       unreadCount: 0,
     },
   },
+  // #533: icon stickers (the icon above the caption, top-aligned in its
+  // cell), oldest first, one captioned in English only (its picture in
+  // Arabic), and an icon that fails to load drawn as its picture. New, under
+  // a "#533 offers" name; the rows above draw what they drew.
+  {
+    name: "icon stickers, oldest first, #533 offers",
+    props: {
+      displayName: "Mona Adel",
+      isCompany: false,
+      overallScore: 4,
+      reviewsCount: 3,
+      subscriptions: [
+        iconSticker(12, "Free delivery on orders", "توصيل مجاني لكل الطلبات"),
+        iconSticker(11, "Installments", "الدفع بالتقسيط"),
+        iconSticker(15, "Fast Response", ""),
+      ],
+      trustDocs: [],
+      offerAmount: 450,
+    },
+  },
+  {
+    name: "an icon that fails to load, drawn as its picture, #533 offers",
+    props: {
+      displayName: "Mona Adel",
+      isCompany: false,
+      overallScore: 4,
+      reviewsCount: 3,
+      subscriptions: [
+        iconSticker(11, "Installments", "الدفع بالتقسيط"),
+        iconSticker(16, "Free Manicure", "مانيكير مجاني", BROKEN_ICON),
+      ],
+      trustDocs: [],
+      offerAmount: 450,
+    },
+  },
 ]
 
 if (harvesting()) {
@@ -223,7 +290,8 @@ if (harvesting()) {
       const tree = await renderScreen(load, {
         lang: row.env.language,
         platform: row.env.platform,
-        http: () => ({ text: SVG_ART }),
+        // ICON_HTTP answers SVG_ART for every url but #533's icons.
+        http: ICON_HTTP,
         navigation: "none",
         props: { ...row.props, isAr: row.env.language === "ar" },
       })
