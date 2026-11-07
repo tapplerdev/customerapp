@@ -121,6 +121,48 @@ const sticker = (id: number) => ({
     pictureAr: art(`sticker-${id}-ar`),
   },
 })
+// #533: a sticker with an icon (one for both languages) and a caption in each,
+// its legacy pictures kept as the fallback. A caption left empty is one the
+// sticker doesn't have in that language. Its product has no id unless
+// `product` gives one (its place in the catalogue, the order stickers are
+// drawn in): the sort keeps stickers with no id in the order given, so a row
+// whose order isn't the point lists them in the order they're drawn.
+const iconSticker = (
+  id: number,
+  labelEn: string,
+  labelAr: string,
+  product: object = {}
+) => ({
+  id,
+  product: {
+    subType: "motivational",
+    pictureEn: `https://example.com/parity/sticker-${id}-en.svg`,
+    pictureAr: `https://example.com/parity/sticker-${id}-ar.svg`,
+    icon: `https://example.com/parity/icon-${id}.svg`,
+    labelEn,
+    labelAr,
+    ...product,
+  },
+})
+const BROKEN_ICON = { icon: "https://example.com/parity/icon-broken.svg" }
+// An icon whose pictures fail to load too (#533).
+const BROKEN_ART = {
+  ...BROKEN_ICON,
+  pictureEn: "https://example.com/parity/picture-broken-en.svg",
+  pictureAr: "https://example.com/parity/picture-broken-ar.svg",
+}
+// The icon art: a circle, so an icon is told apart from a picture in a tree.
+const ICON_ART =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#3F73DB"/></svg>'
+// The icons answer with ICON_ART, a broken icon or picture with a 404, the
+// rest SVG_ART.
+const ICON_HTTP = (key: string) =>
+  /-broken/.test(key)
+    ? { status: 404, text: "Not Found" }
+    : /\/icon-/.test(key)
+      ? { text: ICON_ART }
+      : { text: SVG_ART }
+
 const PROMO = {
   id: 7,
   promoStickerMessage: "20% off on Tuesdays",
@@ -192,6 +234,63 @@ const DATA: { name: string; props: Record<string, unknown> }[] = [
       unreadCount: 0,
     },
   },
+  // #533: icon stickers (the icon above the caption, top-aligned in its
+  // cell), in catalogue order (newest product first, as the catalogue lists
+  // them), one captioned in English only (its picture in Arabic), an icon
+  // that fails to load drawn as its picture, and one whose picture fails too
+  // drawn as its caption alone. New, under a "#533 offers" name; the rows
+  // above draw what they drew.
+  {
+    name: "icon stickers, in catalogue order, #533 offers",
+    props: {
+      displayName: "Mona Adel",
+      isCompany: false,
+      overallScore: 4,
+      reviewsCount: 3,
+      subscriptions: [
+        // Neither the order given nor the subscriptions' (11, 12, 15): the
+        // catalogue's, Fast Response (40), Installments (22), Free delivery
+        // on orders (3).
+        iconSticker(12, "Free delivery on orders", "توصيل مجاني لكل الطلبات", {
+          id: 3,
+        }),
+        iconSticker(11, "Installments", "الدفع بالتقسيط", { id: 22 }),
+        iconSticker(15, "Fast Response", "", { id: 40 }),
+      ],
+      trustDocs: [],
+      offerAmount: 450,
+    },
+  },
+  {
+    name: "an icon that fails to load, drawn as its picture, #533 offers",
+    props: {
+      displayName: "Mona Adel",
+      isCompany: false,
+      overallScore: 4,
+      reviewsCount: 3,
+      subscriptions: [
+        iconSticker(11, "Installments", "الدفع بالتقسيط"),
+        iconSticker(16, "Free Manicure", "مانيكير مجاني", BROKEN_ICON),
+      ],
+      trustDocs: [],
+      offerAmount: 450,
+    },
+  },
+  {
+    name: "a failed icon whose picture fails too, its caption alone, #533 offers",
+    props: {
+      displayName: "Mona Adel",
+      isCompany: false,
+      overallScore: 4,
+      reviewsCount: 3,
+      subscriptions: [
+        iconSticker(11, "Installments", "الدفع بالتقسيط"),
+        iconSticker(18, "Free Manicure", "مانيكير مجاني", BROKEN_ART),
+      ],
+      trustDocs: [],
+      offerAmount: 450,
+    },
+  },
 ]
 
 if (harvesting()) {
@@ -223,7 +322,8 @@ if (harvesting()) {
       const tree = await renderScreen(load, {
         lang: row.env.language,
         platform: row.env.platform,
-        http: () => ({ text: SVG_ART }),
+        // ICON_HTTP answers SVG_ART for every url but #533's icons.
+        http: ICON_HTTP,
         navigation: "none",
         props: { ...row.props, isAr: row.env.language === "ar" },
       })

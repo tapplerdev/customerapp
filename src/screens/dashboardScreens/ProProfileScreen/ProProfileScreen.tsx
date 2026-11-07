@@ -58,9 +58,10 @@ import { AppFlatList, AppKeyboardAwareScrollView } from "components/scroll"
 import { Text, a } from "@tappler/shared/src/ds"
 import RatingSummary from "@tappler/shared/src/components/RatingSummary"
 import NoReviewsBox from "@tappler/shared/src/components/NoReviewsBox"
-import OffersBox, {
-  OFFER_STICKER_HEIGHT,
-} from "@tappler/shared/src/components/OffersBox"
+import OffersBox from "@tappler/shared/src/components/OffersBox"
+import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
+import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
+import { stickersOf } from "@tappler/shared/src/components/OfferSticker/offerStickers"
 
 const isVideoMedia = (media: ProWorkPhotoType) =>
   (media.mimeType ?? "").startsWith("video")
@@ -138,8 +139,15 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     subscriptions: proServiceCat?.subscriptions,
     documents: pro?.documents,
   })
-  const motivational = (proServiceCat?.subscriptions || []).filter(
-    (sub: any) => sub.product?.subType === "motivational"
+  // The stickers as drawn (#533): icon and caption, else the picture for the
+  // language, in catalogue order; an icon that failed to load falls back to
+  // the picture, and when that fails too to the caption alone.
+  const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
+    useFailedIcons()
+  const stickers = stickersOf(
+    proServiceCat?.subscriptions,
+    isAr,
+    failedStickerArt
   )
   const featuredArt = isAr
     ? featureSubscription?.product?.pictureAr
@@ -404,19 +412,12 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* The OFFERS box (#522), the card's own: the red tab over a
               white bordered box, the stickers in thirds, or halves for a
               pair, from the start edge (#525), thin dividers between them.
-              Each is the product's single picture, centred. */}
+              Each is the icon above its caption (#533), or the product's
+              single picture, centred. */}
           <OffersBox>
-            {motivational.map((sub: any, idx: number) => {
-              const uri = isAr ? sub.product?.pictureAr : sub.product?.pictureEn
-              return uri ? (
-                <SvgUriContainer
-                  key={sub.id || idx}
-                  width="100%"
-                  height={OFFER_STICKER_HEIGHT}
-                  uri={uri}
-                />
-              ) : null
-            })}
+            {stickers.map((item) =>
+              offerStickerCell(item, SvgUriContainer, onStickerArtError)
+            )}
           </OffersBox>
         </DmView>
 
