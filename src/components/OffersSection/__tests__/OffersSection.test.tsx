@@ -147,8 +147,8 @@ describe("OffersSection's strip: the OFFERS tab", () => {
     expect(
       render(<OffersSection subscriptions={[]} variant="strip" />)
     ).toBeNull()
-    // A promo line has its own OFFER banner (PromoLine), so on its own it
-    // gets no OFFERS tab here, as on the profile page.
+    // A promo line is the OFFERS box's text offer on the cards and the
+    // profile (#533), so on its own it gets no OFFERS tab here.
     expect(
       render(
         <OffersSection

@@ -82,7 +82,8 @@ Wrapper used by OffersSection (it framed the old PromoLine too):
 
 ### The promo line (#533)
 - No component of its own any more: the cards and the profile pass `promoStickerMessage` to shared's `OffersBox` as `promoMessage`, and it draws the text offer in the OFFERS box's frame (the stickers' grey edge and corners, a `#FFEBEB` ground, the text 12 in from each side and 11 from the top and bottom for a 40pt box, the one OFFERS tab)
-- This app's `components/PromoLine` wrapper (shared's `PromoLine`, the "OFFER" banner) went with its last caller; its frozen twin fixtures stay under `components/PromoLine/` as a record
+- The old `PromoLine` (this app's wrapper and shared's "OFFER" banner) is gone, with its frozen twin fixtures
+- The box's square corner is the start one (`borderTopStartRadius`), so it sits under the tab in Arabic on iOS too
 
 ### RateComponent (`components/RateComponent/`)
 - 5 stars with partial fill based on score
