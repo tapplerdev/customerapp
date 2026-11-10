@@ -5,14 +5,15 @@ import TestRenderer from "react-test-renderer"
 
 /*
  * The Other Pros card (ProCardBase, #522): a pro's stickers sit in the OFFERS
- * box (tappler-shared's OffersBox) after the trust stickers and before the
- * promo line, where the pink band at the card's foot was. A pro with only a
- * promo line keeps that line's own OFFER tab and gets no OFFERS box; a pro
- * with neither gets no tab at all. The rating is one red star and "x of 5 (N
- * Reviews)"; a pro with no reviews keeps "New on Tappler".
+ * box (tappler-shared's OffersBox) after the trust stickers, where the pink
+ * band at the card's foot was. The promo line is the pro's text offer in the
+ * same box (#533): a pink box under the one OFFERS tab, after the stickers
+ * if there are any, alone under the tab if not. A pro with neither gets no
+ * tab at all. The rating is one red star and "x of 5 (N Reviews)"; a pro with
+ * no reviews keeps "New on Tappler".
  *
- * UI primitives are stand-ins that keep their props; OffersBox, the promo
- * line (tappler-shared's) and the copy are the real ones.
+ * UI primitives are stand-ins that keep their props; OffersBox and the copy
+ * are the real ones.
  */
 
 jest.mock("react-native-localize", () =>
@@ -92,15 +93,25 @@ const findAll = (node: Node, match: (n: Node) => boolean): Node[] => [
   ...(match(node) ? [node] : []),
   ...kids(node).flatMap((child) => findAll(child, match)),
 ]
-// Every red banner tab on the card (BannerContainer's and the promo line's),
-// by its label, in tree order: found by the words they draw, not by a class
-// string, since shared's PromoLine draws through the design system now.
+// Every red banner tab on the card (the OFFERS box's, or the old promo
+// line's OFFER), by its label, in tree order: found by the words they draw,
+// not by a class string.
 const tabLabels = (card: Node) =>
   findAll(card, (n) =>
     (n.children ?? []).some((c) => typeof c === "string" && /^OFFERS?$/.test(c))
   ).map((n) => (n.children ?? []).filter((c) => typeof c === "string").join(""))
 const isBand = (n: Node) =>
   StyleSheet.flatten(n.props.style)?.backgroundColor === "#FFF8F8"
+// The OFFERS box's two boxes (#533), by their grounds: the stickers' white
+// one with its grey edge, and the text offer's pink one.
+const isStickerBox = (n: Node) => {
+  const style = StyleSheet.flatten(n.props.style)
+  return (
+    style?.backgroundColor === "#FFFFFF" && style?.borderColor === "#CCCCCC"
+  )
+}
+const isTextOffer = (n: Node) =>
+  StyleSheet.flatten(n.props.style)?.backgroundColor === "#FFEBEB"
 
 // What a node's texts say, joined as one line.
 const textOf = (node: Node | string): string =>
@@ -111,11 +122,25 @@ describe("ProCardBase: the OFFERS box", () => {
     await act(() => i18n.changeLanguage("en"))
   })
 
-  it("puts the stickers in the OFFERS box, before the promo line", () => {
+  it("puts the stickers and then the promo line's text in one OFFERS box", () => {
     const card = render([promoLine, sticker(1), sticker(2)])
 
-    // The box's OFFERS tab, then the promo line's OFFER tab.
-    expect(tabLabels(card)).toEqual(["OFFERS", "OFFER"])
+    // One OFFERS tab over both (#533): the promo line has no OFFER tab of
+    // its own any more.
+    expect(tabLabels(card)).toEqual(["OFFERS"])
+    // The stickers' white box, then the pink text offer under it, 8 below
+    // and rounded at every corner, with the promo line's words.
+    const nodes = findAll(card, () => true)
+    const boxes = nodes.filter(isStickerBox)
+    const texts = nodes.filter(isTextOffer)
+    expect(boxes).toHaveLength(1)
+    expect(texts).toHaveLength(1)
+    expect(nodes.indexOf(boxes[0])).toBeLessThan(nodes.indexOf(texts[0]))
+    expect(textOf(texts[0])).toBe("20% off on Tuesdays")
+    expect(StyleSheet.flatten(texts[0].props.style)).toMatchObject({
+      marginTop: 8,
+      borderTopLeftRadius: 10,
+    })
     const art = findAll(card, (n) => n.type === "SvgUriContainer")
     expect(art.map((n) => n.props.uri)).toEqual(["en-1.svg", "en-2.svg"])
     expect(art.map((n) => [n.props.width, n.props.height])).toEqual([
@@ -135,12 +160,31 @@ describe("ProCardBase: the OFFERS box", () => {
     expect(JSON.stringify(foot)).toContain("SELECT ME")
   })
 
-  it("keeps a lone promo line's OFFER tab, with no OFFERS tab", () => {
+  it("draws a lone promo line as the text offer under the OFFERS tab", () => {
     const card = render([promoLine])
 
-    expect(tabLabels(card)).toEqual(["OFFER"])
-    expect(JSON.stringify(card)).toContain("20% off on Tuesdays")
-    expect(JSON.stringify(card)).not.toContain("OFFERS")
+    // The OFFERS box's tab over the pink text offer (#533), with no
+    // stickers' box: the box is square only under the tab, its words 12 in
+    // from each side and 11 from the top and bottom (the 40pt box).
+    expect(tabLabels(card)).toEqual(["OFFERS"])
+    expect(findAll(card, isStickerBox)).toHaveLength(0)
+    const texts = findAll(card, isTextOffer)
+    expect(texts).toHaveLength(1)
+    expect(textOf(texts[0])).toBe("20% off on Tuesdays")
+    const style = StyleSheet.flatten(texts[0].props.style)
+    expect(style).toMatchObject({
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 10,
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+      borderWidth: 1,
+      borderColor: "#CCCCCC",
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingTop: 11,
+      paddingBottom: 11,
+    })
+    expect(style).not.toHaveProperty("marginTop")
     expect(findAll(card, isBand)).toHaveLength(0)
   })
 

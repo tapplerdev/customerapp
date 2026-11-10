@@ -78,6 +78,13 @@ import {
  * "#532 commas" name and captured beside the frozen ones, which no row draws
  * any more.
  */
+/*
+ * #533 draws the promo line as the pro's text offer, in the OFFERS box's
+ * frame: its text in a pink box under the one OFFERS tab (the line had an
+ * OFFER tab of its own), after the stickers when there are any. The states
+ * that draw a promo line are captured again in place (recipe B, with the
+ * frozen Buttons grafted back); every other state draws what it drew.
+ */
 const load = () => require("../ProCardBase")
 
 /** Button's listed deltas, for the two ActionBtns the conversion turns into Buttons. */

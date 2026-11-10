@@ -16,9 +16,8 @@ Used in search results when a customer browses pros for a service category. Loca
    - Star rating via `RateComponent`
    - Description (text-10, 2 lines max, only if `informationAbout` exists)
 4. **Trust badges** — approved trust documents (`type === "trust" && status === "approved"`), rendered as SVG stickers via `SvgUriContainer`, horizontal flex-wrap
-5. **OFFERS box** — tappler-shared's `OffersBox`, only if pro has `motivational` subscriptions with art to draw. Each sticker comes from tappler-shared's `components/OfferSticker` (`stickersOf` over `offerStickersOf`, drawn by `offerStickerCell` with this app's `SvgUriContainer`, #533): its icon above its caption (`OfferSticker`) when the product has an icon and a caption in the language, else its picture for the language, else dropped; in catalogue order (newest product first, as the catalogue lists them, so a renewal doesn't move a sticker); an icon that fails to load falls back to the picture, and when that fails too to the caption alone (`useFailedIcons` keeps both)
-6. **Promo line** — `PromoLine` component, only if pro has a `promoLine` subscription with `promoStickerMessage`
-7. **Action buttons** — Chat (message icon, flex: 1) + Select Me (flex: 2, toggles selected state)
+5. **OFFERS box** — tappler-shared's `OffersBox`, only if pro has `motivational` subscriptions with art to draw, or a promo line. Each sticker comes from tappler-shared's `components/OfferSticker` (`stickersOf` over `offerStickersOf`, drawn by `offerStickerCell` with this app's `SvgUriContainer`, #533): its icon above its caption (`OfferSticker`) when the product has an icon and a caption in the language, else its picture for the language, else dropped; in catalogue order (newest product first, as the catalogue lists them, so a renewal doesn't move a sticker); an icon that fails to load falls back to the picture, and when that fails too to the caption alone (`useFailedIcons` keeps both). The pro's promo line (a `promoLine` subscription with `promoStickerMessage`) is drawn in the same box as their text offer (`OffersBox`'s `promoMessage`, #533): a pink box under the one OFFERS tab, after the stickers if there are any. With neither, no box
+6. **Action buttons** — Chat (message icon, flex: 1) + Select Me (flex: 2, toggles selected state)
 
 ### Data Source
 - `pro: ProType` — full pro object from search API
@@ -42,10 +41,9 @@ Used when viewing a job's "Other Pros" — opportunity pros who found the job an
    - **Unread mail icon** — envelope SVG with red count badge (only if `unreadCount > 0`)
 4. **Opportunity notes bubble** — speech bubble with CSS triangle pointer, grey background (#E4E4E4), only if `showOpportunityNotes && opportunityNotes`
 5. **Trust badges** — same as ProCard
-6. **Promo line** — same as ProCard
-7. **OFFERS box** — same as ProCard
-8. **SELECT ME / PASS buttons** — two `ActionBtn` bordered buttons, only if `showSelectPassButtons && !isRejected`
-9. **"Passed" label** — italic grey text, only if `isRejected`
+6. **OFFERS box** (stickers, then the promo line's text offer) — same as ProCard
+7. **SELECT ME / PASS buttons** — two `ActionBtn` bordered buttons, only if `showSelectPassButtons && !isRejected`
+8. **"Passed" label** — italic grey text, only if `isRejected`
 
 ### Card Tap Behavior
 - Whole card tappable to open chat (`onPress`)
@@ -69,7 +67,7 @@ No trust badges, no OFFERS banner, no promo line, no select/pass buttons. Tappin
 ## Shared Sub-Components
 
 ### BannerContainer (`components/BannerContainer/`)
-Wrapper used by both OffersSection and PromoLine:
+Wrapper used by OffersSection (it framed the old PromoLine too):
 - Red tab at top-left ("OFFERS" or "OFFER" text, uppercase, white on red)
 - Bordered content area below with configurable `borderRadius`
 - Tab has top-rounded corners, content box has `borderTopRightRadius` on right side (creating the tab-detached effect)
@@ -82,10 +80,9 @@ Wrapper used by both OffersSection and PromoLine:
 - `compact` mode (used in cards): stickers 100px wide, 35px tall, horizontal row
 - Full mode (used in ProProfileScreen): stickers scale to fill width
 
-### PromoLine (`components/PromoLine/`)
-- Renders `promoStickerMessage` text inside BannerContainer
-- Pink background (`colors.pink5`)
-- Banner tab says "OFFER" (singular)
+### The promo line (#533)
+- No component of its own any more: the cards and the profile pass `promoStickerMessage` to shared's `OffersBox` as `promoMessage`, and it draws the text offer in the OFFERS box's frame (the stickers' grey edge and corners, a `#FFEBEB` ground, the text 12 in from each side and 11 from the top and bottom for a 40pt box, the one OFFERS tab)
+- This app's `components/PromoLine` wrapper (shared's `PromoLine`, the "OFFER" banner) went with its last caller; its frozen twin fixtures stay under `components/PromoLine/` as a record
 
 ### RateComponent (`components/RateComponent/`)
 - 5 stars with partial fill based on score
@@ -100,5 +97,5 @@ Subscriptions come from `pro.serviceCategories[0].subscriptions`. Relevant `prod
 | subType | What it renders | Component |
 |---------|----------------|-----------|
 | `motivational` | Stickers in the OFFERS box: icon + caption, else the picture (#533) | shared `OffersBox` + `utils/offerStickers` (FoodOrderView: OffersSection) |
-| `promoLine` | Text message in pink banner | PromoLine |
+| `promoLine` | Text offer: a pink box in the OFFERS box, after the stickers (#533) | shared `OffersBox` (`promoMessage`) |
 | `featuredPro` | Featured badge image in profile header | ProProfileScreen only |

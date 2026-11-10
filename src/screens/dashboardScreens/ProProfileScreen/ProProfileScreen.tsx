@@ -23,7 +23,6 @@ import { ProWorkPhotoType } from "types/pro"
 import { useGetProProfileQuery, useLazyOpenChatQuery } from "services/api"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import PromoLine from "components/PromoLine/PromoLine"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
 import FeaturedSticker from "components/FeaturedSticker/FeaturedSticker"
 import CachedImage from "@tappler/shared/src/components/CachedImage"
@@ -404,17 +403,14 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           )}
 
-          {/* Promo line */}
-          {promoLine && promoLine.promoStickerMessage && (
-            <PromoLine promoMessage={promoLine.promoStickerMessage} />
-          )}
-
           {/* The OFFERS box (#522), the card's own: the red tab over a
               white bordered box, the stickers in thirds, or halves for a
               pair, from the start edge (#525), thin dividers between them.
               Each is the icon above its caption (#533), or the product's
-              single picture, centred. */}
-          <OffersBox>
+              single picture, centred. The promo line is the pro's text
+              offer in the same box (#533), after the stickers as on the
+              card; it was a banner of its own above them. */}
+          <OffersBox promoMessage={promoLine?.promoStickerMessage}>
             {stickers.map((item) =>
               offerStickerCell(item, SvgUriContainer, onStickerArtError)
             )}
