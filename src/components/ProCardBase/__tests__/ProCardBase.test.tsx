@@ -139,7 +139,7 @@ describe("ProCardBase: the OFFERS box", () => {
     expect(textOf(texts[0])).toBe("20% off on Tuesdays")
     expect(StyleSheet.flatten(texts[0].props.style)).toMatchObject({
       marginTop: 8,
-      borderTopLeftRadius: 10,
+      borderTopStartRadius: 10,
     })
     const art = findAll(card, (n) => n.type === "SvgUriContainer")
     expect(art.map((n) => n.props.uri)).toEqual(["en-1.svg", "en-2.svg"])
@@ -173,10 +173,10 @@ describe("ProCardBase: the OFFERS box", () => {
     expect(textOf(texts[0])).toBe("20% off on Tuesdays")
     const style = StyleSheet.flatten(texts[0].props.style)
     expect(style).toMatchObject({
-      borderTopLeftRadius: 0,
-      borderTopRightRadius: 10,
-      borderBottomLeftRadius: 10,
-      borderBottomRightRadius: 10,
+      borderTopStartRadius: 0,
+      borderTopEndRadius: 10,
+      borderBottomStartRadius: 10,
+      borderBottomEndRadius: 10,
       borderWidth: 1,
       borderColor: "#CCCCCC",
       paddingLeft: 12,
