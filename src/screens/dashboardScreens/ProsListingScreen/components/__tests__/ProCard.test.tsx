@@ -187,7 +187,7 @@ describe("ProCard: the OFFERS box", () => {
 
     // The OFFERS box's tab over the pink text offer (#533), with no
     // stickers' box: the box is square only under the tab, its words 12 in
-    // from every side.
+    // from each side and 11 from the top and bottom (the 40pt box).
     expect(tabLabels(card)).toEqual(["OFFERS"])
     expect(findAll(card, isStickerBox)).toHaveLength(0)
     const texts = findAll(card, isTextOffer)
@@ -203,8 +203,8 @@ describe("ProCard: the OFFERS box", () => {
       borderColor: "#CCCCCC",
       paddingLeft: 12,
       paddingRight: 12,
-      paddingTop: 12,
-      paddingBottom: 12,
+      paddingTop: 11,
+      paddingBottom: 11,
     })
     expect(style).not.toHaveProperty("marginTop")
     expect(findAll(card, isBand)).toHaveLength(0)
