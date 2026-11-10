@@ -86,6 +86,14 @@ const NAME = "JobDetailScreen"
  * again under a "#532 commas" name and captured beside the frozen ones,
  * which no row draws any more.
  */
+/*
+ * #533's corner fix: the OFFERS box names its corners by start and end
+ * (borderTopStartRadius and its three fellows), so the square one sits under
+ * the tab in Arabic on iOS too, where the physical top-left one stayed on
+ * the left. Only those style keys change, with the same values; the states
+ * that draw the box are captured again in place (recipe B, the frozen
+ * Buttons grafted back).
+ */
 const load = () => require("../JobDetailScreen")
 
 // None of the screen's own buttons is an ActionBtn (its modals' are ds Buttons
