@@ -42,6 +42,14 @@ import { PARITY_MATRIX, expectParity, parityName } from "testing/hostTreeParity"
  * that draw a promo line are captured again in place (recipe B, with the
  * frozen Buttons grafted back); every other state draws what it drew.
  */
+/*
+ * #533's corner fix: the OFFERS box names its corners by start and end
+ * (borderTopStartRadius and its three fellows), so the square one sits under
+ * the tab in Arabic on iOS too, where the physical top-left one stayed on
+ * the left. Only those style keys change, with the same values; the states
+ * that draw the box are captured again in place (recipe B, the frozen
+ * Buttons grafted back).
+ */
 const load = () => require("../ProCard")
 
 const promoLine = {
