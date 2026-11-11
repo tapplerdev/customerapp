@@ -10,6 +10,12 @@ import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
+import {
+  asksVenue,
+  categoryVenues,
+  pickedVenue,
+  venueName,
+} from "utils/fixedLocation"
 import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
 import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
@@ -42,13 +48,16 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
   customerQuestions,
   initialAnswers,
   initialPlaceOfService,
+  fixedLocations,
+  initialFixedLocationId,
   onApply,
   onClose,
   registerCommit,
 }) => {
   const insets = useSafeAreaInsets()
   const keyboardInset = useKeyboardInset()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
 
   const [answers, setAnswers] = useState<QuestionAnswerType[]>(
     initialAnswers || []
@@ -56,8 +65,23 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
   const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<
     string | undefined
   >(initialPlaceOfService)
+  const [selectedFixedLocationId, setSelectedFixedLocationId] = useState<
+    number | undefined
+  >(initialFixedLocationId)
   const [filtersChanged, setFiltersChanged] = useState(false)
   const [resetKey, setResetKey] = useState(0)
+
+  // The sheet never opens for a food category, so the places are the
+  // category's own and nothing is a menu (utils/fixedLocation).
+  const venueCategory = useMemo(
+    () => ({
+      placeOfService: placeOfServiceOptions,
+      hasMenu: false,
+      fixedLocations: categoryVenues({ fixedLocations }, isAr),
+    }),
+    [placeOfServiceOptions, fixedLocations, isAr]
+  )
+  const showsVenues = asksVenue(selectedPlaceOfService, venueCategory)
 
   const allQuestions = useMemo(() => {
     return customerQuestions
@@ -87,11 +111,17 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
     setFiltersChanged(true)
   }
 
+  const handleSelectFixedLocation = (id: number) => {
+    setSelectedFixedLocationId(id)
+    setFiltersChanged(true)
+  }
+
   const [resetAllPressed, setResetAllPressed] = useState(false)
 
   const handleResetAll = () => {
     setAnswers([])
     setSelectedPlaceOfService(undefined)
+    setSelectedFixedLocationId(undefined)
     setFiltersChanged(true)
     setResetAllPressed(true) // signals the results screen to also clear slider filters
     setResetKey((prev) => prev + 1)
@@ -127,6 +157,11 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
 
     onApply({
       placeOfService: selectedPlaceOfService,
+      fixedLocationId: pickedVenue(
+        selectedFixedLocationId,
+        selectedPlaceOfService,
+        venueCategory
+      ),
       filterOptionIds,
       dataAnswers,
       allAnswers: answers,
@@ -239,6 +274,49 @@ const AllQuestionsContent: React.FC<ContentProps> = ({
                   >
                     <Text size={13} leading="tight" style={atoms.flex_1}>
                       {t(labelKey)}
+                    </Text>
+                    <DmView
+                      style={[
+                        dsStyles.box2,
+                        atoms.items_center,
+                        atoms.justify_center,
+                        isSelected
+                          ? dsStyles.boxSelected
+                          : dsStyles.boxNotSelected,
+                      ]}
+                    >
+                      {isSelected && <DmView style={dsStyles.box3} />}
+                    </DmView>
+                  </DmView>
+                )
+              })}
+            </DmView>
+          </>
+        )}
+
+        {/* Which venue, while the request is at a fixed location */}
+        {showsVenues && (
+          <>
+            <DmView style={[atoms.mx_24, dsStyles.box]} />
+            <DmView style={[atoms.px_24, atoms.pt_20, atoms.pb_8]}>
+              <Text size={15} weight="bold" leading="tight" style={atoms.mb_14}>
+                {t("where_do_you_need_service")}
+              </Text>
+              {venueCategory.fixedLocations.map((venue) => {
+                const isSelected = selectedFixedLocationId === venue.id
+                return (
+                  <DmView
+                    key={venue.id}
+                    onPress={() => handleSelectFixedLocation(venue.id)}
+                    style={[
+                      atoms.flex_row,
+                      atoms.items_center,
+                      atoms.justify_between,
+                      atoms.py_12,
+                    ]}
+                  >
+                    <Text size={13} leading="tight" style={atoms.flex_1}>
+                      {venueName(venue, isAr)}
                     </Text>
                     <DmView
                       style={[

@@ -63,6 +63,20 @@ export type ServiceQuestionType = {
   order: number
 }
 
+// A venue staff keep for fixed-location categories (Airport Pickup's
+// airports), as the service payload carries it on each category. `location`
+// is GeoJSON: coordinates are [longitude, latitude].
+export type FixedLocationType = {
+  id: number
+  nameEn: string
+  nameAr: string
+  addressEn?: string | null
+  addressAr?: string | null
+  location?: { type?: string; coordinates?: number[] } | null
+  groupId?: number
+  group?: { id: number; nameEn: string; nameAr: string }
+}
+
 export type ServiceCategoryType = {
   id: number
   nameEn: string
@@ -83,6 +97,9 @@ export type ServiceCategoryType = {
   // Food-ordering category: browse a menu and place an order instead of the
   // questions → shortlist → offers flow
   hasMenu?: boolean
+  // The venues of a fixed-location category, which the customer picks from
+  // (utils/fixedLocation).
+  fixedLocations?: FixedLocationType[]
 }
 
 export type ServiceType = {

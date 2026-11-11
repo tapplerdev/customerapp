@@ -13,6 +13,8 @@ import { PARITY_MATRIX, type ParityEnv } from "testing/hostTreeParity"
  * chosen. The summary says so in the app's words, and OK takes the customer
  * back to the list, which is told to fetch again (and, for the place, to
  * clear it): ProsListingScreen.refusal.parity.tsx has that half.
+ * JOB_FIXED_LOCATION_NOT_OFFERED (venue-on-job) when the venue picked is no
+ * longer the category's: the venue is cleared and the place kept.
  */
 const NAME = "RequestSummaryScreen"
 const load = () => require("../RequestSummaryScreen")
@@ -70,7 +72,9 @@ describe("RequestSummaryScreen: a refused request", () => {
         const shown = await sendAndAcknowledge(session, env)
         expect(shown).toContain(copy(env, "request_pros_not_serving"))
         expect(shown).not.toContain("This pro no longer matches")
-        expect(heard).toEqual([{ clearPlaceOfService: false }])
+        expect(heard).toEqual([
+          { clearPlaceOfService: false, clearFixedLocation: false },
+        ])
         expect(session.navigation.actions.at(-1)).toMatchObject({
           type: "POP_TO",
           payload: {
@@ -101,7 +105,10 @@ describe("RequestSummaryScreen: a refused request", () => {
         const heard = listen()
         const shown = await sendAndAcknowledge(session, env)
         expect(shown).toContain(copy(env, "request_place_not_offered"))
-        expect(heard).toEqual([{ clearPlaceOfService: true }])
+        // A venue goes with its place.
+        expect(heard).toEqual([
+          { clearPlaceOfService: true, clearFixedLocation: true },
+        ])
         const last = session.navigation.actions.at(-1) as {
           type: string
           payload: { name: string; params: Record<string, unknown> }
@@ -109,6 +116,49 @@ describe("RequestSummaryScreen: a refused request", () => {
         expect(last.type).toBe("POP_TO")
         expect(last.payload.name).toBe("ProsListingScreen")
         expect(last.payload.params.placeOfService).toBeUndefined()
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a venue the category dropped: the app's line, then back to the list without the venue [$language $platform]",
+    async (env) => {
+      const session = await openScreen(load, {
+        ...screenState("data"),
+        api: {
+          ...DATA,
+          createJob: refusing(
+            "JOB_FIXED_LOCATION_NOT_OFFERED",
+            "This location is no longer offered for this service. Please choose again."
+          ) as never,
+        },
+        lang: env.language,
+        platform: env.platform,
+        route: {
+          name: NAME,
+          params: {
+            ...PARAMS,
+            placeOfService: "fixedLocations",
+            fixedLocationId: 72,
+          },
+        },
+      })
+      try {
+        const heard = listen()
+        const shown = await sendAndAcknowledge(session, env)
+        expect(shown).toContain(copy(env, "request_location_not_offered"))
+        expect(heard).toEqual([
+          { clearPlaceOfService: false, clearFixedLocation: true },
+        ])
+        const last = session.navigation.actions.at(-1) as {
+          type: string
+          payload: { name: string; params: Record<string, unknown> }
+        }
+        expect(last.type).toBe("POP_TO")
+        expect(last.payload.params.placeOfService).toBe("fixedLocations")
+        expect(last.payload.params.fixedLocationId).toBeUndefined()
       } finally {
         session.unmount()
       }

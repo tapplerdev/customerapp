@@ -332,6 +332,8 @@ export const api = createApi({
       {
         categoryId: number
         placeOfService?: string
+        // With placeOfService fixedLocations only (utils/fixedLocation).
+        fixedLocationId?: number
         customerAddress?: { latitude: number; longitude: number }
         filterOptionsIds?: number[]
         filterRanges?: { filterId: number; min?: number; max?: number }[]
@@ -346,6 +348,7 @@ export const api = createApi({
       query: ({
         categoryId,
         placeOfService,
+        fixedLocationId,
         customerAddress,
         filterOptionsIds,
         filterRanges,
@@ -359,6 +362,9 @@ export const api = createApi({
         const params = new URLSearchParams()
         if (placeOfService) {
           params.append("placeOfService", placeOfService)
+        }
+        if (fixedLocationId != null) {
+          params.append("fixedLocationId", String(fixedLocationId))
         }
         params.append("distanceKmFromCustomer", String(distanceKm ?? 50))
         if (customerAddress) {

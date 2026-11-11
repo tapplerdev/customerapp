@@ -36,8 +36,13 @@ export type AllQuestionsParams = {
   customerQuestions: import("types/cms").ServiceQuestionType[]
   initialAnswers: import("types/job").QuestionAnswerType[]
   initialPlaceOfService?: string
+  // A fixed-location category's venues, and the one already picked
+  // (utils/fixedLocation).
+  fixedLocations?: import("types/cms").FixedLocationType[]
+  initialFixedLocationId?: number
   onApply: (result: {
     placeOfService?: string
+    fixedLocationId?: number
     filterOptionIds: number[]
     dataAnswers: import("types/job").QuestionAnswerType[]
     allAnswers: import("types/job").QuestionAnswerType[]
@@ -53,6 +58,10 @@ export type QuestionFlowParams = {
   // Repost flow: pre-fill the flow with a previous job's answers
   initialAnswers?: QuestionAnswerType[]
   initialPlaceOfService?: string
+  // A fixed-location category's venues, and the one already picked
+  // (utils/fixedLocation).
+  fixedLocations?: import("types/cms").FixedLocationType[]
+  initialFixedLocationId?: number
 }
 
 export type FiltersParams = {
@@ -136,6 +145,8 @@ export type RootStackParamList = {
       serviceId: number
       address: AddressInfo
       placeOfService?: string
+      // Repost flow: the old job's venue, kept while the category lists it
+      fixedLocationId?: number
       // Repost flow: forwarded verbatim to ProsListingScreen
       initialAnswers?: QuestionAnswerType[]
       forceQuestionFlow?: boolean
@@ -147,6 +158,8 @@ export type RootStackParamList = {
     serviceId: number
     address: AddressInfo
     placeOfService?: string
+    // The venue of a fixed-location request (utils/fixedLocation)
+    fixedLocationId?: number
     // Repost flow: seeds the listing's answer state from a previous job so
     // the question flow / details steps arrive pre-filled.
     initialAnswers?: QuestionAnswerType[]
@@ -201,6 +214,8 @@ export type RootStackParamList = {
     selectedProsInfo: SelectedProInfo[]
     address: AddressInfo
     placeOfService?: string
+    // The venue of a fixed-location request (utils/fixedLocation)
+    fixedLocationId?: number
     answeredQuestions?: QuestionAnswerType[]
     initialAnsweredIds?: number[]
     stepIndex?: number
@@ -214,6 +229,8 @@ export type RootStackParamList = {
     selectedProsInfo: SelectedProInfo[]
     address: AddressInfo
     placeOfService?: string
+    // The venue of a fixed-location request (utils/fixedLocation)
+    fixedLocationId?: number
     questionsAnswers: QuestionAnswerType[]
     dateType?: string
     selectedDate?: string

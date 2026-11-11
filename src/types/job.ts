@@ -34,6 +34,9 @@ export type CreateJobRequest = {
   address: CreateJobAddressType
   prosIds: number[]
   placeOfService?: string
+  // The venue of a fixed-location request (utils/fixedLocation). Sent only
+  // when one was picked: a backend before it refuses the unknown field.
+  fixedLocationId?: number
   dateType?: "asap" | "hours48" | "week" | "date" | "notDecided"
   dates?: CreateJobDateType[]
   timeSlots?: CreateJobTimeSlotType[]
@@ -167,6 +170,10 @@ export type JobType = {
   timeSlots?: JobTimeSlotType[]
   questionsAnswers?: QuestionAnswerType[]
   placeOfService?: string
+  // The venue of a fixed-location request, and the venue itself on the
+  // routes that load it (the request details). Null without one.
+  fixedLocationId?: number | null
+  fixedLocation?: import("types/cms").FixedLocationType | null
   isOnReview?: boolean
   orderNotes?: string
   paymentMethod?: string
