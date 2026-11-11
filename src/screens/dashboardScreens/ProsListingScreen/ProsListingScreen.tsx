@@ -120,6 +120,29 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
   const hasLaunchedQuestions = useRef(false)
   const relaunchQuestions = useRef(false)
+  // A venue the server refused is asked again: the flow relaunches once the
+  // listing is back on top (native-stack's transitionEnd from the summary's
+  // pop), with a timer in case that event never comes. The tick is what
+  // re-runs the launch effect.
+  const relaunchAfterRefusal = useRef(false)
+  const relaunchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [relaunchTick, setRelaunchTick] = useState(0)
+  const fireRelaunch = useCallback(() => {
+    if (relaunchTimer.current) clearTimeout(relaunchTimer.current)
+    relaunchTimer.current = null
+    if (!relaunchAfterRefusal.current) return
+    relaunchAfterRefusal.current = false
+    setRelaunchTick((tick) => tick + 1)
+  }, [])
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("transitionEnd", (event) => {
+      if (!event.data.closing) fireRelaunch()
+    })
+    return () => {
+      unsubscribe()
+      if (relaunchTimer.current) clearTimeout(relaunchTimer.current)
+    }
+  }, [navigation, fireRelaunch])
   // HARD "questions first" gate: the list stays non-interactive until the
   // question flow has actually presented, or is ruled out for this arrival
   // (place of service already chosen via params, or the service loads with
@@ -342,7 +365,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     // Gate drops only as the sheet actually presents — not at effect time,
     // or the push-animation window would reopen.
     setQuestionsSettled(true)
-  }, [customerQuestions.length, asksVenueFirst, serviceId, hasScreenSettled])
+  }, [
+    customerQuestions.length,
+    asksVenueFirst,
+    serviceId,
+    hasScreenSettled,
+    relaunchTick,
+  ])
 
   // Gate rule-out: the service payload arrived but this category asks nothing
   // (also covers a categoryId missing from the payload) — there is no flow to
@@ -655,9 +684,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       }
       if (clearFixedLocation) {
         // The venue is no longer the category's: the list goes back to
-        // everyone who can serve the request, and the venue is asked again
-        // from the job details.
+        // everyone who can serve the request, and the question flow opens
+        // again on the venue step, so the request is never sent without one.
         setCurrentFixedLocationId(undefined)
+        relaunchQuestions.current = true
+        relaunchAfterRefusal.current = true
+        if (relaunchTimer.current) clearTimeout(relaunchTimer.current)
+        relaunchTimer.current = setTimeout(fireRelaunch, 800)
         doRefetch({ venue: undefined, network: true })
         return
       }
@@ -667,7 +700,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     return () => {
       questionFlowEventBus.off("request:refused", handler)
     }
-  }, [doRefetch, refetchService])
+  }, [doRefetch, refetchService, fireRelaunch])
 
   // Handle all-questions modal dismiss
   const handleAllQuestionsDismiss = useCallback(
@@ -990,6 +1023,18 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const pros = data?.data || []
 
   const handleContinue = () => {
+    // A request at a fixed location goes on only with its venue: the
+    // question flow opens again (on the venue step) when it was skipped or
+    // closed without one.
+    if (
+      asksVenueNow &&
+      venueFor(currentFixedLocationId, currentPlaceOfService) == null
+    ) {
+      setQuestionsOpenCount((c) => c + 1)
+      setQuestionsVisible(true)
+      return
+    }
+
     // Resolve pro data now while we have it
     const proNames = selectedPros
       .map((id) => {

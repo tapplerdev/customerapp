@@ -229,4 +229,56 @@ describe("ProsListingScreen at a venue", () => {
       }
     }
   )
+
+  it.each(PARITY_MATRIX)(
+    "a venue the server refused opens the question flow again on the venue step [$language $platform]",
+    async (env) => {
+      const session = await open(env, {
+        placeOfService: "fixedLocations",
+        fixedLocationId: CAIRO.id,
+      })
+      try {
+        const asked = () =>
+          JSON.stringify(session.tree()).includes(
+            copy(env, "where_do_you_need_service")
+          )
+        expect(asked()).toBe(false)
+        await emit(session, "request:refused", {
+          clearPlaceOfService: false,
+          clearFixedLocation: true,
+        })
+        await session.settle(1500)
+        expect(asked()).toBe(true)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "Continue without a venue opens the question flow instead of going on [$language $platform]",
+    async (env) => {
+      // An old job's repost: the place seeded, no venue, the flow not forced.
+      const session = await open(env, { placeOfService: "fixedLocations" })
+      try {
+        await session.act(() => {
+          pressText(session.root, copy(env, "select_me"), { nth: 0 })
+        }, 500)
+        await session.act(() => {
+          pressText(session.root, copy(env, "continue"))
+        }, 500)
+        const pushed = session.navigation.actions.find(
+          (action) =>
+            (action as { payload?: { name?: string } }).payload?.name ===
+            "ServiceRequestDetailsScreen"
+        )
+        expect(pushed).toBeUndefined()
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "where_do_you_need_service")
+        )
+      } finally {
+        session.unmount()
+      }
+    }
+  )
 })
