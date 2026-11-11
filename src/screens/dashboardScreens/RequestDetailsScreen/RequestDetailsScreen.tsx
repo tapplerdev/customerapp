@@ -19,6 +19,7 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
 import { Text, a, px } from "@tappler/shared/src/ds"
+import { venueName, venuePoint } from "utils/fixedLocation"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"RequestDetailsScreen">
@@ -59,6 +60,11 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const isFoodOrder = items.length > 0
   const isPickup = job?.placeOfService === "pickup"
 
+  // A fixed-location request is at the venue the customer picked, not at
+  // their address: its pin and name (utils/fixedLocation).
+  const venue = job?.fixedLocation
+  const venueAt = venuePoint(venue)
+
   const dateDisplay = (() => {
     if (!job?.dates?.length) {
       if (job?.dateType === "asap") {
@@ -88,13 +94,15 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     { skip: !isPickup || !proId || !job?.serviceCategoryId }
   )
   const proLocation = pro?.address?.address?.location
-  const mapCoords = isPickup
-    ? proLocation
-      ? { lat: proLocation.lat, lon: proLocation.lng }
-      : null
-    : hasCoords
-      ? { lat, lon: lng }
-      : null
+  const mapCoords = venueAt
+    ? { lat: venueAt.latitude, lon: venueAt.longitude }
+    : isPickup
+      ? proLocation
+        ? { lat: proLocation.lat, lon: proLocation.lng }
+        : null
+      : hasCoords
+        ? { lat, lon: lng }
+        : null
 
   const subtotal = items.reduce((sum, line) => {
     const choices = (line.selectedOptions ?? []).reduce(
@@ -174,13 +182,15 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Details */}
         <DmView style={[a.mt_20, a.px_16]}>
           {renderTextItem(t("posted"), postedDate)}
-          {!!fullAddress &&
-            renderTextItem(
-              isFoodOrder
-                ? t(isPickup ? "customer_area" : "delivery_address")
-                : t("address"),
-              fullAddress
-            )}
+          {venue
+            ? renderTextItem(t("location"), venueName(venue, isAr))
+            : !!fullAddress &&
+              renderTextItem(
+                isFoodOrder
+                  ? t(isPickup ? "customer_area" : "delivery_address")
+                  : t("address"),
+                fullAddress
+              )}
           {renderTextItem(
             isFoodOrder
               ? t(isPickup ? "pickup_time" : "delivery_time")

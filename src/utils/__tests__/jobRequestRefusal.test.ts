@@ -12,7 +12,7 @@ jest.mock("react-native-localize", () =>
 )
 
 /*
- * POST /jobs's two refusals for a request that no longer fits (backend
+ * POST /jobs's refusals for a request that no longer fits (backend
  * JobRefusalCode): a 400 with the code at the top level and no
  * validationErrors, as RTK Query hands it to the screen.
  */
@@ -22,13 +22,17 @@ describe("jobRequestRefusalOf", () => {
     data: { code, message: "This pro no longer matches your selection." },
   })
 
-  it("reads either code", () => {
+  it("reads each code", () => {
     expect(jobRequestRefusalOf(refused("JOB_PROS_NOT_SERVING"))).toBe(
       JobRequestRefusal.prosNotServing
     )
     expect(
       jobRequestRefusalOf(refused("JOB_PLACE_OF_SERVICE_NOT_OFFERED"))
     ).toBe(JobRequestRefusal.placeOfServiceNotOffered)
+    // venue-on-job: the venue picked is no longer the category's.
+    expect(jobRequestRefusalOf(refused("JOB_FIXED_LOCATION_NOT_OFFERED"))).toBe(
+      JobRequestRefusal.fixedLocationNotOffered
+    )
   })
 
   it("is undefined for every other failure", () => {

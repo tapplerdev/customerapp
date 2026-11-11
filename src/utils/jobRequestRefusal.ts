@@ -1,5 +1,5 @@
 /**
- * The two refusals POST /jobs answers when what the customer picked no longer
+ * The refusals POST /jobs answers when what the customer picked no longer
  * fits (backend JobRefusalCode, mode-mismatch 2026-11): a 400 with the code
  * at the top level and no validationErrors.
  *
@@ -8,10 +8,14 @@
  *   address). The list is fetched again and drops them.
  * - JOB_PLACE_OF_SERVICE_NOT_OFFERED: the category no longer offers the place
  *   of service chosen. The choice is cleared and the list fetched again.
+ * - JOB_FIXED_LOCATION_NOT_OFFERED (venue-on-job): the venue picked is no
+ *   longer one of the category's. The venue is cleared and the list fetched
+ *   again.
  */
 export const JobRequestRefusal = {
   prosNotServing: "JOB_PROS_NOT_SERVING",
   placeOfServiceNotOffered: "JOB_PLACE_OF_SERVICE_NOT_OFFERED",
+  fixedLocationNotOffered: "JOB_FIXED_LOCATION_NOT_OFFERED",
 } as const
 
 export type JobRequestRefusalCode =
@@ -36,4 +40,5 @@ export const jobRequestRefusalOf = (
 export const jobRequestRefusalCopy: Record<JobRequestRefusalCode, string> = {
   JOB_PROS_NOT_SERVING: "request_pros_not_serving",
   JOB_PLACE_OF_SERVICE_NOT_OFFERED: "request_place_not_offered",
+  JOB_FIXED_LOCATION_NOT_OFFERED: "request_location_not_offered",
 }

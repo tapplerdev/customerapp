@@ -14,6 +14,7 @@ import {
 import { QuestionAnswerType } from "types/job"
 import { MainModal } from "@tappler/shared/src/components"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
+import { listingPlace } from "utils/fixedLocation"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import CalendarTimeSheet from "components/CalendarTimeSheet/CalendarTimeSheet"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
@@ -56,6 +57,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     selectedProsInfo,
     address,
     placeOfService,
+    fixedLocationId,
     answeredQuestions,
     initialAnsweredIds,
     stepIndex = 0,
@@ -146,6 +148,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     selectedProsInfo,
     address,
     placeOfService,
+    fixedLocationId,
   }
 
   // Compute once on first mount: the IDs that were answered before we started
@@ -204,18 +207,16 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
       if (filterIds.length) {
         setCheckingMatch(true)
         try {
-          const skipAddress =
-            placeOfService === "remoteOrOnline" ||
-            placeOfService === "fixedLocations"
-          const customerAddress =
-            skipAddress || !address?.coords
-              ? undefined
-              : { latitude: address.coords.lat, longitude: address.coords.lon }
+          // The same place the listing asked with: a fixed location only
+          // with its venue, never with the address (utils/fixedLocation).
           const res = await checkPros(
             {
               categoryId,
-              placeOfService,
-              customerAddress,
+              ...listingPlace({
+                placeOfService,
+                fixedLocationId,
+                coords: address?.coords,
+              }),
               filterOptionsIds: filterIds,
             },
             true
@@ -250,6 +251,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
       serviceId,
       address,
       placeOfService,
+      fixedLocationId,
     })
   }
 

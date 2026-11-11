@@ -49,6 +49,7 @@ import FiltersIcon from "assets/icons/filters.svg"
 import JobDetailsIcon from "assets/icons/job-details.svg"
 import FilterSlidersIcon from "assets/icons/filter-sliders.svg"
 import ErrorModal from "components/ErrorModal"
+import { asksVenue, listingPlace, pickedVenue } from "utils/fixedLocation"
 import styles from "./styles"
 import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
 
@@ -56,8 +57,11 @@ type Props = RootStackScreenProps<"ProsListingScreen">
 
 const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const dispatch = useDispatch()
-  const { placeOfService: initialPlaceOfService, forceQuestionFlow } =
-    route.params
+  const {
+    placeOfService: initialPlaceOfService,
+    fixedLocationId: initialFixedLocationId,
+    forceQuestionFlow,
+  } = route.params
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const { dontShowBestDealTooltip } = useTypedSelector((store) => store.auth)
@@ -116,6 +120,29 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // const [isSheetVisible, setSheetVisible] = useState(!initialPlaceOfService) // OLD: gorhom sheet
   const hasLaunchedQuestions = useRef(false)
   const relaunchQuestions = useRef(false)
+  // A venue the server refused is asked again: the flow relaunches once the
+  // listing is back on top (native-stack's transitionEnd from the summary's
+  // pop), with a timer in case that event never comes. The tick is what
+  // re-runs the launch effect.
+  const relaunchAfterRefusal = useRef(false)
+  const relaunchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [relaunchTick, setRelaunchTick] = useState(0)
+  const fireRelaunch = useCallback(() => {
+    if (relaunchTimer.current) clearTimeout(relaunchTimer.current)
+    relaunchTimer.current = null
+    if (!relaunchAfterRefusal.current) return
+    relaunchAfterRefusal.current = false
+    setRelaunchTick((tick) => tick + 1)
+  }, [])
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("transitionEnd", (event) => {
+      if (!event.data.closing) fireRelaunch()
+    })
+    return () => {
+      unsubscribe()
+      if (relaunchTimer.current) clearTimeout(relaunchTimer.current)
+    }
+  }, [navigation, fireRelaunch])
   // HARD "questions first" gate: the list stays non-interactive until the
   // question flow has actually presented, or is ruled out for this arrival
   // (place of service already chosen via params, or the service loads with
@@ -130,6 +157,11 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const [currentPlaceOfService, setCurrentPlaceOfService] = useState<
     string | undefined
   >(initialPlaceOfService)
+  // The venue of a fixed-location request, picked in the question flow
+  // (utils/fixedLocation). The listing then shows only the pros who picked it.
+  const [currentFixedLocationId, setCurrentFixedLocationId] = useState<
+    number | undefined
+  >(initialFixedLocationId)
   // Food only: broad-first fulfillment mode. "all" shows every pro (any-mode)
   // with capability badges; delivery/pickup narrows. Rides to checkout via cart.
   const [foodFulfillment, setFoodFulfillment] = useState<
@@ -203,10 +235,17 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const upfrontQuestions = allCustomerQuestions.filter(
     (q) => !(q.isFilter && q.tier === "refinement")
   )
+  // The venue is one more step while the request is at a fixed location.
+  const asksVenueNow = asksVenue(currentPlaceOfService, category)
+  // A category whose only place is a fixed location asks the venue first.
+  const asksVenueFirst = asksVenue(undefined, category)
   const totalQuestions =
-    upfrontQuestions.length + (placeOfServiceOptions.length > 1 ? 1 : 0)
+    upfrontQuestions.length +
+    (placeOfServiceOptions.length > 1 ? 1 : 0) +
+    (asksVenueNow ? 1 : 0)
   const answeredCount = useMemo(() => {
     let count = currentPlaceOfService ? 1 : 0
+    if (asksVenueNow && currentFixedLocationId != null) count++
     upfrontQuestions.forEach((q) => {
       const ans = allAnswers.find((a) => a.questionId === q.id)
       if (!ans) return
@@ -221,7 +260,27 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       }
     })
     return count
-  }, [allAnswers, upfrontQuestions, currentPlaceOfService])
+  }, [
+    allAnswers,
+    upfrontQuestions,
+    currentPlaceOfService,
+    asksVenueNow,
+    currentFixedLocationId,
+  ])
+
+  // The venue to send with a place: the one picked while the category still
+  // lists it, or its only venue (utils/fixedLocation). Before the service has
+  // loaded, the seed is taken as it is: SearchAnimationScreen checked it.
+  const venueFor = useCallback(
+    (
+      fixedLocationId: number | undefined,
+      placeOfService: string | undefined
+    ) =>
+      category
+        ? pickedVenue(fixedLocationId, placeOfService, category)
+        : fixedLocationId,
+    [category]
+  )
 
   // Continue button slide animation
   const hasSelection = selectedPros.length > 0
@@ -252,24 +311,28 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // their modes (ANY-MODE serveability, in lockstep with @ProsServeJobLocation
   // at submission) — the question flow then narrows the list further.
   useEffect(() => {
-    const skipAddress =
-      initialPlaceOfService === "remoteOrOnline" ||
-      initialPlaceOfService === "fixedLocations"
-    const customerAddress = skipAddress
-      ? undefined
-      : address?.coords
-        ? { latitude: address.coords.lat, longitude: address.coords.lon }
+    // A fixed location goes out only with its venue, never with the address
+    // (utils/fixedLocation); online without the address; the rest with it.
+    // This re-runs when the customer switches service, and the route's place
+    // and venue belong to the category it opened with.
+    const seeded = categoryId === route.params.categoryId
+    const place = isFoodCategory
+      ? foodFulfillment === "all"
+        ? undefined
+        : foodFulfillment
+      : seeded
+        ? initialPlaceOfService
         : undefined
-
     getPros(
       {
         categoryId,
-        placeOfService: isFoodCategory
-          ? foodFulfillment === "all"
-            ? undefined
-            : foodFulfillment
-          : initialPlaceOfService,
-        customerAddress,
+        ...listingPlace({
+          placeOfService: place,
+          fixedLocationId: seeded
+            ? venueFor(initialFixedLocationId, place)
+            : undefined,
+          coords: address?.coords,
+        }),
       },
       true
     )
@@ -292,7 +355,9 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       !hasLaunchedQuestions.current &&
       (!initialPlaceOfService || !!forceQuestionFlow)
     if (!firstLaunch && !relaunchQuestions.current) return
-    if (customerQuestions.length === 0) return // wait for the (new) service's questions to load
+    // Wait for the (new) service's questions to load. A fixed-location
+    // category with several venues has a step even without questions.
+    if (customerQuestions.length === 0 && !asksVenueFirst) return
     hasLaunchedQuestions.current = true
     relaunchQuestions.current = false
     setQuestionsOpenCount((c) => c + 1)
@@ -300,16 +365,27 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     // Gate drops only as the sheet actually presents — not at effect time,
     // or the push-animation window would reopen.
     setQuestionsSettled(true)
-  }, [customerQuestions.length, serviceId, hasScreenSettled])
+  }, [
+    customerQuestions.length,
+    asksVenueFirst,
+    serviceId,
+    hasScreenSettled,
+    relaunchTick,
+  ])
 
   // Gate rule-out: the service payload arrived but this category asks nothing
   // (also covers a categoryId missing from the payload) — there is no flow to
   // wait for, so release the list rather than blocking forever.
   useEffect(() => {
-    if (!questionsSettled && serviceData && customerQuestions.length === 0) {
+    if (
+      !questionsSettled &&
+      serviceData &&
+      customerQuestions.length === 0 &&
+      !asksVenueFirst
+    ) {
       setQuestionsSettled(true)
     }
-  }, [questionsSettled, serviceData, customerQuestions.length])
+  }, [questionsSettled, serviceData, customerQuestions.length, asksVenueFirst])
 
   // Preload a pro's image BYTES into FastImage's disk cache so the profile
   // screen renders them instantly instead of popping them in on arrival.
@@ -372,6 +448,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const doRefetch = useCallback(
     (opts: {
       pos?: string
+      // Like pos: present = this venue (undefined clears it), absent = keep
+      venue?: number
       questionFilterOptionIds?: number[]
       refinementFilterOptionIds?: number[]
       ranges?: { filterId: number; min?: number; max?: number }[]
@@ -396,14 +474,17 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
               ? undefined
               : foodFulfillment
             : currentPlaceOfService
-      const skipAddress =
-        placeOfService === "remoteOrOnline" ||
-        placeOfService === "fixedLocations"
-      const customerAddress = skipAddress
-        ? undefined
-        : address?.coords
-          ? { latitude: address.coords.lat, longitude: address.coords.lon }
-          : undefined
+      // A fixed location goes out only with its venue (without one, the
+      // place is left out and the list is everyone who can serve the
+      // address); it and online go without the address (utils/fixedLocation).
+      const location = listingPlace({
+        placeOfService,
+        fixedLocationId: venueFor(
+          "venue" in opts ? opts.venue : currentFixedLocationId,
+          placeOfService
+        ),
+        coords: address?.coords,
+      })
 
       const f = opts.filters ?? currentFilters
       const mergedFilterOptionIds = [
@@ -415,8 +496,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       getPros(
         {
           categoryId,
-          placeOfService,
-          customerAddress,
+          ...location,
           filterOptionsIds: mergedFilterOptionIds.length
             ? mergedFilterOptionIds
             : undefined,
@@ -438,6 +518,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       address,
       getPros,
       currentPlaceOfService,
+      currentFixedLocationId,
+      venueFor,
       isFoodCategory,
       foodFulfillment,
       sortBy,
@@ -451,12 +533,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const refetchWithFilters = useCallback(
     (result: {
       placeOfService?: string
+      fixedLocationId?: number
       filterOptionIds: number[]
       filtersChanged: boolean
     }) => {
       if (!result.filtersChanged) return
       doRefetch({
         pos: result.placeOfService,
+        venue: result.fixedLocationId,
         questionFilterOptionIds: result.filterOptionIds,
       })
     },
@@ -467,12 +551,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => {
     const handler = (result: {
       placeOfService?: string
+      fixedLocationId?: number
       filterOptionIds: number[]
       dataAnswers: QuestionAnswerType[]
       allAnswers: QuestionAnswerType[]
       filtersChanged: boolean
     }) => {
       setCurrentPlaceOfService(result.placeOfService)
+      setCurrentFixedLocationId(result.fixedLocationId)
       setDataAnswers(result.dataAnswers)
       setAllAnswers(result.allAnswers)
       setQuestionFilterOptionIds(result.filterOptionIds)
@@ -563,15 +649,49 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // (RequestSummaryScreen, utils/jobRequestRefusal). The list is fetched again
   // from the network, without the place when it was the place, and the prune
   // effect above drops the refused pros and shows the notice.
+  // Set when a refusal asked for the service again: the list is asked again
+  // once the category's places and venues have changed, with the new ones.
+  // Read through a ref: the refetch has to wait for the new service, not
+  // run whenever the closure changes.
+  const refetchListOnService = useRef(false)
+  const doRefetchRef = useRef(doRefetch)
+  doRefetchRef.current = doRefetch
+  useEffect(() => {
+    if (!refetchListOnService.current) return
+    refetchListOnService.current = false
+    doRefetchRef.current({ network: true })
+  }, [serviceData])
+
   useEffect(() => {
     const handler = ({
       clearPlaceOfService,
+      clearFixedLocation,
     }: {
       clearPlaceOfService: boolean
+      clearFixedLocation?: boolean
     }) => {
+      if (clearPlaceOfService || clearFixedLocation) {
+        // The cached service still lists what the server just refused (a
+        // single venue would be picked again on its own): ask for it again.
+        refetchListOnService.current = true
+        refetchService()
+      }
       if (clearPlaceOfService) {
         setCurrentPlaceOfService(undefined)
-        doRefetch({ pos: undefined, network: true })
+        setCurrentFixedLocationId(undefined)
+        doRefetch({ pos: undefined, venue: undefined, network: true })
+        return
+      }
+      if (clearFixedLocation) {
+        // The venue is no longer the category's: the list goes back to
+        // everyone who can serve the request, and the question flow opens
+        // again on the venue step, so the request is never sent without one.
+        setCurrentFixedLocationId(undefined)
+        relaunchQuestions.current = true
+        relaunchAfterRefusal.current = true
+        if (relaunchTimer.current) clearTimeout(relaunchTimer.current)
+        relaunchTimer.current = setTimeout(fireRelaunch, 800)
+        doRefetch({ venue: undefined, network: true })
         return
       }
       doRefetch({ network: true })
@@ -580,12 +700,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     return () => {
       questionFlowEventBus.off("request:refused", handler)
     }
-  }, [doRefetch])
+  }, [doRefetch, refetchService, fireRelaunch])
 
   // Handle all-questions modal dismiss
   const handleAllQuestionsDismiss = useCallback(
     (result: {
       placeOfService?: string
+      fixedLocationId?: number
       filterOptionIds: number[]
       dataAnswers: QuestionAnswerType[]
       allAnswers: QuestionAnswerType[]
@@ -593,6 +714,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       resetAll?: boolean
     }) => {
       setCurrentPlaceOfService(result.placeOfService)
+      setCurrentFixedLocationId(result.fixedLocationId)
       setDataAnswers(result.dataAnswers)
       setAllAnswers(result.allAnswers)
       setQuestionFilterOptionIds(result.filterOptionIds)
@@ -605,6 +727,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         setRangeFilters([])
         doRefetch({
           pos: result.placeOfService,
+          venue: result.fixedLocationId,
           questionFilterOptionIds: result.filterOptionIds,
           refinementFilterOptionIds: [],
           ranges: [],
@@ -663,6 +786,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       setAllAnswers([])
       setDataAnswers([])
       setCurrentPlaceOfService(undefined)
+      setCurrentFixedLocationId(undefined)
       setCurrentFilters({})
       setQuestionFilterOptionIds([])
       setRefinementFilterOptionIds([])
@@ -698,24 +822,20 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       // moved away from.
       if (newAddress) dispatch(setBrowsingAddress(newAddress))
       // remoteOrOnline/fixedLocations must not send coords — the backend DTO
-      // validator 400s on customerAddress for those modes.
-      const skipAddress =
-        currentPlaceOfService === "remoteOrOnline" ||
-        currentPlaceOfService === "fixedLocations"
-      const customerAddress = skipAddress
-        ? undefined
-        : newAddress?.coords
-          ? {
-              latitude: newAddress.coords.lat,
-              longitude: newAddress.coords.lon,
-            }
-          : undefined
+      // validator 400s on customerAddress for those modes — and a fixed
+      // location goes out only with its venue (utils/fixedLocation).
       setIsRefetching(true)
       getPros(
         {
           categoryId,
-          placeOfService: currentPlaceOfService,
-          customerAddress,
+          ...listingPlace({
+            placeOfService: currentPlaceOfService,
+            fixedLocationId: venueFor(
+              currentFixedLocationId,
+              currentPlaceOfService
+            ),
+            coords: newAddress?.coords,
+          }),
           ...currentFilters,
         },
         true
@@ -723,7 +843,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         .unwrap()
         .finally(() => setIsRefetching(false))
     },
-    [categoryId, currentPlaceOfService, currentFilters, getPros, dispatch]
+    [
+      categoryId,
+      currentPlaceOfService,
+      currentFixedLocationId,
+      venueFor,
+      currentFilters,
+      getPros,
+      dispatch,
+    ]
   )
 
   // ...and the same address flowing back UP. Checkout can change it too (its
@@ -895,6 +1023,18 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   const pros = data?.data || []
 
   const handleContinue = () => {
+    // A request at a fixed location goes on only with its venue: the
+    // question flow opens again (on the venue step) when it was skipped or
+    // closed without one.
+    if (
+      asksVenueNow &&
+      venueFor(currentFixedLocationId, currentPlaceOfService) == null
+    ) {
+      setQuestionsOpenCount((c) => c + 1)
+      setQuestionsVisible(true)
+      return
+    }
+
     // Resolve pro data now while we have it
     const proNames = selectedPros
       .map((id) => {
@@ -926,6 +1066,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       selectedProsInfo: prosInfo,
       address,
       placeOfService: currentPlaceOfService,
+      fixedLocationId: venueFor(currentFixedLocationId, currentPlaceOfService),
       // ALL answers, filter ones included: Details must not re-ask questions
       // the customer already answered pre-selection (re-asking let them flip
       // a filter answer to something the selected pro doesn't serve), and the
@@ -1344,6 +1485,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         customerQuestions={customerQuestions}
         initialAnswers={allAnswers}
         initialPlaceOfService={currentPlaceOfService}
+        fixedLocations={category?.fixedLocations}
+        initialFixedLocationId={currentFixedLocationId}
       />
 
       {/* Job-details editor — native push-back sheet, both platforms */}
@@ -1356,6 +1499,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         customerQuestions={customerQuestions}
         initialAnswers={allAnswers}
         initialPlaceOfService={currentPlaceOfService}
+        fixedLocations={category?.fixedLocations}
+        initialFixedLocationId={currentFixedLocationId}
         onApply={handleAllQuestionsDismiss}
       />
 

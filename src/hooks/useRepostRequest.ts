@@ -75,6 +75,11 @@ const useRepostRequest = () => {
               coords: { lat, lon: lng },
             },
             placeOfService: job.placeOfService,
+            // The old job's venue; SearchAnimationScreen keeps it only while
+            // the category still lists it (utils/fixedLocation).
+            ...(job.fixedLocationId != null && {
+              fixedLocationId: job.fixedLocationId,
+            }),
             initialAnswers: toFlatAnswers(job.questionsAnswers as any[]),
             forceQuestionFlow: true,
           },

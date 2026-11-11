@@ -24,6 +24,7 @@ import {
   jobRequestRefusalOf,
 } from "utils/jobRequestRefusal"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
+import { FIXED_LOCATIONS, venueName, venuePoint } from "utils/fixedLocation"
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -57,6 +58,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
     selectedProsInfo,
     address,
     placeOfService,
+    fixedLocationId,
     questionsAnswers,
     dateType,
     selectedDate,
@@ -72,6 +74,17 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const { data: serviceData } = useGetServiceByIdQuery(serviceId)
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const customerQuestions = category?.customerQuestions || []
+  // A fixed-location request is at its venue, not the customer's address:
+  // the hero shows the venue's pin and name (utils/fixedLocation).
+  const venue =
+    fixedLocationId != null
+      ? category?.fixedLocations?.find((v) => v.id === fixedLocationId)
+      : undefined
+  const venueAt = venuePoint(venue)
+  const heroPoint = venueAt ?? {
+    latitude: address.coords.lat,
+    longitude: address.coords.lon,
+  }
 
   const { isAuth } = useTypedSelector((store) => store.auth)
   const [isLoading, setLoading] = useState(false)
@@ -129,7 +142,11 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
         },
         prosIds: prosState.map((p) => p.id),
         questionsAnswers,
-        ...(placeOfService && { placeOfService }),
+        // The venue only when one was picked, always with its place: a
+        // backend without it refuses the unknown field.
+        ...(fixedLocationId != null
+          ? { placeOfService: FIXED_LOCATIONS, fixedLocationId }
+          : placeOfService && { placeOfService }),
         ...(dateType && { dateType: dateType as CreateJobRequest["dateType"] }),
         ...(selectedDate && { dates: [{ date: selectedDate }] }),
         ...(selectedTimeSlot && {
@@ -520,18 +537,12 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
               rotateEnabled={false}
               pitchEnabled={false}
               region={{
-                latitude: address.coords.lat,
-                longitude: address.coords.lon,
+                ...heroPoint,
                 latitudeDelta: 0.005,
                 longitudeDelta: 0.002,
               }}
             >
-              <MapPinMarker
-                coordinate={{
-                  latitude: address.coords.lat,
-                  longitude: address.coords.lon,
-                }}
-              />
+              <MapPinMarker coordinate={heroPoint} />
             </MapView>
             {/* Fade overlay at bottom */}
             <LinearGradient
@@ -578,8 +589,14 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                 leading="legacy"
                 style={[a.ml_4, { color: FG3 }]}
               >
-                {address.address}
-                {address.city ? ` · ${address.city}` : ""}
+                {venue ? (
+                  venueName(venue, isAr)
+                ) : (
+                  <>
+                    {address.address}
+                    {address.city ? ` · ${address.city}` : ""}
+                  </>
+                )}
               </Text>
             </DmView>
           </DmView>
@@ -788,11 +805,15 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
               ? () => {
                   const clearPlaceOfService =
                     refusal === JobRequestRefusal.placeOfServiceNotOffered
+                  const clearFixedLocation =
+                    clearPlaceOfService ||
+                    refusal === JobRequestRefusal.fixedLocationNotOffered
                   setRefusal(null)
                   // The listing is still mounted below this stack: it
                   // refetches from the network and prunes the selection.
                   questionFlowEventBus.emit("request:refused", {
                     clearPlaceOfService,
+                    clearFixedLocation,
                   })
                   navigation.popTo("ProsListingScreen", {
                     categoryId,
@@ -802,6 +823,9 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                     placeOfService: clearPlaceOfService
                       ? undefined
                       : placeOfService,
+                    fixedLocationId: clearFixedLocation
+                      ? undefined
+                      : fixedLocationId,
                   })
                 }
               : undefined

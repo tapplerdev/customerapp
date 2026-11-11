@@ -3,6 +3,8 @@ import { QuestionAnswerType } from "types/job"
 
 export type QuestionFlowResult = {
   placeOfService?: string
+  // The venue picked for a fixed-location request (utils/fixedLocation)
+  fixedLocationId?: number
   filterOptionIds: number[]
   dataAnswers: QuestionAnswerType[]
   allAnswers: QuestionAnswerType[]
@@ -19,8 +21,12 @@ type QuestionFlowEventMap = {
   // because a pro no longer serves it, or its place of service is no longer
   // offered (utils/jobRequestRefusal): the mounted listing fetches its list
   // from the network (never the cache), clearing the place first when it was
-  // the place, and the prune drops the refused pros with its notice.
-  "request:refused": { clearPlaceOfService: boolean }
+  // the place, and the prune drops the refused pros with its notice. A venue
+  // the category no longer lists clears the venue the same way.
+  "request:refused": {
+    clearPlaceOfService: boolean
+    clearFixedLocation?: boolean
+  }
 }
 
 export const questionFlowEventBus = new TypedEventBus<QuestionFlowEventMap>()

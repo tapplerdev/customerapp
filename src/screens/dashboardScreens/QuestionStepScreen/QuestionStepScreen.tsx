@@ -13,13 +13,19 @@ import { DmChecbox, DmView } from "@tappler/shared/src/components/UI"
 import { QuestionFlowParams } from "navigation/types"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
-import { ServiceQuestionType } from "types/cms"
+import { FixedLocationType, ServiceQuestionType } from "types/cms"
 import { QuestionAnswerType } from "types/job"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import NativeSheet from "@tappler/shared/src/components/NativeSheet/NativeSheet"
 import { useFullSheetHeight } from "@tappler/shared/src/components/NativeSheet/useFullSheetHeight"
 import { useKeyboardInset } from "@tappler/shared/src/hooks/useKeyboardInset"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
+import {
+  asksVenue,
+  categoryVenues,
+  pickedVenue,
+  venueName,
+} from "utils/fixedLocation"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
@@ -36,8 +42,13 @@ const PLACE_OF_SERVICE_LABELS: Record<string, string> = {
   fixedLocations: "at_fixed_location",
 }
 
+// The place and venue cards' titles share one line height.
+const STEP_TITLE_LEADING = px(28)
+
 type StepItem =
   | { type: "placeOfService" }
+  // Which venue, for a request at a fixed location (utils/fixedLocation)
+  | { type: "fixedLocation" }
   | { type: "question"; question: ServiceQuestionType }
 
 // ── Shared state context (avoids prop-drilling into the step view) ──
@@ -48,8 +59,11 @@ type SharedState = {
   placeOfServiceOptions: string[]
   answers: QuestionAnswerType[]
   selectedPlaceOfService?: string
+  venues: FixedLocationType[]
+  selectedFixedLocationId?: number
   setAnswers: React.Dispatch<React.SetStateAction<QuestionAnswerType[]>>
   setSelectedPlaceOfService: (place: string) => void
+  setSelectedFixedLocationId: (id: number) => void
   goNext: () => void
   goPrev: () => void
   onDone: () => void
@@ -218,6 +232,10 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
       return !!ctx.selectedPlaceOfService
     }
 
+    if (currentStep.type === "fixedLocation") {
+      return ctx.selectedFixedLocationId != null
+    }
+
     const question = currentStep.question
     const answer = ctx.answers.find((a) => a.questionId === question.id)
     if (!answer) return false
@@ -232,7 +250,12 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
 
   const renderPlaceOfServiceStep = () => (
     <DmView style={atoms.px_14}>
-      <Text size={22} weight="bold" leading={px(28)} style={atoms.mb_24}>
+      <Text
+        size={22}
+        weight="bold"
+        leading={STEP_TITLE_LEADING}
+        style={atoms.mb_24}
+      >
         {t("how_do_you_want_service")}
       </Text>
       {ctx.placeOfServiceOptions.map((place) => (
@@ -245,6 +268,31 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
           title={t(PLACE_OF_SERVICE_LABELS[place] || place)}
           onPress={() => ctx.setSelectedPlaceOfService(place)}
           isChecked={ctx.selectedPlaceOfService === place}
+        />
+      ))}
+    </DmView>
+  )
+
+  const renderFixedLocationStep = () => (
+    <DmView style={atoms.px_14}>
+      <Text
+        size={22}
+        weight="bold"
+        leading={STEP_TITLE_LEADING}
+        style={atoms.mb_24}
+      >
+        {t("where_do_you_need_service")}
+      </Text>
+      {ctx.venues.map((venue) => (
+        <DmChecbox
+          key={venue.id}
+          style={atoms.py_14}
+          textType={{ size: 14, leading: "normal", weight: "regular" }}
+          textStyle={atoms.flex_1}
+          variant="circle"
+          title={venueName(venue, isAr)}
+          onPress={() => ctx.setSelectedFixedLocationId(venue.id)}
+          isChecked={ctx.selectedFixedLocationId === venue.id}
         />
       ))}
     </DmView>
@@ -318,6 +366,7 @@ const StepView: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
         keyboardShouldPersistTaps="handled"
       >
         {currentStep?.type === "placeOfService" && renderPlaceOfServiceStep()}
+        {currentStep?.type === "fixedLocation" && renderFixedLocationStep()}
         {currentStep?.type === "question" && (
           <QuestionComponent
             key={currentStep.question.id}
@@ -370,16 +419,51 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
   customerQuestions,
   initialAnswers,
   initialPlaceOfService,
+  fixedLocations,
+  initialFixedLocationId,
   onClose,
   commitRef,
   registerBackAction,
 }) => {
+  const { i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
+
+  // Shared state — seeded on repost so the flow opens pre-filled; empty on a
+  // normal first arrival (the seeds are undefined then).
+  const [answers, setAnswers] = useState<QuestionAnswerType[]>(
+    initialAnswers ?? []
+  )
+  const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<
+    string | undefined
+  >(initialPlaceOfService)
+  const [selectedFixedLocationId, setSelectedFixedLocationId] = useState<
+    number | undefined
+  >(initialFixedLocationId)
+
+  // The flow never runs for a food category, so the places are the
+  // category's own and nothing is a menu.
+  const venueCategory = useMemo(
+    () => ({
+      placeOfService: placeOfServiceOptions,
+      hasMenu: false,
+      fixedLocations: categoryVenues({ fixedLocations }, isAr),
+    }),
+    [placeOfServiceOptions, fixedLocations, isAr]
+  )
+  // Asked right after the place (or first, when the place is the category's
+  // only one), and only while the request is at a fixed location.
+  const showsVenueStep = asksVenue(selectedPlaceOfService, venueCategory)
+
   // Build steps
   const steps = useMemo<StepItem[]>(() => {
     const result: StepItem[] = []
 
     if (placeOfServiceOptions.length > 1) {
       result.push({ type: "placeOfService" })
+    }
+
+    if (showsVenueStep) {
+      result.push({ type: "fixedLocation" })
     }
 
     const customerOnly = customerQuestions
@@ -397,16 +481,7 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
     dataQuestions.forEach((q) => result.push({ type: "question", question: q }))
 
     return result
-  }, [placeOfServiceOptions, customerQuestions])
-
-  // Shared state — seeded on repost so the flow opens pre-filled; empty on a
-  // normal first arrival (the seeds are undefined then).
-  const [answers, setAnswers] = useState<QuestionAnswerType[]>(
-    initialAnswers ?? []
-  )
-  const [selectedPlaceOfService, setSelectedPlaceOfService] = useState<
-    string | undefined
-  >(initialPlaceOfService)
+  }, [placeOfServiceOptions, customerQuestions, showsVenueStep])
   // Stack of step indices; Next pushes a card, Back pops the top card after
   // its slide-out animation finishes. The pop targets a SPECIFIC card (not a
   // global flag) so an in-between render can never start popping the next
@@ -522,6 +597,13 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
 
     questionFlowEventBus.emit("questions:done", {
       placeOfService: selectedPlaceOfService,
+      // Only while the request is at a fixed location, and only a venue the
+      // category still lists (the only one, when it has one).
+      fixedLocationId: pickedVenue(
+        selectedFixedLocationId,
+        selectedPlaceOfService,
+        venueCategory
+      ),
       filterOptionIds,
       dataAnswers,
       allAnswers: answers,
@@ -529,7 +611,14 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
     })
 
     onClose()
-  }, [answers, steps, selectedPlaceOfService, onClose])
+  }, [
+    answers,
+    steps,
+    selectedPlaceOfService,
+    selectedFixedLocationId,
+    venueCategory,
+    onClose,
+  ])
 
   // The sheet wrapper calls this on swipe-down dismiss so partial answers are
   // saved (via handleDone) instead of dropped.
@@ -581,8 +670,11 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
       placeOfServiceOptions,
       answers,
       selectedPlaceOfService,
+      venues: venueCategory.fixedLocations,
+      selectedFixedLocationId,
       setAnswers,
       setSelectedPlaceOfService,
+      setSelectedFixedLocationId,
       goNext,
       goPrev,
       onDone: handleDone,
@@ -594,6 +686,8 @@ const QuestionFlowContent: React.FC<ContentProps> = ({
       placeOfServiceOptions,
       answers,
       selectedPlaceOfService,
+      venueCategory,
+      selectedFixedLocationId,
       goNext,
       goPrev,
       handleDone,

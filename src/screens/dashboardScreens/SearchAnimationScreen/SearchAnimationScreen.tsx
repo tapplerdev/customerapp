@@ -12,6 +12,7 @@ import {
 } from "services/api"
 import { collectProStickerUrls, prefetchSvgs } from "services/svgCache"
 import { offeredPlaceOfService } from "utils/placeOfService"
+import { listingPlace, pickedVenue } from "utils/fixedLocation"
 
 import LogoIconEn from "assets/icons/logo-en.svg"
 import LogoIconAr from "assets/icons/logo-ar.svg"
@@ -45,14 +46,20 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
     // staff have since taken off the category lists nobody and is never
     // asked again (utils/placeOfService). Only a seed waits for the service;
     // a fresh search fetches both side by side, as before.
+    // The old job's venue (a fixed-location request) is kept only while the
+    // category still lists it, and only with its place (utils/fixedLocation).
     const listingParams = placeOfService
-      ? fetchService.then((service) => ({
-          ...nextParams,
-          placeOfService: offeredPlaceOfService(
-            placeOfService,
-            service?.categories?.find((c) => c.id === categoryId)
-          ),
-        }))
+      ? fetchService.then((service) => {
+          const category = service?.categories?.find((c) => c.id === categoryId)
+          const place = offeredPlaceOfService(placeOfService, category)
+          return {
+            ...nextParams,
+            placeOfService: place,
+            fixedLocationId: category
+              ? pickedVenue(nextParams.fixedLocationId, place, category)
+              : nextParams.fixedLocationId,
+          }
+        })
       : Promise.resolve(nextParams)
 
     // Once the pros payload lands, warm the FIRST screen's artwork inside the
@@ -61,18 +68,16 @@ const SearchAnimationScreen: React.FC<Props> = ({ route, navigation }) => {
     // hold the lottie hostage) + first photos into FastImage's disk cache
     // (fire-and-forget — preload has no completion signal).
     const fetchPros = listingParams.then((params) => {
-      const skipAddress =
-        params.placeOfService === "remoteOrOnline" ||
-        params.placeOfService === "fixedLocations"
-      const customerAddress = skipAddress
-        ? undefined
-        : address?.coords
-          ? { latitude: address.coords.lat, longitude: address.coords.lon }
-          : undefined
+      // A fixed location only with its venue, never with the address; online
+      // without the address (utils/fixedLocation). A repost of a job with no
+      // venue used to send fixedLocations alone, which the server refuses.
       return getPros({
         categoryId,
-        placeOfService: params.placeOfService,
-        customerAddress,
+        ...listingPlace({
+          placeOfService: params.placeOfService,
+          fixedLocationId: params.fixedLocationId,
+          coords: address?.coords,
+        }),
       })
         .unwrap()
         .then((res) => {
