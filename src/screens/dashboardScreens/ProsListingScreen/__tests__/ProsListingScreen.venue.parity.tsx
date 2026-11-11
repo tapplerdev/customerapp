@@ -47,12 +47,18 @@ const page = (rows: ProType[]) => ({
   total: rows.length,
 })
 
-const open = (env: ParityEnv, params: Record<string, unknown>) =>
+const open = (
+  env: ParityEnv,
+  params: Record<string, unknown>,
+  category: () => Record<string, unknown> = () => AIRPORTS
+) =>
   openScreen(load, {
     ...screenState("data"),
     api: {
       ...DATA,
-      getServiceById: { data: { ...SERVICE, categories: [AIRPORTS] } },
+      getServiceById: () => ({
+        data: { ...SERVICE, categories: [category()] },
+      }),
       getProsForCategory: { data: page([PRO_INDIVIDUAL, PRO_COMPANY]) },
     },
     lang: env.language,
@@ -167,6 +173,57 @@ describe("ProsListingScreen at a venue", () => {
           placeOfService: "fixedLocations",
           fixedLocationId: SPHINX.id,
         })
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a refused single venue is not picked again: the service is asked for again first [$language $platform]",
+    async (env) => {
+      let venues = [CAIRO]
+      const session = await open(
+        env,
+        { placeOfService: "fixedLocations", fixedLocationId: CAIRO.id },
+        () => ({ ...AIRPORTS, fixedLocations: venues })
+      )
+      try {
+        const services = () =>
+          session
+            .requests()
+            .filter((request) => request.endpoint === "getServiceById").length
+        const servicesBefore = services()
+        const before = lists(session).length
+        // Staff took Cairo off the category while the customer was sending.
+        venues = []
+        await emit(session, "request:refused", {
+          clearPlaceOfService: false,
+          clearFixedLocation: true,
+        })
+        expect(services()).toBeGreaterThan(servicesBefore)
+        const after = lists(session).slice(before)
+        expect(after.length).toBeGreaterThan(0)
+        expect(after.at(-1)).not.toContain("fixedLocationId")
+        expect(after.at(-1)).not.toContain("placeOfService")
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a category with venues and no questions still opens the flow to ask the venue [$language $platform]",
+    async (env) => {
+      const session = await open(env, { placeOfService: undefined }, () => ({
+        ...AIRPORTS,
+        customerQuestions: [],
+      }))
+      try {
+        await session.settle(1500)
+        expect(JSON.stringify(session.tree())).toContain(
+          copy(env, "where_do_you_need_service")
+        )
       } finally {
         session.unmount()
       }

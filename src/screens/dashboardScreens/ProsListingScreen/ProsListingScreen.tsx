@@ -290,17 +290,24 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => {
     // A fixed location goes out only with its venue, never with the address
     // (utils/fixedLocation); online without the address; the rest with it.
+    // This re-runs when the customer switches service, and the route's place
+    // and venue belong to the category it opened with.
+    const seeded = categoryId === route.params.categoryId
     const place = isFoodCategory
       ? foodFulfillment === "all"
         ? undefined
         : foodFulfillment
-      : initialPlaceOfService
+      : seeded
+        ? initialPlaceOfService
+        : undefined
     getPros(
       {
         categoryId,
         ...listingPlace({
           placeOfService: place,
-          fixedLocationId: venueFor(initialFixedLocationId, place),
+          fixedLocationId: seeded
+            ? venueFor(initialFixedLocationId, place)
+            : undefined,
           coords: address?.coords,
         }),
       },
@@ -613,6 +620,19 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // (RequestSummaryScreen, utils/jobRequestRefusal). The list is fetched again
   // from the network, without the place when it was the place, and the prune
   // effect above drops the refused pros and shows the notice.
+  // Set when a refusal asked for the service again: the list is asked again
+  // once the category's places and venues have changed, with the new ones.
+  // Read through a ref: the refetch has to wait for the new service, not
+  // run whenever the closure changes.
+  const refetchListOnService = useRef(false)
+  const doRefetchRef = useRef(doRefetch)
+  doRefetchRef.current = doRefetch
+  useEffect(() => {
+    if (!refetchListOnService.current) return
+    refetchListOnService.current = false
+    doRefetchRef.current({ network: true })
+  }, [serviceData])
+
   useEffect(() => {
     const handler = ({
       clearPlaceOfService,
@@ -621,6 +641,12 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       clearPlaceOfService: boolean
       clearFixedLocation?: boolean
     }) => {
+      if (clearPlaceOfService || clearFixedLocation) {
+        // The cached service still lists what the server just refused (a
+        // single venue would be picked again on its own): ask for it again.
+        refetchListOnService.current = true
+        refetchService()
+      }
       if (clearPlaceOfService) {
         setCurrentPlaceOfService(undefined)
         setCurrentFixedLocationId(undefined)
@@ -641,7 +667,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     return () => {
       questionFlowEventBus.off("request:refused", handler)
     }
-  }, [doRefetch])
+  }, [doRefetch, refetchService])
 
   // Handle all-questions modal dismiss
   const handleAllQuestionsDismiss = useCallback(
