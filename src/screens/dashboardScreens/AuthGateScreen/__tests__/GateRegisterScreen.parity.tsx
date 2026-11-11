@@ -100,6 +100,8 @@ const FILLED = [
   type(2, "Mona.Adel@Example.com"),
   type(3, "secret123"),
   type(4, "01012345678"),
+  // The gender is a tap, never a default (nobody is picked when it opens).
+  pickMale,
 ]
 
 // Register is an ActionBtn turned into a ds Button by the conversion: Button's own height and accessibility props, on the rows that draw it.
@@ -115,14 +117,19 @@ const CASES: Case[] = [
     steps: [...FILLED, showPassword],
   },
   { label: "everything typed, female picked", steps: [...FILLED, pickFemale] },
+  // Valid in every field but no gender tapped: Register stays refused.
+  {
+    label: "everything typed, no gender picked",
+    steps: FILLED.slice(0, 5),
+  },
   { label: "female picked, nothing typed", steps: [pickFemale] },
   {
     label: "password too short",
-    steps: [...FILLED.slice(0, 3), type(3, "abc"), FILLED[4]],
+    steps: [...FILLED.slice(0, 3), type(3, "abc"), FILLED[4], pickMale],
   },
   {
     label: "mobile number invalid",
-    steps: [...FILLED.slice(0, 4), type(4, "0123")],
+    steps: [...FILLED.slice(0, 4), type(4, "0123"), pickMale],
   },
   { label: "registering", steps: [...FILLED, register] },
   {
@@ -181,15 +188,16 @@ describe("GateRegisterScreen presses", () => {
   }
 
   it.each(envs)(
-    "the radios swap: Male after Female draws the opened form again [$env.language $env.platform]",
+    "the radios swap: Male after Female draws the Male-picked form again [$env.language $env.platform]",
     async ({ env }) => {
       const session = await openScreen(load, optionsFor(env))
       try {
-        const opened = JSON.stringify(session.tree())
-        await run(session, env, [pickFemale])
-        expect(JSON.stringify(session.tree())).not.toBe(opened)
         await run(session, env, [pickMale])
-        expect(JSON.stringify(session.tree())).toBe(opened)
+        const male = JSON.stringify(session.tree())
+        await run(session, env, [pickFemale])
+        expect(JSON.stringify(session.tree())).not.toBe(male)
+        await run(session, env, [pickMale])
+        expect(JSON.stringify(session.tree())).toBe(male)
       } finally {
         session.unmount()
       }
@@ -204,6 +212,13 @@ describe("GateRegisterScreen presses", () => {
         expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
         await run(session, env, [type(0, "Mona")])
         expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
+        // Every field valid but no gender tapped is still refused.
+        await run(session, env, FILLED.slice(0, 5))
+        expect(() => pressTitled(session.root, copy(env, "register"))).toThrow()
+        await run(session, env, [pickMale])
+        expect(() =>
+          pressTitled(session.root, copy(env, "register"))
+        ).not.toThrow()
       } finally {
         session.unmount()
       }

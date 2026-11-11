@@ -15,6 +15,7 @@ import {
 } from "testing/screenKit"
 import { screenState } from "testing/screenKit/states"
 import { CUSTOMER, signedIn } from "testing/screenKit/fixtures/users"
+import type { CustomerMeResponse } from "types/auth"
 import {
   PARITY_MATRIX,
   expectParity,
@@ -35,6 +36,14 @@ import {
 
 const load = () => require("../MyInformationScreen")
 
+// The backend says whether photos can be stored private (file privacy on). The
+// picker is drawn only then; every state below is "on" unless it says so.
+const ME_ON = { data: { ...CUSTOMER, profilePhotoEnabled: true } }
+const withMe = (me: { data: CustomerMeResponse }) => ({
+  ...screenState("data"),
+  api: { ...screenState("data").api, getCustomerMe: me },
+})
+
 const BLANK = {
   state: {
     auth: signedIn({
@@ -45,8 +54,23 @@ const BLANK = {
       email: "",
     }),
   },
-  api: screenState("data").api,
+  api: withMe(ME_ON).api,
 }
+
+// The account answers with a private link to the photo (it expires, so the
+// screen reads it fresh and never stores it).
+const WITH_PHOTO = withMe({
+  data: {
+    ...CUSTOMER,
+    profilePhotoEnabled: true,
+    profilePhotoUrl: "https://api.example.com/api/files/private/1/me.jpg",
+  },
+})
+// File privacy is off: the server says no (or, an older backend, says nothing).
+const PICKER_OFF = withMe({
+  data: { ...CUSTOMER, profilePhotoEnabled: false },
+})
+const PICKER_UNSAID = withMe({ data: CUSTOMER })
 
 const SAVE = {
   pending: "loading" as const,
@@ -57,7 +81,7 @@ const SAVE = {
   accepted: { data: CUSTOMER },
 }
 
-const base = screenState("data")
+const base = withMe(ME_ON)
 const optionsFor = (
   env: ParityEnv,
   who: typeof base = base,
@@ -69,6 +93,9 @@ const optionsFor = (
   platform: env.platform ?? "ios",
   route: { name: "MyInformationScreen" },
 })
+
+const openPhotoSheet: Step = (root, env) =>
+  pressText(root, copy(env, "profile_photo"))
 
 const typeFirst: Step = (root) => typeInto(root, 0, "Monica")
 const typeLast: Step = (root) => typeInto(root, 1, "Adel-Hassan")
@@ -89,6 +116,15 @@ type Case = {
 const CASES: Case[] = [
   { label: "as opened, nothing changed" },
   { label: "blank names, no gender, no email", who: BLANK },
+  { label: "the picker off: photos not available yet", who: PICKER_OFF },
+  { label: "the picker off: the server says nothing", who: PICKER_UNSAID },
+  { label: "a photo on the account", who: WITH_PHOTO },
+  { label: "the photo sheet opened, no photo", steps: [openPhotoSheet] },
+  {
+    label: "the photo sheet opened, with a photo",
+    who: WITH_PHOTO,
+    steps: [openPhotoSheet],
+  },
   { label: "first name edited", steps: [typeFirst] },
   { label: "both names edited", steps: [typeFirst, typeLast] },
   { label: "male picked", steps: [pickMale] },
@@ -190,6 +226,98 @@ describe("MyInformationScreen presses", () => {
         )
       } finally {
         session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "Remove photo is only offered with a photo, and sends profilePhoto null [$env.language $env.platform]",
+    async ({ env }) => {
+      const without = await openScreen(load, optionsFor(env))
+      try {
+        await without.act(() => {
+          openPhotoSheet(without.root, env)
+        })
+        expect(() =>
+          pressText(without.root, copy(env, "gallery"))
+        ).not.toThrow()
+        expect(() =>
+          pressText(without.root, copy(env, "remove_photo"))
+        ).toThrow()
+      } finally {
+        without.unmount()
+      }
+
+      const session = await openScreen(
+        load,
+        optionsFor(env, WITH_PHOTO, "accepted")
+      )
+      try {
+        await session.act(() => {
+          openPhotoSheet(session.root, env)
+        })
+        await session.act(() => {
+          pressText(session.root, copy(env, "remove_photo"))
+        })
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          '"body":{"profilePhoto":null}'
+        )
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "Save does not touch the photo [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        optionsFor(env, WITH_PHOTO, "accepted")
+      )
+      try {
+        await session.act(() => {
+          typeFirst(session.root, env)
+        })
+        await session.act(() => {
+          save(session.root, env)
+        })
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).not.toContain("profilePhoto")
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "the picker is not offered while photos are off [$env.language $env.platform]",
+    async ({ env }) => {
+      for (const who of [PICKER_OFF, PICKER_UNSAID]) {
+        // eslint-disable-next-line no-await-in-loop
+        const session = await openScreen(load, optionsFor(env, who))
+        try {
+          expect(() =>
+            pressText(session.root, copy(env, "profile_photo"))
+          ).toThrow()
+        } finally {
+          session.unmount()
+        }
+      }
+      const on = await openScreen(load, optionsFor(env))
+      try {
+        expect(() =>
+          pressText(on.root, copy(env, "profile_photo"))
+        ).not.toThrow()
+      } finally {
+        on.unmount()
       }
     }
   )

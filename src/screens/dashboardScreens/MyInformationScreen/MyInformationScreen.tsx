@@ -13,6 +13,7 @@ import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import { AppScrollView } from "components/scroll"
 import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import ProfilePhotoPicker from "./components/ProfilePhotoPicker"
 import styles from "./styles"
 
 const disabledLookSubtleInverse = {
@@ -85,6 +86,8 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24 }}
         showsVerticalScrollIndicator={false}
       >
+        <ProfilePhotoPicker />
+
         {/* First Name */}
         <DmView style={a.mb_20}>
           <DmView style={a.flex_row}>
