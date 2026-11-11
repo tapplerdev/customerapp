@@ -136,6 +136,9 @@ const ProfilePhotoPicker: React.FC = () => {
 
   const rtlRow = { marginStart: 12, textAlign: "left" } as const
 
+  // Not offered until the backend says photos can be stored private.
+  if (!me?.profilePhotoEnabled) return null
+
   return (
     <DmView style={[a.items_center, a.mb_28]}>
       <DmView
