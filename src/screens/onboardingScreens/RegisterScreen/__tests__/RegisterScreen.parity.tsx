@@ -53,6 +53,8 @@ const FILLED: Step[] = [
   type(2, "Mona.Adel@Example.com"),
   type(3, "secret-1"),
   type(4, "01012345678"),
+  // The gender is a tap, never a default (nobody is picked when it opens).
+  (root, env) => pressText(root, copy(env, "male")),
 ]
 const register: Step = (root, env) => pressTitled(root, copy(env, "register"))
 const SIGNED_UP = { data: { id: 1 } }
@@ -71,17 +73,19 @@ const CASES: Case[] = [
   { state: "as it opens" },
   { state: "a first name typed", steps: [type(0, "Mona")] },
   { state: "the form filled, ready", steps: FILLED },
+  // Valid in every field but no gender tapped: Register stays disabled.
+  { state: "the form filled, no gender picked", steps: FILLED.slice(0, 5) },
   {
     state: "a short password",
-    steps: [...FILLED.slice(0, 3), type(3, "abc"), FILLED[4]],
+    steps: [...FILLED.slice(0, 3), type(3, "abc"), FILLED[4], FILLED[5]],
   },
   {
     state: "a mobile number not starting with 01",
-    steps: [...FILLED.slice(0, 4), type(4, "02012345678")],
+    steps: [...FILLED.slice(0, 4), type(4, "02012345678"), FILLED[5]],
   },
   {
     state: "a mobile number too short",
-    steps: [...FILLED.slice(0, 4), type(4, "010123")],
+    steps: [...FILLED.slice(0, 4), type(4, "010123"), FILLED[5]],
   },
   {
     state: "Female picked",
@@ -264,10 +268,29 @@ describe.each(PARITY_MATRIX)(
       }
     })
 
+    it("a form with no gender picked sends nothing", async () => {
+      const session = await open()
+      try {
+        await run(session, FILLED.slice(0, 5))
+        await expect(run(session, [register])).rejects.toThrow(/disabled/)
+        expect(sent(session, "customerSignUp")).toHaveLength(0)
+        await run(session, [FILLED[5]])
+        await run(session, [register])
+        await session.settle(1000)
+        expect(sent(session, "customerSignUp")).toHaveLength(1)
+      } finally {
+        session.unmount()
+      }
+    })
+
     it("a form that is not ready sends nothing; the chevron goes back", async () => {
       const session = await open()
       try {
-        await run(session, [...FILLED.slice(0, 4), type(4, "02012345678")])
+        await run(session, [
+          ...FILLED.slice(0, 4),
+          type(4, "02012345678"),
+          FILLED[5],
+        ])
         await expect(run(session, [register])).rejects.toThrow(/disabled/)
         expect(sent(session, "customerSignUp")).toHaveLength(0)
         await run(session, [

@@ -1,7 +1,25 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { color, radius } from "@tappler/shared/src/ds"
+
+/** The photo tile in My Information: a square, 96 across. */
+const PHOTO = 96
 
 export default StyleSheet.create({
+  photoTile: {
+    width: PHOTO,
+    height: PHOTO,
+    borderRadius: radius.r12,
+    backgroundColor: color.brand.tint,
+    overflow: "hidden",
+  },
+  photo: { width: PHOTO, height: PHOTO },
+  photoBusy: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: color.surface.screen,
+    opacity: 0.7,
+  },
+  sheetIcon: { width: 24 },
   safeArea: {
     backgroundColor: colors.white,
   },

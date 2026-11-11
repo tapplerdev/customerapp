@@ -78,6 +78,9 @@ export interface CustomerMeResponse {
   status: string
   emailVerified: boolean
   addresses?: CustomerSavedAddress[]
+  // A private link to the customer's photo, or null. It expires within
+  // minutes: read it from a fresh GET /customers/me, never store it.
+  profilePhotoUrl?: string | null
   // What the backend will write notifications in. Compared against the app's
   // own language so BootstrapScreen only PATCHes on an actual mismatch.
   preferredLanguage?: "ar" | "en"
@@ -88,6 +91,8 @@ export interface UpdateCustomerRequest {
   firstName?: string
   lastName?: string
   gender?: "male" | "female"
+  // The storage key POST /files returned for the cropped photo; null removes it.
+  profilePhoto?: string | null
   mobileNumber?: string
   email?: string
   password?: { currentPassword: string; newPassword: string }

@@ -48,6 +48,21 @@ const BLANK = {
   api: screenState("data").api,
 }
 
+// The account answers with a private link to the photo (it expires, so the
+// screen reads it fresh and never stores it).
+const WITH_PHOTO = {
+  ...screenState("data"),
+  api: {
+    ...screenState("data").api,
+    getCustomerMe: {
+      data: {
+        ...CUSTOMER,
+        profilePhotoUrl: "https://api.example.com/api/files/private/1/me.jpg",
+      },
+    },
+  },
+}
+
 const SAVE = {
   pending: "loading" as const,
   rejected: {
@@ -70,6 +85,9 @@ const optionsFor = (
   route: { name: "MyInformationScreen" },
 })
 
+const openPhotoSheet: Step = (root, env) =>
+  pressText(root, copy(env, "profile_photo"))
+
 const typeFirst: Step = (root) => typeInto(root, 0, "Monica")
 const typeLast: Step = (root) => typeInto(root, 1, "Adel-Hassan")
 const pickMale: Step = (root, env) => pressTitled(root, copy(env, "male"))
@@ -89,6 +107,13 @@ type Case = {
 const CASES: Case[] = [
   { label: "as opened, nothing changed" },
   { label: "blank names, no gender, no email", who: BLANK },
+  { label: "a photo on the account", who: WITH_PHOTO },
+  { label: "the photo sheet opened, no photo", steps: [openPhotoSheet] },
+  {
+    label: "the photo sheet opened, with a photo",
+    who: WITH_PHOTO,
+    steps: [openPhotoSheet],
+  },
   { label: "first name edited", steps: [typeFirst] },
   { label: "both names edited", steps: [typeFirst, typeLast] },
   { label: "male picked", steps: [pickMale] },
@@ -188,6 +213,73 @@ describe("MyInformationScreen presses", () => {
         expect(session.navigation.actions[1]).toEqual(
           expect.objectContaining({ type: "GO_BACK" })
         )
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "Remove photo is only offered with a photo, and sends profilePhoto null [$env.language $env.platform]",
+    async ({ env }) => {
+      const without = await openScreen(load, optionsFor(env))
+      try {
+        await without.act(() => {
+          openPhotoSheet(without.root, env)
+        })
+        expect(() =>
+          pressText(without.root, copy(env, "gallery"))
+        ).not.toThrow()
+        expect(() =>
+          pressText(without.root, copy(env, "remove_photo"))
+        ).toThrow()
+      } finally {
+        without.unmount()
+      }
+
+      const session = await openScreen(
+        load,
+        optionsFor(env, WITH_PHOTO, "accepted")
+      )
+      try {
+        await session.act(() => {
+          openPhotoSheet(session.root, env)
+        })
+        await session.act(() => {
+          pressText(session.root, copy(env, "remove_photo"))
+        })
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).toContain(
+          '"body":{"profilePhoto":null}'
+        )
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
+    "Save does not touch the photo [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        optionsFor(env, WITH_PHOTO, "accepted")
+      )
+      try {
+        await session.act(() => {
+          typeFirst(session.root, env)
+        })
+        await session.act(() => {
+          save(session.root, env)
+        })
+        const sent = session
+          .requests()
+          .filter((r) => r.endpoint === "updateCustomer")
+        expect(sent).toHaveLength(1)
+        expect(JSON.stringify(sent[0].args)).not.toContain("profilePhoto")
       } finally {
         session.unmount()
       }

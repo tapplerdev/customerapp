@@ -29,7 +29,9 @@ interface FormValues {
   email: string
   password: string
   mobileNumber: string
-  gender: "male" | "female"
+  // Nobody is picked until the customer taps one: a gender no one chose would
+  // put a wrong icon on their tile in the pro app.
+  gender?: "male" | "female"
 }
 
 const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
@@ -64,12 +66,13 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
       email: "",
       password: "",
       mobileNumber: "",
-      gender: "male",
+      gender: undefined,
     },
   })
 
   const selectedGender = watch("gender")
-  const isFormReady = isValid && !isLoading
+  // The gender is a tap, never a default.
+  const isFormReady = isValid && !!selectedGender && !isLoading
 
   const onSubmit = async () => {
     try {
@@ -80,7 +83,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
         email: getValues("email").toLowerCase(),
         password: getValues("password"),
         mobileNumber: getValues("mobileNumber"),
-        gender: getValues("gender"),
+        gender: selectedGender as "male" | "female",
         signupPlatform: "email",
       }).unwrap()
 
