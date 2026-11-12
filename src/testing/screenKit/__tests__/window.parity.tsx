@@ -17,7 +17,7 @@ import type { HostNode } from "testing/hostTreeParity"
  * loads, so what a module works out from Dimensions when it loads follows
  * the row: tappler-shared's isSmallPhone (width under 393) and SCREEN_WIDTH /
  * SCREEN_HEIGHT, and customerapp's own SCREEN_WIDTHs read at import
- * (ReviewFormScreen, MessagesComponent, MessageComponent, TabBar, OffersSection,
+ * (ReviewFormScreen, MessagesComponent, MessageComponent, TabBar,
  * FoodMenuItemRow, ImageViewerModal). Set at render time only, they stayed the
  * large phone's whatever the row asked for (proapp's finding).
  */

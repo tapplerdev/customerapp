@@ -422,9 +422,8 @@ const BASE_CASES: Case[] = [
   },
 ]
 
-// No 390-wide rows: OffersSection reads the window as it loads, but its strip
-// (the only part a card draws) has fixed sizes, so a 390-wide phone draws the
-// same tree as the 402-wide default (checked: every such row repeated its
+// No 390-wide rows: the OFFERS box has fixed sizes, so a 390-wide phone draws
+// the same tree as the 402-wide default (checked: every such row repeated its
 // 402 twin, so they were dropped).
 const rows = rowsByPlatform(BASE_CASES, PARITY_MATRIX)
 

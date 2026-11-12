@@ -287,7 +287,7 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
           own card. It replaces the pink footer band. Each is the icon
           above its caption (#533), or the product's single picture,
           centred, untrimmed: the CMS template's group translate is what
-          centres the drawing in its box (see OffersSection's strip). The
+          centres the drawing in its box. The
           pro's promo line is their text offer in the same box (#533): a pink
           box under the one tab, after the stickers if there are any. With
           neither, the box draws nothing. */}

@@ -401,7 +401,6 @@ const CASES: Case[] = [
       "the listing's categories win over the pro's, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",
     options: withPro(MINIMAL, { serviceCategories: FULL.serviceCategories }),
   },
-  // OffersSection's banner sizes its stickers from the window it loaded with.
   {
     state:
       "four stickers, #522 profile hero, pill as tall as Featured, #525 offers, #525 equal slots",

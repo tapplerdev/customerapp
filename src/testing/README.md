@@ -458,7 +458,7 @@ it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => 
   (width under 393), `isLittlePhone` (under 375), `isBigPhone`, `isSmallPhoneHeight`,
   `SCREEN_WIDTH` and `SCREEN_HEIGHT` once, when they load, and so do customerapp's ReviewFormScreen,
   MessagesComponent (and its styles), MessageComponent (and its styles), TabBar's styles,
-  FoodMenuItemRow's styles, OffersSection and ImageViewerModal. A row's `window` is part of its
+  FoodMenuItemRow's styles and ImageViewerModal. A row's `window` is part of its
   registry, like its platform and direction, and is applied before anything loads:
   `window: { width: 390 }` draws the small-phone branch, `{ width: 402 }` the large one. Each window
   is its own registry, so keep a window's rows together. A row without `window` loads the app with
@@ -478,7 +478,7 @@ it.each(rows)("$state [$env.language $env.platform]", async ({ state, env }) => 
       // Everything the render uses, from this registry (not the file's imports).
       const React = require("react")
       const { hostTree } = require("testing/hostTreeParity")
-      const Item = require("../OffersSection").default
+      const Item = require("../MessageComponent").default
       tree = hostTree(React.createElement(Item, props), env)
     })
     return tree
