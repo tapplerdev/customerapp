@@ -66,6 +66,39 @@ import {
  */
 
 const NAME = "JobDetailScreen"
+
+// #533: the kitchen's OFFERS stickers as the box draws them now (shared's
+// OffersBox, as the pro card and the profile do). An icon sticker is the icon
+// above its caption, one icon for both languages and a caption in each.
+const iconSticker = (id: number, labelEn: string, labelAr: string) => ({
+  id,
+  product: {
+    subType: "motivational",
+    pictureEn: `https://example.com/parity/sticker-${id}-en.svg`,
+    pictureAr: `https://example.com/parity/sticker-${id}-ar.svg`,
+    icon: `https://example.com/parity/icon-${id}.svg`,
+    labelEn,
+    labelAr,
+  },
+})
+const withStickers = (job: JobType, subscriptions: object[]): JobType => {
+  const jobPro = job.pros![0]
+  const category = jobPro.pro!.serviceCategories![0]
+  return {
+    ...job,
+    pros: [
+      {
+        ...jobPro,
+        pro: {
+          ...jobPro.pro!,
+          serviceCategories: [
+            { ...category, subscriptions: subscriptions as never },
+          ],
+        },
+      },
+    ],
+  }
+}
 const load = () => require("../JobDetailScreen")
 
 // No ActionBtn in this body: its modals' buttons are ds Buttons in MainModal.
@@ -126,6 +159,28 @@ const CASES: Case[] = [
     state: "accepted, stickers, a note, a dated slot, options, unread mail",
     job: FOOD_ACCEPTED,
     api: UNREAD,
+  },
+  {
+    state: "accepted, #533 icon stickers and a picture one",
+    job: withStickers(FOOD_ACCEPTED, [
+      iconSticker(41, "Free delivery", "توصيل مجاني"),
+      iconSticker(42, "Free dessert", "حلوى مجانية"),
+      {
+        id: 43,
+        product: {
+          subType: "motivational",
+          pictureEn: "https://example.com/parity/sticker-43-en.svg",
+          pictureAr: "https://example.com/parity/sticker-43-ar.svg",
+        },
+      },
+    ]),
+  },
+  {
+    state: "accepted, #533 a pair of icon stickers",
+    job: withStickers(FOOD_ACCEPTED, [
+      iconSticker(41, "Free delivery", "توصيل مجاني"),
+      iconSticker(42, "Free dessert", "حلوى مجانية"),
+    ]),
   },
   { state: "preparing, a delivery fee", job: FOOD_PREPARING },
   { state: "with the courier", job: FOOD_COURIER },
