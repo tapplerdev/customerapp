@@ -9,7 +9,7 @@
  * isSmallPhoneHeight, isLittlePhone, isBigPhone) and MediaViewer's styles,
  * and customerapp's ReviewFormScreen:24, MessagesComponent:18 and its
  * styles:3, MessageComponent:32 and its styles:3, TabBar/styles:3,
- * FoodMenuItemRow/styles:4, OffersSection:21, ImageViewerModal:10. Set at
+ * FoodMenuItemRow/styles:4, ImageViewerModal:10. Set at
  * render time only, they would keep whatever the registry loaded with.
  */
 export type ScreenWindow = {

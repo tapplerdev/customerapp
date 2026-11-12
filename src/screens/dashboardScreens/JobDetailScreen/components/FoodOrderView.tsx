@@ -16,7 +16,10 @@ import { foodOrderEnd } from "utils/foodOrderState"
 import { JobFoodOrderItemType, JobType } from "types/job"
 import colors from "@tappler/shared/src/styles/colors"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
-import OffersSection from "components/OffersSection/OffersSection"
+import OffersBox from "@tappler/shared/src/components/OffersBox"
+import { useFailedIcons } from "@tappler/shared/src/hooks/useFailedIcons"
+import { offerStickerCell } from "@tappler/shared/src/components/OfferSticker/offerStickerCell"
+import { stickersOf } from "@tappler/shared/src/components/OfferSticker/offerStickers"
 
 import IndividualIcon from "assets/icons/individual.svg"
 import BusinessIcon from "assets/icons/business.svg"
@@ -230,6 +233,12 @@ const FoodOrderView: React.FC<Props> = ({
     (doc: any) => doc.type === "trust" && doc.status === "approved"
   )
   const subscriptions = pro?.serviceCategories?.[0]?.subscriptions ?? []
+  // The OFFERS box's stickers as the cards draw them (#533): icon and caption,
+  // else the picture for the language; an icon that failed to load falls back
+  // to the picture, and that to the caption alone.
+  const { failedIcons: failedStickerArt, onIconError: onStickerArtError } =
+    useFailedIcons()
+  const stickers = stickersOf(subscriptions, isAr, failedStickerArt)
 
   // The design's static "Status: Accepted by Pro" line — the timeline below
   // carries the detail, this is the one-glance answer.
@@ -518,11 +527,15 @@ const FoodOrderView: React.FC<Props> = ({
         ))}
       </DmView>
 
-      {!!subscriptions.length && (
-        <DmView style={a.mt_12}>
-          <OffersSection subscriptions={subscriptions} compact />
-        </DmView>
-      )}
+      {/* The OFFERS box, shared's, as the pro card and the profile draw it,
+          so its square corner follows the tab in Arabic on iOS too (#533).
+          Stickers only: a restaurant's promo line has never shown here. With
+          no stickers the box draws nothing, margin included. */}
+      <OffersBox style={a.mt_12}>
+        {stickers.map((item) =>
+          offerStickerCell(item, SvgUriContainer, onStickerArtError)
+        )}
+      </OffersBox>
 
       <DmView style={[styles.box, a.mt_16]} />
 

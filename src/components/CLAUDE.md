@@ -66,23 +66,9 @@ No trust badges, no OFFERS banner, no promo line, no select/pass buttons. Tappin
 
 ## Shared Sub-Components
 
-### BannerContainer (`components/BannerContainer/`)
-Wrapper used by OffersSection (it framed the old PromoLine too):
-- Red tab at top-left ("OFFERS" or "OFFER" text, uppercase, white on red)
-- Bordered content area below with configurable `borderRadius`
-- Tab has top-rounded corners, content box has `borderTopRightRadius` on right side (creating the tab-detached effect)
-
-### OffersSection (`components/OffersSection/`)
-- Only FoodOrderView still uses it (stickers only, no promo line); the cards and the profile use shared's `OffersBox`
-- Filters subscriptions for `subType === "motivational"`
-- Returns null if no motivational subscriptions
-- Renders each subscription's product picture as SVG sticker inside BannerContainer
-- `compact` mode (used in cards): stickers 100px wide, 35px tall, horizontal row
-- Full mode (used in ProProfileScreen): stickers scale to fill width
-
 ### The promo line (#533)
 - No component of its own any more: the cards and the profile pass `promoStickerMessage` to shared's `OffersBox` as `promoMessage`, and it draws the text offer in the OFFERS box's frame (the stickers' grey edge and corners, a `#FFEBEB` ground, the text 12 in from each side and 11 from the top and bottom for a 40pt box, the one OFFERS tab)
-- The old `PromoLine` (this app's wrapper and shared's "OFFER" banner) is gone, with its frozen twin fixtures
+- The old `PromoLine` (this app's wrapper and shared's "OFFER" banner) is gone, with its frozen twin fixtures; so are `OffersSection` and `BannerContainer`, the banner FoodOrderView was the last to draw
 - The box's square corner is the start one (`borderTopStartRadius`), so it sits under the tab in Arabic on iOS too
 
 ### RateComponent (`components/RateComponent/`)
@@ -97,6 +83,6 @@ Subscriptions come from `pro.serviceCategories[0].subscriptions`. Relevant `prod
 
 | subType | What it renders | Component |
 |---------|----------------|-----------|
-| `motivational` | Stickers in the OFFERS box: icon + caption, else the picture (#533) | shared `OffersBox` + `utils/offerStickers` (FoodOrderView: OffersSection) |
+| `motivational` | Stickers in the OFFERS box: icon + caption, else the picture (#533) | shared `OffersBox` + `stickersOf` / `offerStickerCell` (the cards, the profile and FoodOrderView, stickers only there) |
 | `promoLine` | Text offer: a pink box in the OFFERS box, after the stickers (#533) | shared `OffersBox` (`promoMessage`) |
 | `featuredPro` | Featured badge image in profile header | ProProfileScreen only |

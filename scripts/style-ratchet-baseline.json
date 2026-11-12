@@ -20,9 +20,9 @@
   "totals": {
     "className": 0,
     "px": 111,
-    "legacy": 270,
+    "legacy": 269,
     "familySystem": 15,
-    "colorLiteral": 157,
+    "colorLiteral": 155,
     "primitives": 0,
     "bridge": 5,
     "classKey": 0,
@@ -33,16 +33,16 @@
   "directories": {
     "src": {
       "px": 111,
-      "legacy": 270,
+      "legacy": 269,
       "familySystem": 15,
-      "colorLiteral": 157,
+      "colorLiteral": 155,
       "bridge": 5
     },
     "src/components": {
       "px": 30,
-      "legacy": 50,
+      "legacy": 49,
       "familySystem": 1,
-      "colorLiteral": 65,
+      "colorLiteral": 64,
       "bridge": 4
     },
     "src/components/AddressSelectionModal": {
@@ -50,9 +50,6 @@
     },
     "src/components/AnimatedSelectCategory": {
       "px": 1
-    },
-    "src/components/BannerContainer": {
-      "legacy": 1
     },
     "src/components/CalendarTimePicker": {
       "legacy": 3
@@ -117,9 +114,6 @@
       "legacy": 4,
       "colorLiteral": 1
     },
-    "src/components/OffersSection": {
-      "colorLiteral": 1
-    },
     "src/components/OrderBill": {
       "px": 4
     },
@@ -172,7 +166,7 @@
       "px": 81,
       "legacy": 220,
       "familySystem": 14,
-      "colorLiteral": 92,
+      "colorLiteral": 91,
       "bridge": 1
     },
     "src/screens/PickAddressScreen": {
@@ -187,7 +181,7 @@
       "px": 75,
       "legacy": 198,
       "familySystem": 13,
-      "colorLiteral": 88
+      "colorLiteral": 87
     },
     "src/screens/dashboardScreens/AboutAppScreen": {
       "legacy": 2
@@ -306,7 +300,7 @@
     "src/screens/dashboardScreens/ProsListingScreen": {
       "px": 4,
       "legacy": 10,
-      "colorLiteral": 15
+      "colorLiteral": 14
     },
     "src/screens/dashboardScreens/ProsListingScreen/components": {
       "px": 1,
@@ -405,9 +399,6 @@
     "src/components/AnimatedSelectCategory/AnimatedSelectCategory.tsx": {
       "px": 1
     },
-    "src/components/BannerContainer/BannerContainer.tsx": {
-      "legacy": 1
-    },
     "src/components/CalendarTimePicker/CalendarTimePicker.tsx": {
       "legacy": 3
     },
@@ -474,9 +465,6 @@
     "src/components/OfferUpdateCard/OfferUpdateCard.tsx": {
       "px": 4,
       "legacy": 4,
-      "colorLiteral": 1
-    },
-    "src/components/OffersSection/OffersSection.tsx": {
       "colorLiteral": 1
     },
     "src/components/OrderBill/OrderBill.tsx": {
@@ -684,7 +672,7 @@
     "src/screens/dashboardScreens/ProsListingScreen/ProsListingScreen.tsx": {
       "px": 3,
       "legacy": 5,
-      "colorLiteral": 3
+      "colorLiteral": 2
     },
     "src/screens/dashboardScreens/ProsListingScreen/components/ProCard.tsx": {
       "legacy": 3,
