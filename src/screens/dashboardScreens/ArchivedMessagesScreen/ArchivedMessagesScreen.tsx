@@ -5,8 +5,10 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { RootStackScreenProps } from "navigation/types"
 import { ChatPreviewType } from "types/chat"
-import { MOCK_ARCHIVED_CHATS } from "screens/dashboardScreens/MessagesScreen/mockData"
+import { useGetChatsQuery } from "services/api"
+import { useTypedSelector } from "store"
 import MessagesComponent from "components/MessagesComponent/MessagesComponent"
+import MessagesSkeleton from "screens/dashboardScreens/MessagesScreen/MessagesSkeleton"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import colors from "@tappler/shared/src/styles/colors"
@@ -19,6 +21,17 @@ type Props = RootStackScreenProps<"ArchivedMessagesScreen">
 const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
+
+  const { isAuth } = useTypedSelector((store) => store.auth)
+  // The chats the backend lists as archived for this customer, newest
+  // archived first. Fetched fresh on every visit: a chat archived from the
+  // Messages tab invalidates the cache, but a failed earlier read must not
+  // linger as an empty list.
+  const { data, isLoading } = useGetChatsQuery(
+    { statuses: ["archived"] },
+    { skip: !isAuth, refetchOnMountOrArgChange: true }
+  )
+  const archivedChats = data?.data ?? []
 
   const handleChatPress = useCallback(
     (item: ChatPreviewType) => {
@@ -75,15 +88,19 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
       <DmView style={styles.box2} />
 
       {/* Archived list */}
-      <AppFlatList
-        data={MOCK_ARCHIVED_CHATS}
-        keyExtractor={(item) => String(item.chat.id)}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={
-          MOCK_ARCHIVED_CHATS.length === 0 ? { flex: 1 } : undefined
-        }
-      />
+      {isLoading ? (
+        <MessagesSkeleton />
+      ) : (
+        <AppFlatList
+          data={archivedChats}
+          keyExtractor={(item) => String(item.chat.id)}
+          renderItem={renderItem}
+          ListEmptyComponent={renderEmpty}
+          contentContainerStyle={
+            archivedChats.length === 0 ? { flex: 1 } : undefined
+          }
+        />
+      )}
     </SafeAreaView>
   )
 }
