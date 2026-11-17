@@ -608,12 +608,16 @@ proxy answers it 503) and Home still draws.
   row without a word.
 - **moment's locale is the device's, not the app's language.** customerapp's BootstrapScreen sets
   i18next and RTL but never moment, so moment keeps what shared's setupI18n gave it: RNLocalize's
-  tag (the mock's `en-US`). The kit puts it back before every row, after the screen loads, because
-  importing `moment/locale/ar` (MessageComponent does) switches moment's global locale as a side
-  effect (moment's defineLocale). On the device that import runs only once a chat is first drawn
-  (Metro's inline requires), and from then on in that session every date formatted with the global
-  locale (NotificationItem, OfferHistorySheet, RequestSummary's deadline) comes out Arabic, in
-  English too. The kit draws a fresh session; the device rig's order decides what it draws.
+  tag (the mock's `en-US`). Importing `moment/locale/ar` makes it moment's GLOBAL locale as a side
+  effect (moment's defineLocale), and MessageComponent used to import it, so on the device the
+  first chat drawn turned every later date formatted with the global locale (NotificationItem,
+  OfferHistorySheet, RequestSummary's deadline) Arabic, in English too. That is fixed at the
+  source: `helpers/momentLocale` loads the Arabic locale and puts the global one back, and a date
+  that should read Arabic asks for it per call (`moment(x).locale(isAr ? "ar" : "en")`, as the
+  bubble's time does). Never import `moment/locale/ar` directly; `MessageComponent.momentLocale.test.tsx`
+  draws a chat and then a notification in both languages. The kit still puts the device locale
+  back before every row, as a guard against a fixture that imports the locale itself
+  (`MomentProbe`); the kit draws a fresh session, the device rig's order decides what it draws.
 - An env switch must be read through a variable key (`globalThis.process.env[key]`).
   react-native-dotenv inlines a literal `process.env.NAME` at transform time, and jest caches it.
 - A `t("key")` prop is drawn as `t:key` by the harvest. Translate it in the test if the component

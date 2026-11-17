@@ -228,10 +228,10 @@ const clearSheetSpies = () => {
  * never sets it (its BootstrapScreen doesn't, unlike proapp's), so it is what
  * shared's setupI18n gave it when locales/i18n loaded: RNLocalize's best tag
  * (the mock's en-US, as an English device). Put back after the screen's
- * modules load, because importing `moment/locale/ar` (MessageComponent does)
- * switches moment's global locale as a side effect (defineLocale), and on
- * the device that import runs only once a chat is first drawn (Metro's
- * inline requires), not when the screen's file loads.
+ * modules load, as a guard: importing `moment/locale/ar` switches moment's
+ * global locale as a side effect (defineLocale). MessageComponent no longer
+ * does (helpers/momentLocale puts it back), but a fixture that imports the
+ * locale itself still would.
  */
 const deviceMomentLocale = () => {
   /* eslint-disable global-require, @typescript-eslint/no-var-requires */
