@@ -56,6 +56,7 @@ import {
   type HostNode,
   type ParityAllowance,
 } from "../hostTreeParity"
+import { withFrozenSpinner } from "../frozenSpinner"
 
 const ROOT = path.resolve(__dirname, "../../..")
 const FIXTURE = path.join(__dirname, "__parity__", "hostTreeParity.test.json")
@@ -1017,14 +1018,16 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
           allow: ALLOW_BUTTON,
         }
       )
-      const loading = expectParity(
-        "it",
-        hostTree(<DsButton title="Save" onPress={noop} isLoading />, matrixEnv),
-        {
-          file: captured(stored(parityName("actionBtn loading", matrixEnv))),
-          allow: ALLOW_BUTTON,
-        }
+      // Button's loading dots against ActionBtn's frozen spinner: the
+      // spinner put back where the dots are (testing/frozenSpinner).
+      const drawn = withFrozenSpinner(
+        hostTree(<DsButton title="Save" onPress={noop} isLoading />, matrixEnv)
       )
+      expect(drawn.swapped).toBe(1)
+      const loading = expectParity("it", drawn.tree, {
+        file: captured(stored(parityName("actionBtn loading", matrixEnv))),
+        allow: ALLOW_BUTTON,
+      })
       expect(
         [disabled, loading].map(({ accepted }) => accepted[1].what)
       ).toEqual([
@@ -1080,7 +1083,8 @@ describe("the Button allowances (opt-in, a Button's root only)", () => {
   ])(
     "mutant: Button's root saying something Button doesn't fails with the allowance: %s",
     (_label, after, before, says, message) => {
-      const tree = saying(hostTree(after, env)!, says)
+      // a loading Button's dots go back to the spinner the frozen tree holds
+      const tree = saying(withFrozenSpinner(hostTree(after, env)).tree!, says)
       // `before` names the ActionBtn tree the fixture holds
       const file = captured(stored(parityName(before as string, env)))
       expect(() =>

@@ -222,12 +222,26 @@ export const reanimated = () => {
     })`
     return Animated
   }
+  // React Native's own component, looked up when it renders, not when this
+  // stand-in loads. tappler-shared's ds imports Reanimated since LoadingDots
+  // (every Button), so the stand-in now loads while the kit boots a registry,
+  // ahead of the render's fake timers; reading RN.ScrollView and RN.FlatList
+  // there loaded them early, and TouchableOpacity's opacity fades stopped
+  // finishing (proapp's Work photo adjust tools stayed at 0.35 after
+  // enabling). Draws the same host tree: the wrapper is not a host.
+  const later = (name: string) => {
+    const Later = R.forwardRef((props: Props, ref) =>
+      R.createElement(RN[name], { ...props, ref })
+    )
+    Later.displayName = name
+    return Later as unknown as React.ComponentType<Props>
+  }
   const Animated = {
-    View: createAnimatedComponent(RN.View),
-    Text: createAnimatedComponent(RN.Text),
-    ScrollView: createAnimatedComponent(RN.ScrollView),
-    Image: createAnimatedComponent(RN.Image),
-    FlatList: createAnimatedComponent(RN.FlatList),
+    View: createAnimatedComponent(later("View")),
+    Text: createAnimatedComponent(later("Text")),
+    ScrollView: createAnimatedComponent(later("ScrollView")),
+    Image: createAnimatedComponent(later("Image")),
+    FlatList: createAnimatedComponent(later("FlatList")),
     createAnimatedComponent,
   }
   const useSharedValue = <T>(initial: T) => {
