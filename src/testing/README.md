@@ -607,7 +607,8 @@ proxy answers it 503) and Home still draws.
   a module that reads those at import, imported at the top, draws iOS and jest's window in every
   row without a word.
 - **moment's locale is the app's language, set by BootstrapScreen.** BootstrapScreen registers
-  `moment/locale/ar` once and its language effect calls `moment.locale(language)`, as proapp's does,
+  `moment/locale/ar` once, puts the global locale back to English as its module loads, and sets
+  `moment.locale(language)` before its first render and in its language effect, as proapp's does,
   so a date formatted without its own `.locale()` (NotificationItem, OfferHistorySheet,
   RequestSummary's deadline) reads in the app's language. Importing `moment/locale/ar` makes it
   moment's GLOBAL locale as a side effect (defineLocale), and MessageComponent used to import it,

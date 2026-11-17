@@ -57,7 +57,10 @@ import i18n from "locales/i18n"
 import MessageComponent from "../MessageComponent"
 import NotificationItem from "screens/dashboardScreens/NotificationsScreen/components/NotificationItem"
 
-const AT = "2026-10-20T08:47:00.000Z"
+// Midday UTC. What the zone changes (the clock time, near midnight the date)
+// is computed with moment, never typed; weekday and month checks use UTC.
+const AT = "2026-10-20T12:47:00.000Z"
+const at = (locale: "en" | "ar") => moment(AT).locale(locale)
 
 const message = {
   id: 1,
@@ -124,26 +127,28 @@ describe("a chat bubble and moment's locale", () => {
     await setAppLanguage("en")
     const { chat, row } = await chatThenNotification()
 
-    expect(chat).toContain("11:47 AM")
-    expect(row).toContain("20/10/2026")
+    expect(chat).toContain(at("en").format("h:mm A"))
+    expect(at("en").format("h:mm A")).toMatch(/^\d{1,2}:47 [AP]M$/)
+    expect(row).toContain(at("en").format("DD/MM/YYYY"))
     expect(moment.locale()).toBe("en")
-    expect(moment(AT).format("dddd D MMMM")).toBe("Tuesday 20 October")
+    expect(moment.utc(AT).format("dddd D MMMM")).toBe("Tuesday 20 October")
   })
 
   it("Arabic: the bubble, the notification row and a plain format all read Arabic, and the global stays Arabic", async () => {
     await setAppLanguage("ar")
     const { chat, row } = await chatThenNotification()
 
-    expect(chat).toContain("١١:٤٧ ص")
-    expect(row).toContain("٢٠/١٠/٢٠٢٦")
+    expect(chat).toContain(at("ar").format("h:mm A"))
+    expect(at("ar").format("h:mm A")).toMatch(/٤٧/)
+    expect(row).toContain(at("ar").format("DD/MM/YYYY"))
     expect(moment.locale()).toBe("ar")
-    expect(moment(AT).format("dddd")).toBe("الثلاثاء")
+    expect(moment.utc(AT).format("dddd")).toBe("الثلاثاء")
   })
 
   it("a bubble asks for its own language, whatever the global one is", async () => {
     await setAppLanguage("en")
-    expect(moment(AT).locale("ar").format("dddd")).toBe("الثلاثاء")
-    expect(moment(AT).locale("en").format("dddd")).toBe("Tuesday")
+    expect(moment.utc(AT).locale("ar").format("dddd")).toBe("الثلاثاء")
+    expect(moment.utc(AT).locale("en").format("dddd")).toBe("Tuesday")
     expect(moment.locale()).toBe("en")
   })
 
