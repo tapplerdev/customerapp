@@ -3,8 +3,10 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
+  copy,
   openScreen,
   pressIcon,
+  pressTitled,
   renderScreen,
   rowsByPlatform,
   type BackendFixtures,
@@ -146,6 +148,44 @@ describe("ArchivedMessagesScreen, the engagement gate", () => {
         const text = JSON.stringify(session.tree())
         expect(text).toContain("Thanks, the tap is fixed.")
         expect(text).not.toContain("Cold pitch text")
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
+
+describe("ArchivedMessagesScreen, a failed load", () => {
+  it.each(envs)(
+    "says it could not load, not that the archive is empty, and Try Again asks again [$env.language $env.platform]",
+    async ({ env }) => {
+      let failing = true
+      const session = await openScreen(load, {
+        ...WITH_CHATS,
+        api: {
+          ...WITH_CHATS.api,
+          getChats: (args, request) =>
+            failing
+              ? { error: { status: 500 } }
+              : (chatsAnswering(ARCHIVED) as (a: unknown, r: unknown) => never)(
+                  args,
+                  request
+                ),
+        },
+        lang: env.language,
+        platform: env.platform,
+        route,
+      })
+      try {
+        const text = () => JSON.stringify(session.tree())
+        expect(text()).toContain(copy(env, "archived_load_error"))
+        expect(text()).not.toContain(copy(env, "no_archived_messages"))
+        failing = false
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "try_again"))
+        })
+        expect(text()).toContain("Thanks, the tap is fixed.")
+        expect(text()).not.toContain(copy(env, "archived_load_error"))
       } finally {
         session.unmount()
       }

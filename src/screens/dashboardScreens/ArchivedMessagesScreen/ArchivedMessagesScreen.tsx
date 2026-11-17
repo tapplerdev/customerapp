@@ -14,7 +14,7 @@ import MessagesSkeleton from "screens/dashboardScreens/MessagesScreen/MessagesSk
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import colors from "@tappler/shared/src/styles/colors"
 import { AppFlatList } from "components/scroll"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Text, Button, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"ArchivedMessagesScreen">
@@ -28,7 +28,7 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
   // archived first. Fetched fresh on every visit: a chat archived from the
   // Messages tab invalidates the cache, but a failed earlier read must not
   // linger as an empty list.
-  const { data, isLoading } = useGetChatsQuery(
+  const { data, isLoading, isError, isFetching, refetch } = useGetChatsQuery(
     { statuses: ["archived"] },
     { skip: !isAuth, refetchOnMountOrArgChange: true }
   )
@@ -96,6 +96,38 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
       {/* Archived list */}
       {isLoading ? (
         <MessagesSkeleton />
+      ) : isError && !data ? (
+        // The load failed with nothing cached: not "no archived messages".
+        <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
+          <Text
+            size={16}
+            weight="semibold"
+            leading="normal"
+            color="tertiary"
+            align="center"
+          >
+            {t("archived_load_error")}
+          </Text>
+          <Text
+            size={12}
+            leading="normal"
+            color="tertiary"
+            align="center"
+            style={a.mt_8}
+          >
+            {t("archived_load_error_descr")}
+          </Text>
+          <DmView style={[a.mt_20, a.px_20, a.w_full]}>
+            <Button
+              title={t("try_again")}
+              onPress={refetch}
+              isLoading={isFetching}
+              label={14}
+              labelWeight="semibold"
+              labelLeading="normal"
+            />
+          </DmView>
+        </DmView>
       ) : (
         <AppFlatList
           data={archivedChats}
