@@ -87,7 +87,8 @@ const FadeInImageTile: React.FC<{
 }
 
 // The four lifecycle steps. They get bubble WEIGHT (see SystemEventBubble's
-// tone) but not the alarm red, which stays for the two that end the order.
+// tone): the two that end the order read in the primary text, these in the
+// secondary one. Neither is red; red is for action buttons.
 const FOOD_PROGRESS_KEYS = [
   "food_order_accepted",
   "food_order_preparing",
@@ -167,16 +168,14 @@ const MessageComponent: React.FC<Props> = React.memo(
 
     // ── System messages ──
     if (isSystem) {
-      // Structured offer revision → a real red bubble, not a grey centred note.
+      // Structured offer revision → a real pink bubble, not a grey centred note.
       const offerUpdate = parseOfferUpdate(item.text)
-      // Events, not chrome — the quiet red line got skimmed.
+      // Events, not chrome — the quiet line got skimmed.
       //
-      // All six food keys get bubble WEIGHT, but only the two that END the
-      // order get the alarm red; the four lifecycle steps use the tinted
-      // tone. Red carries no signal by itself here — every system row in this
-      // app is already red, including good news like an offer arriving — so
-      // the axis that means anything is line-vs-bubble. Five stacked solid
-      // reds for one food order would devalue the two that matter.
+      // All six food keys get bubble WEIGHT; the two that END the order read
+      // in the primary text and the four lifecycle steps in the secondary
+      // one. Nothing here is red: red is for action buttons, and the axis
+      // that means anything is line-vs-bubble.
       const isFoodProgress = FOOD_PROGRESS_KEYS.includes(item.text || "")
       const eventTextKey =
         item.text === "job_expired" ||
@@ -308,7 +307,7 @@ const MessageComponent: React.FC<Props> = React.memo(
                     : messageComponentStyles.textWrapOwnActionAr,
               ]}
             >
-              <Text size={11} leading="tight" color="brand">
+              <Text size={11} leading="tight" color="secondary">
                 {t(textKeyFor(item.text || ""))}
               </Text>
             </DmView>

@@ -22,7 +22,7 @@
     "px": 111,
     "legacy": 269,
     "familySystem": 15,
-    "colorLiteral": 155,
+    "colorLiteral": 152,
     "primitives": 0,
     "bridge": 5,
     "classKey": 0,
@@ -35,14 +35,14 @@
       "px": 111,
       "legacy": 269,
       "familySystem": 15,
-      "colorLiteral": 155,
+      "colorLiteral": 152,
       "bridge": 5
     },
     "src/components": {
       "px": 30,
       "legacy": 49,
       "familySystem": 1,
-      "colorLiteral": 64,
+      "colorLiteral": 61,
       "bridge": 4
     },
     "src/components/AddressSelectionModal": {
@@ -111,8 +111,7 @@
     },
     "src/components/OfferUpdateCard": {
       "px": 4,
-      "legacy": 4,
-      "colorLiteral": 1
+      "legacy": 4
     },
     "src/components/OrderBill": {
       "px": 4
@@ -151,8 +150,7 @@
       "colorLiteral": 1
     },
     "src/components/SystemEventBubble": {
-      "px": 1,
-      "colorLiteral": 2
+      "px": 1
     },
     "src/components/TabBar": {
       "px": 1,
@@ -464,8 +462,7 @@
     },
     "src/components/OfferUpdateCard/OfferUpdateCard.tsx": {
       "px": 4,
-      "legacy": 4,
-      "colorLiteral": 1
+      "legacy": 4
     },
     "src/components/OrderBill/OrderBill.tsx": {
       "px": 4
@@ -508,8 +505,7 @@
       "colorLiteral": 1
     },
     "src/components/SystemEventBubble/SystemEventBubble.tsx": {
-      "px": 1,
-      "colorLiteral": 2
+      "px": 1
     },
     "src/components/TabBar/TabBar.tsx": {
       "px": 1
