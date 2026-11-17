@@ -17,6 +17,5 @@ import moment from "moment"
 const appLocale = moment.locale()
 // A require, not an import: an import is hoisted above `appLocale`, which has to
 // be read before the locale loads.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("moment/locale/ar")
 moment.locale(appLocale)
