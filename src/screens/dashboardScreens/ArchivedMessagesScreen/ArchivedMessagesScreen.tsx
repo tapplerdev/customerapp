@@ -1,10 +1,11 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useMemo } from "react"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { RootStackScreenProps } from "navigation/types"
 import { ChatPreviewType } from "types/chat"
+import { isArchivedChatVisible } from "helpers/chatVisibility"
 import { useGetChatsQuery } from "services/api"
 import { useTypedSelector } from "store"
 import MessagesComponent from "components/MessagesComponent/MessagesComponent"
@@ -31,7 +32,12 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
     { statuses: ["archived"] },
     { skip: !isAuth, refetchOnMountOrArgChange: true }
   )
-  const archivedChats = data?.data ?? []
+  // The same engagement gate as the main list (and as the Messages tab's
+  // archived count): an archived cold pitch the customer never saw stays out.
+  const archivedChats = useMemo(
+    () => (data?.data ?? []).filter(isArchivedChatVisible),
+    [data]
+  )
 
   const handleChatPress = useCallback(
     (item: ChatPreviewType) => {

@@ -116,6 +116,43 @@ const open = (env: (typeof PARITY_MATRIX)[number]) =>
     route,
   })
 
+describe("ArchivedMessagesScreen, the engagement gate", () => {
+  it.each(envs)(
+    "an archived cold pitch the customer never engaged with is not listed [$env.language $env.platform]",
+    async ({ env }) => {
+      const coldPitch: ChatPreviewType = {
+        ...archived(6103, "Cold pitch text", "pro"),
+        hasCustomerMessages: false,
+        chat: {
+          ...archived(6103, "", "pro").chat,
+          proId: 2103,
+          job: {
+            id: 9103,
+            pros: [{ proId: 2103, selectionStatus: "opportunity" }],
+          } as never,
+        },
+      }
+      const session = await openScreen(load, {
+        ...WITH_CHATS,
+        api: {
+          ...WITH_CHATS.api,
+          getChats: chatsAnswering([...ARCHIVED, coldPitch]),
+        },
+        lang: env.language,
+        platform: env.platform,
+        route,
+      })
+      try {
+        const text = JSON.stringify(session.tree())
+        expect(text).toContain("Thanks, the tap is fixed.")
+        expect(text).not.toContain("Cold pitch text")
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})
+
 describe("ArchivedMessagesScreen, presses", () => {
   it.each(envs)(
     "it asks for the archived chats only, and lists what the backend returns [$env.language $env.platform]",

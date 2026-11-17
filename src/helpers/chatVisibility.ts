@@ -28,11 +28,28 @@ import { ChatPreviewType } from "types/chat"
  * chat the customer could never open, so a permanent "1" badge — and sharing
  * the function makes `badge ⊆ list` structural.
  */
-export const isChatVisible = (item: ChatPreviewType): boolean => {
-  if (item.chat.status !== "active") return false
-
+/**
+ * The engagement half of the rule: has this chat earned a place in the
+ * customer's inbox (a direct chat has a message; a job chat has an offer or a
+ * customer message)? Status is not part of it, so the active list and the
+ * archive apply the SAME gate: a cold pitch the customer never saw must not
+ * surface in Archived either.
+ */
+const isChatEngaged = (item: ChatPreviewType): boolean => {
   if (!item.chat.job) return !!item.lastMessage
 
   const chatPro = item.chat.job.pros?.find((p) => p.proId === item.chat.proId)
   return chatPro?.selectionStatus === "offer" || !!item.hasCustomerMessages
 }
+
+export const isChatVisible = (item: ChatPreviewType): boolean =>
+  item.chat.status === "active" && isChatEngaged(item)
+
+/**
+ * The Archived screen's rows AND the Archived row's count on the Messages
+ * tab: archived chats that pass the same engagement gate as the main list.
+ * Note status is one column per chat: the customer archiving it, a pro
+ * archiving it, or a pro being suspended all land it here.
+ */
+export const isArchivedChatVisible = (item: ChatPreviewType): boolean =>
+  item.chat.status === "archived" && isChatEngaged(item)
