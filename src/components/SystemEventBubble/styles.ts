@@ -4,4 +4,7 @@ export default StyleSheet.create({
   text: {
     marginTop: 3,
   },
+  left: {
+    textAlign: "left",
+  },
 })

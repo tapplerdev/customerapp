@@ -1,8 +1,8 @@
 {
   "about": "Counts of the ratcheted lint warnings in src (yarn lint:ratchet). Each may only go down. Written with --update.",
   "counts": {
-    "dsColorsImport": 4,
-    "colourLiteral": 123,
+    "dsColorsImport": 3,
+    "colourLiteral": 120,
     "alertImport": 0
   }
 }

@@ -3,9 +3,8 @@ import React from "react"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
-import colors from "@tappler/shared/src/styles/colors"
 import { formatMoney } from "@tappler/shared/src/helpers/money"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Text, a, color, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 /**
@@ -36,8 +35,11 @@ const TAIL = 2
 
 /**
  * A price revision is an event the other side must NOT miss, so it renders as a
- * real chat bubble in Tappler red rather than the grey centred system note it
- * used to be (which read as noise and got skimmed past).
+ * real chat bubble rather than the grey centred system note it used to be
+ * (which read as noise and got skimmed past). The bubble is the soft pink
+ * surface (brand.tintSoft) with dark text, and brand red is kept for the new
+ * price alone: red is reserved for action buttons, so the notice must not look
+ * like one. The old price stays muted and struck through.
  *
  * Positioning is owned by MessageComponent, which pins it to the INCOMING side
  * here — the pro is the one who changed the price, so on the customer's screen
@@ -69,7 +71,7 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
         a.py_8,
         a.px_14,
         {
-          backgroundColor: colors.red,
+          backgroundColor: color.brand.tintSoft,
           borderTopLeftRadius: RADIUS,
           borderTopRightRadius: RADIUS,
           borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
@@ -77,48 +79,37 @@ const OfferUpdateCard: React.FC<Props> = ({ previous, next, time }) => {
         },
       ]}
     >
-      <Text
-        size={12}
-        weight="semibold"
-        leading="tight"
-        color="inverse"
-        style={{ textAlign: "left" }}
-      >
+      <Text size={12} weight="semibold" leading="tight" style={styles.left}>
         {t("offer_updated")}
       </Text>
 
       <DmView style={[a.flex_row, styles.row]}>
-        <Text size={13} leading={{ fixed: px(17) }} style={styles.text}>
+        <Text
+          size={13}
+          leading={{ fixed: px(17) }}
+          color="muted"
+          style={styles.previous}
+        >
           {formatMoney(previous)}
         </Text>
-        <Text size={13} leading={{ fixed: px(17) }} style={styles.text2}>
+        <Text size={13} leading={{ fixed: px(17) }} color="secondary">
           {isAr ? "  ←  " : "  →  "}
         </Text>
         <Text
           size={15}
           weight="semibold"
           leading={{ fixed: px(19) }}
-          style={styles.text3}
+          color="brand"
         >
           {formatMoney(next)}
         </Text>
-        <Text
-          size={13}
-          leading={{ fixed: px(17) }}
-          style={[a.ml_4, styles.text2]}
-        >
+        <Text size={13} leading={{ fixed: px(17) }} style={a.ml_4}>
           {t("EGP")}
         </Text>
       </DmView>
 
       {time ? (
-        <Text
-          size={10}
-          style={[
-            styles.text4,
-            { color: "rgba(255,255,255,0.75)", textAlign: "left" },
-          ]}
-        >
+        <Text size={10} color="tertiary" style={[styles.time, styles.left]}>
           {time}
         </Text>
       ) : null}

@@ -3,8 +3,7 @@ import React from "react"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
-import colors from "@tappler/shared/src/styles/colors"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Text, a, color, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 const RADIUS = 12
@@ -12,9 +11,9 @@ const TAIL = 2
 
 /**
  * A system event the other side must not miss, rendered as a real chat bubble
- * in Tappler red rather than the quiet red line it used to be — same treatment
- * as OfferUpdateCard, and for the same reason: as a centred grey/red note it
- * read as chrome and got skimmed past.
+ * on the soft pink surface (brand.tintSoft) rather than the quiet red line it
+ * used to be, and not in solid red: red is for action buttons, and a notice to
+ * read should not look like one. Same surface as OfferUpdateCard.
  *
  * Positioning is owned by MessageComponent. The tail corner is squared on the
  * same PHYSICAL corner in both languages, so the radii are pre-flipped for
@@ -31,11 +30,11 @@ const SystemEventBubble: React.FC<{
    *  cancelling ended up rendering on the CUSTOMER's own side — reading as
    *  though they had cancelled it themselves. */
   incoming?: boolean
-  /** "alert" — solid red, for an event that ENDS the request. "progress" — a
-   *  tinted surface for a lifecycle step. Both are bubbles: the line-vs-bubble
-   *  axis is what says "you must not miss this", and every system row in this
-   *  app is already red, so colour alone carries no signal. Five stacked solid
-   *  reds for one food order would devalue the two that matter. */
+  /** "alert" — an event that ENDS the request (expired, cancelled, declined):
+   *  primary text. "progress" — a lifecycle step (a food order moving along):
+   *  secondary text. Both sit on the same soft pink surface: red is reserved
+   *  for action buttons, so a notice never carries it, and what tells the two
+   *  apart is the text colour, not an alarm colour. */
   tone?: "alert" | "progress"
 }> = ({ textKey, time, incoming = false, tone = "alert" }) => {
   const { t, i18n } = useTranslation()
@@ -50,7 +49,7 @@ const SystemEventBubble: React.FC<{
         a.py_8,
         a.px_14,
         {
-          backgroundColor: isAlert ? colors.red : colors.pink5,
+          backgroundColor: color.brand.tintSoft,
           borderTopLeftRadius: RADIUS,
           borderTopRightRadius: RADIUS,
           borderBottomLeftRadius: tailLeft ? TAIL : RADIUS,
@@ -62,21 +61,13 @@ const SystemEventBubble: React.FC<{
         size={13}
         weight="semibold"
         leading={px(17)}
-        style={{ textAlign: "left", color: isAlert ? "#FFFFFF" : colors.red }}
+        color={isAlert ? "primary" : "secondary"}
+        style={styles.left}
       >
         {t(textKey)}
       </Text>
       {time ? (
-        <Text
-          size={10}
-          style={[
-            styles.text,
-            {
-              color: isAlert ? "rgba(255,255,255,0.75)" : colors.grey3,
-              textAlign: "left",
-            },
-          ]}
-        >
+        <Text size={10} color="tertiary" style={[styles.text, styles.left]}>
           {time}
         </Text>
       ) : null}

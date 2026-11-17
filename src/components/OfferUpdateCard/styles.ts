@@ -1,24 +1,19 @@
 import { StyleSheet } from "react-native"
-import colors from "@tappler/shared/src/styles/colors"
-import dsColors from "styles/dsColors"
+import { color } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   row: {
     alignItems: "baseline",
     marginTop: 3,
   },
-  text: {
-    color: dsColors.whiteAlpha65,
+  previous: {
     textDecorationLine: "line-through",
-    textDecorationColor: dsColors.whiteAlpha65,
+    textDecorationColor: color.text.muted,
   },
-  text2: {
-    color: dsColors.whiteAlpha90,
-  },
-  text3: {
-    color: colors.white,
-  },
-  text4: {
+  time: {
     marginTop: 3,
+  },
+  left: {
+    textAlign: "left",
   },
 })
