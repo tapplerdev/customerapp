@@ -83,6 +83,11 @@ export type ChatPreviewType = {
   lastMessage?: ChatMessageType
 }
 
+/** GET /chats filters: no statuses lists every chat; the pro app asks the same way. */
+export type GetChatsRequest = {
+  statuses?: ChatType["status"][]
+}
+
 export type ListChatsResponse = {
   data: ChatPreviewType[]
 }

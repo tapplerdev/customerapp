@@ -296,3 +296,43 @@ describe("MessagesScreen, search and presses", () => {
     }
   )
 })
+
+describe("MessagesScreen, the Archived row's count", () => {
+  // The count is the Archived screen's list length: archived chats that pass
+  // the same engagement gate as the main list, so an archived cold pitch
+  // the customer never saw is not counted.
+  it.each(envs)(
+    "counts the archived chats the Archived screen lists [$env.language $env.platform]",
+    async ({ env }) => {
+      const archivedColdPitch = row(
+        6008,
+        "Archived Pitch",
+        {
+          status: "archived",
+          job: some<NonNullable<ChatPreviewType["chat"]["job"]>>({
+            id: 9101,
+            pros: [{ proId: 2008, selectionStatus: "opportunity" }],
+          }),
+          proId: 2008,
+        },
+        { hasCustomerMessages: false }
+      )
+      const session = await open(env, {
+        ...WITH_CHATS,
+        api: chats([...AT_LEAST_ONE_OF_EACH, archivedColdPitch]),
+      })
+      try {
+        const counts = session.root
+          .findAll(
+            (node) => node.children.length === 1 && node.children[0] === "2"
+          )
+          .map((node) => node.children[0])
+        // Two archived chats (6005, 6006); the cold pitch makes no third.
+        expect(counts).toEqual(["2"])
+        expect(JSON.stringify(session.tree())).not.toContain('"3"')
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+})

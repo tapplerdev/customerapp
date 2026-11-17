@@ -152,6 +152,8 @@
   "archived": "الأرشيف",
   "you_do_not_have_any_messages": "لا توجد لديك رسائل",
   "no_archived_messages": "لا توجد لديك رسائل مؤرشفة",
+  "archived_load_error": "مقدرناش نحمّل رسايلك المؤرشفة",
+  "archived_load_error_descr": "اتأكد إن النت شغال وجرّب تاني",
   "archive": "أرشفة",
   "yesterday": "أمس",
   "today": "اليوم",

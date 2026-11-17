@@ -152,6 +152,8 @@
   "archived": "Archived",
   "you_do_not_have_any_messages": "You don't have any messages",
   "no_archived_messages": "You don't have any archived messages",
+  "archived_load_error": "Couldn't load your archived messages",
+  "archived_load_error_descr": "Please check your connection and try again",
   "archive": "Archive",
   "yesterday": "Yesterday",
   "today": "Today",

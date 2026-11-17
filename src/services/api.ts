@@ -32,6 +32,7 @@ import {
 import {
   ChatType,
   ChatMessageType,
+  GetChatsRequest,
   ListChatsResponse,
   ListMessagesResponse,
 } from "types/chat"
@@ -104,7 +105,9 @@ const baseQueryWithReauth: BaseQueryFn<
 > = async (args, apiBase, extraOptions) => {
   const url = typeof args === "string" ? args : args.url
   devLog(() => [
-    `[API] ${typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"} ${API_URL}${url}`,
+    `[API] ${
+      typeof args === "string" ? "GET" : (args as FetchArgs).method || "GET"
+    } ${API_URL}${url}`,
   ])
 
   // The token and account this request goes out with, compared with the
@@ -234,7 +237,9 @@ const baseQueryWithReauth: BaseQueryFn<
         refreshStatus === 404
       ) {
         devLog(() => [
-          `[API] 🔒 Refresh token invalid (${String(refreshStatus)}) — logging out`,
+          `[API] 🔒 Refresh token invalid (${String(
+            refreshStatus
+          )}) — logging out`,
         ])
         // Kill the push token at Firebase too (services/session does the same,
         // plus the backend call this dead session cannot make): a signed-out
@@ -246,7 +251,9 @@ const baseQueryWithReauth: BaseQueryFn<
         apiBase.dispatch(api.util.resetApiState())
       } else {
         devLog(() => [
-          `[API] 🔒 Refresh unreachable (${String(refreshStatus)}) — keeping session`,
+          `[API] 🔒 Refresh unreachable (${String(
+            refreshStatus
+          )}) — keeping session`,
         ])
       }
       return result
@@ -647,8 +654,18 @@ export const api = createApi({
       providesTags: ["Chats"],
     }),
 
-    getChats: builder.query<ListChatsResponse, void>({
-      query: () => "/chats",
+    // No argument lists every chat (the Messages tab, its badge and its
+    // archived count); `{ statuses: ["archived"] }` is the Archived screen's
+    // list, filtered and ordered by the backend (newest archived first).
+    getChats: builder.query<ListChatsResponse, GetChatsRequest | void>({
+      query: (params) => {
+        const queryParams = new URLSearchParams()
+        params?.statuses?.forEach((status) =>
+          queryParams.append("statuses[]", status)
+        )
+        const qs = queryParams.toString()
+        return `/chats${qs ? `?${qs}` : ""}`
+      },
       // In-flight-read wins: a refetch that started BEFORE the customer read
       // a chat can land AFTER the local zero carrying pre-read server counts —
       // without this guard it would resurrect the unread state. (Mirrors the
@@ -722,15 +739,22 @@ export const api = createApi({
         url: `/chats/${chatId}/messages/mark-all-as-read`,
         method: "PATCH",
       }),
-      async onQueryStarted(chatId, { dispatch, queryFulfilled }) {
+      async onQueryStarted(chatId, { dispatch, getState, queryFulfilled }) {
         chatReadRegistry.add(chatId)
-        const zero = () =>
-          dispatch(
-            api.util.updateQueryData("getChats", undefined, (draft) => {
-              const preview = draft?.data?.find((c) => c.chat.id === chatId)
-              if (preview) preview.notReadMessages = 0
-            })
-          )
+        // Every cached list: the Messages tab's and the Archived screen's.
+        const zero = () => {
+          for (const arg of api.util.selectCachedArgsForQuery(
+            getState(),
+            "getChats"
+          )) {
+            dispatch(
+              api.util.updateQueryData("getChats", arg, (draft) => {
+                const preview = draft?.data?.find((c) => c.chat.id === chatId)
+                if (preview) preview.notReadMessages = 0
+              })
+            )
+          }
+        }
         zero()
         try {
           await queryFulfilled

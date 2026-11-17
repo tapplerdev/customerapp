@@ -8,7 +8,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 
 import { RootStackParamList } from "navigation/types"
 import { ChatPreviewType } from "types/chat"
-import { isChatVisible } from "helpers/chatVisibility"
+import { isArchivedChatVisible, isChatVisible } from "helpers/chatVisibility"
 import { useGetChatsQuery, useArchiveChatMutation } from "services/api"
 import { useTypedSelector } from "store"
 import SearchMessagesComponent from "components/SearchMessagesComponent/SearchMessagesComponent"
@@ -55,9 +55,8 @@ const MessagesScreen: React.FC = () => {
   // Shared predicate with the tab badge (helpers/chatVisibility) — keeping
   // them identical is what guarantees the badge never counts a hidden chat.
   const activeChats = allChats.filter(isChatVisible)
-  const archivedCount = allChats.filter(
-    (item) => item.chat.status === "archived"
-  ).length
+  // Same predicate as the Archived screen's rows, so the count is its length.
+  const archivedCount = allChats.filter(isArchivedChatVisible).length
 
   const filteredChats = useMemo(() => {
     if (!debouncedSearch.trim()) return activeChats
