@@ -146,21 +146,26 @@ describe("what a render sets up", () => {
     expect(text(ar, "language")).toBe("ar ar rtl الرسائل")
   })
 
-  // customerapp's BootstrapScreen sets i18next and RTL but never moment:
-  // moment keeps the device locale shared's setupI18n gave it (skeptic M2).
-  it("moment on the device's locale in both languages, as the app leaves it", async () => {
+  // BootstrapScreen's language effect sets moment's global locale to the
+  // app's language (as proapp's does); the kit does the same per row.
+  it("moment follows the app's language, as BootstrapScreen leaves it", async () => {
     const en = await renderScreen(probe, screenState("data"))
     const ar = await renderScreen(probe, { ...screenState("data"), lang: "ar" })
     expect(text(en, "moment")).toBe("en 20 October")
-    expect(text(ar, "moment")).toBe("en 20 October")
+    expect(text(ar, "moment")).toBe("ar ٢٠ أكتوبر")
   })
 
-  it("moment back on the device's locale after a module imported moment/locale/ar", async () => {
-    const tree = await renderScreen(
+  it("moment on the app's language even after a module imported moment/locale/ar", async () => {
+    const ar = await renderScreen(
       () => require("../__fixtures__/MomentProbe"),
       { navigation: "none", lang: "ar" }
     )
-    expect(text(tree, "moment")).toBe("en Tuesday")
+    const en = await renderScreen(
+      () => require("../__fixtures__/MomentProbe"),
+      { navigation: "none", lang: "en" }
+    )
+    expect(text(ar, "moment")).toBe("ar الثلاثاء")
+    expect(text(en, "moment")).toBe("en Tuesday")
   })
 
   it("the Latin faces customerapp draws (Montserrat), as ds Text draws them", async () => {

@@ -1,17 +1,24 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals"
 import React, { act } from "react"
 import TestRenderer from "react-test-renderer"
+import fs from "fs"
+import path from "path"
 import moment from "moment"
+// What BootstrapScreen does once, at the app's start.
+import "moment/locale/ar"
 
 /*
- * Drawing a chat bubble must not change how the rest of the app formats a
- * date. MessageComponent used to import `moment/locale/ar`, which registers
- * the locale AND makes it moment's global one, so after the first chat every
- * `moment().format()` elsewhere (NotificationItem, OfferHistorySheet,
- * RequestSummaryScreen) printed Arabic, English users included.
+ * moment's global locale is the app's language, and drawing a chat bubble
+ * must not change it. MessageComponent used to import `moment/locale/ar`,
+ * which registers the locale AND makes it moment's global one, so after the
+ * first chat every `moment().format()` elsewhere (NotificationItem,
+ * OfferHistorySheet, RequestSummaryScreen) printed Arabic, English users
+ * included. Now BootstrapScreen registers the locale once and sets the global
+ * locale to the app's language (as proapp's does); the bubble formats per call.
  *
  * The real bubble and the real notification row are drawn, one after the
- * other, in each language. Native views, the viewers and the sub-bubbles are
+ * other, in each language, with the global locale set as BootstrapScreen's
+ * language effect sets it. Native views, the viewers and the sub-bubbles are
  * stand-ins that keep their props.
  */
 
@@ -101,43 +108,64 @@ const chatThenNotification = async () => {
   return { chat: texts(chat), row: texts(row) }
 }
 
-afterEach(async () => {
+const setAppLanguage = async (language: "en" | "ar") => {
   await act(async () => {
-    await i18n.changeLanguage("en")
+    await i18n.changeLanguage(language)
   })
+  moment.locale(language)
+}
+
+afterEach(async () => {
+  await setAppLanguage("en")
 })
 
 describe("a chat bubble and moment's locale", () => {
   it("English: the bubble reads English, and so does every date drawn after it", async () => {
-    await act(async () => {
-      await i18n.changeLanguage("en")
-    })
-    const before = moment.locale()
+    await setAppLanguage("en")
     const { chat, row } = await chatThenNotification()
 
     expect(chat).toContain("11:47 AM")
     expect(row).toContain("20/10/2026")
-    // The global is untouched, and a plain format elsewhere is English.
-    expect(moment.locale()).toBe(before)
     expect(moment.locale()).toBe("en")
     expect(moment(AT).format("dddd D MMMM")).toBe("Tuesday 20 October")
   })
 
-  it("Arabic: the bubble reads Arabic, the notification row its own Arabic digits, and the global stays English", async () => {
-    await act(async () => {
-      await i18n.changeLanguage("ar")
-    })
+  it("Arabic: the bubble, the notification row and a plain format all read Arabic, and the global stays Arabic", async () => {
+    await setAppLanguage("ar")
     const { chat, row } = await chatThenNotification()
 
     expect(chat).toContain("١١:٤٧ ص")
     expect(row).toContain("٢٠/١٠/٢٠٢٦")
-    expect(moment.locale()).toBe("en")
-    expect(moment(AT).format("dddd D MMMM")).toBe("Tuesday 20 October")
+    expect(moment.locale()).toBe("ar")
+    expect(moment(AT).format("dddd")).toBe("الثلاثاء")
   })
 
-  it("the Arabic locale stays available per call", () => {
+  it("a bubble asks for its own language, whatever the global one is", async () => {
+    await setAppLanguage("en")
     expect(moment(AT).locale("ar").format("dddd")).toBe("الثلاثاء")
     expect(moment(AT).locale("en").format("dddd")).toBe("Tuesday")
     expect(moment.locale()).toBe("en")
+  })
+
+  it("no component imports a moment locale: only BootstrapScreen registers it", () => {
+    // An import of `moment/locale/xx` makes that locale the global one when
+    // the file first loads, which on the device is the first time the
+    // component is drawn.
+    const root = path.join(__dirname, "..", "..", "..")
+    const offenders: string[] = []
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const file = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          if (entry.name !== "__tests__" && entry.name !== "testing") walk(file)
+        } else if (/\.(ts|tsx)$/.test(entry.name)) {
+          if (/moment\/locale\//.test(fs.readFileSync(file, "utf8"))) {
+            offenders.push(path.relative(root, file))
+          }
+        }
+      }
+    }
+    walk(root)
+    expect(offenders).toEqual(["screens/BootstrapScreen/BootstrapScreen.tsx"])
   })
 })

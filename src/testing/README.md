@@ -606,18 +606,15 @@ proxy answers it 503) and Home still draws.
   `Platform.OS` and `Dimensions` can't be guarded that way (React Native reads them as it loads):
   a module that reads those at import, imported at the top, draws iOS and jest's window in every
   row without a word.
-- **moment's locale is the device's, not the app's language.** customerapp's BootstrapScreen sets
-  i18next and RTL but never moment, so moment keeps what shared's setupI18n gave it: RNLocalize's
-  tag (the mock's `en-US`). Importing `moment/locale/ar` makes it moment's GLOBAL locale as a side
-  effect (moment's defineLocale), and MessageComponent used to import it, so on the device the
-  first chat drawn turned every later date formatted with the global locale (NotificationItem,
-  OfferHistorySheet, RequestSummary's deadline) Arabic, in English too. That is fixed at the
-  source: `helpers/momentLocale` loads the Arabic locale and puts the global one back, and a date
-  that should read Arabic asks for it per call (`moment(x).locale(isAr ? "ar" : "en")`, as the
-  bubble's time does). Never import `moment/locale/ar` directly; `MessageComponent.momentLocale.test.tsx`
-  draws a chat and then a notification in both languages. The kit still puts the device locale
-  back before every row, as a guard against a fixture that imports the locale itself
-  (`MomentProbe`); the kit draws a fresh session, the device rig's order decides what it draws.
+- **moment's locale is the app's language, set by BootstrapScreen.** BootstrapScreen registers
+  `moment/locale/ar` once and its language effect calls `moment.locale(language)`, as proapp's does,
+  so a date formatted without its own `.locale()` (NotificationItem, OfferHistorySheet,
+  RequestSummary's deadline) reads in the app's language. Importing `moment/locale/ar` makes it
+  moment's GLOBAL locale as a side effect (defineLocale), and MessageComponent used to import it,
+  so the first chat drawn turned every later date Arabic, in English too. No component imports a
+  moment locale now (`MessageComponent.momentLocale.test.tsx` pins it); the bubble formats per call.
+  The kit renders without BootstrapScreen, so it does what the effect does before every row
+  (`appMomentLocale` in the engine): the Arabic rows' dates are Arabic.
 - An env switch must be read through a variable key (`globalThis.process.env[key]`).
   react-native-dotenv inlines a literal `process.env.NAME` at transform time, and jest caches it.
 - A `t("key")` prop is drawn as `t:key` by the harvest. Translate it in the test if the component

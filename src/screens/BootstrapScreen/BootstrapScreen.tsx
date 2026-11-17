@@ -12,6 +12,12 @@ import { useGetCustomerMeQuery, useUpdateCustomerMutation } from "services/api"
 
 // Libs & Utils
 import { I18nManager } from "react-native"
+// Registered once, here: importing a moment locale also makes it moment's
+// global one, so it is loaded where the global locale is set to the app's
+// language right after (the effect below), as proapp does. Components never
+// import it; a date that must read one language asks per call.
+import moment from "moment"
+import "moment/locale/ar"
 
 const BootstrapScreen = (): React.JSX.Element => {
   const { language, isAuth } = useTypedSelector((state) => state.auth)
@@ -20,6 +26,9 @@ const BootstrapScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     i18n.changeLanguage(language)
+    // moment's global locale follows the app's language (not the device's),
+    // so every date formatted without its own `.locale()` reads in it.
+    moment.locale(language === "ar" ? "ar" : "en")
     I18nManager.forceRTL(language === "ar")
   }, [language])
 

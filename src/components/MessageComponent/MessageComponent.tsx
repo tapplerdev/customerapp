@@ -15,7 +15,6 @@ import OfferUpdateCard, {
   parseOfferUpdate,
 } from "components/OfferUpdateCard/OfferUpdateCard"
 import moment from "moment"
-import "helpers/momentLocale"
 import Autolink from "react-native-autolink"
 import MapView from "react-native-maps"
 import MapPinMarker from "@tappler/shared/src/components/MapPinMarker"

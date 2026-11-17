@@ -6,6 +6,7 @@
   "havent_decided_yet": "لم أقرر بعد",
   "within_48_hours": "خلال 48 ساعة",
   "within_a_week": "خلال أسبوع",
+  "by_deadline": "لحد {{deadline}}",
   "further_out": "في وقت لاحق",
   "specific_dates": "تواريخ محددة",
   "flexible_schedule_toggle": "يمكنني التنسيق مع جدول المحترف إذا لم يكن متاحًا في الوقت الذي اخترته.",

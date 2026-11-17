@@ -6,6 +6,7 @@
   "havent_decided_yet": "I haven't decided yet",
   "within_48_hours": "Within 48 hours",
   "within_a_week": "Within a week",
+  "by_deadline": "By {{deadline}}",
   "further_out": "Further out",
   "specific_dates": "Specific dates",
   "flexible_schedule_toggle": "I can work with the pro's schedule if they aren't available in the time I chose.",
