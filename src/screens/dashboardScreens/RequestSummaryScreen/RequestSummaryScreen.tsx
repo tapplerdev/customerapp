@@ -226,7 +226,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       )
       title = t("within_48_hours")
       const deadline = moment().add(48, "hours").format("ddd, MMM D · h:mm A")
-      subtitle = `By ${deadline}`
+      subtitle = t("by_deadline", { deadline })
     } else if (dateType === "week") {
       iconBg = PINK2
       iconContent = (
@@ -236,7 +236,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       )
       title = t("within_a_week")
       const deadline = moment().add(7, "days").format("ddd, MMM D")
-      subtitle = `By ${deadline}`
+      subtitle = t("by_deadline", { deadline })
     } else if (dateType === "notDecided" || !dateType) {
       iconBg = BG2
       iconContent = (

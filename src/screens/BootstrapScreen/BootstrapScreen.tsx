@@ -12,14 +12,32 @@ import { useGetCustomerMeQuery, useUpdateCustomerMutation } from "services/api"
 
 // Libs & Utils
 import { I18nManager } from "react-native"
+// Registered once, here: importing a moment locale also makes it moment's
+// global one the moment the module loads, so the global locale is put back
+// to English straight away, and set to the app's language before the first
+// render below (and by the effect, on a change), as proapp does. Components
+// never import it; a date that must read one language asks per call.
+import moment from "moment"
+import "moment/locale/ar"
+
+moment.locale("en")
+
+/** moment's global locale is the app's language, never the device's. */
+const applyMomentLocale = (language: string) =>
+  moment.locale(language === "ar" ? "ar" : "en")
 
 const BootstrapScreen = (): React.JSX.Element => {
   const { language, isAuth } = useTypedSelector((state) => state.auth)
   const { i18n } = useTranslation()
   const dispatch = useDispatch()
+  // Before the children draw (they are returned below, so they render after
+  // this line): a date on the first frame must not read the other language.
+  // Idempotent, so safe in render; the store is rehydrated by now (PersistGate).
+  applyMomentLocale(language)
 
   useEffect(() => {
     i18n.changeLanguage(language)
+    applyMomentLocale(language)
     I18nManager.forceRTL(language === "ar")
   }, [language])
 

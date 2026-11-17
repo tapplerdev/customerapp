@@ -606,14 +606,16 @@ proxy answers it 503) and Home still draws.
   `Platform.OS` and `Dimensions` can't be guarded that way (React Native reads them as it loads):
   a module that reads those at import, imported at the top, draws iOS and jest's window in every
   row without a word.
-- **moment's locale is the device's, not the app's language.** customerapp's BootstrapScreen sets
-  i18next and RTL but never moment, so moment keeps what shared's setupI18n gave it: RNLocalize's
-  tag (the mock's `en-US`). The kit puts it back before every row, after the screen loads, because
-  importing `moment/locale/ar` (MessageComponent does) switches moment's global locale as a side
-  effect (moment's defineLocale). On the device that import runs only once a chat is first drawn
-  (Metro's inline requires), and from then on in that session every date formatted with the global
-  locale (NotificationItem, OfferHistorySheet, RequestSummary's deadline) comes out Arabic, in
-  English too. The kit draws a fresh session; the device rig's order decides what it draws.
+- **moment's locale is the app's language, set by BootstrapScreen.** BootstrapScreen registers
+  `moment/locale/ar` once, puts the global locale back to English as its module loads, and sets
+  `moment.locale(language)` before its first render and in its language effect, as proapp's does,
+  so a date formatted without its own `.locale()` (NotificationItem, OfferHistorySheet,
+  RequestSummary's deadline) reads in the app's language. Importing `moment/locale/ar` makes it
+  moment's GLOBAL locale as a side effect (defineLocale), and MessageComponent used to import it,
+  so the first chat drawn turned every later date Arabic, in English too. No component imports a
+  moment locale now (`MessageComponent.momentLocale.test.tsx` pins it); the bubble formats per call.
+  The kit renders without BootstrapScreen, so it does what the effect does before every row
+  (`appMomentLocale` in the engine): the Arabic rows' dates are Arabic.
 - An env switch must be read through a variable key (`globalThis.process.env[key]`).
   react-native-dotenv inlines a literal `process.env.NAME` at transform time, and jest caches it.
 - A `t("key")` prop is drawn as `t:key` by the harvest. Translate it in the test if the component

@@ -224,23 +224,22 @@ const clearSheetSpies = () => {
 }
 
 /**
- * moment's global locale as the app leaves it: the device's. customerapp
- * never sets it (its BootstrapScreen doesn't, unlike proapp's), so it is what
- * shared's setupI18n gave it when locales/i18n loaded: RNLocalize's best tag
- * (the mock's en-US, as an English device). Put back after the screen's
- * modules load, because importing `moment/locale/ar` (MessageComponent does)
- * switches moment's global locale as a side effect (defineLocale), and on
- * the device that import runs only once a chat is first drawn (Metro's
- * inline requires), not when the screen's file loads.
+ * moment's global locale as the app leaves it: the app's language.
+ * BootstrapScreen registers `moment/locale/ar` once and its language effect
+ * calls `moment.locale(language)`; the kit renders the screen without
+ * BootstrapScreen, so it does the same before every row, after the screen's
+ * modules load (a fixture that imports the locale itself would otherwise
+ * leave it global, whatever the row's language).
  */
-const deviceMomentLocale = () => {
+const appMomentLocale = (lang: ParityLanguage) => {
   /* eslint-disable global-require, @typescript-eslint/no-var-requires */
+  // shared's setupI18n sets moment to the device's tag as it loads: let it
+  // load first, so the app's language is the last word, as BootstrapScreen's
+  // effect is in the app.
   require("locales/i18n")
-  const { deviceLocale } = require("@tappler/shared/src/i18n/setup") as {
-    deviceLocale: string
-  }
+  require("moment/locale/ar")
   /* eslint-enable global-require, @typescript-eslint/no-var-requires */
-  moment.locale(deviceLocale)
+  moment.locale(lang === "ar" ? "ar" : "en")
 }
 
 const componentOf = (source: ScreenSource): React.ComponentType<any> => {
@@ -497,9 +496,9 @@ export const openScreen = async (
       )
     }
     const Screen = componentOf(source)
-    // BootstrapScreen's language effect is i18next and RTL (hostTreeParity
-    // sets both); moment stays on the device's locale, as in the app.
-    deviceMomentLocale()
+    // BootstrapScreen's language effect is i18next, RTL and moment: the first
+    // two are hostTreeParity's, moment's is here.
+    appMomentLocale(options.lang)
     const record: NavigationRecord = { actions: [] }
     const extra = options.props ?? {}
     const Content =
