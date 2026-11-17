@@ -98,6 +98,7 @@ import {
 } from "@tappler/shared/src/helpers/helpers"
 import { ThemeLanguageProvider } from "@tappler/shared/src/ds"
 import { LABEL_BOX } from "@tappler/shared/src/ds/buttonStyles"
+import { isLoadingDots } from "./frozenSpinner"
 
 export type ParityLanguage = "en" | "ar"
 export type ParityPlatform = "ios" | "android"
@@ -925,19 +926,25 @@ const isLabelBox = (child: HostChild) => {
 }
 
 /**
+ * What a loading button shows instead of its label: ActionBtn's spinner, as
+ * the frozen trees hold it, or Button's LoadingDots (the hopping dots that
+ * replaced it).
+ */
+const isLoadingContent = (child: HostChild) =>
+  typeof child !== "string" &&
+  (child.type === "ActivityIndicator" || isLoadingDots(child))
+
+/**
  * A button's root as a host tree shows it: among at most three children (an
  * icon at either end), Button's label box (LABEL_BOX, read from
  * tappler-shared; `labelInset` may change its side margins), or only the
- * spinner while it loads. ActionBtn's root matches too, since Button draws
- * ActionBtn's label box exactly; a plain view doesn't.
+ * spinner or the loading dots while it loads. ActionBtn's root matches too,
+ * since Button draws ActionBtn's label box exactly; a plain view doesn't.
  */
 export const isButtonRoot = (node: HostNode) => {
   const kids = node.children
   if (kids.length === 0 || kids.length > 3) return false
-  const [only] = kids
-  if (kids.length === 1 && typeof only !== "string") {
-    if (only.type === "ActivityIndicator") return true
-  }
+  if (kids.length === 1 && isLoadingContent(kids[0])) return true
   return kids.some(isLabelBox)
 }
 
@@ -986,18 +993,16 @@ const drawnText = (node: HostChild): string =>
  * what the root draws and what ActionBtn's root said in its place:
  * - its label: the texts its label box draws (the title and the second
  *   title in the label row, the description under it), joined with ", " as
- *   Button joins them. While it loads only the spinner is drawn, so there is
- *   no text to read it from: then any non-empty label is Button's (`null`).
+ *   Button joins them. While it loads only the spinner or the loading dots
+ *   (hidden from screen readers) are drawn, so there is no text to read it
+ *   from: then any non-empty label is Button's (`null`).
  * - its role: "button".
  * - its state: the touchable's, which ActionBtn's root had too (each passes
  *   `disabled` or `disable`, or-ed with isLoading), and `busy` while it loads.
  */
 const buttonSaysOf = (stored: HostNode, node: HostNode) => {
-  const [first] = node.children
   const loading =
-    node.children.length === 1 &&
-    typeof first !== "string" &&
-    first.type === "ActivityIndicator"
+    node.children.length === 1 && isLoadingContent(node.children[0])
   const texts: string[] = []
   const box = node.children.find(isLabelBox)
   if (box && typeof box !== "string") {

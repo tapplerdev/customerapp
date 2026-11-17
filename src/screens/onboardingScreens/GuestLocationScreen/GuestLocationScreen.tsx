@@ -4,12 +4,7 @@ import ErrorModal from "components/ErrorModal"
 // Components
 import { DmView } from "@tappler/shared/src/components/UI"
 import { SafeAreaView } from "react-native-safe-area-context"
-import {
-  ActivityIndicator,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native"
+import { Platform, StyleSheet, TouchableOpacity } from "react-native"
 import DropShadow from "react-native-drop-shadow"
 
 // Hooks
@@ -21,14 +16,13 @@ import { useDispatch } from "react-redux"
 import { RootStackScreenProps } from "navigation/types"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 import { AddressInfo } from "@tappler/shared/src/types"
-import colors from "@tappler/shared/src/styles/colors"
 import { setGuestLocation } from "store/auth/slice"
 
 // Assets
 import LocationIcon from "assets/icons/precision-location.svg"
 import SearchIcon from "assets/icons/search-red.svg"
 import HiThereIcon from "assets/icons/hi-there.svg"
-import { Text, a } from "@tappler/shared/src/ds"
+import { LoadingDots, Text, a } from "@tappler/shared/src/ds"
 import dsStyles from "./styles"
 
 type Props = RootStackScreenProps<"GuestLocationScreen">
@@ -146,6 +140,11 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={loading ? undefined : handleEnable}
+              // The dots are hidden from screen readers and the label leaves
+              // the tree while it locates.
+              accessibilityLabel={
+                loading ? t("enable_your_location") : undefined
+              }
               style={[
                 dsStyles.row,
                 a.flex_row,
@@ -154,7 +153,7 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
               ]}
             >
               {loading ? (
-                <ActivityIndicator color={colors.white} />
+                <LoadingDots color="inverse" />
               ) : (
                 <>
                   <LocationIcon width={20} height={20} />

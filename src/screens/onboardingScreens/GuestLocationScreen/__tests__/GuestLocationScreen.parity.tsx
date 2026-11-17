@@ -144,9 +144,25 @@ describe.each(PARITY_MATRIX)(
       try {
         await act(session, () => enable(session.root, env))
         await session.settle(500)
-        expect(JSON.stringify(session.tree())).not.toContain(
-          copy(env, "enable_your_location")
-        )
+        // The label gives way to the loading dots; the button keeps it as its
+        // name, since the dots are hidden from screen readers.
+        type Node = {
+          type: string
+          props: Record<string, unknown>
+          children: (Node | string)[]
+        }
+        const drawn: string[] = []
+        const named: unknown[] = []
+        const walk = (node: Node | string | null) => {
+          if (node === null || typeof node === "string") return
+          if (node.type === "Text") drawn.push(JSON.stringify(node.children))
+          named.push(node.props.accessibilityLabel)
+          node.children.forEach(walk)
+        }
+        walk(session.tree() as Node | null)
+        const label = copy(env, "enable_your_location")
+        expect(drawn.join("")).not.toContain(label)
+        expect(named).toContain(label)
         expect(navigated(session)).toEqual([])
       } finally {
         session.unmount()

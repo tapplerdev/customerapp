@@ -82,6 +82,20 @@ What W3.2 flipped, in one commit:
   `components/scroll/index.tsx`. 13 className attributes and 9 className prop
   types went; every frozen proof stayed byte-identical.
 
+### Loading buttons: LoadingDots against the frozen spinners
+
+A loading button draws tappler-shared's LoadingDots (three hopping dots in its label's colour, in
+a 20 x 20 box hidden from screen readers) where it drew ActivityIndicator's white spinner: ds
+Button's `isLoading`, RectButton (MainModal's button, BtnsRentangle's Yes) and Enable your
+location. The frozen trees that hold the spinner (`__tests__/__parity__/hostTreeParity.test.json`'s
+real ActionBtn trees here; proapp has the rest) stay byte-identical: a row compares its tree
+through `withFrozenSpinner` (`frozenSpinner.ts`, proapp's, kept alike), the spinner put back where
+the dots are, every other node still equal, and checks how many it put back. Screen and component
+fixtures are not frozen: their loading states were captured again, state by state, with the dots.
+`isButtonRoot` knows the dots box as a loading root's content, as it knew the spinner. The kit's
+Reanimated stand-in looks React Native's components up when they render, since the ds now imports
+Reanimated and the stand-in loads while a registry boots (`nativeMocks.ts` says why).
+
 ### tsc
 
 The set is d35860c's 32 errors: W3.2 added the six className errors in
@@ -275,7 +289,8 @@ The order matters. The fixture has to come from the code before your change, or 
      throws, naming the prop (busy while disabled, disabled while enabled, a wrong label).
    - `buttonDisabledView`: the `disabled` flag ActionBtn hands its View when there is no onPress.
 
-   Each one applies only on a button's root (a node holding Button's label box or its spinner),
+   Each one applies only on a button's root (a node holding Button's label box, or its spinner
+   or loading dots),
    with every other style key equal. Anywhere else, the same difference still fails, and so does a
    lost accessibility prop. `expectParity` returns what it accepted, if you want to pin it. No
    other difference is allowed in pass 1. If a tree differs, the conversion is wrong.
