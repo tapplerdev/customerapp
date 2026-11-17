@@ -90,7 +90,10 @@ Button's `isLoading`, RectButton (MainModal's button, BtnsRentangle's Yes) and E
 location. The frozen trees that hold the spinner (`__tests__/__parity__/hostTreeParity.test.json`'s
 real ActionBtn trees here; proapp has the rest) stay byte-identical: a row compares its tree
 through `withFrozenSpinner` (`frozenSpinner.ts`, proapp's, kept alike), the spinner put back where
-the dots are, every other node still equal, and checks how many it put back. Screen and component
+the dots are, every other node still equal, and checks how many it put back. A loading button
+keeps its own colour now (primary stays red), where ActionBtn greyed it: `loadingLook:
+actionBtnLoadingLook(props)` puts the grey back on the loading root too, worked out from the
+props, and `restyled` counts the roots it changed. Screen and component
 fixtures are not frozen: their loading states were captured again, state by state, with the dots.
 `isButtonRoot` knows the dots box as a loading root's content, as it knew the spinner. The kit's
 Reanimated stand-in looks React Native's components up when they render, since the ds now imports
