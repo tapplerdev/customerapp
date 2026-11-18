@@ -181,6 +181,14 @@ const CASES: Case[] = [
     allow: ENABLED,
   },
   {
+    name: "cash only, kitchen open 24/7",
+    drafts: [DRAFT_ONE_LINE],
+    api: api({
+      getProProfile: { data: { ...CASH_ONLY, hoursAlwaysOpen: true } },
+    }),
+    allow: ENABLED,
+  },
+  {
     name: "delivery only kitchen",
     drafts: [DRAFT_ONE_LINE],
     api: api({

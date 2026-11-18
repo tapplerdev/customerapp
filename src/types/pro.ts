@@ -126,6 +126,9 @@ export type ProType = {
   // photosOfWork, which is no longer sent to customers.
   workPhotos?: ProWorkPhotoType[]
   hours?: ProHourType[]
+  // True when the pro is open around the clock (backend: `hoursAlwaysOpen`).
+  // Absent on older payloads; falsy means the week table as before.
+  hoursAlwaysOpen?: boolean
   // Bare strings ("cash" | "credit card"). ProDto @Type()s them to
   // ProPaymentMethodDto but a @Transform ABOVE that flattens to type, so the
   // wire format is a string array despite the DTO's declared type.

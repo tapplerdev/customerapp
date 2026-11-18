@@ -98,6 +98,7 @@ const PROFILE: ViewShape = {
     },
   ],
   hours: [{ dayOfWeek: true, openingTime: true, closingTime: true }],
+  hoursAlwaysOpen: true,
   paymentMethods: true,
   socials: [{ id: true, socialMedia: true, socialLink: true }],
   address: { address: { city: true, governorate: true, location: true } },

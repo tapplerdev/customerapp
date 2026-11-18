@@ -509,62 +509,73 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         )}
 
         {/* Working Hours */}
-        {pro.hours && pro.hours.length > 0 && (
+        {(pro.hoursAlwaysOpen || (pro.hours && pro.hours.length > 0)) && (
           <DmView style={[styles.boxWrap2, styles.sectionRule, a.mr_16]}>
             <DmView style={styles.box}>
               <Text size={14} weight="semibold">
                 {t("working_hours")}
               </Text>
-              {[
-                "sunday",
-                "monday",
-                "tuesday",
-                "wednesday",
-                "thursday",
-                "friday",
-                "saturday",
-              ].map((day) => {
-                const hour = pro.hours.find(
-                  (h) => h.dayOfWeek?.toLowerCase() === day
-                )
-                const dayAbbr = day.substring(0, 3)
-                const openingTime = hour?.openingTime
-                  ? format(
-                      parse(hour.openingTime, "HH:mm", new Date()),
-                      "h:mm a"
-                    )
-                  : undefined
-                const closingTime = hour?.closingTime
-                  ? format(
-                      parse(hour.closingTime, "HH:mm", new Date()),
-                      "h:mm a"
-                    )
-                  : undefined
-                return (
-                  <DmView
-                    key={day}
-                    style={[a.flex_row, a.items_center, a.pt_10]}
-                  >
-                    <DmView style={[a.mr_8, styles.box3]} />
-                    <DmView style={a.flex_row}>
-                      <DmView
-                        style={isAr ? styles.textWrapAr : styles.textWrapNotAr}
-                      >
-                        <Text size={13} leading="tight" numberOfLines={1}>
-                          {t(dayAbbr).toUpperCase()}
-                        </Text>
-                      </DmView>
-                      <DmView style={a.pr_10}>
-                        <Text size={13} leading="tight">
-                          {openingTime && closingTime
-                            ? `${openingTime} - ${closingTime}`
-                            : t("closed").toUpperCase()}
-                        </Text>
+              {pro.hoursAlwaysOpen ? (
+                <DmView style={[a.flex_row, a.items_center, a.pt_10]}>
+                  <DmView style={[a.mr_8, styles.box3]} />
+                  <Text size={13} leading="tight">
+                    {t("open_24_7")}
+                  </Text>
+                </DmView>
+              ) : (
+                [
+                  "sunday",
+                  "monday",
+                  "tuesday",
+                  "wednesday",
+                  "thursday",
+                  "friday",
+                  "saturday",
+                ].map((day) => {
+                  const hour = pro.hours?.find(
+                    (h) => h.dayOfWeek?.toLowerCase() === day
+                  )
+                  const dayAbbr = day.substring(0, 3)
+                  const openingTime = hour?.openingTime
+                    ? format(
+                        parse(hour.openingTime, "HH:mm", new Date()),
+                        "h:mm a"
+                      )
+                    : undefined
+                  const closingTime = hour?.closingTime
+                    ? format(
+                        parse(hour.closingTime, "HH:mm", new Date()),
+                        "h:mm a"
+                      )
+                    : undefined
+                  return (
+                    <DmView
+                      key={day}
+                      style={[a.flex_row, a.items_center, a.pt_10]}
+                    >
+                      <DmView style={[a.mr_8, styles.box3]} />
+                      <DmView style={a.flex_row}>
+                        <DmView
+                          style={
+                            isAr ? styles.textWrapAr : styles.textWrapNotAr
+                          }
+                        >
+                          <Text size={13} leading="tight" numberOfLines={1}>
+                            {t(dayAbbr).toUpperCase()}
+                          </Text>
+                        </DmView>
+                        <DmView style={a.pr_10}>
+                          <Text size={13} leading="tight">
+                            {openingTime && closingTime
+                              ? `${openingTime} - ${closingTime}`
+                              : t("closed").toUpperCase()}
+                          </Text>
+                        </DmView>
                       </DmView>
                     </DmView>
-                  </DmView>
-                )
-              })}
+                  )
+                })
+              )}
             </DmView>
           </DmView>
         )}
