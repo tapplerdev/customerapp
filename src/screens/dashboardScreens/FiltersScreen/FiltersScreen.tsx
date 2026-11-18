@@ -25,7 +25,6 @@ export type FilterValues = {
   proType?: string
   distanceKm?: number
   minRating?: number
-  maxResponseTimeHours?: number
   creditCardPayment?: boolean
 }
 
@@ -84,9 +83,6 @@ const FiltersContent: React.FC<ContentProps> = ({
   const [minRating, setMinRating] = useState<number | undefined>(
     initialFilters?.minRating
   )
-  const [maxResponseTimeHours, setMaxResponseTimeHours] = useState<
-    number | undefined
-  >(initialFilters?.maxResponseTimeHours)
   const [creditCardPayment, setCreditCardPayment] = useState(
     initialFilters?.creditCardPayment || false
   )
@@ -204,7 +200,6 @@ const FiltersContent: React.FC<ContentProps> = ({
       proType,
       distanceKm: distanceKm < 50 ? distanceKm : undefined,
       minRating,
-      maxResponseTimeHours,
       creditCardPayment: creditCardPayment || undefined,
       refinementFilterOptionIds: [...effectiveSelectedIds],
       ranges: activeRanges,
@@ -214,7 +209,6 @@ const FiltersContent: React.FC<ContentProps> = ({
       proType,
       distanceKm,
       minRating,
-      maxResponseTimeHours,
       creditCardPayment,
       effectiveSelectedIds,
       activeRanges,
@@ -238,7 +232,6 @@ const FiltersContent: React.FC<ContentProps> = ({
     setProType(undefined)
     setDistanceKm(50)
     setMinRating(undefined)
-    setMaxResponseTimeHours(undefined)
     setCreditCardPayment(false)
     setFulfillment("all")
   }
@@ -299,7 +292,6 @@ const FiltersContent: React.FC<ContentProps> = ({
       proType,
       distanceKm < 50 ? distanceKm : undefined,
       minRating,
-      maxResponseTimeHours,
       creditCardPayment,
     ].filter(Boolean).length +
     effectiveSelectedIds.size +
@@ -693,35 +685,6 @@ const FiltersContent: React.FC<ContentProps> = ({
             )}
             {renderChip("4.5+ ★", minRating === 4.5, () =>
               setMinRating(minRating === 4.5 ? undefined : 4.5)
-            )}
-          </AppScrollView>
-        </DmView>
-
-        <DmView style={[a.mx_20, dsStyles.box, a.mb_18]} />
-
-        {/* Response Time */}
-        <DmView style={[a.px_20, a.mb_18]}>
-          <Text size={15} weight="bold" leading="tight" style={a.mb_10}>
-            {t("response_time")}
-          </Text>
-          <AppScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {renderChip(t("any"), !maxResponseTimeHours, () =>
-              setMaxResponseTimeHours(undefined)
-            )}
-            {renderChip(t("under_1_hour"), maxResponseTimeHours === 1, () =>
-              setMaxResponseTimeHours(
-                maxResponseTimeHours === 1 ? undefined : 1
-              )
-            )}
-            {renderChip(t("under_4_hours"), maxResponseTimeHours === 4, () =>
-              setMaxResponseTimeHours(
-                maxResponseTimeHours === 4 ? undefined : 4
-              )
-            )}
-            {renderChip(t("under_24_hours"), maxResponseTimeHours === 24, () =>
-              setMaxResponseTimeHours(
-                maxResponseTimeHours === 24 ? undefined : 24
-              )
             )}
           </AppScrollView>
         </DmView>

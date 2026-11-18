@@ -504,7 +504,6 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           proType: f.proType,
           distanceKm: f.distanceKm,
           minRating: f.minRating,
-          maxResponseTimeHours: f.maxResponseTimeHours,
           creditCardPayment: f.creditCardPayment,
           sortBy: "sortBy" in opts ? opts.sortBy : sortBy,
         },
