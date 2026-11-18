@@ -1,6 +1,19 @@
 import { StyleSheet } from "react-native"
 
-import { LOADING_DOTS_BOX, color } from "@tappler/shared/src/ds"
+import {
+  LOADING_DOTS_BOX,
+  color,
+  type ButtonHairline,
+  type ButtonStateFill,
+  type ButtonVariant,
+} from "@tappler/shared/src/ds"
+import {
+  DIMMED,
+  FADED,
+  HAIRLINE,
+  STATE_FILL,
+  VARIANTS,
+} from "@tappler/shared/src/ds/buttonStyles"
 
 /*
  * Jest only.
@@ -22,6 +35,15 @@ import { LOADING_DOTS_BOX, color } from "@tappler/shared/src/ds"
  * hidden box) is proapp's ds/LoadingDots.test.tsx's (shared's ds tests live
  * there). This file is proapp's testing/frozenSpinner.ts, as the two apps'
  * parity tools are kept alike.
+ *
+ * A loading button also keeps its own colour now (the owner's call): primary
+ * stays red under white dots, yellow yellow, and no variant takes its disabled
+ * look while it loads. ActionBtn drew a loading button in its disabled look
+ * (ActionBtn's grey, the disabled look's fill, a faded or greyed outline), so
+ * the swap can also put that look back on the loading root (`loadingLook`,
+ * worked out from the button's props by `actionBtnLoadingLook`, never read
+ * from the frozen file), and says on how many roots it changed anything
+ * (`restyled`), which a row checks too.
  *
  * Screen and component parity fixtures that capture a loading button are not
  * frozen: their loading states were captured again with the dots.
@@ -63,17 +85,26 @@ export type SpinnerOptions = {
    * frozen rows).
    */
   dropLoadingName?: boolean
+  /**
+   * Style keys put back on each loading root (the dots' parent, its style
+   * flattened): the look ActionBtn drew a loading button in, where Button
+   * keeps its own (`actionBtnLoadingLook`; RectButton's grey for MainModal's
+   * and BtnsRentangle's rows).
+   */
+  loadingLook?: Readonly<Record<string, unknown>>
 }
 
 /**
  * `tree` (a host tree, an array of them, or null) with FROZEN_SPINNER where
- * each LoadingDots box is, and how many it put back.
+ * each LoadingDots box is, and how many it put back; with `loadingLook`, also
+ * that look on each loading root, and on how many roots it changed a value.
  */
 export const withFrozenSpinner = <T>(
   tree: T,
   options: SpinnerOptions = {}
-): { tree: T; swapped: number } => {
+): { tree: T; swapped: number; restyled: number } => {
   let swapped = 0
+  let restyled = 0
   const walk = (value: unknown): unknown => {
     if (Array.isArray(value)) return value.map(walk)
     if (!isNode(value)) return value
@@ -97,9 +128,108 @@ export const withFrozenSpinner = <T>(
         Object.entries(props).filter(([key]) => key !== "accessibilityLabel")
       )
     }
+    if (holdsDots && options.loadingLook) {
+      const style = (StyleSheet.flatten(props.style as never) ?? {}) as Record<
+        string,
+        unknown
+      >
+      const look = options.loadingLook
+      if (Object.keys(look).some((key) => style[key] !== look[key])) {
+        restyled += 1
+      }
+      props = { ...props, style: { ...style, ...look } }
+    }
     return { ...value, props, children }
   }
-  return { tree: walk(tree) as T, swapped }
+  return { tree: walk(tree) as T, swapped, restyled }
+}
+
+/** The props of a Button that decide its surface while it loads. */
+export type LoadingLookProps = {
+  variant?: ButtonVariant
+  disabled?: boolean
+  looksDisabled?: boolean
+  disabledLook?: unknown
+  loadingSurface?: ButtonStateFill
+  hairline?: ButtonHairline
+  dim?: boolean
+}
+
+/** The keys a button's state changes on its root. */
+const STATE_KEY =
+  /^(backgroundColor|opacity|border(Top|Right|Bottom|Left)(Color|Width))$/
+
+const stateKeysOf = (styles: unknown[]) =>
+  Object.fromEntries(
+    Object.entries(
+      (StyleSheet.flatten(styles as never) ?? {}) as Record<string, unknown>
+    ).filter(([key]) => STATE_KEY.test(key))
+  )
+
+/** A disabled look's fill: its `surface`, ActionBtn's grey when it names none. */
+const lookSurfaceOf = (disabledLook: unknown): ButtonStateFill => {
+  if (disabledLook === "design") return "design"
+  if (
+    typeof disabledLook === "object" &&
+    disabledLook !== null &&
+    typeof (disabledLook as { surface?: unknown }).surface === "string"
+  ) {
+    return (disabledLook as { surface: ButtonStateFill }).surface
+  }
+  return "legacy"
+}
+
+/**
+ * The state keys of the root ActionBtn drew a loading button with (and
+ * Button, until the owner's call): primary and yellow under the loading fill
+ * (the caller's `loadingSurface`, else the disabled look's fill, ActionBtn's
+ * grey by default); the others in their disabled look when disabled (a faded
+ * white or on-red button, a bordered one's grey outline), their own surface
+ * otherwise; a hairline and `dim` over either. The rule ActionBtn followed,
+ * read from the ds tables, never from a frozen file.
+ */
+export const actionBtnLoadingLook = (props: LoadingLookProps) => {
+  const spec = VARIANTS[props.variant ?? "primary"]
+  const dimmed = !!(props.disabled || props.looksDisabled)
+  let { surface }: { surface: unknown } = spec
+  if (spec.loading === "fill") {
+    surface =
+      STATE_FILL[props.loadingSurface ?? lookSurfaceOf(props.disabledLook)]
+  } else if (dimmed && typeof spec.disabled === "object") {
+    surface = spec.disabled.surface
+  }
+  return stateKeysOf([
+    surface,
+    props.hairline && spec.hairline ? HAIRLINE[props.hairline] : undefined,
+    dimmed && spec.disabled === "fade" ? FADED : undefined,
+    props.dim ? DIMMED : undefined,
+  ])
+}
+
+/**
+ * The state keys of the root Button draws a loading button with: its enabled
+ * look (its own surface, a hairline and `dim` over it), or a primary or
+ * yellow button's chosen `loadingSurface`. With actionBtnLoadingLook, what a
+ * row expects `restyled` to be: 1 where they differ.
+ */
+export const ownLoadingLook = (props: LoadingLookProps) => {
+  const spec = VARIANTS[props.variant ?? "primary"]
+  const chosen =
+    spec.loading === "fill" && props.loadingSurface !== undefined
+      ? STATE_FILL[props.loadingSurface]
+      : undefined
+  return stateKeysOf([
+    chosen ?? spec.surface,
+    props.hairline && spec.hairline ? HAIRLINE[props.hairline] : undefined,
+    props.dim ? DIMMED : undefined,
+  ])
+}
+
+/** Whether ActionBtn's loading look and Button's differ for these props. */
+export const loadingLookChanged = (props: LoadingLookProps) => {
+  const before = actionBtnLoadingLook(props)
+  const after = ownLoadingLook(props)
+  return Object.keys(before).some((key) => before[key] !== after[key])
 }
 
 /**
