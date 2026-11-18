@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   profilePhoto: { width: 85, height: 85 },
@@ -88,7 +89,7 @@ export default StyleSheet.create({
     backgroundColor: colors.red,
   },
   box2: {
-    height: 0.5,
+    height: RULE_WEIGHT,
     backgroundColor: colors.grey19,
   },
   safeArea: {

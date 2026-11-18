@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   rowContainer: {
@@ -49,7 +50,7 @@ export default StyleSheet.create({
     paddingBottom: 5,
   },
   box: {
-    height: 0.5,
+    height: RULE_WEIGHT,
     backgroundColor: colors.grey19,
   },
   safeArea: {
@@ -63,7 +64,7 @@ export default StyleSheet.create({
 
 export const talabatiSkeletonStyles = StyleSheet.create({
   box: {
-    height: 0.5,
+    height: RULE_WEIGHT,
     backgroundColor: colors.grey19,
   },
 })

@@ -1,5 +1,6 @@
 import { Platform, StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   textCenter: { textAlign: "center" },
@@ -347,12 +348,11 @@ export default StyleSheet.create({
     borderBottomColor: colors.grey4,
     borderLeftColor: colors.grey4,
   },
+  // the header's line where there is no request card: a filled View
+  // RULE_WEIGHT tall, not a border on an empty View (tappler-shared ds/rule.ts)
   box6: {
-    borderBottomWidth: 0.5,
-    borderTopColor: colors.grey4,
-    borderRightColor: colors.grey4,
-    borderBottomColor: colors.grey4,
-    borderLeftColor: colors.grey4,
+    height: RULE_WEIGHT,
+    backgroundColor: colors.grey4,
   },
   requestSentToProInfoWrap: {
     borderTopLeftRadius: 12,

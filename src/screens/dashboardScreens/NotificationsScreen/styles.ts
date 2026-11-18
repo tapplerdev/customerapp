@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   safeArea: {
@@ -30,7 +31,7 @@ export const notificationsSkeletonStyles = StyleSheet.create({
     marginTop: 5,
   },
   box: {
-    height: 0.5,
+    height: RULE_WEIGHT,
     backgroundColor: colors.grey19,
   },
 })

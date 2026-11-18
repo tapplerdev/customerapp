@@ -1,5 +1,6 @@
 import { I18nManager, StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 const styles = StyleSheet.create({
   notesBorder: {
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey58,
   },
   box4: {
-    height: 0.5,
+    height: RULE_WEIGHT,
     backgroundColor: colors.grey14,
   },
   text: {
