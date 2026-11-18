@@ -308,6 +308,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   // customer is deciding about NOW, and context beats a table. Shown, never
   // enforced — a kitchen that is technically closed can still say yes.
   const todayHours = useMemo(() => {
+    if (pro?.hoursAlwaysOpen) return t("open_24_7")
     const day = new Date().toLocaleDateString("en-US", { weekday: "long" })
     const row = pro?.hours?.find(
       (hour) => hour.dayOfWeek?.toLowerCase() === day.toLowerCase()
@@ -315,7 +316,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!row?.openingTime || !row?.closingTime) return null
     if (row.openingTime === row.closingTime) return null
     return `${row.openingTime} - ${row.closingTime}`
-  }, [pro?.hours])
+  }, [pro?.hours, pro?.hoursAlwaysOpen, t])
 
   // Day + hour is enough here; the exact window is chosen in the calendar.
   const earliestLabel = earliestAt

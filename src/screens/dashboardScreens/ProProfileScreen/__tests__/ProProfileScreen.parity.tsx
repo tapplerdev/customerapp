@@ -359,6 +359,16 @@ const CASES: Case[] = [
     state: "a minimal profile, #522 profile hero, pill as tall as Featured",
     options: withPro(MINIMAL),
   },
+  // P4: the flag opens the hours block even with no rows, and replaces the
+  // week table with one line when there are rows.
+  {
+    state: "open 24/7, no hours rows",
+    options: withPro({ ...MINIMAL, hoursAlwaysOpen: true }),
+  },
+  {
+    state: "open 24/7, over a week of hours",
+    options: withPro({ ...FULL, hoursAlwaysOpen: true }),
+  },
   {
     state:
       "a pro nobody has reviewed yet, #522 profile hero, pill as tall as Featured",
