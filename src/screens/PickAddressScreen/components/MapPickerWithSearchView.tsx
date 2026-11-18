@@ -535,7 +535,6 @@ const MapPickerWithSearchView: React.FC<Props> = ({
             label="sm"
             labelWeight="semibold"
             labelLeading={px(21)}
-            loadingSurface="shade"
             style={a.w_full}
             title={t("confirm_my_location")}
             isLoading={addressConfirming}
