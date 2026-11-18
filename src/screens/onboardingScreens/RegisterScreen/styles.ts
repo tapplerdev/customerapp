@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   inputHeight: { height: 44 },
@@ -25,12 +26,11 @@ export default StyleSheet.create({
     height: 0.7,
     backgroundColor: colors.grey1,
   },
+  // the field's underline: a filled View RULE_WEIGHT tall, not a border on
+  // an empty View (tappler-shared ds/rule.ts)
   box5: {
-    borderBottomWidth: 0.5,
-    borderTopColor: colors.grey1,
-    borderRightColor: colors.grey1,
-    borderBottomColor: colors.grey1,
-    borderLeftColor: colors.grey1,
+    height: RULE_WEIGHT,
+    backgroundColor: colors.grey1,
   },
   box6: {
     width: 22,
