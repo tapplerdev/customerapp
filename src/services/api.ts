@@ -347,7 +347,6 @@ export const api = createApi({
         proType?: string
         distanceKm?: number
         minRating?: number
-        maxResponseTimeHours?: number
         creditCardPayment?: boolean
         sortBy?: "distance" | "rating" | "responseTime"
       }
@@ -362,7 +361,6 @@ export const api = createApi({
         proType,
         distanceKm,
         minRating,
-        maxResponseTimeHours,
         creditCardPayment,
         sortBy,
       }) => {
@@ -399,8 +397,6 @@ export const api = createApi({
         }
         if (proType) params.append("proType", proType)
         if (minRating) params.append("minRating", String(minRating))
-        if (maxResponseTimeHours)
-          params.append("maxResponseTimeHours", String(maxResponseTimeHours))
         if (creditCardPayment) params.append("creditCardPayment", "true")
         if (sortBy) params.append("sortBy", sortBy)
         // The card view (backend #423): each pro as ProCard, its preloads and

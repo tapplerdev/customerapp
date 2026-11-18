@@ -119,7 +119,6 @@ const CASES: Case[] = [
         proType: "company",
         distanceKm: 20,
         minRating: 4.5,
-        maxResponseTimeHours: 4,
         creditCardPayment: true,
       },
       initialRefinementOptionIds: [9021, 9022],
@@ -222,9 +221,6 @@ describe.each(PARITY_MATRIX)(
         await act(session, () => pressText(session.root, individual))
         await act(session, () => pressText(session.root, "4+ ★"))
         await act(session, () =>
-          pressText(session.root, copy(env, "under_4_hours"))
-        )
-        await act(session, () =>
           pressText(session.root, copy(env, "credit_card"))
         )
         await act(session, () =>
@@ -243,12 +239,14 @@ describe.each(PARITY_MATRIX)(
           expect.objectContaining({
             proType: "individual",
             minRating: 4,
-            maxResponseTimeHours: 4,
             creditCardPayment: true,
             refinementFilterOptionIds: [9021],
             ranges: [],
             distanceKm: undefined,
           })
+        )
+        expect(onApply.mock.calls[0][0]).not.toHaveProperty(
+          "maxResponseTimeHours"
         )
         expect(onClose).toHaveBeenCalledTimes(1)
       } finally {

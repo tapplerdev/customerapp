@@ -82,14 +82,12 @@ export type FiltersParams = {
     proType?: string
     distanceKm?: number
     minRating?: number
-    maxResponseTimeHours?: number
     creditCardPayment?: boolean
   }
   onApply: (filters: {
     proType?: string
     distanceKm?: number
     minRating?: number
-    maxResponseTimeHours?: number
     creditCardPayment?: boolean
     refinementFilterOptionIds: number[]
     ranges: { filterId: number; min?: number; max?: number }[]
