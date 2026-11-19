@@ -31,7 +31,7 @@ const MessagesSkeletonCard: React.FC<{ delay: number }> = ({ delay }) => (
         </DmView>
       </DmView>
     </DmView>
-    <Divider color={colors.grey19} style={[a.border_b_1]} />
+    <Divider color={colors.grey4} style={{ marginEnd: 15 }} />
   </Animated.View>
 )
 

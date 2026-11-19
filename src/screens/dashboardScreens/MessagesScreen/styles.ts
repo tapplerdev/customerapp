@@ -27,11 +27,4 @@ export const messagesSkeletonStyles = StyleSheet.create({
     paddingRight: 15,
     paddingBottom: 13,
   },
-  box: {
-    marginRight: 15,
-    borderTopColor: colors.grey4,
-    borderRightColor: colors.grey4,
-    borderBottomColor: colors.grey4,
-    borderLeftColor: colors.grey4,
-  },
 })
