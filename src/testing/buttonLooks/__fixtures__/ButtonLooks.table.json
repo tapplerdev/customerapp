@@ -1348,7 +1348,6 @@
   "19264352cb": {
    "key": "{\"className\":\"mt-[32] h-[44]\",\"onPress\":true}",
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
     "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:192"
    ],
    "props": {
@@ -1372,7 +1371,6 @@
   "06cc6fe240": {
    "key": "{\"className\":\"mt-[32] h-[44]\",\"disable\":true,\"isLoading\":true,\"onPress\":true}",
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
     "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:192"
    ],
    "props": {
@@ -1396,7 +1394,6 @@
   "cd66bddb0f": {
    "key": "{\"className\":\"mt-[40] h-[44]\",\"disable\":true,\"onPress\":true}",
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ],
    "props": {
@@ -1420,7 +1417,6 @@
   "c380c14451": {
    "key": "{\"className\":\"mt-[40] h-[44]\",\"disable\":true,\"isLoading\":true,\"onPress\":true}",
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ],
    "props": {
@@ -1444,7 +1440,6 @@
   "f698f9e711": {
    "key": "{\"className\":\"mt-[40] h-[44] bg-red\",\"onPress\":true}",
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ],
    "props": {
@@ -1468,7 +1463,6 @@
   "baa183a4ff": {
    "key": "{\"className\":\"mt-[40] h-[44] bg-red\",\"isLoading\":true,\"onPress\":true}",
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ],
    "props": {

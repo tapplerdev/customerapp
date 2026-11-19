@@ -21,7 +21,7 @@
   "totals": {
     "className": 0,
     "px": 111,
-    "legacy": 269,
+    "legacy": 264,
     "familySystem": 15,
     "colorLiteral": 152,
     "thinLine": 0,
@@ -35,7 +35,7 @@
   "directories": {
     "src": {
       "px": 111,
-      "legacy": 269,
+      "legacy": 264,
       "familySystem": 15,
       "colorLiteral": 152,
       "bridge": 5
@@ -164,7 +164,7 @@
     },
     "src/screens": {
       "px": 81,
-      "legacy": 220,
+      "legacy": 215,
       "familySystem": 14,
       "colorLiteral": 91,
       "bridge": 1
@@ -179,7 +179,7 @@
     },
     "src/screens/dashboardScreens": {
       "px": 75,
-      "legacy": 198,
+      "legacy": 193,
       "familySystem": 13,
       "colorLiteral": 87
     },
@@ -205,7 +205,7 @@
     },
     "src/screens/dashboardScreens/AuthGateScreen": {
       "px": 1,
-      "legacy": 7,
+      "legacy": 2,
       "familySystem": 1,
       "colorLiteral": 4
     },
@@ -557,9 +557,6 @@
       "legacy": 2,
       "familySystem": 1,
       "colorLiteral": 4
-    },
-    "src/screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx": {
-      "legacy": 5
     },
     "src/screens/dashboardScreens/CategoriesScreen/CategoriesScreen.tsx": {
       "legacy": 1,

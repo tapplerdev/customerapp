@@ -31,10 +31,10 @@ describe("CA-W0-B's Button looks, frozen", () => {
     const sha = (name: string) =>
       crypto.createHash("sha256").update(read(name)).digest("hex")
     expect(sha("ButtonLooks.cases.json")).toBe(
-      "23c65cf467d878af0070acc0b7a7b56dc2ee042762f35dfb82168f042dfb43f2"
+      "eca8b8b2cd63c14eac4bb7cf7412ecf38b82d2c0afc56400cbc4a1e68a558e74"
     )
     expect(sha("ButtonLooks.table.json")).toBe(
-      "bfb928bcb6591ad780c12a92c184d0f8de9b9fcdf959642ffd36e96bf54bc615"
+      "82e42fd98ade7e58347111684f3862ab1560baee50a53dc2a86f94f35edc1d20"
     )
   })
 
