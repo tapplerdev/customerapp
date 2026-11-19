@@ -30,6 +30,13 @@
  *                    tokenise). That is how src comes to 161 (149 in objects,
  *                    12 in attributes, which counted nothing before
  *                    review-ca-w0's T re-check, L5).
+ *   fractional line  a borderWidth (any side), height or width in an object
+ *   widths           that is a number below 1 or StyleSheet.hairlineWidth
+ *                    (`thinLine`): a thin line the pixel grid draws unevenly.
+ *                    A line is <Divider /> and a border on a box is
+ *                    `borderWidth: RULE_WEIGHT` (tappler-shared's ds). Not
+ *                    counted in src/testing, where the frozen proofs put
+ *                    the old borders back on purpose
  *   DmText/ActionBtn <DmText> and <ActionBtn> elements, with or without a
  *                    className, under any local name the file gives them
  *                    (namesOf, a `const Y = memo(DmText)` and a
@@ -133,12 +140,28 @@ const CLASSNAME_ATTR = /^className|^tw$|ClassName$/
 // (the no-NativeWind controls), so the app-only counts leave it out.
 const JEST_ONLY = /^src\/testing\//
 
+// A border width, or a height or width, in a style object; its value a
+// number between 0 and 1, or StyleSheet.hairlineWidth, is a thin line drawn at
+// a fraction of a point, which lands unevenly on the pixel grid. A line is a
+// <Divider /> (a filled View RULE_WEIGHT tall) and a border on a box is
+// `borderWidth: RULE_WEIGHT`, both tappler-shared's ds.
+const LINE_SIZE_KEY =
+  /^(?:border(?:Top|Right|Bottom|Left|Start|End)?Width|height|width)$/
+const isFractionalLine = (value) =>
+  (value.type === "NumericLiteral" && value.value > 0 && value.value < 1) ||
+  (value.type === "MemberExpression" &&
+    !value.computed &&
+    value.object.type === "Identifier" &&
+    value.object.name === "StyleSheet" &&
+    value.property.name === "hairlineWidth")
+
 const METRICS = [
   "className",
   "px",
   "legacy",
   "familySystem",
   "colorLiteral",
+  "thinLine",
   "primitives",
   "bridge",
   "classKey",
@@ -152,6 +175,7 @@ const LABEL = {
   legacy: 'leading="legacy"',
   familySystem: 'family="system"',
   colorLiteral: "colour literals",
+  thinLine: "fractional line widths",
   primitives: "DmText/ActionBtn",
   bridge: "LegacyText",
   classKey: "className keys",
@@ -161,6 +185,9 @@ const LABEL = {
 }
 // Counted in app code only (JEST_ONLY), and may only fall.
 const APP_ONLY = ["classKey", "classProp", "classImport", "primitiveImport"]
+// Counted in app code only too (the frozen proofs in src/testing put the old
+// borders back on purpose), and, unlike APP_ONLY, not zero by W3.
+const JEST_BLIND = [...APP_ONLY, "thinLine"]
 // The totals that are 0 since W3.4, checked absolutely: by the ratchet's test,
 // and by the CLI on this tree's own baseline.
 const ZERO_SINCE_W3 = ["className", "primitives", ...APP_ONLY]
@@ -300,10 +327,10 @@ const nameOf = (n) =>
   n.type === "Identifier"
     ? n.name
     : n.type === "MemberExpression" &&
-        !n.computed &&
-        n.object.type === "Identifier"
-      ? `${n.object.name}.${n.property.name}`
-      : null
+      !n.computed &&
+      n.object.type === "Identifier"
+    ? `${n.object.name}.${n.property.name}`
+    : null
 
 /**
  * Re-bindings anywhere in the file, as [Y, X]: `const Y = X`; `const Y =
@@ -489,10 +516,10 @@ const colourProperty = (p) => {
   const name = computed
     ? null
     : key.type === "Identifier"
-      ? key.name
-      : key.type === "StringLiteral"
-        ? key.value
-        : null
+    ? key.name
+    : key.type === "StringLiteral"
+    ? key.value
+    : null
   if (!name || !/color$/i.test(name)) return null
   const value = stop.get("value")
   return p === value || p.isDescendant(value) ? stop : null
@@ -507,8 +534,8 @@ const parserPlugins = (filename) =>
   /\.tsx$/.test(filename)
     ? ["jsx", "typescript"]
     : /\.ts$/.test(filename)
-      ? ["typescript"]
-      : ["jsx"]
+    ? ["typescript"]
+    : ["jsx"]
 
 const countSource = (code, filename = "file.tsx") => {
   const parser = require("@babel/parser")
@@ -546,10 +573,10 @@ const countSource = (code, filename = "file.tsx") => {
     n.type === "Identifier"
       ? n.name
       : n.type === "MemberExpression" &&
-          !n.computed &&
-          n.object.type === "Identifier"
-        ? `${n.object.name}.${n.property.name}`
-        : null
+        !n.computed &&
+        n.object.type === "Identifier"
+      ? `${n.object.name}.${n.property.name}`
+      : null
   traverse(ast, {
     JSXOpeningElement(p) {
       const name = elementName(p.node.name)
@@ -585,10 +612,10 @@ const countSource = (code, filename = "file.tsx") => {
             const key = q.node.computed
               ? null
               : k.type === "Identifier"
-                ? k.name
-                : k.type === "StringLiteral"
-                  ? k.value
-                  : null
+              ? k.name
+              : k.type === "StringLiteral"
+              ? k.value
+              : null
             const v = q.get("value")
             const says = (word) =>
               (v.isStringLiteral() && v.node.value === word) ||
@@ -628,6 +655,8 @@ const countSource = (code, filename = "file.tsx") => {
       if (p.parentPath.isObjectPattern()) return
       const name = keyName(p.node)
       if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, ownerOf(p))
+      if (name && LINE_SIZE_KEY.test(name) && isFractionalLine(p.node.value))
+        add("thinLine", p.node, ownerOf(p))
     },
     // extra.className = "mt-[4]", extra["textClassName"] = ...: the same key,
     // set as a member
@@ -639,8 +668,8 @@ const countSource = (code, filename = "file.tsx") => {
         ? prop.type === "StringLiteral"
           ? prop.value
           : prop.type === "TemplateLiteral" && prop.expressions.length === 0
-            ? prop.quasis[0].value.cooked
-            : null
+          ? prop.quasis[0].value.cooked
+          : null
         : prop.name
       if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, null)
     },
@@ -797,12 +826,12 @@ const posix = (p) => p.split(path.sep).join("/")
 const appOnly = (rel, counted) => {
   if (!JEST_ONLY.test(rel)) return counted
   const counts = { ...counted.counts }
-  for (const m of APP_ONLY) counts[m] = 0
+  for (const m of JEST_BLIND) counts[m] = 0
   return {
     ...counted,
     counts,
     occurrences: counted.occurrences.filter(
-      (o) => !APP_ONLY.includes(o.metric)
+      (o) => !JEST_BLIND.includes(o.metric)
     ),
   }
 }
@@ -1014,6 +1043,14 @@ const compare = (
           to: to[m],
           rule: `${LABEL[m]} may only fall`,
         })
+      else if (m === "thinLine")
+        violations.push({
+          file,
+          metric: m,
+          from: from[m],
+          to: to[m],
+          rule: "fractional line widths may only fall; draw a line as <Divider /> (a filled View) and a border on a box as RULE_WEIGHT",
+        })
       else if (m === "colorLiteral")
         violations.push({
           file,
@@ -1126,13 +1163,17 @@ const formatReport = (
     )
     for (const v of vs)
       out.push(
-        `    ${v.file}:${v.line}  ${LABEL[v.metric]}${v.owner ? ` on <${v.owner}>` : ""}`
+        `    ${v.file}:${v.line}  ${LABEL[v.metric]}${
+          v.owner ? ` on <${v.owner}>` : ""
+        }`
       )
   }
   if (!problems && cmp.improved.length)
     out.push(
       "",
-      `  ${cmp.improved.length} file${cmp.improved.length === 1 ? "" : "s"} improved; run \`yarn ds:ratchet --update\` to lock it in`
+      `  ${cmp.improved.length} file${
+        cmp.improved.length === 1 ? "" : "s"
+      } improved; run \`yarn ds:ratchet --update\` to lock it in`
     )
   out.push("", `  totals: ${line(cmp.totals.from, cmp.totals.to)}`)
   if (cmp.dirsChanged.length) {
@@ -1190,7 +1231,9 @@ const main = (argv) => {
         const unknown = opts.strictMetrics.filter((m) => !METRICS.includes(m))
         if (unknown.length || !opts.strictMetrics.length)
           throw new Error(
-            `--strict-metrics takes ${METRICS.join(", ")}; got ${unknown.join(", ") || "nothing"}`
+            `--strict-metrics takes ${METRICS.join(", ")}; got ${
+              unknown.join(", ") || "nothing"
+            }`
           )
       } else if (a === "--allow")
         opts.allow.push(
@@ -1302,8 +1345,9 @@ const main = (argv) => {
     const next = toBaseline(result, dirs)
     fs.writeFileSync(opts.baseline, `${JSON.stringify(next, null, 2)}\n`)
     console.log(
-      `style-ratchet: wrote ${path.relative(process.cwd(), opts.baseline) || opts.baseline}\n` +
-        `  totals: ${line(full(cmp.totals.from), next.totals)}`
+      `style-ratchet: wrote ${
+        path.relative(process.cwd(), opts.baseline) || opts.baseline
+      }\n` + `  totals: ${line(full(cmp.totals.from), next.totals)}`
     )
     return 0
   }
