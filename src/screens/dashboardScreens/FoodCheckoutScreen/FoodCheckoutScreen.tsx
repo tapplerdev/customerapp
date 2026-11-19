@@ -266,8 +266,8 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       ? ("delivery" as const)
       : null
     : canSwitchToPickup
-    ? ("pickup" as const)
-    : null
+      ? ("pickup" as const)
+      : null
 
   const canSubmit =
     cart.items.length > 0 &&
@@ -348,12 +348,12 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       daysOut === 0
         ? t("today")
         : daysOut === 1
-        ? t("tomorrow")
-        : when.toLocaleDateString(isAr ? "ar-EG" : "en-GB", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-          })
+          ? t("tomorrow")
+          : when.toLocaleDateString(isAr ? "ar-EG" : "en-GB", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })
 
     if (!scheduledSlot) return dayLabel
 
@@ -457,7 +457,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               lon: pro.address.address.location.lng,
             }
           : null
-        : addressCoords ?? null,
+        : (addressCoords ?? null),
     })
   }
 

@@ -327,10 +327,10 @@ const nameOf = (n) =>
   n.type === "Identifier"
     ? n.name
     : n.type === "MemberExpression" &&
-      !n.computed &&
-      n.object.type === "Identifier"
-    ? `${n.object.name}.${n.property.name}`
-    : null
+        !n.computed &&
+        n.object.type === "Identifier"
+      ? `${n.object.name}.${n.property.name}`
+      : null
 
 /**
  * Re-bindings anywhere in the file, as [Y, X]: `const Y = X`; `const Y =
@@ -516,10 +516,10 @@ const colourProperty = (p) => {
   const name = computed
     ? null
     : key.type === "Identifier"
-    ? key.name
-    : key.type === "StringLiteral"
-    ? key.value
-    : null
+      ? key.name
+      : key.type === "StringLiteral"
+        ? key.value
+        : null
   if (!name || !/color$/i.test(name)) return null
   const value = stop.get("value")
   return p === value || p.isDescendant(value) ? stop : null
@@ -534,8 +534,8 @@ const parserPlugins = (filename) =>
   /\.tsx$/.test(filename)
     ? ["jsx", "typescript"]
     : /\.ts$/.test(filename)
-    ? ["typescript"]
-    : ["jsx"]
+      ? ["typescript"]
+      : ["jsx"]
 
 const countSource = (code, filename = "file.tsx") => {
   const parser = require("@babel/parser")
@@ -573,10 +573,10 @@ const countSource = (code, filename = "file.tsx") => {
     n.type === "Identifier"
       ? n.name
       : n.type === "MemberExpression" &&
-        !n.computed &&
-        n.object.type === "Identifier"
-      ? `${n.object.name}.${n.property.name}`
-      : null
+          !n.computed &&
+          n.object.type === "Identifier"
+        ? `${n.object.name}.${n.property.name}`
+        : null
   traverse(ast, {
     JSXOpeningElement(p) {
       const name = elementName(p.node.name)
@@ -612,10 +612,10 @@ const countSource = (code, filename = "file.tsx") => {
             const key = q.node.computed
               ? null
               : k.type === "Identifier"
-              ? k.name
-              : k.type === "StringLiteral"
-              ? k.value
-              : null
+                ? k.name
+                : k.type === "StringLiteral"
+                  ? k.value
+                  : null
             const v = q.get("value")
             const says = (word) =>
               (v.isStringLiteral() && v.node.value === word) ||
@@ -668,8 +668,8 @@ const countSource = (code, filename = "file.tsx") => {
         ? prop.type === "StringLiteral"
           ? prop.value
           : prop.type === "TemplateLiteral" && prop.expressions.length === 0
-          ? prop.quasis[0].value.cooked
-          : null
+            ? prop.quasis[0].value.cooked
+            : null
         : prop.name
       if (name && CLASSNAME_ATTR.test(name)) add("classKey", p.node, null)
     },

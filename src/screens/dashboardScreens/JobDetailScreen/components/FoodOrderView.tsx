@@ -205,20 +205,20 @@ const FoodOrderView: React.FC<Props> = ({
     end === "cancelledByCustomer"
       ? t("order_cancelled_descr")
       : end === "cancelledByPlace"
-      ? placeReasonKey && i18n.exists(placeReasonKey)
-        ? t(placeReasonKey)
-        : t("food_order_cancelled_by_place_descr")
-      : end === "cancelledByTappler"
-      ? t("food_order_cancelled_by_tappler_descr")
-      : end === "expired"
-      ? t("food_order_expired_descr")
-      : end === "closed"
-      ? t(
-          isPickup
-            ? "food_order_closed_descr_pickup"
-            : "food_order_closed_descr"
-        )
-      : ""
+        ? placeReasonKey && i18n.exists(placeReasonKey)
+          ? t(placeReasonKey)
+          : t("food_order_cancelled_by_place_descr")
+        : end === "cancelledByTappler"
+          ? t("food_order_cancelled_by_tappler_descr")
+          : end === "expired"
+            ? t("food_order_expired_descr")
+            : end === "closed"
+              ? t(
+                  isPickup
+                    ? "food_order_closed_descr_pickup"
+                    : "food_order_closed_descr"
+                )
+              : ""
 
   // Pro identity for the header card. Everything here already rides on the
   // job (CustomerJobDetailsRelations loads prosProfilePhoto / prosDocuments /
@@ -247,12 +247,12 @@ const FoodOrderView: React.FC<Props> = ({
   const headlineStatus = isCancelled
     ? t("cancelled")
     : isDeclined
-    ? t("order_declined_by_restaurant")
-    : isEndedByClock
-    ? t(end === "closed" ? "closed" : "expired")
-    : currentStep >= 0
-    ? stepLabels[STEPS[currentStep]]
-    : t("order_sent_to_pro")
+      ? t("order_declined_by_restaurant")
+      : isEndedByClock
+        ? t(end === "closed" ? "closed" : "expired")
+        : currentStep >= 0
+          ? stepLabels[STEPS[currentStep]]
+          : t("order_sent_to_pro")
 
   const [isDetailsOpen, setDetailsOpen] = useState(true)
 
@@ -454,8 +454,8 @@ const FoodOrderView: React.FC<Props> = ({
                     isCancelled || isDeclined
                       ? colors.red
                       : isEndedByClock
-                      ? colors.grey2
-                      : colors.green,
+                        ? colors.grey2
+                        : colors.green,
                 },
               ]}
               numberOfLines={1}

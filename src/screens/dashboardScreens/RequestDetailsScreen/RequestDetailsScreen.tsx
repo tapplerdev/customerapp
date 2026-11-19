@@ -97,12 +97,12 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const mapCoords = venueAt
     ? { lat: venueAt.latitude, lon: venueAt.longitude }
     : isPickup
-    ? proLocation
-      ? { lat: proLocation.lat, lon: proLocation.lng }
-      : null
-    : hasCoords
-    ? { lat, lon: lng }
-    : null
+      ? proLocation
+        ? { lat: proLocation.lat, lon: proLocation.lng }
+        : null
+      : hasCoords
+        ? { lat, lon: lng }
+        : null
 
   const subtotal = items.reduce((sum, line) => {
     const choices = (line.selectedOptions ?? []).reduce(

@@ -272,7 +272,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
   // lists it, or its only venue (utils/fixedLocation). Before the service has
   // loaded, the seed is taken as it is: SearchAnimationScreen checked it.
   const venueFor = useCallback(
-    (fixedLocationId: number | undefined, placeOfService: string | undefined) =>
+    (
+      fixedLocationId: number | undefined,
+      placeOfService: string | undefined
+    ) =>
       category
         ? pickedVenue(fixedLocationId, placeOfService, category)
         : fixedLocationId,
@@ -318,8 +321,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         ? undefined
         : foodFulfillment
       : seeded
-      ? initialPlaceOfService
-      : undefined
+        ? initialPlaceOfService
+        : undefined
     getPros(
       {
         categoryId,
@@ -467,10 +470,10 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         "pos" in opts
           ? opts.pos
           : isFoodCategory
-          ? foodFulfillment === "all"
-            ? undefined
-            : foodFulfillment
-          : currentPlaceOfService
+            ? foodFulfillment === "all"
+              ? undefined
+              : foodFulfillment
+            : currentPlaceOfService
       // A fixed location goes out only with its venue (without one, the
       // place is left out and the list is everyone who can serve the
       // address); it and online go without the address (utils/fixedLocation).
@@ -1244,8 +1247,8 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
                 ? foodFulfillment === "pickup"
                   ? t("available_for_pickup")
                   : foodFulfillment === "delivery"
-                  ? t("available_for_delivery")
-                  : t("available_pros")
+                    ? t("available_for_delivery")
+                    : t("available_pros")
                 : t("matches_based_on_answers")}
             </Text>
           )}

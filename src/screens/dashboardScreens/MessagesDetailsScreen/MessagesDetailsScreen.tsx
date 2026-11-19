@@ -742,10 +742,10 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
       ? moreJob.serviceCategory.nameAr
       : moreJob.serviceCategory.nameEn
     : chatPreview.chat.serviceCategory
-    ? isAr
-      ? chatPreview.chat.serviceCategory.nameAr
-      : chatPreview.chat.serviceCategory.nameEn
-    : ""
+      ? isAr
+        ? chatPreview.chat.serviceCategory.nameAr
+        : chatPreview.chat.serviceCategory.nameEn
+      : ""
 
   // Near-full-screen detent like Airbnb's Details sheet: fixed ✕ header,
   // content scrolls beneath it.
@@ -767,8 +767,8 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         .filter(Boolean)
         .join("  ·  ")
     : glanceSource?.dateType === "asap"
-    ? t("as_soon_as_possible")
-    : ""
+      ? t("as_soon_as_possible")
+      : ""
   // Coords chain mirrors RequestDetailsScreen (lat/latitude + lng/longitude
   // fallbacks on the nested address location).
   const glanceLoc: any = glanceSource?.address?.address?.location
@@ -802,8 +802,8 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         ? qa.options
             .map((o: any) =>
               isAr
-                ? o.labelAr ?? o.valueAr ?? o.label ?? o.value
-                : o.label ?? o.value
+                ? (o.labelAr ?? o.valueAr ?? o.label ?? o.value)
+                : (o.label ?? o.value)
             )
             .filter(Boolean)
             .join(", ")

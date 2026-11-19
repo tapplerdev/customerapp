@@ -160,10 +160,10 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
         emptied
           ? "food_menu_changed_emptied"
           : repair.removed.length
-          ? "food_menu_changed_removed"
-          : repair.repriced.length
-          ? "food_menu_changed_repriced"
-          : "food_menu_changed_updated"
+            ? "food_menu_changed_removed"
+            : repair.repriced.length
+              ? "food_menu_changed_repriced"
+              : "food_menu_changed_updated"
       )
     )
     setErrorVisible(true)
