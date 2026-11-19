@@ -2,8 +2,8 @@
  "from": "customerapp e30b19a src/: every ActionBtn element through proapp's testing/buttonLooks/harvest.ts (09d88735), no rewrites",
  "customerapp": "e30b19a711a58f27343e086d3e7bb8c889b9c40f",
  "capturedAt": "09d88735",
- "elements": 51,
- "files": 38,
+ "elements": 49,
+ "files": 36,
  "sites": [
   {
    "site": "components/CalendarTimeSheet/CalendarTimeSheet.tsx:112",
@@ -125,27 +125,6 @@
    "site": "screens/dashboardScreens/AllQuestionsScreen/AllQuestionsScreen.tsx:261",
    "conditions": [],
    "looks": 1,
-   "variants": [
-    "default"
-   ]
-  },
-  {
-   "site": "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
-   "conditions": [
-    "isFormReady",
-    "isLoading"
-   ],
-   "looks": 4,
-   "variants": [
-    "default"
-   ]
-  },
-  {
-   "site": "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
-   "conditions": [
-    "isLoading"
-   ],
-   "looks": 2,
    "variants": [
     "default"
    ]
@@ -1361,7 +1340,6 @@
     "disable": false
    },
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
     "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:192"
    ]
   },
@@ -1377,7 +1355,6 @@
     "disable": true
    },
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateSignInScreen.tsx:138",
     "screens/onboardingScreens/SignInEmailScreen/SignInEmailScreen.tsx:192"
    ]
   },
@@ -1393,7 +1370,6 @@
     "disable": true
    },
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ]
   },
@@ -1409,7 +1385,6 @@
     "disable": true
    },
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ]
   },
@@ -1425,7 +1400,6 @@
     "disable": false
    },
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ]
   },
@@ -1441,7 +1415,6 @@
     "disable": false
    },
    "sites": [
-    "screens/dashboardScreens/AuthGateScreen/GateRegisterScreen.tsx:222",
     "screens/onboardingScreens/RegisterScreen/RegisterScreen.tsx:326"
    ]
   },
