@@ -145,3 +145,25 @@ export type ListProsResponse = {
   page: number
   perPage: number
 }
+
+// Where the customer opened a pro's profile from (POST
+// /pros/profile-views/:proId, backend #517). Required on the profile's route,
+// so a new way in can't forget to say where it is.
+export type ProfileViewSource =
+  "listing" | "jobDetail" | "chat" | "requestSummary"
+
+export type RecordProfileViewRequest = {
+  proId: number
+  source: ProfileViewSource
+  // Sent only when it's a real service id: chat opens the profile with 0.
+  serviceCategoryId?: number
+}
+
+export type ProProfileViewType = {
+  id: number
+  proId: number
+  customerId: number
+  viewedAt: string
+  serviceCategoryId: number | null
+  source: ProfileViewSource
+}

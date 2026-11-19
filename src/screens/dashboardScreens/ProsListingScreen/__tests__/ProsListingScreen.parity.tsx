@@ -635,6 +635,7 @@ describe.each(PARITY_MATRIX)(
             params: expect.objectContaining({
               proId: PRO_INDIVIDUAL.id,
               serviceCategoryId: 301,
+              source: "listing",
             }),
           }),
           expect.objectContaining({

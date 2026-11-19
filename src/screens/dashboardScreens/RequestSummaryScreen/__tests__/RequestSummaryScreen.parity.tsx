@@ -383,6 +383,7 @@ describe("RequestSummaryScreen: presses", () => {
         expect(list[0].payload?.params).toEqual({
           proId: PRO_INDIVIDUAL.id,
           serviceCategoryId: CATEGORY.id,
+          source: "requestSummary",
         })
       } finally {
         session.unmount()

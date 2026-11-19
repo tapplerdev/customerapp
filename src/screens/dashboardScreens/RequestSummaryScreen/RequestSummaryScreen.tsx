@@ -345,6 +345,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
     navigation.navigate("ProProfileScreen", {
       proId: pro.id,
       serviceCategoryId: categoryId,
+      source: "requestSummary",
     })
   }
 

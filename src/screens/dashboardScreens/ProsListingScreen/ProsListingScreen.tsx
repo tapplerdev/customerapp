@@ -978,6 +978,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         navigation.navigate("ProProfileScreen", {
           proId: pro.id,
           serviceCategoryId: categoryId,
+          source: "listing",
           serviceCategories: pro.serviceCategories,
           // Food category: the profile shows a floating "Food Menu" pill
           ...(isFoodCategory && {

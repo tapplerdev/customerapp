@@ -23,7 +23,12 @@ import {
   CreateCustomerAddressRequest,
   CustomerSavedAddress,
 } from "types/auth"
-import { ListProsResponse, ProType } from "types/pro"
+import {
+  ListProsResponse,
+  ProProfileViewType,
+  ProType,
+  RecordProfileViewRequest,
+} from "types/pro"
 import {
   AreaGeometryResponse,
   FoodMenuType,
@@ -479,6 +484,24 @@ export const api = createApi({
           ? `${url}&serviceCategoryId=${serviceCategoryId}`
           : url
       },
+    }),
+
+    // One opening of a pro's profile (My Performance, backend #517). Signed-in
+    // customers only (a guest gets 401). ProProfileScreen sends it once per
+    // open, fire and forget. The service goes out only when it's a positive
+    // id: chat opens the profile with 0, which the backend refuses with a 400.
+    recordProfileView: builder.mutation<
+      ProProfileViewType,
+      RecordProfileViewRequest
+    >({
+      query: ({ proId, source, serviceCategoryId }) => ({
+        url: `/pros/profile-views/${proId}`,
+        method: "POST",
+        body:
+          serviceCategoryId && serviceCategoryId > 0
+            ? { source, serviceCategoryId }
+            : { source },
+      }),
     }),
 
     // hasMenu categories: the pro's latest APPROVED menu snapshot + delivery

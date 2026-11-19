@@ -245,6 +245,9 @@ export type RootStackParamList = {
   ProProfileScreen: {
     proId: number
     serviceCategoryId: number
+    // Where it was opened from, sent with the profile view (My Performance).
+    // Required, so a new way in can't forget it.
+    source: import("types/pro").ProfileViewSource
     serviceCategories?: import("types/pro").ProServiceCategoryType[]
     chatJobId?: number
     // Present when arriving from a food (hasMenu) listing: shows the
