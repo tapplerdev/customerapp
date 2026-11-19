@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   safeArea: {
@@ -12,15 +13,11 @@ export default StyleSheet.create({
   box: {
     width: 32,
   },
-  box2: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   input: {
     fontSize: 14,
     lineHeight: 22,
     color: colors.black,
-    borderBottomWidth: 0.7,
+    borderBottomWidth: RULE_WEIGHT,
     borderBottomColor: colors.grey19,
   },
 })

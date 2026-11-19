@@ -9,10 +9,6 @@ export default StyleSheet.create({
     width: 32,
     height: 32,
   },
-  box: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   mainModalTitle: {
     marginTop: 17,
   },

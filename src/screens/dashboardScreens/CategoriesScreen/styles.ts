@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
-import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   row: {
@@ -36,10 +35,6 @@ export default StyleSheet.create({
     borderTopRightRadius: 9999,
     borderBottomRightRadius: 9999,
     borderBottomLeftRadius: 9999,
-  },
-  box2: {
-    height: RULE_WEIGHT,
-    backgroundColor: colors.grey4,
   },
   noResultsFoundWrap: {
     paddingTop: 80,

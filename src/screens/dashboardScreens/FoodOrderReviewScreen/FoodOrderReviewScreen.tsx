@@ -35,7 +35,7 @@ import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
 
 import styles from "./styles"
 import { AppScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodOrderReviewScreen">
 
@@ -353,7 +353,7 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
               </DmView>
             ))}
 
-            <DmView style={[styles.box2, a.mt_14]} />
+            <Divider color={colors.grey14} style={[a.mt_14]} />
             {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
             {!isPickup &&
               totalsRow(

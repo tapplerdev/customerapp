@@ -39,7 +39,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodCheckoutScreen">
 
@@ -360,7 +360,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     const clock = (value: string) => {
       const [hour, minute] = value.split(":").map(Number)
       return {
-        text: `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""}`,
+        text: `${hour % 12 || 12}${
+          minute ? `:${String(minute).padStart(2, "0")}` : ""
+        }`,
         suffix: hour >= 12 ? t("pm") : t("am"),
       }
     }
@@ -724,7 +726,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
                 the customer could do about it. */}
             {canScheduleLater && (
               <>
-                <DmView style={[styles.box4, a.my_12]} />
+                <Divider color={colors.grey14} style={[a.my_12]} />
                 <DmView
                   style={[a.flex_row, a.items_center, a.justify_between]}
                   onPress={() => {
@@ -765,7 +767,9 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
           <DmView style={[a.p_14, styles.box2]}>
             {paymentOptions.map((option, index) => (
               <React.Fragment key={option.key}>
-                {index > 0 && <DmView style={[styles.box4, a.my_12]} />}
+                {index > 0 && (
+                  <Divider color={colors.grey14} style={[a.my_12]} />
+                )}
                 <DmView
                   style={[a.flex_row, a.items_center, a.justify_between]}
                   onPress={() => setPaymentMethod(option.key)}
@@ -819,7 +823,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
               </Text>
             </DmView>
           ))}
-          <DmView style={[styles.box5, a.mt_10]} />
+          <Divider color={colors.grey14} style={[a.mt_10]} />
           {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
           {/* Nothing is delivered on a pickup order, so the row would read
               "Free" — a claim, not an omission. */}

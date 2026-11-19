@@ -20,7 +20,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import HideIcon from "assets/icons/hide-password.svg"
 import FlagEgyptIcon from "assets/icons/flag-egypt.svg"
 import { AppKeyboardAwareScrollView } from "components/scroll"
-import { Text, Button, a } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a } from "@tappler/shared/src/ds"
 import { gateRegisterScreenStyles } from "./styles"
 
 interface FormValues {
@@ -159,7 +159,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
           </DmView>
           <DmView style={gateRegisterScreenStyles.box} />
         </DmView>
-        <DmView style={gateRegisterScreenStyles.box2} />
+        <Divider color={colors.grey19} />
 
         {/* Form */}
         <DmView style={[a.mt_24, gateRegisterScreenStyles.box3]}>
@@ -176,7 +176,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
             )}
             name="firstName"
           />
-          <DmView style={gateRegisterScreenStyles.box4} />
+          <Divider color={colors.grey1} />
           <Controller
             control={control}
             rules={{ required: true }}
@@ -191,7 +191,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
             )}
             name="lastName"
           />
-          <DmView style={gateRegisterScreenStyles.box4} />
+          <Divider color={colors.grey1} />
           <Controller
             control={control}
             rules={{ required: true }}
@@ -207,7 +207,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
             )}
             name="email"
           />
-          <DmView style={gateRegisterScreenStyles.box4} />
+          <Divider color={colors.grey1} />
           <Controller
             control={control}
             rules={{ required: true, minLength: 6 }}
@@ -232,7 +232,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
             )}
             name="password"
           />
-          <DmView style={gateRegisterScreenStyles.box4} />
+          <Divider color={colors.grey1} />
           <Controller
             control={control}
             rules={{
@@ -259,7 +259,7 @@ const GateRegisterScreen: React.FC<{ navigation: any; parentNav: any }> = ({
                     />
                   </DmView>
                 </DmView>
-                <DmView style={gateRegisterScreenStyles.box5} />
+                <Divider color={colors.grey1} />
               </DmView>
             )}
             name="mobileNumber"

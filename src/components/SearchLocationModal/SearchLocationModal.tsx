@@ -22,7 +22,7 @@ import LocationRedIcon from "assets/icons/location-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 import { AppFlatList } from "components/scroll"
-import { Text, a } from "@tappler/shared/src/ds"
+import { RULE_WEIGHT, Text, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type FlatCategory = ServiceCategoryType & {
@@ -420,7 +420,7 @@ const modalStyles = StyleSheet.create({
       shadowRadius: 4,
     },
     default: {
-      borderBottomWidth: 0.7,
+      borderBottomWidth: RULE_WEIGHT,
       borderBottomColor: colors.grey19,
     },
   }),

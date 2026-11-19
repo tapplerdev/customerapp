@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   safeArea: {
@@ -23,10 +24,10 @@ export default StyleSheet.create({
     borderTopRightRadius: 28,
     borderBottomRightRadius: 28,
     borderBottomLeftRadius: 28,
-    borderTopWidth: 0.5,
-    borderRightWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
+    borderRightWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
+    borderLeftWidth: RULE_WEIGHT,
     borderTopColor: colors.red,
     borderRightColor: colors.red,
     borderBottomColor: colors.red,

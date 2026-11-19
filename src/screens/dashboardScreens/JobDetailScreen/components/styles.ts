@@ -60,10 +60,10 @@ export default StyleSheet.create({
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
     borderBottomLeftRadius: 12,
-    borderTopWidth: 0.5,
-    borderRightWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
+    borderRightWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
+    borderLeftWidth: RULE_WEIGHT,
     borderTopColor: colors.grey14,
     borderRightColor: colors.grey14,
     borderBottomColor: colors.grey14,
@@ -79,10 +79,6 @@ export default StyleSheet.create({
     borderTopRightRadius: 9999,
     borderBottomRightRadius: 9999,
     borderBottomLeftRadius: 9999,
-  },
-  box5: {
-    height: 0.7,
-    backgroundColor: colors.grey14,
   },
 })
 

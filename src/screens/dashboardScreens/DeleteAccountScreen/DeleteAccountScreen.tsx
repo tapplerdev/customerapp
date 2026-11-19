@@ -11,7 +11,7 @@ import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { AppKeyboardAwareScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"DeleteAccountScreen">
@@ -47,7 +47,7 @@ const DeleteAccountScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {/*
         The reason field is MULTILINE, so its return key inserts a newline

@@ -52,7 +52,7 @@ import FilterSlidersIcon from "assets/icons/filter-sliders.svg"
 import ErrorModal from "components/ErrorModal"
 import { asksVenue, listingPlace, pickedVenue } from "utils/fixedLocation"
 import styles from "./styles"
-import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"ProsListingScreen">
 
@@ -1253,7 +1253,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
           </DmView>
         </DmView>
-        <DmView style={styles.box} />
+        <Divider color={colors.grey19} />
 
         {/* Job details banner + matches heading */}
         <DmView style={[atoms.px_16, atoms.pt_14, atoms.pb_8, styles.row]}>

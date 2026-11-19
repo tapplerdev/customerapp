@@ -2,8 +2,9 @@ import React from "react"
 import { DmView } from "@tappler/shared/src/components/UI"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
 import Animated, { FadeIn } from "react-native-reanimated"
-import { a } from "@tappler/shared/src/ds"
+import { Divider, a } from "@tappler/shared/src/ds"
 import { messagesSkeletonStyles } from "./styles"
+import colors from "@tappler/shared/src/styles/colors"
 
 const MessagesSkeletonCard: React.FC<{ delay: number }> = ({ delay }) => (
   <Animated.View entering={FadeIn.duration(400).delay(delay)}>
@@ -30,7 +31,7 @@ const MessagesSkeletonCard: React.FC<{ delay: number }> = ({ delay }) => (
         </DmView>
       </DmView>
     </DmView>
-    <DmView style={[messagesSkeletonStyles.box, a.border_b_1]} />
+    <Divider color={colors.grey4} style={{ marginEnd: 15 }} />
   </Animated.View>
 )
 

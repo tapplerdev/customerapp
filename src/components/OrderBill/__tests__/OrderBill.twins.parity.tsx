@@ -19,6 +19,7 @@ import {
   twinsFileFor,
   type CasesFile,
 } from "testing/harvest"
+import { withFrozenWidths, type FrozenWidth } from "testing/frozenRule"
 
 import { HAND_CASES, JOBS } from "../__fixtures__/OrderBill.handCases"
 
@@ -49,6 +50,12 @@ if (captureMode() !== "compare") {
 const FIXTURE = fixtureFileFor(path.join(__dirname, "OrderBill.parity.tsx"))
 const TWINS = twinsFileFor(__dirname, "OrderBill")
 const RTL_TEXT = { textAlign: "left" }
+/**
+ * The frozen proof holds the bill's divider 0.7 tall; it is a Divider now,
+ * RULE_WEIGHT tall (one line weight everywhere). Put back where it is drawn.
+ */
+const FROZEN_DIVIDER: FrozenWidth = (_style, key) =>
+  key === "height" ? 0.7 : undefined
 
 /** The class-name test's cases: the harvested sets over each bill, and the hand cases. */
 const casesOf = (): CasesFile => {
@@ -130,7 +137,10 @@ describe("OrderBill's twins draw what its class names drew", () => {
       platform: row.env.platform,
       navigation: "none",
     })
-    expectTwin(TWINS, row.id, parityName(row.id, row.env), tree, {
+    const { tree: frozen, swapped } = withFrozenWidths(tree, FROZEN_DIVIDER)
+    // a bill with no items draws no divider
+    expect(swapped).toBe(row.id.includes("no items") ? 0 : 1)
+    expectTwin(TWINS, row.id, parityName(row.id, row.env), frozen, {
       file: FIXTURE,
     })
   })

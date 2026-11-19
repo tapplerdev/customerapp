@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 const styles = StyleSheet.create({
   closeButton: {
@@ -69,8 +70,8 @@ const styles = StyleSheet.create({
     paddingBottom: 9,
     borderTopColor: colors.grey35,
     borderBottomColor: colors.grey35,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
   },
   button: {
     alignSelf: "auto",

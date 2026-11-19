@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   boxWrap: {
@@ -8,10 +9,10 @@ export default StyleSheet.create({
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
     borderBottomLeftRadius: 12,
-    borderTopWidth: 0.5,
-    borderRightWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
+    borderRightWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
+    borderLeftWidth: RULE_WEIGHT,
     borderTopColor: colors.grey5,
     borderRightColor: colors.grey5,
     borderBottomColor: colors.grey5,

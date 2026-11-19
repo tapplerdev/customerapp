@@ -28,7 +28,7 @@ import ChevronDownSolidIcon from "assets/icons/chevron-down-solid.svg"
 
 import styles from "./styles"
 import { AppScrollView } from "components/scroll"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 
 interface Props {
   job: JobType
@@ -373,7 +373,9 @@ const FoodOrderView: React.FC<Props> = ({
     const clock = (value: string) => {
       const [hour, minute] = value.split(":").map(Number)
       return {
-        text: `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""}`,
+        text: `${hour % 12 || 12}${
+          minute ? `:${String(minute).padStart(2, "0")}` : ""
+        }`,
         suffix: hour >= 12 ? t("pm") : t("am"),
       }
     }
@@ -655,7 +657,7 @@ const FoodOrderView: React.FC<Props> = ({
           </Text>
           {items.map(renderLine)}
 
-          <DmView style={[styles.box5, a.mt_14]} />
+          <Divider color={colors.grey14} style={[a.mt_14]} />
           {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
           {/* A pickup order carries no fee, and 0 renders as "Free". */}
           {!isPickup &&

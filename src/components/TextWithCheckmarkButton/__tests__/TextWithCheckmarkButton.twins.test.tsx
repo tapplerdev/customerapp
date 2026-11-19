@@ -47,6 +47,7 @@ import {
   readHarvest,
   twinsFileFor,
 } from "testing/harvest"
+import { FROZEN_BORDERS, withFrozenWidths } from "testing/frozenRule"
 /* eslint-enable import/first */
 
 if (captureMode() !== "compare") {
@@ -112,7 +113,12 @@ describe("TextWithCheckmarkButton's twins draw what its class names drew", () =>
   it.each(table)(
     "$id ($sites.0) [$env.language $env.platform]",
     ({ id, element, env }) => {
-      expectTwin(TWINS, id, parityName(id, env), hostTree(element, env), {
+      const { tree, swapped } = withFrozenWidths(
+        hostTree(element, env),
+        FROZEN_BORDERS(0.75)
+      )
+      expect(swapped).toBeGreaterThan(0)
+      expectTwin(TWINS, id, parityName(id, env), tree, {
         file: FIXTURE,
       })
     }

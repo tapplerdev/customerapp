@@ -18,7 +18,7 @@ import SearchIcon from "assets/icons/search-red.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { useServiceAddressFlow } from "hooks/useServiceAddressFlow"
 import { AppFlatList } from "components/scroll"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Divider, Text, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"CategoriesScreen">
@@ -226,7 +226,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </DmView>
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey4} />
 
       {/* Content: skeleton while loading/searching, results fade in per query */}
       {showSkeleton ? (

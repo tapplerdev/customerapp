@@ -12,7 +12,7 @@ import { useTypedSelector } from "store"
 import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import { AppScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 import ProfilePhotoPicker from "./components/ProfilePhotoPicker"
 import styles from "./styles"
 
@@ -80,7 +80,7 @@ const MyInformationScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       <AppScrollView
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24 }}

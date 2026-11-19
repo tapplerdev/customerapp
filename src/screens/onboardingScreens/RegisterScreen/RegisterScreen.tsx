@@ -22,7 +22,7 @@ import styles from "./styles"
 import HideIcon from "assets/icons/hide-password.svg"
 import FlagEgyptIcon from "assets/icons/flag-egypt.svg"
 import { AppKeyboardAwareScrollView } from "components/scroll"
-import { Text, Button, a } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"RegisterScreen">
 
@@ -182,7 +182,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
             </DmView>
             <DmView style={styles.box} />
           </DmView>
-          <DmView style={styles.box2} />
+          <Divider color={colors.grey19} />
 
           {/* Form */}
           <DmView style={[a.mt_24, styles.box3]}>
@@ -202,7 +202,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               name="firstName"
             />
-            <DmView style={styles.box4} />
+            <Divider color={colors.grey1} />
             <Controller
               control={control}
               rules={{ required: true }}
@@ -220,7 +220,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               name="lastName"
             />
-            <DmView style={styles.box4} />
+            <Divider color={colors.grey1} />
             <Controller
               control={control}
               rules={{ required: true }}
@@ -239,7 +239,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               name="email"
             />
-            <DmView style={styles.box4} />
+            <Divider color={colors.grey1} />
             <Controller
               control={control}
               rules={{ required: true, minLength: 6 }}
@@ -269,7 +269,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
               )}
               name="password"
             />
-            <DmView style={styles.box4} />
+            <Divider color={colors.grey1} />
             <Controller
               control={control}
               rules={{
@@ -297,7 +297,7 @@ const RegisterScreen: React.FC<Props> = ({ route, navigation }) => {
                       />
                     </DmView>
                   </DmView>
-                  <DmView style={styles.box5} />
+                  <Divider color={colors.grey1} />
                 </DmView>
               )}
               name="mobileNumber"

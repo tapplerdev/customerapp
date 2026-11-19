@@ -88,6 +88,8 @@ describe("counting", () => {
       // family="system", family={isAr ? "latin" : "system"}, and a *Type's
       familySystem: 3,
       colorLiteral: 5, // "#fff", rgba(), "white", "#000000", `#CC0000`
+      // height 0.7, borderWidth 0.75, borderBottomWidth hairlineWidth, width 0.3
+      thinLine: 4,
       primitives: 3, // the three <DmText> elements
       bridge: 0, // no <LegacyText> (style-ratchet-bridge has them)
       // the app-only counts have rows of their own (below)
@@ -275,6 +277,7 @@ describe("the ratchet", () => {
       legacy: 0,
       familySystem: 0,
       colorLiteral: 0,
+      thinLine: 0,
       primitives: 7,
       bridge: 0,
       ...appOnly,
@@ -285,6 +288,7 @@ describe("the ratchet", () => {
       legacy: 3,
       familySystem: 1,
       colorLiteral: 0,
+      thinLine: 0,
       primitives: 2,
       bridge: 0,
       ...appOnly,
@@ -489,6 +493,7 @@ describe("--update", () => {
       legacy: 0,
       familySystem: 0,
       colorLiteral: 1,
+      thinLine: 0,
       primitives: 7,
       bridge: 0,
       classKey: 0,
@@ -572,6 +577,35 @@ describe("CLI", () => {
       countSource("const s = { color: tag`\\unicode` }", "x.ts").counts
         .colorLiteral
     ).toBe(0)
+  })
+
+  it("fails a fractional line width a file adds, and lets one go", () => {
+    const root = path.join(tmp, "app")
+    const file = path.join(root, "src", "Line.tsx")
+    const baseline = path.join(tmp, "thin.json")
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    const write = (height) =>
+      fs.writeFileSync(
+        file,
+        `export const rule = { height: ${height}, borderTopWidth: 1 }\n`
+      )
+    write("0.5")
+    expect(run(["--update", "--root", root, "--baseline", baseline]).code).toBe(
+      0
+    )
+    // the same count passes, and one fewer is an improvement
+    expect(run(["--root", root, "--baseline", baseline]).code).toBe(0)
+    write("1")
+    expect(run(["--root", root, "--baseline", baseline]).code).toBe(0)
+    // a new one, in this file or another, fails
+    fs.writeFileSync(
+      file,
+      "export const rule = { height: 0.5, borderTopWidth: 0.3 }\n"
+    )
+    const { code, out } = run(["--root", root, "--baseline", baseline])
+    expect(code).toBe(1)
+    expect(out).toContain("fractional line widths may only fall")
+    expect(out).toContain("<Divider />")
   })
 
   it("exits 2 on a --strict glob that matches no file", () => {

@@ -8,7 +8,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Divider, Text, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"AboutAppScreen">
@@ -48,7 +48,7 @@ const AboutAppScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {/* Menu Items */}
       <DmView>
@@ -78,7 +78,7 @@ const AboutAppScreen: React.FC<Props> = ({ navigation }) => {
                 <ChevronRightIcon width={18} height={18} color={colors.red} />
               </DmView>
             </DmView>
-            {index < menuItems.length - 1 && <DmView style={styles.box2} />}
+            {index < menuItems.length - 1 && <Divider color={colors.grey19} />}
           </DmView>
         ))}
       </DmView>

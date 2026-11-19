@@ -31,7 +31,7 @@ import PlusIcon from "assets/icons/plus.svg"
 import TrashRedIcon from "assets/icons/trash-red.svg"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 
 type Props = RootStackScreenProps<"FoodCartScreen">
 
@@ -287,7 +287,7 @@ const FoodCartScreen: React.FC<Props> = ({ route, navigation }) => {
                   t("discount"),
                   `- ${formatMoney(orderDiscount)} ${t("EGP")}`
                 )}
-              <DmView style={[styles.box2, a.mt_14]} />
+              <Divider color={colors.grey14} style={[a.mt_14]} />
               {totalsRow(
                 t("order_total"),
                 `${formatMoney(total)} ${t("EGP")}`,

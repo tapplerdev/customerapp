@@ -8,10 +8,6 @@ export default StyleSheet.create({
   safeArea: {
     backgroundColor: colors.white,
   },
-  box: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   row: {
     paddingLeft: 15,
     paddingRight: 15,
@@ -30,12 +26,5 @@ export const messagesSkeletonStyles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
     paddingBottom: 13,
-  },
-  box: {
-    marginRight: 15,
-    borderTopColor: colors.grey4,
-    borderRightColor: colors.grey4,
-    borderBottomColor: colors.grey4,
-    borderLeftColor: colors.grey4,
   },
 })

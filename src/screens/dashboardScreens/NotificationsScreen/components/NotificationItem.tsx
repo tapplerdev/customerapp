@@ -5,8 +5,9 @@ import { useTranslation } from "react-i18next"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { localizeDateString } from "helpers/digits"
 import { NotificationsItemType } from "types/notification"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Divider, Text, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
+import colors from "@tappler/shared/src/styles/colors"
 
 interface Props {
   item: NotificationsItemType
@@ -53,7 +54,7 @@ const NotificationItem: React.FC<Props> = ({ item, onPress }) => {
           {item.body}
         </Text>
       </DmView>
-      <DmView style={styles.box} />
+      <Divider color={colors.grey19} />
     </DmView>
   )
 }

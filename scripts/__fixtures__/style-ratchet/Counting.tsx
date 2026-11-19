@@ -9,6 +9,8 @@ declare const MainModal: React.FC<any>
 declare const Button: React.FC<any>
 declare const px: (n: number) => number
 declare const isAr: boolean
+declare const RULE_WEIGHT: number
+declare const Svg: React.FC<any>
 
 const theme = { px }
 
@@ -39,6 +41,22 @@ export const Counted = () => (
 export const styles = StyleSheet.create({
   card: { shadowColor: "#000000", borderTopColor: `#CC0000` },
 })
+
+// Thin lines, counted: a border width on any side, a height or a width, a
+// number below 1 or StyleSheet.hairlineWidth.
+export const lines = StyleSheet.create({
+  rule: { height: 0.7 },
+  outline: { borderWidth: 0.75, borderBottomWidth: StyleSheet.hairlineWidth },
+  upright: { width: 0.3 },
+})
+
+// Not counted as thin lines: a whole number, RULE_WEIGHT, a percentage, zero,
+// an opacity, a stroke, and a minimum.
+export const notLines = StyleSheet.create({
+  box: { height: 1, borderWidth: RULE_WEIGHT, width: "50%", borderTopWidth: 0 },
+  faint: { opacity: 0.5, minHeight: 0.5 },
+})
+export const Icon = () => <Svg strokeWidth={0.7} />
 
 // Not counted: a colour prop on an element, transparent, a key that isn't a
 // colour, a destructuring default, a type, a non-legacy leading, a call that

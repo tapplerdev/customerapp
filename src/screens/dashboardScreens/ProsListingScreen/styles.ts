@@ -43,10 +43,6 @@ export default StyleSheet.create({
     borderBottomLeftRadius: 9999,
     height: 38,
   },
-  box: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   shortlistUpdatedNoticeWrap: {
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
