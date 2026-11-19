@@ -171,6 +171,7 @@ export const ROUTE_PARAMS: RouteParams = {
   ProProfileScreen: {
     proId: PRO_INDIVIDUAL.id,
     serviceCategoryId: CATEGORY.id,
+    source: "listing",
   },
   JobDetailScreen: { jobId: JOB.id },
   NotificationDetailsScreen: { notification: NOTIFICATION_UNREAD },

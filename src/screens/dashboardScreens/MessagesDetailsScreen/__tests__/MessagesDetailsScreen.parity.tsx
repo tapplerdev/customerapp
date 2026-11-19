@@ -742,6 +742,7 @@ describe("MessagesDetailsScreen, the list and the header", () => {
               params: {
                 proId: CHAT.pro.id,
                 serviceCategoryId: CHAT.serviceCategoryId,
+                source: "chat",
               },
             },
           },

@@ -414,6 +414,7 @@ describe("JobDetailScreen: presses", () => {
           proId: 1006,
           serviceCategoryId: 301,
           chatJobId: JOB.id,
+          source: "jobDetail",
         })
         await run(session, env, [
           (root) =>

@@ -644,6 +644,7 @@ const JobDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             navigation.navigate("ProProfileScreen", {
               proId: item.proId,
               serviceCategoryId: localJob?.serviceCategoryId,
+              source: "jobDetail",
               serviceCategories: pro.serviceCategories,
               ...(localJob?.status === "active" && { chatJobId: jobId }),
             })

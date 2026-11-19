@@ -1107,6 +1107,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
                   navigation.navigate("ProProfileScreen", {
                     proId: context.pro.id,
                     serviceCategoryId: context.serviceCategoryId || 0,
+                    source: "chat",
                   })
                 } catch (e) {
                   console.log("Failed to load pro profile:", e)

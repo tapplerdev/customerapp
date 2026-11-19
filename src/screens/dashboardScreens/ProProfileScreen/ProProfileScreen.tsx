@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import {
   Image,
   Modal,
@@ -20,7 +20,8 @@ import { parse, format } from "date-fns"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { RootStackScreenProps } from "navigation/types"
 import { ProWorkPhotoType } from "types/pro"
-import { useGetProProfileQuery, useLazyOpenChatQuery } from "services/api"
+import { api, useGetProProfileQuery, useLazyOpenChatQuery } from "services/api"
+import { store } from "store"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import colors from "@tappler/shared/src/styles/colors"
 import SvgUriContainer from "components/SvgUriContainer/SvgUriContainer"
@@ -78,6 +79,7 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const {
     proId,
     serviceCategoryId,
+    source,
     serviceCategories: passedServiceCategories,
     chatJobId,
     foodMenu,
@@ -95,6 +97,25 @@ const ProProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     serviceCategoryId,
   })
   const [openChat] = useLazyOpenChatQuery()
+
+  // One profile view per open (My Performance): sent the first time the
+  // profile is there to see, so a spinner or a failed load counts nothing.
+  // Signed-in customers only (a guest would get a 401). Fire and forget, as
+  // chatCache's markAllAsRead: track:false keeps no mutation state to
+  // re-render on, and the result never rejects, so a failure can't reach
+  // the screen. The ref also covers React running the effect twice.
+  const viewSent = useRef(false)
+  useEffect(() => {
+    if (!pro || viewSent.current) return
+    viewSent.current = true
+    if (!store.getState().auth.isAuth) return
+    store.dispatch(
+      api.endpoints.recordProfileView.initiate(
+        { proId, source, serviceCategoryId },
+        { track: false }
+      )
+    )
+  }, [pro, proId, source, serviceCategoryId])
 
   const handleMessage = async () => {
     try {
