@@ -143,5 +143,9 @@ export type ListProsResponse = {
   data: ProType[]
   total: number
   page: number
+  // The server's id for this search (backend #518), on page 1 for a
+  // signed-in customer only. The listing reports which of these pros' cards
+  // were seen under it (services/searchImpressions).
+  searchId?: string
   perPage: number
 }

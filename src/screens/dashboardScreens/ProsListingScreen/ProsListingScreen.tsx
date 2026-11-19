@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, View, ViewToken, StyleSheet } from "react-native"
-import { FlashList } from "@shopify/flash-list"
+import { FlashList, FlashListRef } from "@shopify/flash-list"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next"
-import { useFocusEffect } from "@react-navigation/native"
+import { useFocusEffect, useIsFocused } from "@react-navigation/native"
 import FastImage from "react-native-fast-image"
 
 import { DmView } from "@tappler/shared/src/components/UI"
@@ -32,6 +32,7 @@ import ProCard from "./components/ProCard"
 import TooltipComponent from "./components/TooltipComponent"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import { useAfterTransition } from "@tappler/shared/src/hooks/useAfterTransition"
+import { useSearchImpressions } from "hooks/useSearchImpressions"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 import {
   FiltersSheet,
@@ -1075,6 +1076,40 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     })
   }
 
+  // Search impressions (My Performance): a card counts once it has been on
+  // screen for 1 s under this search (services/searchImpressions). Only while
+  // the list is really on screen: focused (the profile is a fullScreenModal on
+  // top, so opening one blurs this), the questions-first gate down, no sheet
+  // over it (question flow, job details, filters, service and address
+  // search), and no refetch or profile overlay. The list stays mounted under
+  // all of those and FlashList's viewability is geometry only, so without
+  // this the top cards would count behind the question sheet.
+  const isFocused = useIsFocused()
+  const listOnScreen =
+    isFocused &&
+    questionsSettled &&
+    !questionsVisible &&
+    !allQuestionsVisible &&
+    !filtersVisible &&
+    !isSearchModalVisible &&
+    !isAddressModalVisible &&
+    !isRefetching &&
+    !isProfileLoading
+  const recordViewable = useSearchImpressions({
+    searchId: data?.searchId,
+    active: listOnScreen,
+  })
+
+  // FlashList v2 reports viewability by index and only when the set of
+  // indices changes (ViewabilityHelper's lastReportedViewableIndices). A
+  // refetch lands its new pros at the same indices, so without this the new
+  // search's top cards would never be reported. recomputeViewableItems clears
+  // what it last reported, so the list reports every viewable card again.
+  const listRef = useRef<FlashListRef<ProType>>(null)
+  useEffect(() => {
+    listRef.current?.recomputeViewableItems()
+  }, [data])
+
   // Strategy B: prefetch profiles of pros as they scroll into view, so they're
   // instant too. FlashList captures onViewableItemsChanged once and disallows
   // changing it, so the handler is a stable ref that calls the latest prefetch
@@ -1104,11 +1139,15 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     prefetchMenu,
   ])
 
+  // The same report feeds the search impressions (no second viewability
+  // config: the tracker adds its 800 ms to this one's 200 ms).
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      prefetchVisibleRef.current(
-        viewableItems.map((v) => v.item).filter(Boolean) as ProType[]
-      )
+      const items = viewableItems
+        .map((v) => v.item)
+        .filter(Boolean) as ProType[]
+      prefetchVisibleRef.current(items)
+      recordViewable(items.map((p) => p.id))
     }
   ).current
 
@@ -1289,6 +1328,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
           </DmView>
         ) : (
           <FlashList
+            ref={listRef}
             data={pros}
             renderItem={renderItem}
             keyExtractor={(item) => String(item.id)}

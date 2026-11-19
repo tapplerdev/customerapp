@@ -411,6 +411,22 @@ export const api = createApi({
       },
     }),
 
+    // The pros whose cards a signed-in customer saw on a listing, under its
+    // searchId (My Performance, backend #518). Sent by services/
+    // searchImpressions in batches, fire and forget, no retries: a 0
+    // `recorded` is normal (pros already counted, an old search).
+    recordSearchImpressions: builder.mutation<
+      { recorded: number },
+      // proIds: 1 to 100, unique.
+      { searchId: string; proIds: number[] }
+    >({
+      query: ({ searchId, proIds }) => ({
+        url: `/customers/service-search/${encodeURIComponent(searchId)}/impressions`,
+        method: "POST",
+        body: { proIds },
+      }),
+    }),
+
     createCustomerAddress: builder.mutation<
       CustomerSavedAddress,
       CreateCustomerAddressRequest
