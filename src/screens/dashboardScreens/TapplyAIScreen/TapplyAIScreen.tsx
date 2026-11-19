@@ -21,7 +21,7 @@ import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import TapplerLogo from "assets/icons/tappler-logo-red.svg"
 import SearchIcon from "assets/icons/search-red.svg"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { RULE_WEIGHT, Text, a, px } from "@tappler/shared/src/ds"
 import dsStyles from "./styles"
 
 type Props = RootStackScreenProps<"TapplyAIScreen">
@@ -116,7 +116,7 @@ const TapplyAIScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   searchInput: {
     borderRadius: 10,
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#D0D0D0",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

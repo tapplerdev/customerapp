@@ -34,7 +34,7 @@ import { foodOrderEnd, isReviewableJobPro } from "utils/foodOrderState"
 import TalabatiSkeleton from "./TalabatiSkeleton"
 import styles from "./styles"
 import { AppFlatList } from "components/scroll"
-import { Text, Button, a } from "@tappler/shared/src/ds"
+import { Divider, RULE_WEIGHT, Text, Button, a } from "@tappler/shared/src/ds"
 
 const TalabatiScreen: React.FC = () => {
   const { t, i18n } = useTranslation()
@@ -336,7 +336,7 @@ const TalabatiScreen: React.FC = () => {
                   a.items_center,
                   styles.row2,
                   a.overflow_hidden,
-                  { borderWidth: 0.75, borderColor: "#000" },
+                  { borderWidth: RULE_WEIGHT, borderColor: "#000" },
                 ]}
                 onPress={() => handleLeaveReview(item)}
               >
@@ -387,7 +387,7 @@ const TalabatiScreen: React.FC = () => {
           {t("talabati")}
         </Text>
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {!isAuth ? (
         <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>

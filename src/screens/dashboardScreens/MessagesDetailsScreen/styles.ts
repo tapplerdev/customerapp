@@ -169,7 +169,7 @@ export default StyleSheet.create({
   inputBarSheet: {
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderBottomWidth: 0,
     borderColor: "#EBEBEB",
   },
@@ -220,10 +220,6 @@ export default StyleSheet.create({
     borderBottomLeftRadius: 9999,
     backgroundColor: colors.red,
   },
-  box: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   box2: {
     backgroundColor: colors.grey26,
   },
@@ -264,7 +260,7 @@ export default StyleSheet.create({
   containerLength: {
     paddingTop: 11,
     paddingBottom: 11,
-    borderBottomWidth: 0.5,
+    borderBottomWidth: RULE_WEIGHT,
     borderTopColor: colors.grey29,
     borderRightColor: colors.grey29,
     borderBottomColor: colors.grey29,
@@ -310,10 +306,10 @@ export default StyleSheet.create({
   },
   row3: {
     marginLeft: 55,
-    borderTopWidth: 0.3,
-    borderRightWidth: 0.3,
-    borderBottomWidth: 0.3,
-    borderLeftWidth: 0.3,
+    borderTopWidth: RULE_WEIGHT,
+    borderRightWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
+    borderLeftWidth: RULE_WEIGHT,
     borderTopColor: colors.black,
     borderRightColor: colors.black,
     borderBottomColor: colors.black,
@@ -342,17 +338,11 @@ export default StyleSheet.create({
     marginRight: 5,
   },
   row6: {
-    borderTopWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
     borderTopColor: colors.grey4,
     borderRightColor: colors.grey4,
     borderBottomColor: colors.grey4,
     borderLeftColor: colors.grey4,
-  },
-  // the header's line where there is no request card: a filled View
-  // RULE_WEIGHT tall, not a border on an empty View (tappler-shared ds/rule.ts)
-  box6: {
-    height: RULE_WEIGHT,
-    backgroundColor: colors.grey4,
   },
   requestSentToProInfoWrap: {
     borderTopLeftRadius: 12,

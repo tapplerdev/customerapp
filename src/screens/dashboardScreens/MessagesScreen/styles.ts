@@ -8,10 +8,6 @@ export default StyleSheet.create({
   safeArea: {
     backgroundColor: colors.white,
   },
-  box: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   row: {
     paddingLeft: 15,
     paddingRight: 15,

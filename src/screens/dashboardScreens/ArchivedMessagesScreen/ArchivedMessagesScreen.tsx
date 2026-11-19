@@ -14,7 +14,7 @@ import MessagesSkeleton from "screens/dashboardScreens/MessagesScreen/MessagesSk
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import colors from "@tappler/shared/src/styles/colors"
 import { AppFlatList } from "components/scroll"
-import { Text, Button, a } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"ArchivedMessagesScreen">
@@ -91,7 +91,7 @@ const ArchivedMessagesScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {/* Archived list */}
       {isLoading ? (

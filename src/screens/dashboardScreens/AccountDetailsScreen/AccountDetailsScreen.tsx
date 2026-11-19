@@ -14,7 +14,7 @@ import AccountMenuItem from "screens/dashboardScreens/AccountScreen/components/A
 import { RootStackScreenProps } from "navigation/types"
 import colors from "@tappler/shared/src/styles/colors"
 import { useLazyGetCustomerMeQuery } from "services/api"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Divider, Text, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"AccountDetailsScreen">
@@ -54,7 +54,7 @@ const AccountDetailsScreen: React.FC<Props> = ({ navigation }) => {
         {/* Invisible spacer to center title */}
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {/* Menu Items */}
       <DmView>

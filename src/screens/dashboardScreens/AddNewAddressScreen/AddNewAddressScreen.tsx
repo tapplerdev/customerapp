@@ -10,7 +10,7 @@ import { useCreateCustomerAddressMutation } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import { takeFontStyles } from "@tappler/shared/src/helpers/helpers"
 import { AppKeyboardAwareScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 const disabledLookSubtleInverse = {
@@ -109,7 +109,7 @@ const AddNewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {/*
         KeyboardAwareScrollView, not a plain ScrollView, and flexGrow is exactly

@@ -27,7 +27,7 @@ export default StyleSheet.create({
     height: 40,
   },
   container: {
-    borderBottomWidth: 0.5,
+    borderBottomWidth: RULE_WEIGHT,
     borderBottomColor: colors.grey5,
   },
 })

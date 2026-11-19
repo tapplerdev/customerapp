@@ -18,7 +18,7 @@ import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 import { venueName, venuePoint } from "utils/fixedLocation"
 import styles from "./styles"
 
@@ -97,12 +97,12 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const mapCoords = venueAt
     ? { lat: venueAt.latitude, lon: venueAt.longitude }
     : isPickup
-      ? proLocation
-        ? { lat: proLocation.lat, lon: proLocation.lng }
-        : null
-      : hasCoords
-        ? { lat, lon: lng }
-        : null
+    ? proLocation
+      ? { lat: proLocation.lat, lon: proLocation.lng }
+      : null
+    : hasCoords
+    ? { lat, lon: lng }
+    : null
 
   const subtotal = items.reduce((sum, line) => {
     const choices = (line.selectedOptions ?? []).reduce(
@@ -267,7 +267,7 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 )
               })}
 
-              <DmView style={[styles.box2, a.mt_6, a.mb_8]} />
+              <Divider color={colors.grey14} style={[a.mt_6, a.mb_8]} />
               {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
               {!isPickup &&
                 totalsRow(

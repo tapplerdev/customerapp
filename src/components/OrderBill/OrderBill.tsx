@@ -4,6 +4,7 @@ import type { StyleProp, ViewStyle } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import {
+  Divider,
   Text,
   a,
   px,
@@ -12,7 +13,7 @@ import {
 } from "@tappler/shared/src/ds"
 import { formatMoney } from "store/cart/slice"
 import { JobType } from "types/job"
-import styles from "./styles"
+import colors from "@tappler/shared/src/styles/colors"
 
 interface Props {
   job: JobType
@@ -160,7 +161,7 @@ const OrderBill: React.FC<Props> = ({
         )
       })}
 
-      <DmView style={[styles.box, a.mt_6, a.mb_8]} />
+      <Divider color={colors.grey14} style={[a.mt_6, a.mb_8]} />
       {totalsRow(t("subtotal"), `${formatMoney(subtotal)} ${t("EGP")}`)}
       {!isPickup &&
         totalsRow(

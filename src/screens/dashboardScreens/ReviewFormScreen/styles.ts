@@ -13,7 +13,7 @@ export default StyleSheet.create({
     textAlignVertical: "top",
   },
   photoPreview: { width: 80, height: 80 },
-  uploadBorder: { borderWidth: 0.3, borderColor: "#000" },
+  uploadBorder: { borderWidth: RULE_WEIGHT, borderColor: "#000" },
   modalOverlay: { backgroundColor: "#000000A6" },
   closePosition: { top: 50, left: 18 },
   closeShadow: {

@@ -5,12 +5,12 @@ import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 export default StyleSheet.create({
   profilePhoto: { width: 85, height: 85 },
   featuredBadgeBorder: {
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#707070",
   },
   nameMarginTop: { marginTop: -2 },
   offerBadgeBorder: {
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderRadius: 12,
   },
   tabsWrapper: { width: 308 },

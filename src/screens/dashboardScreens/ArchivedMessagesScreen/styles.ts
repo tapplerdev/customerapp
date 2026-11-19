@@ -15,8 +15,4 @@ export default StyleSheet.create({
   box: {
     width: 32,
   },
-  box2: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
 })

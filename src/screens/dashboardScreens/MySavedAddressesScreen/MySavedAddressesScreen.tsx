@@ -13,7 +13,7 @@ import colors from "@tappler/shared/src/styles/colors"
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import ChevronRightIcon from "assets/icons/chevron-right.svg"
 import { AppScrollView } from "components/scroll"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"MySavedAddressesScreen">
@@ -79,7 +79,7 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       <AppScrollView
         contentContainerStyle={{ paddingTop: 4, flexGrow: 1 }}
@@ -140,7 +140,7 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
                 <ChevronRightIcon width={18} height={18} color={colors.red} />
               </DmView>
             </DmView>
-            <DmView style={[styles.box2, { marginStart: 16 }]} />
+            <Divider color={colors.grey19} style={[{ marginStart: 16 }]} />
           </DmView>
         ))}
 

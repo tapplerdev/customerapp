@@ -1,6 +1,7 @@
 import { Platform, StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
 import { TRUST_STICKER_GAP } from "@tappler/shared/src/constants/trustSticker"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   cardShadow: {
@@ -11,7 +12,7 @@ export default StyleSheet.create({
     elevation: 5,
   },
   featuredBadgeBorder: {
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#707070",
   },
   /**
@@ -30,7 +31,7 @@ export default StyleSheet.create({
    * Android simply drops the shadow instead of faking a directional one.
    */
   buttonShadow: {
-    borderWidth: 0.3,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#707070",
     ...Platform.select({
       ios: {

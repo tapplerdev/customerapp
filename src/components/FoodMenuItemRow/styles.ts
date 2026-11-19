@@ -1,5 +1,6 @@
 import { Dimensions, StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 const imageSize = Dimensions.get("window").width / 3.23
 
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingBottom: 23,
-    borderBottomWidth: 0.5,
+    borderBottomWidth: RULE_WEIGHT,
     borderBottomColor: colors.grey14,
   },
   text: {

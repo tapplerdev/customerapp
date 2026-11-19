@@ -19,7 +19,7 @@ import ArchivedIcon from "assets/icons/archived.svg"
 import NoMessagesIcon from "assets/icons/no-messages.svg"
 import MessagesSkeleton from "./MessagesSkeleton"
 import { AppFlatList } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
@@ -135,7 +135,7 @@ const MessagesScreen: React.FC = () => {
       </DmView>
       {!isAuth ? (
         <>
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
           <DmView style={[a.flex_1, a.items_center, a.justify_center, a.px_40]}>
             <Text
               size={16}

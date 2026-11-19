@@ -56,10 +56,6 @@ export default StyleSheet.create({
   safeArea: {
     backgroundColor: colors.white,
   },
-  box2: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
 })
 
 export const talabatiSkeletonStyles = StyleSheet.create({

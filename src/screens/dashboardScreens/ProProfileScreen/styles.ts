@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
-import { color } from "@tappler/shared/src/ds"
+import { RULE_WEIGHT, color } from "@tappler/shared/src/ds"
 
 /** The account type pill's and the Featured sticker's height (#522). */
 export const PILL_HEIGHT = 24
@@ -57,7 +57,7 @@ export default StyleSheet.create({
   },
   animated: {
     backgroundColor: colors.white,
-    borderBottomWidth: 0.3,
+    borderBottomWidth: RULE_WEIGHT,
     borderTopColor: colors.grey2,
     borderRightColor: colors.grey2,
     borderBottomColor: colors.grey2,
@@ -92,7 +92,7 @@ export default StyleSheet.create({
   // Payments, Social Media): half a point, down from the full point
   // `border-t-1` drew. Its colour is each section's own grey53. Mirrors
   // proapp's preview of this page: keep in sync.
-  sectionRule: { borderTopWidth: 0.5 },
+  sectionRule: { borderTopWidth: RULE_WEIGHT },
   boxWrap: {
     paddingTop: 11,
     borderTopColor: colors.grey53,

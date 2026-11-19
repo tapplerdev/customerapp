@@ -14,7 +14,7 @@ import { useUpdateCustomerMutation } from "services/api"
 import ErrorModal from "components/ErrorModal"
 import SuccessModal from "components/SuccessModal"
 import { AppScrollView } from "components/scroll"
-import { Text, Button, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 const disabledLookSubtleInverse = {
@@ -104,7 +104,7 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
         </DmView>
         <DmView style={styles.box} />
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       <AppScrollView
         contentContainerStyle={{
@@ -126,7 +126,7 @@ const UpdateEmailScreen: React.FC<Props> = ({ navigation }) => {
               {currentEmail}
             </Text>
           </DmView>
-          <DmView style={styles.box2} />
+          <Divider color={colors.grey19} />
         </DmView>
 
         {/* Your new email address */}

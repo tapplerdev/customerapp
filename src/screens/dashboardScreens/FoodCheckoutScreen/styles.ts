@@ -4,7 +4,7 @@ import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 const styles = StyleSheet.create({
   notesBorder: {
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: colors.grey14,
     borderRadius: 12,
   },
@@ -49,10 +49,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
     borderBottomLeftRadius: 8,
-    borderTopWidth: 0.5,
-    borderRightWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
+    borderRightWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
+    borderLeftWidth: RULE_WEIGHT,
     borderTopColor: colors.red,
     borderRightColor: colors.red,
     borderBottomColor: colors.red,
@@ -77,10 +77,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
     borderBottomLeftRadius: 12,
-    borderTopWidth: 0.5,
-    borderRightWidth: 0.5,
-    borderBottomWidth: 0.5,
-    borderLeftWidth: 0.5,
+    borderTopWidth: RULE_WEIGHT,
+    borderRightWidth: RULE_WEIGHT,
+    borderBottomWidth: RULE_WEIGHT,
+    borderLeftWidth: RULE_WEIGHT,
     borderTopColor: colors.grey14,
     borderRightColor: colors.grey14,
     borderBottomColor: colors.grey14,
@@ -93,10 +93,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     backgroundColor: colors.grey58,
   },
-  box4: {
-    height: RULE_WEIGHT,
-    backgroundColor: colors.grey14,
-  },
   text: {
     marginTop: 3,
   },
@@ -106,10 +102,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 12,
     borderBottomLeftRadius: 12,
     backgroundColor: colors.grey36,
-  },
-  box5: {
-    height: 0.7,
-    backgroundColor: colors.grey14,
   },
 })
 

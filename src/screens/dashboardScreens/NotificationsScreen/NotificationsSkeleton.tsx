@@ -2,8 +2,9 @@ import React from "react"
 
 import { DmView } from "@tappler/shared/src/components/UI"
 import SkeletonLoader from "components/SkeletonLoader/SkeletonLoader"
-import { a } from "@tappler/shared/src/ds"
+import { Divider, a } from "@tappler/shared/src/ds"
 import { notificationsSkeletonStyles } from "./styles"
+import colors from "@tappler/shared/src/styles/colors"
 
 // 1:1 with proapp's NotificationsSkeletonScreen: five static rows with varied
 // title/body widths (some notifications wrap to more lines), bar heights
@@ -38,7 +39,7 @@ const NotificationsSkeleton: React.FC = () => (
             </DmView>
           ))}
         </DmView>
-        <DmView style={notificationsSkeletonStyles.box} />
+        <Divider color={colors.grey19} />
       </DmView>
     ))}
   </DmView>

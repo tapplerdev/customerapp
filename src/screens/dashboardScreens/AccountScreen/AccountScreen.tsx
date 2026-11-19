@@ -28,8 +28,9 @@ import TapplerLogoIcon from "assets/icons/tappler-logo-red.svg"
 import authImg from "assets/images/auth.png"
 import AccountMenuItem from "./components/AccountMenuItem"
 import { AppScrollView } from "components/scroll"
-import { Text, Button, a } from "@tappler/shared/src/ds"
+import { Divider, Text, Button, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
+import colors from "@tappler/shared/src/styles/colors"
 
 const APP_VERSION = "1"
 const APP_BUILD = "25"
@@ -139,7 +140,7 @@ const AccountScreen: React.FC = () => {
           </DmView>
 
           {/* Divider */}
-          <DmView style={[styles.box, a.mt_32]} />
+          <Divider color={colors.grey19} style={[a.mt_32]} />
 
           {/* Guest-accessible menu items */}
           <DmView>
@@ -238,7 +239,7 @@ const AccountScreen: React.FC = () => {
             </Text>
           </DmView>
         </DmView>
-        <DmView style={styles.box} />
+        <Divider color={colors.grey19} />
 
         {/* Menu Items */}
         <DmView>

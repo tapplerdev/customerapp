@@ -2,7 +2,7 @@ import React from "react"
 import type { StyleProp, ViewStyle } from "react-native"
 
 import { DmView } from "@tappler/shared/src/components/UI"
-import { Text, a, type NoShorthands } from "@tappler/shared/src/ds"
+import { RULE_WEIGHT, Text, a, type NoShorthands } from "@tappler/shared/src/ds"
 
 import styles from "./styles"
 import CheckmarkIcon from "assets/icons/check-mark.svg"
@@ -34,7 +34,7 @@ const TextWithCheckmarkButton: React.FC<TextWithCheckmarkButtonProps> = ({
         style,
         {
           borderColor: isSelected ? "#CC0000" : "#000000",
-          borderWidth: 0.75,
+          borderWidth: RULE_WEIGHT,
           borderRadius: 10,
           overflow: "hidden",
         },

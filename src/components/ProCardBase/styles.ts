@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
 import { TRUST_STICKER_GAP } from "@tappler/shared/src/constants/trustSticker"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   cardShadow: {
@@ -9,16 +10,16 @@ export default StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 6,
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#B7B7B7",
   },
   profilePhoto: { width: 85, height: 85 },
   featuredBadgeBorder: {
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#707070",
   },
   offerBadgeBorder: {
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderRadius: 12,
   },
   triangleOuter: {
@@ -47,7 +48,7 @@ export default StyleSheet.create({
   },
   notesBubble: {
     backgroundColor: "#E4E4E4",
-    borderWidth: 0.5,
+    borderWidth: RULE_WEIGHT,
     borderColor: "#707070",
   },
   buttonShadow: {

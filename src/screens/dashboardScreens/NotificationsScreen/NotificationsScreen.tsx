@@ -21,7 +21,7 @@ import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import NotificationItem from "./components/NotificationItem"
 import NotificationsSkeleton from "./NotificationsSkeleton"
 import { AppFlatList } from "components/scroll"
-import { Text, a } from "@tappler/shared/src/ds"
+import { Divider, Text, a } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 const PER_PAGE = 20
@@ -223,10 +223,10 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           </DmView>
         ) : (
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
         )}
       </DmView>
-      <DmView style={styles.box2} />
+      <Divider color={colors.grey19} />
 
       {isLoading ? (
         <NotificationsSkeleton />

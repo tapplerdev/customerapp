@@ -11,7 +11,7 @@ import { useDeleteCustomerAddressMutation } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 import { HIT_SLOP_DEFAULT } from "@tappler/shared/src/styles/helpersStyles"
 import { AppScrollView } from "components/scroll"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"ViewAddressScreen">
@@ -68,7 +68,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           </Text>
         </DmView>
       </DmView>
-      <DmView style={styles.box} />
+      <Divider color={colors.grey19} />
 
       <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingTop: 20 }}
@@ -87,7 +87,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {name}
           </Text>
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
         </DmView>
 
         {/* Address */}
@@ -103,7 +103,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {streetAddress || "-"}
           </Text>
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
         </DmView>
 
         {/* City */}
@@ -119,7 +119,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {city || "-"}
           </Text>
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
         </DmView>
 
         {/* Governorate */}
@@ -135,7 +135,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {governorate || "-"}
           </Text>
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
         </DmView>
 
         {/* Place Type */}
@@ -151,7 +151,7 @@ const ViewAddressScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text size={14} leading="legacy" style={[a.pb_8, a.px_24]}>
             {type || "-"}
           </Text>
-          <DmView style={styles.box} />
+          <Divider color={colors.grey19} />
         </DmView>
       </AppScrollView>
 

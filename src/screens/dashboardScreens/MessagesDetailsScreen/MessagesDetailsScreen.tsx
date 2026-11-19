@@ -80,7 +80,7 @@ import { useTypedSelector } from "store"
 import colors from "@tappler/shared/src/styles/colors"
 import styles from "./styles"
 import { AppFlatList, AppScrollView } from "components/scroll"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 
 // Short, soft reflow when the input bar swaps its bottom padding as the
 // keyboard comes and goes. Kept in lockstep with proapp.
@@ -454,7 +454,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
           />
         </DmView>
 
-        <DmView style={[styles.box, a.mx_14]} />
+        <Divider color={colors.grey19} style={[a.mx_14]} />
 
         {/* Upload file option */}
         <DmView
@@ -467,7 +467,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
           </Text>
         </DmView>
 
-        <DmView style={[styles.box, { marginStart: 18 }]} />
+        <Divider color={colors.grey19} style={[{ marginStart: 18 }]} />
 
         {/* Location option */}
         <DmView
@@ -742,10 +742,10 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
       ? moreJob.serviceCategory.nameAr
       : moreJob.serviceCategory.nameEn
     : chatPreview.chat.serviceCategory
-      ? isAr
-        ? chatPreview.chat.serviceCategory.nameAr
-        : chatPreview.chat.serviceCategory.nameEn
-      : ""
+    ? isAr
+      ? chatPreview.chat.serviceCategory.nameAr
+      : chatPreview.chat.serviceCategory.nameEn
+    : ""
 
   // Near-full-screen detent like Airbnb's Details sheet: fixed ✕ header,
   // content scrolls beneath it.
@@ -767,8 +767,8 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         .filter(Boolean)
         .join("  ·  ")
     : glanceSource?.dateType === "asap"
-      ? t("as_soon_as_possible")
-      : ""
+    ? t("as_soon_as_possible")
+    : ""
   // Coords chain mirrors RequestDetailsScreen (lat/latitude + lng/longitude
   // fallbacks on the nested address location).
   const glanceLoc: any = glanceSource?.address?.address?.location
@@ -802,8 +802,8 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         ? qa.options
             .map((o: any) =>
               isAr
-                ? (o.labelAr ?? o.valueAr ?? o.label ?? o.value)
-                : (o.label ?? o.value)
+                ? o.labelAr ?? o.valueAr ?? o.label ?? o.value
+                : o.label ?? o.value
             )
             .filter(Boolean)
             .join(", ")
@@ -884,7 +884,9 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
         {context.offerAmount != null && (
           <DmView style={[a.self_start, styles.textWrap2, a.px_10, a.mt_8]}>
             <Text size={11} weight="semibold" leading="tight" color="inverse">
-              {`${t("offer")} · ${formatMoney(context.offerAmount)} ${t("EGP")}`}
+              {`${t("offer")} · ${formatMoney(context.offerAmount)} ${t(
+                "EGP"
+              )}`}
             </Text>
           </DmView>
         )}
@@ -1326,7 +1328,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
               </Text>
             </DmView>
           )}
-          <DmView style={styles.box6} />
+          <Divider color={colors.grey4} />
         </DmView>
 
         {/* Messages list */}

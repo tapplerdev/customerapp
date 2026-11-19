@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 const THUMB = 88
 
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   container: {
-    borderBottomWidth: 0.5,
+    borderBottomWidth: RULE_WEIGHT,
     borderBottomColor: colors.grey14,
   },
   text: {
@@ -75,10 +76,6 @@ const styles = StyleSheet.create({
   },
   box: {
     width: 32,
-  },
-  box2: {
-    height: 0.7,
-    backgroundColor: colors.grey14,
   },
 })
 

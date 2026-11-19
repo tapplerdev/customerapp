@@ -11,7 +11,7 @@ import { RootStackScreenProps } from "navigation/types"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import { AppScrollView } from "components/scroll"
-import { Text, a, px } from "@tappler/shared/src/ds"
+import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"NotificationDetailsScreen">
@@ -55,7 +55,7 @@ const NotificationDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </Text>
         </DmView>
       </DmView>
-      <DmView style={styles.box} />
+      <Divider color={colors.grey19} />
 
       <AppScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}

@@ -1,9 +1,10 @@
 import { StyleSheet } from "react-native"
 import colors from "@tappler/shared/src/styles/colors"
+import { RULE_WEIGHT } from "@tappler/shared/src/ds"
 
 export default StyleSheet.create({
   borderBase: {
-    borderWidth: 0.75,
+    borderWidth: RULE_WEIGHT,
     borderRadius: 10,
   },
   checkmarkText: { color: "#CC0000", fontSize: 16, fontWeight: "bold" },

@@ -13,10 +13,6 @@ export default StyleSheet.create({
     left: 0,
     right: 0,
   },
-  box: {
-    height: 0.7,
-    backgroundColor: colors.grey19,
-  },
   text: {
     marginTop: 17,
   },
