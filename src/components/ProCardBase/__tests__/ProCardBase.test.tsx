@@ -197,6 +197,73 @@ describe("ProCardBase: the OFFERS box", () => {
   })
 })
 
+const trustDoc = (id: number) => ({
+  id,
+  type: "trust",
+  status: "approved",
+  trustDocumentData: {
+    trustProduct: {
+      pictureEn: `trust-en-${id}.svg`,
+      pictureAr: `trust-ar-${id}.svg`,
+    },
+  },
+})
+
+const renderTrust = () => {
+  let renderer!: TestRenderer.ReactTestRenderer
+  act(() => {
+    renderer = TestRenderer.create(
+      <ProCardBase
+        displayName="Omar Hassan"
+        isCompany={false}
+        overallScore={4}
+        reviewsCount={3}
+        isAr={i18n.language === "ar"}
+        trustDocs={[trustDoc(1), trustDoc(2)]}
+        showSelectPassButtons
+      />
+    )
+  })
+  return renderer.toJSON() as Node
+}
+
+/*
+ * The trust sticker's art is not the 180 x 24 slot's shape and
+ * react-native-svg centres it, so it sat ~20pt in from the card's start
+ * edge. The card pins it: left in English, right in Arabic. Never through
+ * the trim, which draws the CMS art (artboard coordinates) off the canvas.
+ */
+describe("ProCardBase: the trust stickers", () => {
+  const placementOf = (n: Node) => [
+    n.props.uri,
+    n.props.preserveAspectRatio,
+    !!n.props.autoTrimLeftPadding,
+  ]
+
+  it("pins the art to the left edge in English, untrimmed", async () => {
+    await act(() => i18n.changeLanguage("en"))
+    const card = renderTrust()
+
+    const art = findAll(card, (n) => n.type === "SvgUriContainer")
+    expect(art.map(placementOf)).toEqual([
+      ["trust-en-1.svg", "xMinYMid meet", false],
+      ["trust-en-2.svg", "xMinYMid meet", false],
+    ])
+  })
+
+  it("pins the art to the right edge in Arabic, the start edge, untrimmed", async () => {
+    await act(() => i18n.changeLanguage("ar"))
+    const card = renderTrust()
+
+    const art = findAll(card, (n) => n.type === "SvgUriContainer")
+    expect(art.map(placementOf)).toEqual([
+      ["trust-ar-1.svg", "xMaxYMid meet", false],
+      ["trust-ar-2.svg", "xMaxYMid meet", false],
+    ])
+    await act(() => i18n.changeLanguage("en"))
+  })
+})
+
 describe("ProCardBase: the rating", () => {
   beforeAll(async () => {
     await act(() => i18n.changeLanguage("en"))
