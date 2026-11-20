@@ -247,7 +247,11 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
 
       {/* Trust badges: no box round them, each slot as tall as its art
           (#522; the art is 143 x 19, so 150 wide is 20 tall), so two sit
-          side by side on a 375pt phone; a third wraps. */}
+          side by side on a 375pt phone; a third wraps. The art is not the
+          slot's shape and react-native-svg centres it, so it sat ~20pt in
+          from the start edge: it is pinned left in English, right in Arabic.
+          Not autoTrimLeftPadding: the CMS art is in artboard coordinates and
+          the trim draws it off the canvas, a blank slot. */}
       {trustDocs.length > 0 && (
         <DmView style={[a.mt_10, styles.trustRow]}>
           {trustDocs.map((doc) => {
@@ -261,6 +265,9 @@ const ProCardBase: React.FC<ProCardBaseProps> = ({
                     width={TRUST_STICKER_WIDTH}
                     height={TRUST_STICKER_HEIGHT}
                     uri={imageUrl}
+                    preserveAspectRatio={
+                      isAr ? "xMaxYMid meet" : "xMinYMid meet"
+                    }
                   />
                 ) : (
                   <Text

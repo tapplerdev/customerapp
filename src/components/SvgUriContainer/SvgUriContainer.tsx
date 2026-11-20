@@ -16,6 +16,11 @@ interface Props {
    *  Only for stickers that line up against a column of text. In a centred or
    *  justify-around row this pushes everything off to one side. */
   pinLeft?: boolean
+  /** Where the art sits in its box when the two aren't the same shape, as the
+   *  SVG attribute ("xMinYMid meet" pins it to the left edge). Without it
+   *  react-native-svg centres the art, leaving the spare width on both sides.
+   *  It only places the art: the drawing itself is never moved or cropped. */
+  preserveAspectRatio?: string
   /** The art could not be loaded (offline before it was cached, a bad
    *  upload): the container draws nothing. Same prop as proapp's. */
   onError?: () => void
@@ -33,6 +38,7 @@ const SvgUriContainer: React.FC<Props> = ({
   height,
   autoTrimLeftPadding = false,
   pinLeft = false,
+  preserveAspectRatio,
   onError,
 }) => {
   // Read when the load settles, so a new callback each render doesn't refetch.
@@ -73,6 +79,8 @@ const SvgUriContainer: React.FC<Props> = ({
       xml={processedXml}
       width={width || 100}
       {...(height && { height })}
+      // SvgXml's own props override the root <svg>'s attributes.
+      {...(preserveAspectRatio && { preserveAspectRatio })}
     />
   )
 }
