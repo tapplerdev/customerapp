@@ -208,8 +208,11 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
     let title = ""
     let subtitle = ""
     let titleColor: "primary" | "brand" = "primary"
+    // An urgent service asks no timing (no dateType, no day): it goes out
+    // now, which the app calls as soon as possible everywhere else too.
+    const isUrgent = !dateType && !selectedDate
 
-    if (dateType === "asap") {
+    if (dateType === "asap" || isUrgent) {
       iconBg = RED
       iconContent = (
         <Text size={20} leading="legacy" family="system">
@@ -240,7 +243,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       title = t("within_a_week")
       const deadline = moment().add(7, "days").format("ddd, MMM D")
       subtitle = t("by_deadline", { deadline })
-    } else if (dateType === "notDecided" || !dateType) {
+    } else if (dateType === "notDecided") {
       iconBg = BG2
       iconContent = (
         <Text size={20} leading="legacy" color="tertiary" family="system">
@@ -303,7 +306,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
               a.mr_12,
               {
                 backgroundColor: iconBg,
-                ...(dateType === "notDecided" || !dateType
+                ...(dateType === "notDecided"
                   ? {
                       borderWidth: 1,
                       borderStyle: "dashed",
