@@ -3,6 +3,7 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
+  copy,
   openScreen,
   pressIcon,
   rowsByPlatform,
@@ -29,7 +30,8 @@ import {
 /*
  * RequestDetailsScreen: the record of a request, opened from JobDetail's
  * ••• menu. A service request (as soon as possible; a dated slot with every
- * kind of answer; undecided with no address and no pin) and a food order
+ * kind of answer; undecided with no address and no pin; within a week, an old
+ * request's within 48 hours, an urgent one with no timing) and a food order
  * (delivery with a note, options and a discount; free delivery; a pickup,
  * whose map outlines the pro's district, with and without that district
  * resolving), each behind the loading overlay it opens on.
@@ -71,6 +73,12 @@ const SERVICE_UNDECIDED: JobType = {
   questionsAnswers: [],
 }
 
+const SERVICE_WEEK: JobType = { ...JOB, dateType: "week" }
+// An old request: new ones can't pick hours48 (release 11-21).
+const SERVICE_48_HOURS: JobType = { ...JOB, dateType: "hours48" }
+// An urgent service asks no timing, so its request has no dateType.
+const SERVICE_URGENT: JobType = { ...JOB, dateType: undefined }
+
 const SERVICE_NO_PIN: JobType = {
   ...JOB,
   address: { address: { city: "Dokki", governorate: "Giza" } },
@@ -95,6 +103,9 @@ const CASES: Case[] = [
   { state: "service, a dated slot with every answer", job: SERVICE_DATED },
   { state: "service, a date and no slot", job: SERVICE_DATE_ONLY },
   { state: "service, undecided, no address", job: SERVICE_UNDECIDED },
+  { state: "service, within a week", job: SERVICE_WEEK },
+  { state: "service, within 48 hours", job: SERVICE_48_HOURS },
+  { state: "service, urgent, no timing", job: SERVICE_URGENT },
   { state: "service, an address with no street or pin", job: SERVICE_NO_PIN },
   { state: "food delivery, a note, options, a discount", job: FOOD_ACCEPTED },
   { state: "food delivery, as soon as possible, a fee", job: JOB_FOOD },
@@ -148,6 +159,33 @@ describe("RequestDetailsScreen, the pro from the profile view", () => {
     )
     expectParity(parityName(entry.state, entry.env), tree)
   })
+})
+
+describe("RequestDetailsScreen: the date and time row", () => {
+  it.each(PARITY_MATRIX)(
+    "says what the customer picked, in the date step's words [$language $platform]",
+    async (env) => {
+      const said: [JobType, string][] = [
+        [JOB, "as_soon_as_possible"],
+        [SERVICE_URGENT, "as_soon_as_possible"],
+        [SERVICE_48_HOURS, "within_48_hours"],
+        [SERVICE_WEEK, "within_a_week"],
+        [SERVICE_UNDECIDED, "havent_decided_yet"],
+        [JOB_FOOD, "deliver_now"],
+      ]
+      for (const [job, key] of said) {
+        const session = await openScreen(
+          load,
+          options({ state: "when", job }, env)
+        )
+        try {
+          expect(JSON.stringify(session.tree())).toContain(copy(env, key))
+        } finally {
+          session.unmount()
+        }
+      }
+    }
+  )
 })
 
 describe("RequestDetailsScreen: the X", () => {
