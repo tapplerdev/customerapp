@@ -290,6 +290,44 @@ describe("FoodOrderReviewScreen, the controls", () => {
   )
 
   it.each(envs)(
+    "a scheduled time that has ended: the app's line, not the server's [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await openScreen(
+        load,
+        options(CASES[0], env, {
+          createJob: {
+            error: {
+              status: 400,
+              data: {
+                statusCode: 400,
+                code: "slotInPast",
+                message: "Every time slot chosen has already ended.",
+              },
+            },
+          },
+        })
+      )
+      try {
+        await session.act(() => {
+          pressTitled(session.root, copy(env, "submit_order"))
+        })
+        const shown = JSON.stringify(session.tree())
+        expect(shown).toContain(copy(env, "request_slot_in_past"))
+        expect(shown).not.toContain("has already ended.")
+        // Nothing else changes: no navigation, the basket kept.
+        expect(session.navigation.actions).toEqual([])
+        expect(
+          Object.keys(
+            (session.store.getState() as { cart: { carts: object } }).cart.carts
+          )
+        ).toEqual([String(PRO_FOOD.id)])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(envs)(
     "Submit Order is dead with an empty basket [$env.language $env.platform]",
     async ({ env }) => {
       const session = await openScreen(load, options(CASES[7], env))
