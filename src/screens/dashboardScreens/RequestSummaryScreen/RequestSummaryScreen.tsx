@@ -798,45 +798,45 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
                 navigation.goBack()
               }
             : replayedJobId
-            ? () => {
-                const jobId = replayedJobId
-                setReplayedJobId(null)
-                navigation.reset({
-                  index: 1,
-                  routes: [
-                    { name: "HomeTabs", params: { screen: "talabati" } },
-                    { name: "JobDetailScreen", params: { jobId } },
-                  ],
-                })
-              }
-            : refusal
-            ? () => {
-                const clearPlaceOfService =
-                  refusal === JobRequestRefusal.placeOfServiceNotOffered
-                const clearFixedLocation =
-                  clearPlaceOfService ||
-                  refusal === JobRequestRefusal.fixedLocationNotOffered
-                setRefusal(null)
-                // The listing is still mounted below this stack: it
-                // refetches from the network and prunes the selection.
-                questionFlowEventBus.emit("request:refused", {
-                  clearPlaceOfService,
-                  clearFixedLocation,
-                })
-                navigation.popTo("ProsListingScreen", {
-                  categoryId,
-                  categoryName,
-                  serviceId,
-                  address,
-                  placeOfService: clearPlaceOfService
-                    ? undefined
-                    : placeOfService,
-                  fixedLocationId: clearFixedLocation
-                    ? undefined
-                    : fixedLocationId,
-                })
-              }
-            : undefined
+              ? () => {
+                  const jobId = replayedJobId
+                  setReplayedJobId(null)
+                  navigation.reset({
+                    index: 1,
+                    routes: [
+                      { name: "HomeTabs", params: { screen: "talabati" } },
+                      { name: "JobDetailScreen", params: { jobId } },
+                    ],
+                  })
+                }
+              : refusal
+                ? () => {
+                    const clearPlaceOfService =
+                      refusal === JobRequestRefusal.placeOfServiceNotOffered
+                    const clearFixedLocation =
+                      clearPlaceOfService ||
+                      refusal === JobRequestRefusal.fixedLocationNotOffered
+                    setRefusal(null)
+                    // The listing is still mounted below this stack: it
+                    // refetches from the network and prunes the selection.
+                    questionFlowEventBus.emit("request:refused", {
+                      clearPlaceOfService,
+                      clearFixedLocation,
+                    })
+                    navigation.popTo("ProsListingScreen", {
+                      categoryId,
+                      categoryName,
+                      serviceId,
+                      address,
+                      placeOfService: clearPlaceOfService
+                        ? undefined
+                        : placeOfService,
+                      fixedLocationId: clearFixedLocation
+                        ? undefined
+                        : fixedLocationId,
+                    })
+                  }
+                : undefined
         }
       />
     </SafeAreaView>

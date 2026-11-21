@@ -35,9 +35,7 @@ export const jobRequestRefusalOf = (
 ): JobRequestRefusalCode | undefined => {
   const code = (
     (error as { data?: unknown } | null | undefined)?.data as
-      | { code?: unknown }
-      | null
-      | undefined
+      { code?: unknown } | null | undefined
   )?.code
   return typeof code === "string" && CODES.includes(code)
     ? (code as JobRequestRefusalCode)
