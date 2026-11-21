@@ -17,3 +17,12 @@ export const dateOptionsFor = (dateTypes?: readonly string[]): DateOption[] => {
     ? offered
     : ["hours48"]
 }
+
+/** Each choice's words, on the date step and wherever a request is shown. */
+export const DATE_OPTION_LABELS: Record<DateOption, string> = {
+  asap: "as_soon_as_possible",
+  hours48: "within_48_hours",
+  week: "within_a_week",
+  date: "on_a_specific_date",
+  notDecided: "havent_decided_yet",
+}

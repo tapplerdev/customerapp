@@ -18,7 +18,11 @@ import { listingPlace } from "utils/fixedLocation"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import CalendarTimeSheet from "components/CalendarTimeSheet/CalendarTimeSheet"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
-import { dateOptionsFor, type DateOption } from "utils/dateOptions"
+import {
+  DATE_OPTION_LABELS,
+  dateOptionsFor,
+  type DateOption,
+} from "utils/dateOptions"
 import { cairoClock, slotEndedOn } from "utils/cairoClock"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
@@ -39,14 +43,6 @@ const ANSWER_CHECKS: Partial<
   multipleChoice: (a) => !!a.optionsIds?.length,
   dateTime: (a) => !!a.date || !!a.startDate,
   files: (a) => !!a.files?.length,
-}
-
-const DATE_OPTION_LABELS: Record<DateOption, string> = {
-  asap: "as_soon_as_possible",
-  hours48: "within_48_hours",
-  week: "within_a_week",
-  date: "on_a_specific_date",
-  notDecided: "havent_decided_yet",
 }
 
 type Props = RootStackScreenProps<"ServiceRequestDetailsScreen">
