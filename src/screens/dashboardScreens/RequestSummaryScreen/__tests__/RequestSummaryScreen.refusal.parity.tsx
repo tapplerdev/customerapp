@@ -15,6 +15,9 @@ import { PARITY_MATRIX, type ParityEnv } from "testing/hostTreeParity"
  * clear it): ProsListingScreen.refusal.parity.tsx has that half.
  * JOB_FIXED_LOCATION_NOT_OFFERED (venue-on-job) when the venue picked is no
  * longer the category's: the venue is cleared and the place kept.
+ * slotInPast / dateTypeNotAllowed (release 11-21): the window picked has
+ * ended, or the timing is no longer offered. OK goes back to the date step;
+ * for the timing, the service is asked for again first.
  */
 const NAME = "RequestSummaryScreen"
 const load = () => require("../RequestSummaryScreen")
@@ -159,6 +162,57 @@ describe("RequestSummaryScreen: a refused request", () => {
         expect(last.type).toBe("POP_TO")
         expect(last.payload.params.placeOfService).toBe("fixedLocations")
         expect(last.payload.params.fixedLocationId).toBeUndefined()
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a window that has ended: the app's line, then back to the date step [$language $platform]",
+    async (env) => {
+      const session = await open(
+        env,
+        refusing("slotInPast", "Every time slot chosen has already ended.")
+      )
+      try {
+        const heard = listen()
+        const shown = await sendAndAcknowledge(session, env)
+        expect(shown).toContain(copy(env, "request_slot_in_past"))
+        expect(shown).not.toContain("has already ended.")
+        expect(heard).toEqual([])
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  it.each(PARITY_MATRIX)(
+    "a timing the service no longer offers: the app's line, the service asked again, back to the date step [$language $platform]",
+    async (env) => {
+      const session = await open(
+        env,
+        refusing("dateTypeNotAllowed", "This timing is not offered.")
+      )
+      try {
+        const heard = listen()
+        const servicesAsked = () =>
+          session
+            .requests()
+            .filter((request) =>
+              JSON.stringify(request).includes("/services/201")
+            ).length
+        const before = servicesAsked()
+        const shown = await sendAndAcknowledge(session, env)
+        expect(shown).toContain(copy(env, "request_date_type_not_allowed"))
+        expect(heard).toEqual([])
+        expect(servicesAsked()).toBe(before + 1)
+        expect(session.navigation.actions).toEqual([
+          expect.objectContaining({ type: "GO_BACK" }),
+        ])
       } finally {
         session.unmount()
       }

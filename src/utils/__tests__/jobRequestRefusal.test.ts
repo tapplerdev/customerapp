@@ -29,6 +29,12 @@ describe("jobRequestRefusalOf", () => {
     expect(
       jobRequestRefusalOf(refused("JOB_PLACE_OF_SERVICE_NOT_OFFERED"))
     ).toBe(JobRequestRefusal.placeOfServiceNotOffered)
+    expect(jobRequestRefusalOf(refused("slotInPast"))).toBe(
+      JobRequestRefusal.slotInPast
+    )
+    expect(jobRequestRefusalOf(refused("dateTypeNotAllowed"))).toBe(
+      JobRequestRefusal.dateTypeNotAllowed
+    )
     // venue-on-job: the venue picked is no longer the category's.
     expect(jobRequestRefusalOf(refused("JOB_FIXED_LOCATION_NOT_OFFERED"))).toBe(
       JobRequestRefusal.fixedLocationNotOffered

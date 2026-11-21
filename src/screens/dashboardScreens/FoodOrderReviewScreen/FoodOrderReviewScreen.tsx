@@ -29,6 +29,11 @@ import {
 import { buildFoodOrderItems, repairCart } from "utils/foodCartRepair"
 import { uuidV4 } from "utils/uuid"
 import { replayedChanges } from "utils/jobReplay"
+import {
+  JobRequestRefusal,
+  jobRequestRefusalCopy,
+  jobRequestRefusalOf,
+} from "utils/jobRequestRefusal"
 import ErrorModal from "components/ErrorModal"
 import WarningTriangleIcon from "assets/icons/warning-triangle.svg"
 import OrderLocationMap from "components/OrderLocationMap/OrderLocationMap"
@@ -216,9 +221,14 @@ const FoodOrderReviewScreen: React.FC<Props> = ({ route, navigation }) => {
       if (isMenuChangedRefusal(error) && (await repairBasket())) return
 
       const validationErrors = error?.data?.validationErrors
-      const message = validationErrors
-        ? Object.values(validationErrors).flat().join(", ")
-        : error?.data?.message || t("an_error_occurred")
+      // A scheduled time that ended before the order arrived (slotInPast):
+      // the app's own line, not the server's.
+      const message =
+        jobRequestRefusalOf(error) === JobRequestRefusal.slotInPast
+          ? t(jobRequestRefusalCopy.slotInPast)
+          : validationErrors
+            ? Object.values(validationErrors).flat().join(", ")
+            : error?.data?.message || t("an_error_occurred")
       setErrorTitle(undefined)
       setBackToMenu(null)
       setErrorMessage(String(message))

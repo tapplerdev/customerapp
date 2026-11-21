@@ -25,6 +25,8 @@ interface Props {
   // Nothing before this can be prepared in time (basket lead time). Passed
   // through to the picker, which only greys out; it never hard-blocks.
   earliestAt?: Date | null
+  // Drop today's windows that have ended (Cairo time) instead of greying them.
+  hideEndedSlots?: boolean
 }
 
 /**
@@ -43,6 +45,7 @@ const CalendarTimeSheet: React.FC<Props> = ({
   onConfirm,
   hideSpecialOptions,
   earliestAt,
+  hideEndedSlots,
 }) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
@@ -102,6 +105,7 @@ const CalendarTimeSheet: React.FC<Props> = ({
             key={openCount}
             showAnyTime={!hideSpecialOptions}
             earliestAt={earliestAt}
+            hideEndedSlots={hideEndedSlots}
             onSelectionChange={setSelection}
           />
         </AppScrollView>

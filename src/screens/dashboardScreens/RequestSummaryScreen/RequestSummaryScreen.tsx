@@ -22,6 +22,7 @@ import {
   JobRequestRefusalCode,
   jobRequestRefusalCopy,
   jobRequestRefusalOf,
+  refusalIsAboutTiming,
 } from "utils/jobRequestRefusal"
 import { questionFlowEventBus } from "events/questionFlowEventBus"
 import { FIXED_LOCATIONS, venueName, venuePoint } from "utils/fixedLocation"
@@ -71,7 +72,8 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets()
 
   const [createJob] = useCreateJobMutation()
-  const { data: serviceData } = useGetServiceByIdQuery(serviceId)
+  const { data: serviceData, refetch: refetchService } =
+    useGetServiceByIdQuery(serviceId)
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const customerQuestions = category?.customerQuestions || []
   // A fixed-location request is at its venue, not the customer's address:
@@ -104,6 +106,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   // Set when the request was refused because a pro no longer serves it or its
   // place of service is gone (utils/jobRequestRefusal): the pop-up closes onto
   // the listing, which fetches its list again and drops what no longer fits.
+  // A refused timing (slotInPast, dateTypeNotAllowed) closes onto the date step.
   const [refusal, setRefusal] = useState<JobRequestRefusalCode | null>(null)
 
   const handleGoBack = () => {
@@ -205,8 +208,11 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
     let title = ""
     let subtitle = ""
     let titleColor: "primary" | "brand" = "primary"
+    // An urgent service asks no timing (no dateType, no day): it goes out
+    // now, which the app calls as soon as possible everywhere else too.
+    const isUrgent = !dateType && !selectedDate
 
-    if (dateType === "asap") {
+    if (dateType === "asap" || isUrgent) {
       iconBg = RED
       iconContent = (
         <Text size={20} leading="legacy" family="system">
@@ -237,7 +243,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
       title = t("within_a_week")
       const deadline = moment().add(7, "days").format("ddd, MMM D")
       subtitle = t("by_deadline", { deadline })
-    } else if (dateType === "notDecided" || !dateType) {
+    } else if (dateType === "notDecided") {
       iconBg = BG2
       iconContent = (
         <Text size={20} leading="legacy" color="tertiary" family="system">
@@ -300,7 +306,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
               a.mr_12,
               {
                 backgroundColor: iconBg,
-                ...(dateType === "notDecided" || !dateType
+                ...(dateType === "notDecided"
                   ? {
                       borderWidth: 1,
                       borderStyle: "dashed",
@@ -788,7 +794,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
           ) : undefined
         }
         // After the pop-up has closed, never beside it: onto that request,
-        // or back to the list for a refusal.
+        // or back to the list (the date step) for a refusal.
         onModalHide={
           replayedJobId
             ? () => {
@@ -804,6 +810,17 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
               }
             : refusal
               ? () => {
+                  // A timing refusal goes back to the date step, where the
+                  // pick is made again. Its choices come from the cached
+                  // service, which still offers a timing just refused.
+                  if (refusalIsAboutTiming(refusal)) {
+                    setRefusal(null)
+                    if (refusal === JobRequestRefusal.dateTypeNotAllowed) {
+                      refetchService()
+                    }
+                    navigation.goBack()
+                    return
+                  }
                   const clearPlaceOfService =
                     refusal === JobRequestRefusal.placeOfServiceNotOffered
                   const clearFixedLocation =

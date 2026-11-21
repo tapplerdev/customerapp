@@ -5,6 +5,7 @@ import { Calendar } from "react-native-calendars"
 import { DmView } from "@tappler/shared/src/components/UI"
 import colors from "@tappler/shared/src/styles/colors"
 import { Text, a } from "@tappler/shared/src/ds"
+import { cairoClock, localClock, slotEndedOn } from "utils/cairoClock"
 import styles from "./styles"
 
 export type TimeSlot = { start: string; end: string }
@@ -40,27 +41,14 @@ interface Props {
   // by design: it greys out what the pro almost certainly cannot make, but the
   // pro's accept/decline remains the real gate, so this never hard-blocks.
   earliestAt?: Date | null
+  /** Request dates: judge "now" on Cairo's clock and leave out the windows
+   *  that already ended today, rather than greying them. */
+  hideEndedSlots?: boolean
   /** Horizontal padding of the time and option rows (the calendar has its own). */
   inset?: number
   /** Every change the customer makes: the complete answer, or null while the
    *  picked day has no time yet. Never called on mount. */
   onSelectionChange: (selection: CalendarSelection | null) => void
-}
-
-// Local calendar day, not toISOString() — that converts to UTC and rolls
-// the date backwards for anyone east of Greenwich, which is all of Egypt.
-const toLocalDay = (value: Date) =>
-  `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(
-    value.getDate()
-  ).padStart(2, "0")}`
-
-// A slot survives if it ENDS after the floor — 12:00-15:00 is still usable
-// at 12:30. Only the floor's own day is constrained; later days are open.
-const isSlotTooEarlyOn = (floor: Date, day: string, slot: TimeSlot) => {
-  if (day !== toLocalDay(floor)) return false
-  const [h, m] = slot.end.split(":").map(Number)
-  const endMinutes = h === 0 && m === 0 ? 24 * 60 : h * 60 + m
-  return endMinutes <= floor.getHours() * 60 + floor.getMinutes()
 }
 
 /**
@@ -75,10 +63,14 @@ const CalendarTimePicker: React.FC<Props> = ({
   initialTimeSlot,
   showAnyTime,
   earliestAt,
+  hideEndedSlots,
   inset = 20,
   onSelectionChange,
 }) => {
   const { t } = useTranslation()
+  // Local calendar day, not toISOString(): that converts to UTC and rolls the
+  // date backwards for anyone east of Greenwich, which is all of Egypt.
+  const clock = hideEndedSlots ? cairoClock : localClock
 
   // NOW is always the floor. A lead time only pushes it later — it never made
   // sense to offer this morning's window at 6pm, and before this only baskets
@@ -87,23 +79,28 @@ const CalendarTimePicker: React.FC<Props> = ({
     const now = new Date()
     return earliestAt && earliestAt > now ? earliestAt : now
   }, [earliestAt])
+  // The floor's day and time on that clock, read once, not once per window.
+  const floorClock = useMemo(() => clock(floor), [clock, floor])
+
+  // A slot survives if it ENDS after the floor — 12:00-15:00 is still usable
+  // at 12:30. Only the floor's own day is constrained; later days are open.
+  const isSlotTooEarlyOn = (day: string, slot: TimeSlot) =>
+    slotEndedOn(floorClock, day, slot)
 
   // The first day that still has a usable window, so the customer never lands
   // on a fully greyed-out list. (The 21:00-00:00 window outlasts any floor
   // time, so today that is always the floor's own day.)
   const firstOpenDay = useMemo(() => {
     for (let offset = 0; offset < 14; offset += 1) {
-      const day = new Date(floor)
-      day.setDate(day.getDate() + offset)
-      const key = toLocalDay(day)
-      if (TIME_SLOTS.some((slot) => !isSlotTooEarlyOn(floor, key, slot))) {
+      const key = clock(new Date(floor.getTime() + offset * 86_400_000)).day
+      if (TIME_SLOTS.some((slot) => !slotEndedOn(floorClock, key, slot))) {
         return key
       }
     }
-    return toLocalDay(floor)
-  }, [floor])
+    return floorClock.day
+  }, [floor, clock, floorClock])
 
-  const minDay = toLocalDay(floor)
+  const minDay = floorClock.day
 
   // Open on the saved answer, or on a usable day already selected — the
   // customer's most likely answer is "today", and making them tap the date
@@ -141,7 +138,7 @@ const CalendarTimePicker: React.FC<Props> = ({
     // does); a window that would be greyed out there is dropped instead.
     const keepSlot =
       selectedSlotIndex !== null &&
-      !isSlotTooEarlyOn(floor, day.dateString, TIME_SLOTS[selectedSlotIndex])
+      !isSlotTooEarlyOn(day.dateString, TIME_SLOTS[selectedSlotIndex])
     const slotIndex = keepSlot ? selectedSlotIndex : null
     setSelectedDate(day.dateString)
     setSelectedSlotIndex(slotIndex)
@@ -196,7 +193,8 @@ const CalendarTimePicker: React.FC<Props> = ({
         <DmView style={[a.flex_row, a.flex_wrap, styles.gapRow]}>
           {TIME_SLOTS.map((slot, index) => {
             const isSelected = selectedSlotIndex === index
-            const tooEarly = isSlotTooEarlyOn(floor, selectedDate, slot)
+            const tooEarly = isSlotTooEarlyOn(selectedDate, slot)
+            if (tooEarly && hideEndedSlots) return null
             return (
               <DmView
                 key={index}

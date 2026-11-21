@@ -40,9 +40,9 @@ import type { QuestionAnswerType } from "types/job"
  * RequestSummaryScreen: "Review request", the last screen before a request is
  * sent. Every "when" card (as soon as possible, within 48 hours and a week
  * with their deadlines, undecided, a chosen day with and without a window, and
- * the day a customer with no date type still carries; no date type alone and a
- * guest draw the same tree as undecided and as the first row, so they have no
- * row), the pros (one, two with
+ * the day a customer with no date type still carries; an urgent request, no
+ * date type alone, draws the first row's as soon as possible and is pinned to
+ * that row, and a guest draws the first row too), the pros (one, two with
  * their remove crosses, no photo, no rating, a rating with and without a review
  * count, a business), the answers (each kind of answer, an answer whose question
  * is gone, rows with nothing to show), notes or none, no insets and a tall
@@ -264,6 +264,24 @@ describe("RequestSummaryScreen, captured from the unconverted code", () => {
       allow: entry.allow ?? BUTTON,
     })
   })
+})
+
+describe("RequestSummaryScreen: an urgent request", () => {
+  it.each(PARITY_MATRIX)(
+    "no date type and no day: as soon as possible, the first row's tree [$language $platform]",
+    async (env) => {
+      const entry = { state: "urgent", params: params({ dateType: undefined }) }
+      const tree = await treeAfter(load, options(entry, env), env, [wait(0)])
+      expectParity(
+        parityName("as soon as possible, two pros, answers and notes", env),
+        tree,
+        { allow: BUTTON }
+      )
+      expect(JSON.stringify(tree)).not.toContain(
+        copy(env, "havent_decided_yet")
+      )
+    }
+  )
 })
 
 type Action = {

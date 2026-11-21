@@ -20,6 +20,7 @@ import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
 import { Divider, Text, a, px } from "@tappler/shared/src/ds"
 import { venueName, venuePoint } from "utils/fixedLocation"
+import { DATE_OPTION_LABELS, type DateOption } from "utils/dateOptions"
 import styles from "./styles"
 
 type Props = RootStackScreenProps<"RequestDetailsScreen">
@@ -67,12 +68,15 @@ const RequestDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const dateDisplay = (() => {
     if (!job?.dates?.length) {
-      if (job?.dateType === "asap") {
+      // An urgent request carries no dateType: it goes out now, like asap.
+      if (!job?.dateType || job.dateType === "asap") {
         return isFoodOrder
           ? t(isPickup ? "pick_up_now" : "deliver_now")
           : t("as_soon_as_possible")
       }
-      return t("not_decided")
+      // The words the customer picked on the date step.
+      const label = DATE_OPTION_LABELS[job.dateType as DateOption]
+      return t(label ?? "not_decided")
     }
     return (
       formatJobSchedule(
