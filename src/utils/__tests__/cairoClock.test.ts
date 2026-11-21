@@ -52,7 +52,9 @@ describe("cairoClock, an engine that can't be trusted", () => {
       .spyOn(Intl.DateTimeFormat.prototype, "formatToParts")
       .mockImplementation(impl)
 
-  afterEach(() => jest.restoreAllMocks())
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
 
   it("midnight written as 24 is minute 0, not the day's end", () => {
     spy(() => parts("24") as Intl.DateTimeFormatPart[])
