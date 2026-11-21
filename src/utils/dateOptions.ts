@@ -4,9 +4,16 @@
  * standard: all four), so the app only orders and filters what it is given.
  * "hours48" is no longer offered: old jobs keep it, new requests are refused.
  */
-export type DateOption = "asap" | "week" | "date" | "notDecided"
+export type DateOption = "asap" | "hours48" | "week" | "date" | "notDecided"
 
 const ORDER: readonly DateOption[] = ["asap", "week", "date", "notDecided"]
 
-export const dateOptionsFor = (dateTypes?: readonly string[]): DateOption[] =>
-  ORDER.filter((option) => dateTypes?.includes(option))
+// Except where it is all a category has: a backend from before release 11-21
+// still sends the old sets, and one holding only hours48 would leave the step
+// with nothing to pick. The new backend never sends hours48.
+export const dateOptionsFor = (dateTypes?: readonly string[]): DateOption[] => {
+  const offered = ORDER.filter((option) => dateTypes?.includes(option))
+  return offered.length || !dateTypes?.includes("hours48")
+    ? offered
+    : ["hours48"]
+}

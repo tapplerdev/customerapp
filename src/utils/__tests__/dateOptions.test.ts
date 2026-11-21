@@ -33,4 +33,9 @@ describe("dateOptionsFor", () => {
   it("never offers hours48 (old jobs only) or an unknown type", () => {
     expect(dateOptionsFor(["hours48", "week", "later"])).toEqual(["week"])
   })
+
+  it("today's backend, a set holding only hours48: that, never an empty step", () => {
+    expect(dateOptionsFor(["hours48"])).toEqual(["hours48"])
+    expect(dateOptionsFor(["later"])).toEqual([])
+  })
 })

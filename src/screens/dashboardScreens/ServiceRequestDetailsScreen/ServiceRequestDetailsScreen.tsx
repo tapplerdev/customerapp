@@ -19,6 +19,7 @@ import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import CalendarTimeSheet from "components/CalendarTimeSheet/CalendarTimeSheet"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
 import { dateOptionsFor, type DateOption } from "utils/dateOptions"
+import { cairoClock, slotEndedOn } from "utils/cairoClock"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
@@ -42,6 +43,7 @@ const ANSWER_CHECKS: Partial<
 
 const DATE_OPTION_LABELS: Record<DateOption, string> = {
   asap: "as_soon_as_possible",
+  hours48: "within_48_hours",
   week: "within_a_week",
   date: "on_a_specific_date",
   notDecided: "havent_decided_yet",
@@ -92,8 +94,10 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     (q) => !fixedAnsweredIds.has(q.id)
   )
 
-  // Only show date step if category has dateTypes configured
-  const hasDateTypes = (category?.dateTypes?.length || 0) > 0
+  // The timing choices the category allows (utils/dateOptions). The date
+  // step is shown only when there is one to pick, so it never dead-ends.
+  const dateOptionKeys = dateOptionsFor(category?.dateTypes)
+  const hasDateTypes = dateOptionKeys.length > 0
   const totalSteps = unansweredQuestions.length + (hasDateTypes ? 1 : 0)
   const isDateStep = hasDateTypes && stepIndex >= unansweredQuestions.length
   const currentQuestion = !isDateStep
@@ -197,6 +201,20 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
   }
 
   const handleNext = async () => {
+    // A window that ended while the step was open, or the one the server
+    // refused as slotInPast: the calendar again, rather than send it.
+    if (isDateStep && selectedDate && selectedTimeSlot) {
+      const now = cairoClock(new Date())
+      if (
+        selectedDate < now.day ||
+        slotEndedOn(now, selectedDate, selectedTimeSlot)
+      ) {
+        setSelectedDate(undefined)
+        setSelectedTimeSlot(undefined)
+        setCalendarVisible(true)
+        return
+      }
+    }
     if (currentQuestion?.isFilter && selectedProIds.length) {
       const filterIds = collectFilterOptionIds(questionsAnswers)
       if (filterIds.length) {
@@ -283,10 +301,13 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
   // Check if current step is answered
   const isCurrentAnswered = (() => {
     if (isDateStep) {
-      // "date" is answered by the calendar, not by ticking the option:
-      // closing the calendar without a date leaves the step open.
+      // Only a choice the category still offers (a dateTypeNotAllowed
+      // refusal fetches them again). "date" is answered by the calendar, not
+      // by ticking the option: closing it without a date leaves the step open.
+      if (!selectedDateOption || !dateOptionKeys.includes(selectedDateOption))
+        return false
       if (selectedDateOption === "date") return !!selectedDate
-      return !!selectedDateOption
+      return true
     }
     if (!currentQuestion) return true
     const answer = questionsAnswers.find(
@@ -296,8 +317,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     return !!answer && !!check && check(answer)
   })()
 
-  // Only what the category's dateTypes allow (utils/dateOptions).
-  const dateOptions = dateOptionsFor(category?.dateTypes).map((key) => ({
+  const dateOptions = dateOptionKeys.map((key) => ({
     key,
     label: t(DATE_OPTION_LABELS[key]),
   }))

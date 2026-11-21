@@ -72,7 +72,8 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets()
 
   const [createJob] = useCreateJobMutation()
-  const { data: serviceData } = useGetServiceByIdQuery(serviceId)
+  const { data: serviceData, refetch: refetchService } =
+    useGetServiceByIdQuery(serviceId)
   const category = serviceData?.categories?.find((c) => c.id === categoryId)
   const customerQuestions = category?.customerQuestions || []
   // A fixed-location request is at its venue, not the customer's address:
@@ -105,6 +106,7 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
   // Set when the request was refused because a pro no longer serves it or its
   // place of service is gone (utils/jobRequestRefusal): the pop-up closes onto
   // the listing, which fetches its list again and drops what no longer fits.
+  // A refused timing (slotInPast, dateTypeNotAllowed) closes onto the date step.
   const [refusal, setRefusal] = useState<JobRequestRefusalCode | null>(null)
 
   const handleGoBack = () => {
@@ -789,54 +791,59 @@ const RequestSummaryScreen: React.FC<Props> = ({ route, navigation }) => {
           ) : undefined
         }
         // After the pop-up has closed, never beside it: onto that request,
-        // or back to the list for a refusal.
+        // or back to the list (the date step) for a refusal.
         onModalHide={
-          refusalIsAboutTiming(refusal)
+          replayedJobId
             ? () => {
-                // Back to the date step, where the pick is made again.
-                setRefusal(null)
-                navigation.goBack()
+                const jobId = replayedJobId
+                setReplayedJobId(null)
+                navigation.reset({
+                  index: 1,
+                  routes: [
+                    { name: "HomeTabs", params: { screen: "talabati" } },
+                    { name: "JobDetailScreen", params: { jobId } },
+                  ],
+                })
               }
-            : replayedJobId
+            : refusal
               ? () => {
-                  const jobId = replayedJobId
-                  setReplayedJobId(null)
-                  navigation.reset({
-                    index: 1,
-                    routes: [
-                      { name: "HomeTabs", params: { screen: "talabati" } },
-                      { name: "JobDetailScreen", params: { jobId } },
-                    ],
+                  // A timing refusal goes back to the date step, where the
+                  // pick is made again. Its choices come from the cached
+                  // service, which still offers a timing just refused.
+                  if (refusalIsAboutTiming(refusal)) {
+                    setRefusal(null)
+                    if (refusal === JobRequestRefusal.dateTypeNotAllowed) {
+                      refetchService()
+                    }
+                    navigation.goBack()
+                    return
+                  }
+                  const clearPlaceOfService =
+                    refusal === JobRequestRefusal.placeOfServiceNotOffered
+                  const clearFixedLocation =
+                    clearPlaceOfService ||
+                    refusal === JobRequestRefusal.fixedLocationNotOffered
+                  setRefusal(null)
+                  // The listing is still mounted below this stack: it
+                  // refetches from the network and prunes the selection.
+                  questionFlowEventBus.emit("request:refused", {
+                    clearPlaceOfService,
+                    clearFixedLocation,
+                  })
+                  navigation.popTo("ProsListingScreen", {
+                    categoryId,
+                    categoryName,
+                    serviceId,
+                    address,
+                    placeOfService: clearPlaceOfService
+                      ? undefined
+                      : placeOfService,
+                    fixedLocationId: clearFixedLocation
+                      ? undefined
+                      : fixedLocationId,
                   })
                 }
-              : refusal
-                ? () => {
-                    const clearPlaceOfService =
-                      refusal === JobRequestRefusal.placeOfServiceNotOffered
-                    const clearFixedLocation =
-                      clearPlaceOfService ||
-                      refusal === JobRequestRefusal.fixedLocationNotOffered
-                    setRefusal(null)
-                    // The listing is still mounted below this stack: it
-                    // refetches from the network and prunes the selection.
-                    questionFlowEventBus.emit("request:refused", {
-                      clearPlaceOfService,
-                      clearFixedLocation,
-                    })
-                    navigation.popTo("ProsListingScreen", {
-                      categoryId,
-                      categoryName,
-                      serviceId,
-                      address,
-                      placeOfService: clearPlaceOfService
-                        ? undefined
-                        : placeOfService,
-                      fixedLocationId: clearFixedLocation
-                        ? undefined
-                        : fixedLocationId,
-                    })
-                  }
-                : undefined
+              : undefined
         }
       />
     </SafeAreaView>
