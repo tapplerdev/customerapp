@@ -51,15 +51,6 @@ interface Props {
   onSelectionChange: (selection: CalendarSelection | null) => void
 }
 
-// A slot survives if it ENDS after the floor — 12:00-15:00 is still usable
-// at 12:30. Only the floor's own day is constrained; later days are open.
-const isSlotTooEarlyOn = (
-  clock: (at: Date) => ReturnType<typeof localClock>,
-  floor: Date,
-  day: string,
-  slot: TimeSlot
-) => slotEndedOn(clock(floor), day, slot)
-
 /**
  * The calendar, the six time windows, and optionally "Any time".
  * No chrome of its own: CalendarTimeSheet puts it in a bottom sheet with a
@@ -88,6 +79,13 @@ const CalendarTimePicker: React.FC<Props> = ({
     const now = new Date()
     return earliestAt && earliestAt > now ? earliestAt : now
   }, [earliestAt])
+  // The floor's day and time on that clock, read once, not once per window.
+  const floorClock = useMemo(() => clock(floor), [clock, floor])
+
+  // A slot survives if it ENDS after the floor — 12:00-15:00 is still usable
+  // at 12:30. Only the floor's own day is constrained; later days are open.
+  const isSlotTooEarlyOn = (day: string, slot: TimeSlot) =>
+    slotEndedOn(floorClock, day, slot)
 
   // The first day that still has a usable window, so the customer never lands
   // on a fully greyed-out list. (The 21:00-00:00 window outlasts any floor
@@ -95,16 +93,14 @@ const CalendarTimePicker: React.FC<Props> = ({
   const firstOpenDay = useMemo(() => {
     for (let offset = 0; offset < 14; offset += 1) {
       const key = clock(new Date(floor.getTime() + offset * 86_400_000)).day
-      if (
-        TIME_SLOTS.some((slot) => !isSlotTooEarlyOn(clock, floor, key, slot))
-      ) {
+      if (TIME_SLOTS.some((slot) => !slotEndedOn(floorClock, key, slot))) {
         return key
       }
     }
-    return clock(floor).day
-  }, [floor, clock])
+    return floorClock.day
+  }, [floor, clock, floorClock])
 
-  const minDay = clock(floor).day
+  const minDay = floorClock.day
 
   // Open on the saved answer, or on a usable day already selected — the
   // customer's most likely answer is "today", and making them tap the date
@@ -142,12 +138,7 @@ const CalendarTimePicker: React.FC<Props> = ({
     // does); a window that would be greyed out there is dropped instead.
     const keepSlot =
       selectedSlotIndex !== null &&
-      !isSlotTooEarlyOn(
-        clock,
-        floor,
-        day.dateString,
-        TIME_SLOTS[selectedSlotIndex]
-      )
+      !isSlotTooEarlyOn(day.dateString, TIME_SLOTS[selectedSlotIndex])
     const slotIndex = keepSlot ? selectedSlotIndex : null
     setSelectedDate(day.dateString)
     setSelectedSlotIndex(slotIndex)
@@ -202,7 +193,7 @@ const CalendarTimePicker: React.FC<Props> = ({
         <DmView style={[a.flex_row, a.flex_wrap, styles.gapRow]}>
           {TIME_SLOTS.map((slot, index) => {
             const isSelected = selectedSlotIndex === index
-            const tooEarly = isSlotTooEarlyOn(clock, floor, selectedDate, slot)
+            const tooEarly = isSlotTooEarlyOn(selectedDate, slot)
             if (tooEarly && hideEndedSlots) return null
             return (
               <DmView

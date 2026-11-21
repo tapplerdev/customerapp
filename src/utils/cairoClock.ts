@@ -28,15 +28,24 @@ export const localClock = (at: Date): Clock => ({
   minutes: at.getHours() * 60 + at.getMinutes(),
 })
 
-// Falls back to the phone's own clock when Intl has no Cairo zone.
+// Falls back to the phone's own clock when the engine can't format in
+// Cairo's zone or leaves a part out (proapp's egyptToday does the same).
+// `% 24`: an engine that ignores hourCycle writes midnight as "24".
 export const cairoClock = (at: Date): Clock => {
-  if (!cairoFormat) return localClock(at)
-  const part = (type: string) =>
-    cairoFormat.formatToParts(at).find((p) => p.type === type)?.value ?? "0"
-  return {
-    day: `${part("year")}-${part("month")}-${part("day")}`,
-    minutes: Number(part("hour")) * 60 + Number(part("minute")),
+  try {
+    const { year, month, day, hour, minute } = Object.fromEntries(
+      (cairoFormat?.formatToParts(at) ?? []).map((p) => [p.type, p.value])
+    )
+    if (year && month && day && hour && minute) {
+      return {
+        day: `${year}-${month}-${day}`,
+        minutes: (Number(hour) % 24) * 60 + Number(minute),
+      }
+    }
+  } catch {
+    // the phone's own clock below
   }
+  return localClock(at)
 }
 
 /** "21:00" -> 1260; the "00:00" that closes the last window is the day's end. */
