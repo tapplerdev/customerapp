@@ -18,15 +18,13 @@ import { listingPlace } from "utils/fixedLocation"
 import QuestionComponent from "components/QuestionComponent/QuestionComponent"
 import CalendarTimeSheet from "components/CalendarTimeSheet/CalendarTimeSheet"
 import LoadingOverlay from "components/LoadingOverlay/LoadingOverlay"
+import { dateOptionsFor, type DateOption } from "utils/dateOptions"
 
 import ChevronLeftIcon from "assets/icons/chevron-left.svg"
 import CloseIcon from "assets/icons/close.svg"
 import { AppScrollView } from "components/scroll"
 import { Text, Button, a as atoms, px } from "@tappler/shared/src/ds"
 import dsStyles from "./styles"
-
-type DateTypeOption =
-  "notDecided" | "hours48" | "week" | "furtherOut" | "specificDates"
 
 // Whether a row really answers a question of that type. A bare row
 // ({questionId}: an un-ticked choice, a cleared date) does not, and a job sent
@@ -40,6 +38,13 @@ const ANSWER_CHECKS: Partial<
   multipleChoice: (a) => !!a.optionsIds?.length,
   dateTime: (a) => !!a.date || !!a.startDate,
   files: (a) => !!a.files?.length,
+}
+
+const DATE_OPTION_LABELS: Record<DateOption, string> = {
+  asap: "as_soon_as_possible",
+  week: "within_a_week",
+  date: "on_a_specific_date",
+  notDecided: "havent_decided_yet",
 }
 
 type Props = RootStackScreenProps<"ServiceRequestDetailsScreen">
@@ -103,7 +108,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
 
   // Date/time state
   const [selectedDateOption, setSelectedDateOption] = useState<
-    DateTypeOption | undefined
+    DateOption | undefined
   >()
   const [selectedDate, setSelectedDate] = useState<string | undefined>()
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<
@@ -125,18 +130,8 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     })
   }
 
-  const getBackendDateType = () => {
-    if (!selectedDateOption) return undefined
-    if (selectedDateOption === "notDecided") return "notDecided"
-    if (selectedDateOption === "hours48") return "hours48"
-    if (selectedDateOption === "week") return "week"
-    if (
-      selectedDateOption === "furtherOut" ||
-      selectedDateOption === "specificDates"
-    )
-      return "date"
-    return undefined
-  }
+  // The option keys are the backend date types, so nothing to translate.
+  const getBackendDateType = () => selectedDateOption
 
   // Shared nav params for pushing next step
   const sharedParams = {
@@ -264,13 +259,12 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     navigation.popToTop()
   }
 
-  const handleSelectDateOption = (option: DateTypeOption) => {
+  const handleSelectDateOption = (option: DateOption) => {
     setSelectedDateOption(option)
-    if (option !== "furtherOut" && option !== "specificDates") {
+    if (option !== "date") {
       setSelectedDate(undefined)
       setSelectedTimeSlot(undefined)
-    }
-    if (option === "furtherOut" || option === "specificDates") {
+    } else {
       setCalendarVisible(true)
     }
   }
@@ -289,14 +283,9 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
   // Check if current step is answered
   const isCurrentAnswered = (() => {
     if (isDateStep) {
-      // These two are answered by the calendar, not by ticking the option:
+      // "date" is answered by the calendar, not by ticking the option:
       // closing the calendar without a date leaves the step open.
-      if (
-        selectedDateOption === "furtherOut" ||
-        selectedDateOption === "specificDates"
-      ) {
-        return !!selectedDate
-      }
+      if (selectedDateOption === "date") return !!selectedDate
       return !!selectedDateOption
     }
     if (!currentQuestion) return true
@@ -307,28 +296,11 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
     return !!answer && !!check && check(answer)
   })()
 
-  // Filter date options based on what the category supports
-  const allowedBackendTypes = new Set(category?.dateTypes || [])
-
-  const allDateOptions: {
-    key: DateTypeOption
-    label: string
-    backendType: string
-  }[] = [
-    {
-      key: "notDecided",
-      label: t("havent_decided_yet"),
-      backendType: "notDecided",
-    },
-    { key: "hours48", label: t("within_48_hours"), backendType: "hours48" },
-    { key: "week", label: t("within_a_week"), backendType: "week" },
-    { key: "furtherOut", label: t("further_out"), backendType: "date" },
-    { key: "specificDates", label: t("specific_dates"), backendType: "date" },
-  ]
-
-  const dateOptions = allDateOptions.filter((opt) =>
-    allowedBackendTypes.has(opt.backendType)
-  )
+  // Only what the category's dateTypes allow (utils/dateOptions).
+  const dateOptions = dateOptionsFor(category?.dateTypes).map((key) => ({
+    key,
+    label: t(DATE_OPTION_LABELS[key]),
+  }))
 
   const renderDateStep = () => (
     <DmView style={atoms.px_14}>
@@ -464,6 +436,7 @@ const ServiceRequestDetailsScreen: React.FC<Props> = ({
         onClose={() => setCalendarVisible(false)}
         onConfirm={handleCalendarConfirm}
         hideSpecialOptions
+        hideEndedSlots
       />
 
       {/* A pro who doesn't match the answers cannot be submitted to — no
