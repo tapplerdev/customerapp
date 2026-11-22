@@ -11,6 +11,7 @@ import {
   pressText,
   pressTitled,
   renderScreen,
+  routeKey,
   rowsByPlatform,
   typeInto,
   type BackendFixtures,
@@ -475,6 +476,68 @@ describe("MessagesDetailsScreen, the sheets", () => {
       expect(actions).toMatchObject([
         { type: "NAVIGATE", payload: { name: "PickAddressScreen" } },
       ])
+    }
+  )
+
+  // address:pick goes out on an app-wide bus, so a chat left underneath hears
+  // an address picked for anything else (a search, a saved address,
+  // checkout). Only the pick this chat's Location asked for is sent.
+  it.each(envs)(
+    "Location sends only the pick it opened, never another screen's, an unkeyed or a stale one [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(WITH_OFFER_CASE, env, withCameraRoll)
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const key = routeKey(session.root)
+        await session.act(() => {
+          plus(session.root)
+        }, 400)
+        await session.act(() => {
+          pressText(session.root, copy(env, "location"))
+        }, 600)
+        expect(session.navigation.actions).toMatchObject([
+          {
+            type: "NAVIGATE",
+            payload: { name: "PickAddressScreen", params: { openerKey: key } },
+          },
+        ])
+
+        await session.act(() => {
+          // My saved addresses' Add, keyed with its own route key
+          addressEventBus.emit("address:pick", {
+            address: "7 Nile Street",
+            city: "Giza",
+            governorate: "Giza",
+            coords: { lat: 30.0357, lon: 31.2316 },
+            openerKey: "MySavedAddressesScreen-k3d9",
+          })
+          // One with no key (nothing current sends that), and a stale one
+          addressEventBus.emit("address:pick", {
+            coords: { lat: 30.1, lon: 31.3 },
+          })
+          addressEventBus.emit("address:pick", {
+            coords: { lat: 30.1, lon: 31.3 },
+            openerKey: `${key}-gone`,
+          })
+        }, 1000)
+        expect(requests(session, "sendMessage")).toHaveLength(0)
+
+        await session.act(() => {
+          addressEventBus.emit("address:pick", {
+            coords: { lat: 30.05, lon: 31.24 },
+            openerKey: key,
+          })
+        }, 1000)
+        expect(requests(session, "sendMessage")).toHaveLength(1)
+        expect(requests(session, "sendMessage")[0].args).toMatchObject({
+          method: "POST",
+          body: { location: { latitude: 30.05, longitude: 31.24 } },
+        })
+      } finally {
+        session.unmount()
+      }
     }
   )
 

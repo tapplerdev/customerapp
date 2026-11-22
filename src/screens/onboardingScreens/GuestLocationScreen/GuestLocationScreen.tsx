@@ -13,9 +13,8 @@ import useLocation from "@tappler/shared/src/hooks/useLocation"
 import { useDispatch } from "react-redux"
 
 // Helpers & Types
-import { RootStackScreenProps } from "navigation/types"
+import { PickedAddressInfo, RootStackScreenProps } from "navigation/types"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
-import { AddressInfo } from "@tappler/shared/src/types"
 import { setGuestLocation } from "store/auth/slice"
 
 // Assets
@@ -27,7 +26,7 @@ import dsStyles from "./styles"
 
 type Props = RootStackScreenProps<"GuestLocationScreen">
 
-const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
+const GuestLocationScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
@@ -66,13 +65,15 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
   }, [getCurrentLocation, dispatch, goToHome])
 
   const handleChoose = useCallback(() => {
-    navigation.navigate("PickAddressScreen")
-  }, [navigation])
+    navigation.navigate("PickAddressScreen", { openerKey: route.key })
+  }, [navigation, route.key])
 
   const pendingNavigateRef = useRef(false)
 
   useEffect(() => {
-    const handler = (data: AddressInfo) => {
+    const handler = ({ openerKey, ...data }: PickedAddressInfo) => {
+      // Only a pick this screen opened: the bus is app-wide
+      if (openerKey !== route.key) return
       dispatch(
         setGuestLocation({
           coords: data.coords
@@ -93,7 +94,7 @@ const GuestLocationScreen: React.FC<Props> = ({ navigation }) => {
     return () => {
       addressEventBus.off("address:pick", handler)
     }
-  }, [dispatch])
+  }, [dispatch, route.key])
 
   useEffect(() => {
     const unsub = navigation.addListener("focus", () => {

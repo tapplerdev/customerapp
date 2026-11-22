@@ -221,10 +221,18 @@ describe("PickAddressScreen presses", () => {
     }
   }
 
+  // address:pick goes out on an app-wide bus: the pick carries the key its
+  // opener passed (that screen's route key), and only that screen takes it.
   it.each(envs)(
-    "Confirm resolves the pin's address, tells the bus and goes back [$env.language $env.platform]",
+    "Confirm resolves the pin's address, tells the bus for its opener and goes back [$env.language $env.platform]",
     async ({ env }) => {
-      const session = await openScreen(load, optionsFor(env))
+      const session = await openScreen(load, {
+        ...optionsFor(env),
+        route: {
+          name: "PickAddressScreen",
+          params: { openerKey: "MessagesDetailsScreen-2Vb7" },
+        },
+      })
       try {
         const {
           addressEventBus,
@@ -238,6 +246,7 @@ describe("PickAddressScreen presses", () => {
             city: "Dokki",
             governorate: "Giza",
             coords: { lat: 30.0444, lon: 31.2357 },
+            openerKey: "MessagesDetailsScreen-2Vb7",
           },
         ])
         expect(session.navigation.actions).toEqual([

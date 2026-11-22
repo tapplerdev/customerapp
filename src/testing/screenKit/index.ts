@@ -62,6 +62,7 @@ export {
   pressIcon,
   pressText,
   pressTitled,
+  routeKey,
   typeInto,
   wait,
   type CloseSheetOptions,

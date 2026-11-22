@@ -8,6 +8,7 @@ import {
   openScreen,
   pressIcon,
   pressText,
+  routeKey,
   rowsByPlatform,
   treeAfter,
   typeInto,
@@ -23,7 +24,7 @@ import {
   SERVER_ERROR,
   urlOf,
 } from "testing/screenKit/fixtures/api"
-import { ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
+import { ADDRESS, ROUTE_PARAMS } from "testing/screenKit/fixtures/routes"
 import {
   CATEGORY_FOOD,
   CHAT,
@@ -741,6 +742,78 @@ describe.each(PARITY_MATRIX)(
             /^\/pros\/\d+\?view=profile&serviceCategoryId=\d+$/
           )
         })
+      } finally {
+        session.unmount()
+      }
+    })
+
+    // The address bus is app-wide, and this listing stays mounted under a
+    // profile, a chat, checkout: it takes only an address carrying its own
+    // key (one its New location asked for, or checkout's Find other pros).
+    it("New location opens the picker keyed with this listing; only its own pick or selection moves the list", async () => {
+      const session = await open()
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const key = routeKey(session.root)
+        await act(session, () => pressText(session.root, "Plumbing • Dokki"))
+        await session.settle(600)
+        // The sheet's location field, then the address sheet's New location
+        await act(session, () =>
+          pressContaining(session.root, ADDRESS.address!)
+        )
+        await session.settle(600)
+        await act(session, () =>
+          pressContaining(session.root, copy(env, "new_location"))
+        )
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({
+            type: "NAVIGATE",
+            name: "PickAddressScreen",
+            params: { openerKey: key },
+          }),
+        ])
+
+        const listedAt = (lat: number) =>
+          session
+            .requests()
+            .filter(
+              (request) =>
+                request.endpoint === "getProsForCategory" &&
+                urlOf(request.args).includes(`=${lat}&`)
+            ).length
+        const picked = {
+          address: "7 Nile Street",
+          city: "Giza",
+          governorate: "Giza",
+          coords: { lat: 30.0357, lon: 31.2316 },
+        }
+        // A chat's pick, an unkeyed pick and a stale selection
+        await session.act(() => {
+          addressEventBus.emit("address:pick", {
+            ...picked,
+            openerKey: "MessagesDetailsScreen-v2Lp",
+          })
+          addressEventBus.emit("address:pick", picked)
+          addressEventBus.emit("address:select", {
+            ...picked,
+            openerKey: `${key}-gone`,
+          })
+        }, 1000)
+        expect(listedAt(30.0357)).toBe(0)
+        await session.act(() => {
+          addressEventBus.emit("address:pick", { ...picked, openerKey: key })
+        }, 1000)
+        expect(listedAt(30.0357)).toBe(1)
+        await session.act(() => {
+          addressEventBus.emit("address:select", {
+            ...picked,
+            coords: { lat: 30.0611, lon: 31.2195 },
+            openerKey: key,
+          })
+        }, 1000)
+        expect(listedAt(30.0611)).toBe(1)
       } finally {
         session.unmount()
       }

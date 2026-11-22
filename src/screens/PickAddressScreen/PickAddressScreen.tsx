@@ -11,7 +11,7 @@ import type { ScrollView } from "react-native"
 import { DmView } from "@tappler/shared/src/components/UI"
 import { useTranslation } from "react-i18next"
 
-import { RootStackScreenProps } from "navigation/types"
+import { PickedAddressInfo, RootStackScreenProps } from "navigation/types"
 import SearchView from "./components/SearchView"
 import MapPickerView from "./components/MapPickerView"
 import MapPickerWithSearchView from "./components/MapPickerWithSearchView"
@@ -28,7 +28,8 @@ const AnimatedScrollView = Animated.createAnimatedComponent(Animated.ScrollView)
 // Set to false to revert to the legacy 2-page horizontal scroll flow.
 const USE_COMBINED_SEARCH_MAP = true
 
-const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
+const PickAddressScreen: React.FC<Props> = ({ navigation, route }) => {
+  const openerKey = route.params?.openerKey
   const { width } = useWindowDimensions()
   const [positionPicked, setPositionPicked] = useState<MapPosition | undefined>(
     undefined
@@ -87,7 +88,8 @@ const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
       const city = address.address.city
       const governorate = address.address.county || address.address.state
 
-      const pickedAddressInfo = {
+      // openerKey says who asked: only that screen takes the pick
+      const pickedAddressInfo: PickedAddressInfo = {
         address: addressLabel,
         city,
         governorate,
@@ -95,6 +97,7 @@ const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
           lat: address.position.lat,
           lon: address.position.lng,
         },
+        openerKey,
       }
 
       addressEventBus.emit("address:pick", pickedAddressInfo)
@@ -103,7 +106,7 @@ const PickAddressScreen: React.FC<Props> = ({ navigation }) => {
 
       navigation.goBack()
     },
-    [navigation, i18n]
+    [navigation, i18n, openerKey]
   )
 
   const onLocationSelect = useCallback(

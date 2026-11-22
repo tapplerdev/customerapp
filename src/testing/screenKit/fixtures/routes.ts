@@ -88,7 +88,12 @@ const FOOD_CONTEXT = {
 
 export const ROUTE_PARAMS: RouteParams = {
   HomeTabs: { screen: "home" },
-  MySavedAddressesScreen: { selectionMode: false },
+  // The pickers echo their opener's route key (a route key is name-nanoid)
+  PickAddressScreen: { openerKey: "GuestLocationScreen-parity1" },
+  MySavedAddressesScreen: {
+    selectionMode: true,
+    openerKey: "ProsListingScreen-parity1",
+  },
   AddNewAddressScreen: {
     address: ADDRESS.address,
     city: ADDRESS.city,

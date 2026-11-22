@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation, useRoute } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { useTranslation } from "react-i18next"
 
 import { api } from "services/api"
 import { useTypedSelector } from "store"
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
-import { RootStackParamList, AddressInfo } from "navigation/types"
+import {
+  RootStackParamList,
+  AddressInfo,
+  PickedAddressInfo,
+} from "navigation/types"
 import { ServiceCategoryType, ServiceType } from "types/cms"
 import AddressSelectionModal from "components/AddressSelectionModal"
 
@@ -24,6 +28,9 @@ type Nav = NativeStackNavigationProp<RootStackParamList>
  */
 export const useServiceAddressFlow = () => {
   const navigation = useNavigation<Nav>()
+  // The hosting screen's key: the pickers echo it, so only this flow takes
+  // the address it asked for
+  const { key: routeKey } = useRoute()
   const { i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const prefetchService = api.usePrefetch("getServiceById")
@@ -94,13 +101,16 @@ export const useServiceAddressFlow = () => {
 
   const handleSelectNewLocation = useCallback(() => {
     setAddressModalVisible(false)
-    navigation.navigate("PickAddressScreen")
-  }, [navigation])
+    navigation.navigate("PickAddressScreen", { openerKey: routeKey })
+  }, [navigation, routeKey])
 
   const handleViewAllAddresses = useCallback(() => {
     setAddressModalVisible(false)
-    navigation.navigate("MySavedAddressesScreen", { selectionMode: true })
-  }, [navigation])
+    navigation.navigate("MySavedAddressesScreen", {
+      selectionMode: true,
+      openerKey: routeKey,
+    })
+  }, [navigation, routeKey])
 
   // Catch an address picked from PickAddressScreen / selected from
   // MySavedAddressesScreen and proceed to results for the pending category.
@@ -110,14 +120,15 @@ export const useServiceAddressFlow = () => {
   selectedServiceRef.current = selectedService
 
   useEffect(() => {
-    const handler = (address: AddressInfo) => {
+    const handler = ({ openerKey, ...address }: PickedAddressInfo) => {
+      // Only an address this flow asked for: the bus is app-wide
+      if (openerKey !== routeKey) return
       const cat = selectedCategoryRef.current
       const svc = selectedServiceRef.current
       if (!cat || !svc) return
       setTimeout(() => {
-        // Only act when the hosting screen is focused — it stays mounted beneath
-        // the results screen, and without this an address change made THERE
-        // would re-trigger the flow from here.
+        // Only act when the hosting screen is focused again (the picker has
+        // closed): it stays mounted beneath the results screen.
         if (!navigation.isFocused()) return
         goToResults(cat, svc, address)
       }, 600)
@@ -128,7 +139,7 @@ export const useServiceAddressFlow = () => {
       addressEventBus.off("address:pick", handler)
       addressEventBus.off("address:select", handler)
     }
-  }, [navigation, goToResults])
+  }, [navigation, goToResults, routeKey])
 
   const addressModal = (
     <AddressSelectionModal

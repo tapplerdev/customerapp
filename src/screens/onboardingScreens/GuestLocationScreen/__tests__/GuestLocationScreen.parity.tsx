@@ -7,6 +7,7 @@ import {
   copy,
   openScreen,
   pressText,
+  routeKey,
   rowsByPlatform,
   treeAfter,
   type RenderScreenOptions,
@@ -26,9 +27,10 @@ import {
  * has no fix yet (the button's spinner; the shadow is the platform's own).
  * Then the presses: a fix stores the guest's coordinates and leaves for Home,
  * a refusal stays put, Choose your location opens the picker, and a second
- * press on Enable while it looks does nothing. (The address the picker hands
- * back arrives on an event bus and leaves on the next focus, which the kit's
- * one-route stack never raises: PickAddressScreen's own rows cover the pick.)
+ * press on Enable while it looks does nothing. The address the picker hands
+ * back arrives on the app-wide address bus: only a pick carrying this
+ * screen's key is stored. (It leaves on the next focus, which the kit's
+ * one-route stack never raises.)
  */
 
 const load = () => require("../GuestLocationScreen")
@@ -125,15 +127,59 @@ describe.each(PARITY_MATRIX)(
       }
     })
 
-    it("Choose your location opens the picker", async () => {
+    it("Choose your location opens the picker, keyed with this screen", async () => {
       const session = await open()
       try {
         await act(session, () =>
           pressText(session.root, copy(env, "choose_your_location"))
         )
         expect(navigated(session)).toEqual([
-          expect.objectContaining({ name: "PickAddressScreen" }),
+          expect.objectContaining({
+            name: "PickAddressScreen",
+            params: { openerKey: routeKey(session.root) },
+          }),
         ])
+      } finally {
+        session.unmount()
+      }
+    })
+
+    it("only the pick it opened is stored as the guest's place", async () => {
+      const session = await open()
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const key = routeKey(session.root)
+        const pick = {
+          address: "12 Tahrir Street",
+          city: "Dokki",
+          governorate: "Giza",
+          coords: { lat: 30.0444, lon: 31.2357 },
+        }
+        // Another screen's pick, an unkeyed and a stale one
+        await act(session, () => {
+          addressEventBus.emit("address:pick", {
+            ...pick,
+            openerKey: "MessagesDetailsScreen-v2Lp",
+          })
+          addressEventBus.emit("address:pick", pick)
+          addressEventBus.emit("address:pick", {
+            ...pick,
+            openerKey: `${key}-gone`,
+          })
+        })
+        expect(session.store.getState().auth.guestLocation).toEqual({
+          coords: null,
+          address: null,
+        })
+        await act(session, () => {
+          addressEventBus.emit("address:pick", { ...pick, openerKey: key })
+        })
+        expect(session.store.getState().auth.guestLocation).toEqual({
+          coords: { lat: 30.0444, lng: 31.2357 },
+          address: pick,
+        })
       } finally {
         session.unmount()
       }

@@ -10,7 +10,7 @@ import { DmView } from "@tappler/shared/src/components/UI"
 import CoachMark, {
   useCoachMarkTarget,
 } from "@tappler/shared/src/components/CoachMark"
-import { RootStackScreenProps } from "navigation/types"
+import { PickedAddressInfo, RootStackScreenProps } from "navigation/types"
 import {
   api,
   useLazyGetProsForCategoryQuery,
@@ -887,12 +887,13 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
     setTimeout(() => setAddressModalVisible(true), 300)
   }, [])
 
-  // Listen for address picked from PickAddressScreen.
-  // Several screens listen to this bus and stay mounted in the stack — only the
-  // FOCUSED screen may act, or one pick triggers them all (e.g. SubCategories
-  // re-launching the search animation on top of these results).
+  // Listen for an address picked in PickAddressScreen / selected in
+  // MySavedAddressesScreen. Several screens listen to this bus and stay
+  // mounted in the stack: only an address carrying this screen's key is
+  // taken (one it asked for, or checkout's Find other pros), once it is on top.
   useEffect(() => {
-    const handler = (newAddress: any) => {
+    const handler = ({ openerKey, ...newAddress }: PickedAddressInfo) => {
+      if (openerKey !== route.key) return
       setTimeout(() => {
         if (!navigation.isFocused()) return
         handleSelectNewAddress(newAddress)
@@ -904,7 +905,7 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
       addressEventBus.off("address:pick", handler)
       addressEventBus.off("address:select", handler)
     }
-  }, [handleSelectNewAddress])
+  }, [handleSelectNewAddress, route.key])
 
   // Never for food. The tip says to select several pros and compare quotes,
   // and a food category has no such flow — you order from one kitchen. Telling
@@ -1439,11 +1440,14 @@ const ProsListingContent: React.FC<Props> = ({ route, navigation }) => {
         onSelectAddress={handleSelectNewAddress}
         onSelectNewLocation={() => {
           setAddressModalVisible(false)
-          navigation.navigate("PickAddressScreen")
+          navigation.navigate("PickAddressScreen", { openerKey: route.key })
         }}
         onViewAllAddresses={() => {
           setAddressModalVisible(false)
-          navigation.navigate("MySavedAddressesScreen", { selectionMode: true })
+          navigation.navigate("MySavedAddressesScreen", {
+            selectionMode: true,
+            openerKey: route.key,
+          })
         }}
       />
 

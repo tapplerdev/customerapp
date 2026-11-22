@@ -7,6 +7,7 @@ import {
   openScreen,
   pressIcon,
   pressText,
+  routeKey,
   rowsByPlatform,
   treeAfter,
 } from "testing/screenKit"
@@ -28,7 +29,9 @@ import {
  * chevron that turns in Arabic), the empty line, the Add row. A loading or
  * failed list draws the empty line, and a sparse address (no street, no city,
  * no governorate) a card with fewer lines. Selection mode draws the data tree
- * and acts differently, so its handler is pressed in the second block.
+ * and acts differently, so its handler is pressed in the second block. The
+ * address bus is app-wide: a selection carries the key of the screen that
+ * asked for it, and Add takes only the pick carrying this screen's key.
  */
 
 const load = () => require("../MySavedAddressesScreen")
@@ -68,6 +71,9 @@ const STATES = {
 }
 type StateName = keyof typeof STATES
 
+// The screen that opened selection mode (its route key), as the listing does
+const OPENER = "ProsListingScreen-r8Qw"
+
 const optionsFor = (
   env: ParityEnv,
   state: StateName = "data",
@@ -76,7 +82,10 @@ const optionsFor = (
   ...STATES[state],
   lang: env.language,
   platform: env.platform ?? "ios",
-  route: { name: "MySavedAddressesScreen", params: { selectionMode } },
+  route: {
+    name: "MySavedAddressesScreen",
+    params: selectionMode ? { selectionMode, openerKey: OPENER } : undefined,
+  },
 })
 
 // A loading or failed list draws the empty line, and selection mode draws the
@@ -136,7 +145,7 @@ describe("MySavedAddressesScreen presses", () => {
   )
 
   it.each(envs)(
-    "in selection mode a card hands its address to the bus and goes back [$env.language $env.platform]",
+    "in selection mode a card hands its address, keyed for its opener, to the bus and goes back [$env.language $env.platform]",
     async ({ env }) => {
       const session = await openScreen(load, optionsFor(env, "data", true))
       try {
@@ -163,6 +172,7 @@ describe("MySavedAddressesScreen presses", () => {
               lon: SAVED_HOME.address.location.lng,
             },
             savedAddressId: SAVED_HOME.id,
+            openerKey: OPENER,
           },
         ])
         expect(session.navigation.actions).toEqual([
@@ -175,36 +185,57 @@ describe("MySavedAddressesScreen presses", () => {
   )
 
   it.each(envs)(
-    "Add opens the picker; a picked address opens the form [$env.language $env.platform]",
+    "Add opens the picker; only its own pick opens the form [$env.language $env.platform]",
     async ({ env }) => {
       const session = await openScreen(load, optionsFor(env))
       try {
         const {
           addressEventBus,
         } = require("@tappler/shared/src/events/AddressBus")
+        const key = routeKey(session.root)
         await session.act(() => {
           pressText(session.root, `+${copy(env, "add_new_address")}`)
         })
         expect(session.navigation.actions).toEqual([
           expect.objectContaining({
             type: "NAVIGATE",
-            payload: expect.objectContaining({ name: "PickAddressScreen" }),
+            payload: { name: "PickAddressScreen", params: { openerKey: key } },
           }),
         ])
+        const pick = {
+          address: "7 Nile Street",
+          city: "Giza",
+          governorate: "Giza",
+          coords: { lat: 30, lon: 31 },
+        }
+        // Another screen's pick (a chat's Location), an unkeyed and a stale one
         await session.act(() => {
           addressEventBus.emit("address:pick", {
-            address: "7 Nile Street",
-            city: "Giza",
-            governorate: "Giza",
-            coords: { lat: 30, lon: 31 },
+            ...pick,
+            openerKey: "MessagesDetailsScreen-v2Lp",
+          })
+          addressEventBus.emit("address:pick", pick)
+          addressEventBus.emit("address:pick", {
+            ...pick,
+            openerKey: `${key}-gone`,
           })
         }, 1000)
+        expect(session.navigation.actions).toHaveLength(1)
+        await session.act(() => {
+          addressEventBus.emit("address:pick", { ...pick, openerKey: key })
+        }, 1000)
+        expect(session.navigation.actions).toHaveLength(2)
         expect(session.navigation.actions[1]).toEqual(
           expect.objectContaining({
             type: "NAVIGATE",
             payload: expect.objectContaining({
               name: "AddNewAddressScreen",
-              params: expect.objectContaining({ address: "7 Nile Street" }),
+              params: {
+                address: "7 Nile Street",
+                city: "Giza",
+                governorate: "Giza",
+                coords: { lat: 30, lon: 31 },
+              },
             }),
           })
         )

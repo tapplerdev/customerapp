@@ -5,8 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
-import { AddressInfo } from "@tappler/shared/src/types"
-import { RootStackScreenProps } from "navigation/types"
+import { PickedAddressInfo, RootStackScreenProps } from "navigation/types"
 import { useGetCustomerMeQuery } from "services/api"
 import colors from "@tappler/shared/src/styles/colors"
 
@@ -20,6 +19,8 @@ type Props = RootStackScreenProps<"MySavedAddressesScreen">
 
 const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
   const selectionMode = route.params?.selectionMode ?? false
+  // Who asked for a saved address: only that screen takes the selection
+  const selectionOpenerKey = route.params?.openerKey
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
 
@@ -29,8 +30,9 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
   const isListeningRef = useRef(false)
 
   useEffect(() => {
-    const handler = (data: AddressInfo) => {
-      if (!isListeningRef.current) return
+    const handler = ({ openerKey, ...data }: PickedAddressInfo) => {
+      // Only a pick this screen's Add opened: the bus is app-wide
+      if (openerKey !== route.key || !isListeningRef.current) return
       isListeningRef.current = false
       // Delay so PickAddressScreen finishes dismissing before we push
       setTimeout(() => {
@@ -48,12 +50,12 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
     return () => {
       addressEventBus.off("address:pick", handler)
     }
-  }, [navigation])
+  }, [navigation, route.key])
 
   const handleAddNewAddress = useCallback(() => {
     isListeningRef.current = true
-    navigation.navigate("PickAddressScreen")
-  }, [navigation])
+    navigation.navigate("PickAddressScreen", { openerKey: route.key })
+  }, [navigation, route.key])
 
   const onGoBack = useCallback(() => {
     navigation.goBack()
@@ -91,7 +93,7 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
             key={item.id}
             onPress={() => {
               if (selectionMode) {
-                addressEventBus.emit("address:select", {
+                const selected: PickedAddressInfo = {
                   address: item.address.streetAddress || "",
                   city: item.address.city || "",
                   governorate: item.address.governorate || "",
@@ -105,7 +107,9 @@ const MySavedAddressesScreen: React.FC<Props> = ({ route, navigation }) => {
                   // is only ever an approximation of the question it is really
                   // asking: did this come from the account already.
                   savedAddressId: item.id,
-                })
+                  openerKey: selectionOpenerKey,
+                }
+                addressEventBus.emit("address:select", selected)
                 navigation.goBack()
               } else {
                 navigation.navigate("ViewAddressScreen", {

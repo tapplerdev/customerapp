@@ -29,7 +29,7 @@ import {
 import { addressEventBus } from "@tappler/shared/src/events/AddressBus"
 
 // Helpers & Types
-import { AddressInfo, RootStackScreenProps } from "navigation/types"
+import { PickedAddressInfo, RootStackScreenProps } from "navigation/types"
 import { CreateJobRequest } from "types/job"
 import { buildFoodOrderItems } from "utils/foodCartRepair"
 
@@ -87,10 +87,11 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isAddressModalVisible, setAddressModalVisible] = useState(false)
 
   // Address changed from MySavedAddresses/PickAddress → adopt it for the
-  // order. Focus + delay guard copied from useServiceAddressFlow: this
-  // screen stays mounted beneath the pickers, so only act when focused.
+  // order. The bus is app-wide: only an address this screen asked for (its
+  // key) is taken, once the picker has closed and this screen is focused.
   useEffect(() => {
-    const handler = (address: AddressInfo) => {
+    const handler = ({ openerKey, ...address }: PickedAddressInfo) => {
+      if (openerKey !== route.key) return
       setTimeout(() => {
         if (!navigation.isFocused()) return
         dispatch(setBrowsingAddress(address))
@@ -102,7 +103,7 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       addressEventBus.off("address:pick", handler)
       addressEventBus.off("address:select", handler)
     }
-  }, [navigation, dispatch])
+  }, [navigation, dispatch, route.key])
 
   // Fulfillment mode. The listing seeds a hint (cart.fulfillmentMode); the
   // checkout is the source of truth, limited to what the pro actually offers.
@@ -284,8 +285,16 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!orderAddress) return
     // The bus is what actually re-queries: the listing seeds its address from
     // route params only on mount, so params alone would not refresh a screen
-    // that is already mounted underneath us.
-    addressEventBus.emit("address:select", orderAddress)
+    // that is already mounted underneath us. Addressed by route key to the
+    // listing popTo returns to, the nearest one below (no other screen takes it).
+    const listing = [...navigation.getState().routes]
+      .reverse()
+      .find((r) => r.name === "ProsListingScreen")
+    const toListing: PickedAddressInfo = {
+      ...orderAddress,
+      openerKey: listing?.key,
+    }
+    addressEventBus.emit("address:select", toListing)
     navigation.popTo("ProsListingScreen", {
       categoryId: cart.serviceCategoryId,
       categoryName: cart.categoryName,
@@ -875,11 +884,14 @@ const FoodCheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         }}
         onSelectNewLocation={() => {
           setAddressModalVisible(false)
-          navigation.navigate("PickAddressScreen")
+          navigation.navigate("PickAddressScreen", { openerKey: route.key })
         }}
         onViewAllAddresses={() => {
           setAddressModalVisible(false)
-          navigation.navigate("MySavedAddressesScreen", { selectionMode: true })
+          navigation.navigate("MySavedAddressesScreen", {
+            selectionMode: true,
+            openerKey: route.key,
+          })
         }}
       />
 

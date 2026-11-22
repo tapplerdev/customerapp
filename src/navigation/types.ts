@@ -8,6 +8,11 @@ import { AddressInfo } from "@tappler/shared/src/types"
 
 export type { AddressInfo }
 
+// What the address bus carries: the address, plus the openerKey its opener
+// passed (that screen's route.key). The bus is app-wide, so a listener takes
+// only an address carrying its own key.
+export type PickedAddressInfo = AddressInfo & { openerKey?: string }
+
 export type SelectedProInfo = {
   id: number
   name: string
@@ -101,7 +106,13 @@ export type RootStackParamList = {
   RegisterScreen: undefined
   SignInEmailScreen: undefined
   GuestLocationScreen: undefined
-  PickAddressScreen: undefined
+  PickAddressScreen: {
+    /**
+     * The opener's route.key, echoed on address:pick: a chat left underneath
+     * must never send an address picked for anything else as a location.
+     */
+    openerKey: string
+  }
   AuthGateScreen: undefined
   TapplyAIScreen: undefined
   HomeTabs: { screen?: string } | undefined
@@ -111,7 +122,13 @@ export type RootStackParamList = {
   UpdateMobileNumberScreen: undefined
   UpdateEmailScreen: undefined
   DeleteAccountScreen: undefined
-  MySavedAddressesScreen: { selectionMode?: boolean } | undefined
+  MySavedAddressesScreen:
+    | {
+        selectionMode: true
+        // The opener's route.key, echoed on address:select (as PickAddress)
+        openerKey: string
+      }
+    | undefined
   AddNewAddressScreen:
     | {
         address?: string
