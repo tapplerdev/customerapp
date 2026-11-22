@@ -291,6 +291,27 @@ export const pressIcon = (
   control.props.onPress()
 }
 
+/**
+ * The route key React Navigation gave the screen (`route.key`, one per screen
+ * instance), read off the props the navigator hands it: what a screen passes
+ * a picker as its openerKey, so a test can tell its own answer from another's.
+ */
+export const routeKey = (root: ReactTestInstance): string => {
+  const keys = new Set(
+    root
+      .findAll(
+        (node) =>
+          typeof node.props.route?.key === "string" &&
+          typeof node.props.navigation?.navigate === "function"
+      )
+      .map((node) => node.props.route.key as string)
+  )
+  if (keys.size !== 1) {
+    throw new Error(`routeKey: ${keys.size} route keys, expected 1`)
+  }
+  return [...keys][0]
+}
+
 /** The fields (DmInput, DmAuthInput) that take text, outermost first, in order. */
 export const fields = (root: ReactTestInstance) =>
   root.findAll(

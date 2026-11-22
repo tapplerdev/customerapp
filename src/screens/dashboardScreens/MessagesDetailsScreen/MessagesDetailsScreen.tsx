@@ -37,7 +37,7 @@ import {
 import useRepostRequest from "hooks/useRepostRequest"
 import { format } from "date-fns"
 
-import { RootStackScreenProps } from "navigation/types"
+import { PickedAddressInfo, RootStackScreenProps } from "navigation/types"
 import useChatContext from "hooks/useChatContext"
 import useMessagePagination from "hooks/useMessagePagination"
 import useMessageGroups, { FlatItem } from "hooks/useMessageGroups"
@@ -333,7 +333,7 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
 
   const handleLocationPress = () => {
     closeAttachmentSheet()
-    navigation.navigate("PickAddressScreen" as any)
+    navigation.navigate("PickAddressScreen", { openerKey: route.key })
   }
 
   // Fixed height for the native sheet (it cannot self-measure this content —
@@ -650,23 +650,23 @@ const MessagesDetailsThread: React.FC<Props> = ({ navigation, route }) => {
     [context.chatId, sendMessage, pagination, t, handleSendFailure]
   )
 
-  // Listen for address picked from PickAddressScreen
+  // Listen for address picked from PickAddressScreen. The bus is app-wide:
+  // only a pick this chat's Location opened is sent, never one made for a
+  // search, a saved address or checkout while this chat sits underneath.
   React.useEffect(() => {
-    const handler = (data: any) => {
-      if (!data?.coords) return
-      // Only act when focused — the bus is shared: without this, picking an
-      // address for SEARCH while this chat sits in the stack would silently
-      // send a location message to the pro.
+    const handler = ({ openerKey, coords }: PickedAddressInfo) => {
+      if (openerKey !== route.key || !coords) return
+      // Sent once the picker has closed and this chat is on top again
       setTimeout(() => {
         if (!navigation.isFocused()) return
-        sendLocation(data.coords)
+        sendLocation(coords)
       }, 600)
     }
     addressEventBus.on("address:pick", handler)
     return () => {
       addressEventBus.off("address:pick", handler)
     }
-  }, [sendLocation])
+  }, [sendLocation, route.key])
 
   // What kind of order this thread is about, for the system lines whose words
   // depend on it (a pickup's last step is "picked up", not "delivered"; a

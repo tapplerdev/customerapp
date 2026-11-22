@@ -10,6 +10,7 @@ import {
   pressText,
   pressTitled,
   renderScreen,
+  routeKey,
   rowsByPlatform,
   typeInto,
   type BackendFixtures,
@@ -348,6 +349,59 @@ describe("FoodCheckoutScreen, the controls", () => {
     }
   )
 
+  // The address bus is app-wide: checkout takes only an address carrying its
+  // own key, never a pick made for a chat or the listing underneath.
+  it.each(envs)(
+    "the address sheet's New location opens the picker keyed with checkout; only its own pick becomes the order's address [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(CASES[0], env)
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const key = routeKey(session.root)
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "change"))
+        })
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "new_location"))
+        })
+        expect(session.navigation.actions).toMatchObject([
+          {
+            type: "NAVIGATE",
+            payload: { name: "PickAddressScreen", params: { openerKey: key } },
+          },
+        ])
+        const picked = {
+          address: "7 Nile Street",
+          city: "Giza",
+          governorate: "Giza",
+          coords: { lat: 30.0357, lon: 31.2316 },
+        }
+        // A chat's pick, an unkeyed one and a stale selection
+        await session.act(() => {
+          addressEventBus.emit("address:pick", {
+            ...picked,
+            openerKey: "MessagesDetailsScreen-v2Lp",
+          })
+          addressEventBus.emit("address:pick", picked)
+          addressEventBus.emit("address:select", {
+            ...picked,
+            openerKey: `${key}-gone`,
+          })
+        }, 1000)
+        expect(session.store.getState().cart.address).toEqual(ADDRESS)
+        await session.act(() => {
+          addressEventBus.emit("address:pick", { ...picked, openerKey: key })
+        }, 1000)
+        // The key stays out of the address the order keeps
+        expect(session.store.getState().cart.address).toStrictEqual(picked)
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
   it.each(envs)(
     "Schedule for later opens the calendar sheet [$env.language $env.platform]",
     async ({ env }) => {
@@ -520,6 +574,54 @@ describe("FoodCheckoutScreen, the controls", () => {
               },
             },
           },
+        ])
+      } finally {
+        session.unmount()
+      }
+    }
+  )
+
+  // The listing below re-queries from the bus (its route params seed it only
+  // on mount): the address goes out keyed for the listing popTo returns to.
+  // The kit's stack has one route, so the screen is shown one with a listing
+  // below it, as the app's stack has.
+  it.each(envs)(
+    "Find other pros hands the address to the listing below, keyed for it [$env.language $env.platform]",
+    async ({ env }) => {
+      const session = await open(
+        byName("out of the zone and out of pickup range"),
+        env
+      )
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const [screen] = session.root.findAll(
+          (node) =>
+            node.props.route?.key === routeKey(session.root) &&
+            typeof node.props.navigation?.getState === "function"
+        )
+        const { navigation } = screen.props
+        const stackState = navigation.getState.bind(navigation)
+        navigation.getState = () => {
+          const state = stackState()
+          return {
+            ...state,
+            routes: [
+              { key: "ProsListingScreen-L1st", name: "ProsListingScreen" },
+              ...state.routes,
+            ],
+          }
+        }
+        const selected: unknown[] = []
+        addressEventBus.on("address:select", (info: unknown) =>
+          selected.push(info)
+        )
+        await session.act(() => {
+          pressContaining(session.root, copy(env, "find_other_pros"))
+        })
+        expect(selected).toEqual([
+          { ...ADDRESS, openerKey: "ProsListingScreen-L1st" },
         ])
       } finally {
         session.unmount()

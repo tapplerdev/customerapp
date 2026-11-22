@@ -4,9 +4,11 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
+  copy,
   openScreen,
   pressIcon,
   pressText,
+  routeKey,
   rowsByPlatform,
   treeAfter,
   type RenderScreenOptions,
@@ -183,6 +185,64 @@ describe.each(PARITY_MATRIX)(
             },
           }),
         ])
+      } finally {
+        session.unmount()
+      }
+    })
+
+    // The address bus is app-wide, and this screen stays mounted under the
+    // results: only an address carrying its key goes on to the results.
+    it("the sheet's New location opens the picker keyed with this screen; only its own pick goes to the results", async () => {
+      const session = await open()
+      try {
+        const {
+          addressEventBus,
+        } = require("@tappler/shared/src/events/AddressBus")
+        const key = routeKey(session.root)
+        await act(session, () => pressText(session.root, name(CATEGORIES[0])))
+        await act(session, () =>
+          pressContaining(session.root, copy(env, "new_location"))
+        )
+        expect(navigated(session)).toEqual([
+          expect.objectContaining({
+            name: "PickAddressScreen",
+            params: { openerKey: key },
+          }),
+        ])
+        const picked = {
+          address: "7 Nile Street",
+          city: "Giza",
+          governorate: "Giza",
+          coords: { lat: 30.0357, lon: 31.2316 },
+        }
+        // The listing's pick, an unkeyed one and a stale selection
+        await session.act(() => {
+          addressEventBus.emit("address:pick", {
+            ...picked,
+            openerKey: "ProsListingScreen-r8Qw",
+          })
+          addressEventBus.emit("address:pick", picked)
+          addressEventBus.emit("address:select", {
+            ...picked,
+            openerKey: `${key}-gone`,
+          })
+        }, 1000)
+        expect(navigated(session)).toHaveLength(1)
+        await session.act(() => {
+          addressEventBus.emit("address:pick", { ...picked, openerKey: key })
+        }, 1000)
+        expect(navigated(session)).toHaveLength(2)
+        expect(navigated(session)[1]).toEqual(
+          expect.objectContaining({
+            name: "SearchAnimationScreen",
+            params: {
+              nextParams: expect.objectContaining({
+                categoryId: 3041,
+                address: picked,
+              }),
+            },
+          })
+        )
       } finally {
         session.unmount()
       }
